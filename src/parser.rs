@@ -133,6 +133,24 @@ pub fn parse_field(i: &str) -> IResult<&str, Field> {
     )(i)
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct Record {
+    pub fields: Vec<Field>,
+}
+
+/// Parse reccord
+///
+/// # Example
+/// ```
+/// use pica::parser::parse_record;
+///
+/// let (_, record) = parse_record("003@ \x1f0123456789\x1e").unwrap();
+/// assert_eq!(record.fields.len(), 1);
+/// ```
+pub fn parse_record(i: &str) -> IResult<&str, Record> {
+    map(many1(parse_field), |fields| Record { fields })(i)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -194,6 +212,7 @@ mod tests {
                 }
             ))
         );
+
         assert_eq!(
             parse_field("001B/01 \x1f0123456789\x1e"),
             Ok((
@@ -204,6 +223,26 @@ mod tests {
                     subfields: vec![Subfield {
                         code: '0',
                         value: Some("123456789".to_string())
+                    }]
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn test_parse_record() {
+        assert_eq!(
+            parse_record("003@ \x1f0123456789\x1e"),
+            Ok((
+                "",
+                Record {
+                    fields: vec![Field {
+                        tag: "003@".to_string(),
+                        occurrence: None,
+                        subfields: vec![Subfield {
+                            code: '0',
+                            value: Some("123456789".to_string())
+                        }]
                     }]
                 }
             ))
