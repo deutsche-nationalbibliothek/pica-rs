@@ -6,3 +6,4 @@ edition = "2018"
 license = "AGPL-3.0-only"
 
 [dependencies]
+nom = "5.1.2"
