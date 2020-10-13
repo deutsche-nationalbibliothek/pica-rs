@@ -1,5 +1,4 @@
 use nom::{
-    branch::alt,
     character::complete::{none_of, one_of},
     combinator::{map, opt, recognize},
     multi::{count, many1},
@@ -90,11 +89,7 @@ pub fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
         nom::character::complete::char('\x1f'),
         map(
             pair(
-                alt((
-                    one_of("ABCdefghijklmnopqrstuvwxyz"),
-                    one_of("abcdefghijklmnopqrstuvwxyz"),
-                    one_of("0123456789"),
-                )),
+                one_of("a0bd94eA7VSEBHtgDhcfpnmYrK5iuLv6xGjlFqJIoTyzOMP2sRNUX3kZQCw18W"),
                 opt(map(many1(none_of("\x1f\x1e")), |s| String::from_iter(s))),
             ),
             |(c, v)| Subfield { code: c, value: v },
