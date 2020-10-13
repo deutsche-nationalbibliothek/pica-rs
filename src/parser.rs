@@ -20,20 +20,17 @@ pub struct Field {
     pub subfields: Vec<Subfield>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct Record {
+    pub fields: Vec<Field>,
+}
+
 /// Parse a Pica+ tag.
 ///
 /// A Pica+ tag starts with a digit less than three followed by two digits and
 /// an uppercase letter or an '@' character. If the parser succeeds, the
 /// remaining input and the tag is returned as an tuple wrapped in an [`Ok`].
-///
-/// # Example
-/// ```
-/// use pica::parser::parse_tag;
-///
-/// let (_, tag) = parse_tag("003@").unwrap();
-/// assert_eq!(tag, "003@");
-/// ```
-pub fn parse_tag(i: &str) -> IResult<&str, String> {
+pub(self) fn parse_tag(i: &str) -> IResult<&str, String> {
     map(
         recognize(tuple((
             one_of("012"),
@@ -49,15 +46,7 @@ pub fn parse_tag(i: &str) -> IResult<&str, String> {
 /// The field occurrence is preceded by one '/' character followed by two
 /// digits. If the parser succeeds, the remaining input and the occurrence is
 /// returned as an tuple wrapped in an [`Ok`].
-///
-/// # Example
-/// ```
-/// use pica::parser::parse_occurrence;
-///
-/// let (_, occ) = parse_occurrence("/00").unwrap();
-/// assert_eq!(occ, "00");
-/// ```
-pub fn parse_occurrence(i: &str) -> IResult<&str, String> {
+pub(self) fn parse_occurrence(i: &str) -> IResult<&str, String> {
     map(
         preceded(
             nom::character::complete::char('/'),
@@ -74,23 +63,13 @@ pub fn parse_occurrence(i: &str) -> IResult<&str, String> {
 /// unit separator or an record separator (\x1f). If the parse succeeds the
 /// remaining input and the parsed [`Subfield`] is returned as an tuple wrapped
 /// in an [`Ok`].
-///
-/// # Example
-///
-/// ```
-/// use pica::parser::parse_subfield;
-///
-/// let (_, subfield) = parse_subfield("\x1fa123456789").unwrap();
-/// assert_eq!(subfield.code, 'a');
-/// assert_eq!(subfield.value, Some("123456789".to_string()));
-/// ```
-pub fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
+pub(self) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     preceded(
         nom::character::complete::char('\x1f'),
         map(
             pair(
                 one_of("a0bd94eA7VSEBHtgDhcfpnmYrK5iuLv6xGjlFqJIoTyzOMP2sRNUX3kZQCw18W"),
-                opt(map(many1(none_of("\x1f\x1e")), |s| String::from_iter(s))),
+                opt(map(many1(none_of("\x1f\x1e")), String::from_iter)),
             ),
             |(c, v)| Subfield { code: c, value: v },
         ),
@@ -102,15 +81,7 @@ pub fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
 /// A field consists of an field tag, a non-empty list of subfields and ends
 /// with an record separator (\x1e). If the parse succeeds the remaining input
 /// and the parsed [`Field`] is returned as an tuple wrapped in an [`Ok`].
-///
-/// # Example
-/// ```
-/// use pica::parser::parse_field;
-///
-/// let (_, field) = parse_field("003@ \x1f0123456789\x1e").unwrap();
-/// assert_eq!(field.tag, "003@");
-/// ```
-pub fn parse_field(i: &str) -> IResult<&str, Field> {
+pub(self) fn parse_field(i: &str) -> IResult<&str, Field> {
     terminated(
         map(
             separated_pair(
@@ -126,11 +97,6 @@ pub fn parse_field(i: &str) -> IResult<&str, Field> {
         ),
         nom::character::complete::char('\x1e'),
     )(i)
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Record {
-    pub fields: Vec<Field>,
 }
 
 /// Parse reccord
