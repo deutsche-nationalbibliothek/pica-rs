@@ -119,9 +119,9 @@ pub fn parse_field(i: &str) -> IResult<&str, Field> {
                 many1(parse_subfield),
             ),
             |((tag, occurrence), subfields)| Field {
-                tag: tag,
-                occurrence: occurrence,
-                subfields: subfields,
+                tag,
+                occurrence,
+                subfields,
             },
         ),
         nom::character::complete::char('\x1e'),
