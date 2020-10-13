@@ -1,3 +1,17 @@
+//! Pica+ Parser
+//!
+//! # Pica+ Grammar
+//!
+//! ```text
+//! Record     ::= Field+
+//! Field      ::= Tag Occurrence? ' ' Subfield+ #x1e
+//! Tag        ::= [012] [0-9]{2} ([A-Z] | '@')
+//! Occurrence ::= '/' [0-9] [0-9]
+//! Subfield   ::= #x1f Code Value?
+//! Code       ::= [a-zA-Z0-9]
+//! Value      ::= [^#x1f#x1e]+
+//! ```
+
 use nom::{
     character::complete::{none_of, one_of},
     combinator::{map, opt, recognize},
