@@ -14,7 +14,7 @@
 
 use nom::{
     character::complete::{none_of, one_of},
-    combinator::{map, opt, recognize},
+    combinator::{all_consuming, map, opt, recognize},
     multi::{count, many1},
     sequence::{pair, preceded, separated_pair, terminated, tuple},
     IResult,
@@ -123,7 +123,7 @@ pub(self) fn parse_field(i: &str) -> IResult<&str, Field> {
 /// assert_eq!(record.fields.len(), 1);
 /// ```
 pub fn parse_record(i: &str) -> IResult<&str, Record> {
-    map(many1(parse_field), |fields| Record { fields })(i)
+    all_consuming(map(many1(parse_field), |fields| Record { fields }))(i)
 }
 
 #[cfg(test)]
@@ -222,5 +222,7 @@ mod tests {
                 }
             ))
         );
+
+        assert!(parse_record("003@ \x1f0123456789\x1eabc").is_err())
     }
 }
