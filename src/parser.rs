@@ -114,8 +114,8 @@ pub(self) fn parse_field(i: &str) -> IResult<&str, Field> {
             map(
                 pair(parse_tag, opt(parse_occurrence)),
                 |(tag, occurrence)| Field {
-                    tag: tag,
-                    occurrence: occurrence,
+                    tag,
+                    occurrence,
                     subfields: vec![],
                 },
             ),
