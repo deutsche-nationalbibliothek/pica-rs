@@ -12,6 +12,7 @@
 //! Value      ::= [^#x1f#x1e]+
 //! ```
 
+use crate::{Field, Record, Subfield};
 use nom::{
     character::complete::{none_of, one_of},
     combinator::{all_consuming, map, opt, recognize},
@@ -20,24 +21,6 @@ use nom::{
     IResult,
 };
 use std::iter::FromIterator;
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Subfield {
-    pub code: char,
-    pub value: Option<String>,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Field {
-    pub tag: String,
-    pub occurrence: Option<String>,
-    pub subfields: Vec<Subfield>,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Record {
-    pub fields: Vec<Field>,
-}
 
 /// Parse a Pica+ tag.
 ///
@@ -60,13 +43,10 @@ pub(self) fn parse_tag(i: &str) -> IResult<&str, String> {
 /// The field occurrence is preceded by one '/' character followed by two
 /// digits. If the parser succeeds, the remaining input and the occurrence is
 /// returned as an tuple wrapped in an [`Ok`].
-pub(self) fn parse_occurrence(i: &str) -> IResult<&str, String> {
-    map(
-        preceded(
-            nom::character::complete::char('/'),
-            recognize(count(one_of("0123456789"), 2)),
-        ),
-        |s: &str| String::from_iter(s.chars()),
+pub(self) fn parse_occurrence(i: &str) -> IResult<&str, &str> {
+    preceded(
+        nom::character::complete::char('/'),
+        recognize(count(one_of("0123456789"), 2)),
     )(i)
 }
 
@@ -83,9 +63,9 @@ pub(self) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
         map(
             pair(
                 one_of("a0bd94eA7VSEBHtgDhcfpnmYrK5iuLv6xGjlFqJIoTyzOMP2sRNUX3kZQCw18W"),
-                opt(map(many1(none_of("\x1f\x1e")), String::from_iter)),
+                map(many0(none_of("\x1f\x1e")), String::from_iter),
             ),
-            |(c, v)| Subfield { code: c, value: v },
+            |(code, value)| { Subfield::new(code, value) },
         ),
     )(i)
 }
@@ -105,10 +85,8 @@ pub(self) fn parse_field(i: &str) -> IResult<&str, Field> {
                     many0(parse_subfield),
                 ),
             ),
-            |((tag, occurrence), subfields)| Field {
-                tag,
-                occurrence,
-                subfields,
+            |((tag, occurrence), subfields)| {
+                Field::new(tag, occurrence.unwrap_or(""), subfields)
             },
         ),
         nom::character::complete::char('\x1e'),
@@ -143,8 +121,8 @@ mod tests {
 
     #[test]
     fn test_parse_occurrence() {
-        assert_eq!(parse_occurrence("/00"), Ok(("", "00".to_string())));
-        assert_eq!(parse_occurrence("/01"), Ok(("", "01".to_string())));
+        assert_eq!(parse_occurrence("/00"), Ok(("", "00")));
+        assert_eq!(parse_occurrence("/01"), Ok(("", "01")));
         assert!(parse_occurrence("00").is_err());
     }
 
@@ -152,25 +130,10 @@ mod tests {
     fn test_parse_subfield() {
         assert_eq!(
             parse_subfield("\x1fa123456789"),
-            Ok((
-                "",
-                Subfield {
-                    code: 'a',
-                    value: Some("123456789".to_string())
-                }
-            ))
+            Ok(("", Subfield::new('a', "123456789")))
         );
 
-        assert_eq!(
-            parse_subfield("\x1fa"),
-            Ok((
-                "",
-                Subfield {
-                    code: 'a',
-                    value: None,
-                }
-            ))
-        );
+        assert_eq!(parse_subfield("\x1fa"), Ok(("", Subfield::new('a', ""),)));
     }
 
     #[test]
@@ -179,14 +142,7 @@ mod tests {
             parse_field("003@ \x1f0123456789\x1e"),
             Ok((
                 "",
-                Field {
-                    tag: "003@".to_string(),
-                    occurrence: None,
-                    subfields: vec![Subfield {
-                        code: '0',
-                        value: Some("123456789".to_string())
-                    }]
-                }
+                Field::new("003@", "", vec![Subfield::new('0', "123456789")])
             ))
         );
 
@@ -194,14 +150,7 @@ mod tests {
             parse_field("001B/01 \x1f0123456789\x1e"),
             Ok((
                 "",
-                Field {
-                    tag: "001B".to_string(),
-                    occurrence: Some("01".to_string()),
-                    subfields: vec![Subfield {
-                        code: '0',
-                        value: Some("123456789".to_string())
-                    }]
-                }
+                Field::new("001B", "01", vec![Subfield::new('0', "123456789")]),
             ))
         );
     }
@@ -213,14 +162,11 @@ mod tests {
             Ok((
                 "",
                 Record {
-                    fields: vec![Field {
-                        tag: "003@".to_string(),
-                        occurrence: None,
-                        subfields: vec![Subfield {
-                            code: '0',
-                            value: Some("123456789".to_string())
-                        }]
-                    }]
+                    fields: vec![Field::new(
+                        "003@",
+                        "",
+                        vec![Subfield::new('0', "123456789")]
+                    )]
                 }
             ))
         );
