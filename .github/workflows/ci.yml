@@ -27,14 +27,24 @@ jobs:
         include:
           - os: ubuntu-latest
             rust: stable
+            can-fail: false
+          - os: ubuntu-latest
+            rust: beta
+            can-fail: false
+          - os: ubuntu-latest
+            rust: nightly
+            can-fail: true
           - os: macos-latest
             rust: stable
+            can-fail: false
           - os: windows-latest
             rust: stable
+            can-fail: false
     runs-on: ${{matrix.os}}
     needs: [check]
     env:
       CARGO_INCREMENTAL: 0
+    continue-on-error: ${{ matrix.can-fail }}
     steps:
       - uses: actions/checkout@v2
       - run: |
