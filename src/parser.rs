@@ -13,7 +13,6 @@
 //! ```
 
 use nom::{
-    branch::alt,
     character::complete::{none_of, one_of},
     combinator::{all_consuming, map, opt, recognize},
     multi::{count, many0, many1},
