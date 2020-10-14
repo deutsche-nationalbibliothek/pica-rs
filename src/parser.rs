@@ -91,35 +91,27 @@ pub(self) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     )(i)
 }
 
-pub fn parse_subfields(i: &str) -> IResult<&str, Vec<Subfield>> {
-    preceded(nom::character::complete::char(' '), many0(parse_subfield))(i)
-}
-
 /// Parse a field.
 ///
-/// A field consists of an field tag, a list of subfields and ends with an
-/// record separator (\x1e). If the parser succeeds the remaining input and the
-/// parsed [`Field`] is returned as an tuple wrapped in an [`Ok`].
+/// A field consists of an field tag, a non-empty list of subfields and ends
+/// with an record separator (\x1e). If the parser succeeds the remaining input
+/// and the parsed [`Field`] is returned as an tuple wrapped in an [`Ok`].
 pub(self) fn parse_field(i: &str) -> IResult<&str, Field> {
     terminated(
-        alt((
-            map(
-                pair(pair(parse_tag, opt(parse_occurrence)), parse_subfields),
-                |((tag, occurrence), subfields)| Field {
-                    tag,
-                    occurrence,
-                    subfields,
-                },
-            ),
-            map(
+        map(
+            pair(
                 pair(parse_tag, opt(parse_occurrence)),
-                |(tag, occurrence)| Field {
-                    tag,
-                    occurrence,
-                    subfields: vec![],
-                },
+                preceded(
+                    nom::character::complete::char(' '),
+                    many0(parse_subfield),
+                ),
             ),
-        )),
+            |((tag, occurrence), subfields)| Field {
+                tag,
+                occurrence,
+                subfields,
+            },
+        ),
         nom::character::complete::char('\x1e'),
     )(i)
 }
