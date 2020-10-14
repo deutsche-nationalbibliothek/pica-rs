@@ -1,10 +1,21 @@
-name: gh-pages
+name: main
 
 on:
   push:
     branches: ['main']
 
 jobs:
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          rustup update stable && rustup default stable
+          cargo install --force cargo-audit
+          cargo generate-lockfile
+          cargo audit
+
   deploy:
     runs-on: ubuntu-latest
     steps:
