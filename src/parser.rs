@@ -20,22 +20,18 @@ use nom::{
     sequence::{pair, preceded, terminated, tuple},
     IResult,
 };
-use std::iter::FromIterator;
 
 /// Parse a Pica+ tag.
 ///
 /// A Pica+ tag starts with a digit less than three followed by two digits and
 /// an uppercase letter or an '@' character. If the parser succeeds, the
 /// remaining input and the tag is returned as an tuple wrapped in an [`Ok`].
-pub(self) fn parse_tag(i: &str) -> IResult<&str, String> {
-    map(
-        recognize(tuple((
-            one_of("012"),
-            count(one_of("0123456789"), 2),
-            one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-        ))),
-        |s: &str| String::from_iter(s.chars()),
-    )(i)
+pub(self) fn parse_tag(i: &str) -> IResult<&str, &str> {
+    recognize(tuple((
+        one_of("012"),
+        count(one_of("0123456789"), 2),
+        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
+    )))(i)
 }
 
 /// Parse field occurrence.
@@ -63,7 +59,7 @@ pub(self) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
         map(
             pair(
                 one_of("a0bd94eA7VSEBHtgDhcfpnmYrK5iuLv6xGjlFqJIoTyzOMP2sRNUX3kZQCw18W"),
-                map(many0(none_of("\x1f\x1e")), String::from_iter),
+                recognize(many0(none_of("\x1f\x1e"))),
             ),
             |(code, value)| { Subfield::new(code, value) },
         ),
@@ -112,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_parse_tag() {
-        assert_eq!(parse_tag("003@"), Ok(("", "003@".to_string())));
+        assert_eq!(parse_tag("003@"), Ok(("", "003@")));
         assert!(parse_tag("300A").is_err());
         assert!(parse_tag("0A0A").is_err());
         assert!(parse_tag("00AA").is_err());
