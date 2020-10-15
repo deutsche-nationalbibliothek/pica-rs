@@ -6,13 +6,21 @@ Tools to work with bibliographic records encoded in Pica+.
 [![DOCs master](https://img.shields.io/badge/doc-master-orange.svg)](https://niko2342.github.io/pica-rs/pica/index.html)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-## TODO
+### TODO
 
 - [x] Pica+ parser
-- [ ] `pica-dump` parse and pretty print Pica+ records
+- [ ] `pica-dump` parse and pretty print records
 - [ ] `pica-filter` parse and filter records
 - [ ] `pica-convert` convert Pica+ records to other formats (csv, json, ...)
 - [ ] `pica-lint` check Pica+ records against field specs
+
+
+### Related Projects
+
+- [PICA::Data](https://github.com/gbv/PICA-Data) -  Perl module to handle PICA+ data.
+- [PICA::Record](https://github.com/gbv/PICA-Record) -  Perl module to handle PICA+ records (deprecated).
+- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) - Catmandu modules for working with PICA+ data.
+- [luapica](http://jakobvoss.de/luapica/) - Handle PICA+ data in Lua.
 
 
 
