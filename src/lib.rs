@@ -1,6 +1,10 @@
 extern crate nom;
 
+mod field;
 pub mod parser;
-mod types;
+mod record;
+mod subfield;
 
-pub use types::{Field, Record, Subfield};
+pub use field::Field;
+pub use record::Record;
+pub use subfield::Subfield;
