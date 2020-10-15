@@ -2,21 +2,16 @@ use crate::Subfield;
 use std::borrow::Cow;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Field<'a, 'b, 'c> {
+pub struct Field<'a> {
     pub tag: Cow<'a, str>,
-    pub occurrence: Cow<'b, str>,
-    pub subfields: Vec<Subfield<'c>>,
+    pub occurrence: Cow<'a, str>,
+    pub subfields: Vec<Subfield<'a>>,
 }
 
-impl<'a, 'b, 'c> Field<'a, 'b, 'c> {
-    pub fn new<S, T>(
-        tag: S,
-        occurrence: T,
-        subfields: Vec<Subfield<'c>>,
-    ) -> Self
+impl<'a> Field<'a> {
+    pub fn new<S>(tag: S, occurrence: S, subfields: Vec<Subfield<'a>>) -> Self
     where
         S: Into<Cow<'a, str>>,
-        T: Into<Cow<'b, str>>,
     {
         Self {
             tag: tag.into(),
