@@ -6,6 +6,21 @@ pub struct Record {
     pub fields: Vec<Field>,
 }
 
+impl Record {
+    /// Create a new record.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::Record;
+    ///
+    /// let record = Record::new();
+    /// assert!(record.fields.is_empty());
+    /// ```
+    pub fn new() -> Self {
+        Record { fields: vec![] }
+    }
+}
+
 impl FromStr for Record {
     type Err = PicaParseError;
 

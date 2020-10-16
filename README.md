@@ -7,6 +7,20 @@ Tools to work with bibliographic records encoded in Pica+.
 [![Coverage Status](https://coveralls.io/repos/github/niko2342/pica-rs/badge.svg?branch=main)](https://coveralls.io/github/niko2342/pica-rs?branch=main)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
+## Usage
+
+### Parser
+
+```rust
+use pica::Record;
+
+fn main() {
+    let record = Record::from_str("003@ \u{1f}0123456789\u{1e}")
+        .expect("Invalid Pica+ record.");
+
+    println!("Record = {:?}", record);
+}
+
 ## TODO
 
 - [x] Pica+ parser
