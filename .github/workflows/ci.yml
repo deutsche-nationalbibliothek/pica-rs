@@ -55,6 +55,7 @@ jobs:
   grcov:
     name: coverage
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [check]
     steps:
       - uses: actions/checkout@v2
