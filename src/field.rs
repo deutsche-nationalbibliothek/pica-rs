@@ -23,7 +23,7 @@ impl Field {
 
         Self {
             tag: tag.into(),
-            occurrence: occurrence,
+            occurrence,
             subfields,
         }
     }
