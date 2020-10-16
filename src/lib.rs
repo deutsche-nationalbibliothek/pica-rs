@@ -1,5 +1,6 @@
 extern crate nom;
 
+pub mod error;
 mod field;
 pub mod parser;
 mod record;
