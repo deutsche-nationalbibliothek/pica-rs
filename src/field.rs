@@ -20,3 +20,21 @@ impl<'a> Field<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new() {
+        let field = Field::new("003@", "", vec![]);
+        assert_eq!(field.tag, "003@");
+        assert_eq!(field.occurrence, "");
+        assert!(field.subfields.is_empty());
+
+        let field = Field::new("003@".to_string(), "".to_string(), vec![]);
+        assert_eq!(field.tag, "003@");
+        assert_eq!(field.occurrence, "");
+        assert!(field.subfields.is_empty());
+    }
+}
