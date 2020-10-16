@@ -35,5 +35,7 @@ mod tests {
     fn test_from_str() {
         let record = Record::from_str("003@ \u{1f}0123456789\u{1e}").unwrap();
         assert_eq!(record.fields.len(), 1);
+
+        assert!(Record::from_str("003@ \u{1f}0123456789").is_err());
     }
 }
