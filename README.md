@@ -20,6 +20,7 @@ fn main() {
 
     println!("Record = {:?}", record);
 }
+```
 
 ## TODO
 
