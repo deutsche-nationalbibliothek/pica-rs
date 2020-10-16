@@ -1,5 +1,5 @@
 use crate::{error::PicaParseError, parser::parse_record, Field};
-use std::str::FromStr;
+use std::{default::Default, str::FromStr};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Record {
@@ -18,6 +18,21 @@ impl Record {
     /// ```
     pub fn new() -> Self {
         Record { fields: vec![] }
+    }
+}
+
+impl Default for Record {
+    /// Create an empty pica record.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::Record;
+    ///
+    /// let record = Record::default();
+    /// assert!(record.fields.is_empty());
+    /// ```
+    fn default() -> Self {
+        Self::new()
     }
 }
 
