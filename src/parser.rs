@@ -82,7 +82,7 @@ pub(self) fn parse_field(i: &str) -> IResult<&str, Field> {
                 ),
             ),
             |((tag, occurrence), subfields)| {
-                Field::new(tag, occurrence.unwrap_or(""), subfields)
+                Field::new(tag, occurrence, subfields)
             },
         ),
         nom::character::complete::char('\x1e'),
@@ -138,7 +138,7 @@ mod tests {
             parse_field("003@ \x1f0123456789\x1e"),
             Ok((
                 "",
-                Field::new("003@", "", vec![Subfield::new('0', "123456789")])
+                Field::new("003@", None, vec![Subfield::new('0', "123456789")])
             ))
         );
 
@@ -146,7 +146,11 @@ mod tests {
             parse_field("001B/01 \x1f0123456789\x1e"),
             Ok((
                 "",
-                Field::new("001B", "01", vec![Subfield::new('0', "123456789")]),
+                Field::new(
+                    "001B",
+                    Some("01"),
+                    vec![Subfield::new('0', "123456789")]
+                ),
             ))
         );
     }
@@ -160,7 +164,7 @@ mod tests {
                 Record {
                     fields: vec![Field::new(
                         "003@",
-                        "",
+                        None,
                         vec![Subfield::new('0', "123456789")]
                     )]
                 }

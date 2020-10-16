@@ -1,21 +1,29 @@
 use crate::Subfield;
-use std::borrow::Cow;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Field<'a> {
-    pub tag: Cow<'a, str>,
-    pub occurrence: Cow<'a, str>,
-    pub subfields: Vec<Subfield<'a>>,
+pub struct Field {
+    pub tag: String,
+    pub occurrence: Option<String>,
+    pub subfields: Vec<Subfield>,
 }
 
-impl<'a> Field<'a> {
-    pub fn new<S>(tag: S, occurrence: S, subfields: Vec<Subfield<'a>>) -> Self
+impl Field {
+    pub fn new<S>(
+        tag: S,
+        occurrence: Option<S>,
+        subfields: Vec<Subfield>,
+    ) -> Self
     where
-        S: Into<Cow<'a, str>>,
+        S: Into<String>,
     {
+        let occurrence = match occurrence {
+            Some(o) => Some(o.into()),
+            None => None,
+        };
+
         Self {
             tag: tag.into(),
-            occurrence: occurrence.into(),
+            occurrence: occurrence,
             subfields,
         }
     }
@@ -27,14 +35,15 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let field = Field::new("003@", "", vec![]);
+        let field = Field::new("003@", Some("00"), vec![]);
         assert_eq!(field.tag, "003@");
-        assert_eq!(field.occurrence, "");
+        assert_eq!(field.occurrence, Some("00".to_string()));
         assert!(field.subfields.is_empty());
 
-        let field = Field::new("003@".to_string(), "".to_string(), vec![]);
+        let field =
+            Field::new("003@".to_string(), Some("".to_string()), vec![]);
         assert_eq!(field.tag, "003@");
-        assert_eq!(field.occurrence, "");
+        assert_eq!(field.occurrence, Some("".to_string()));
         assert!(field.subfields.is_empty());
     }
 }
