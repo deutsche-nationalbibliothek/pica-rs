@@ -51,29 +51,9 @@ jobs:
           rustup update --no-self-update ${{ matrix.rust }}
           rustup default ${{ matrix.rust }}
           cargo test --all
-  fmt:
-    name: rustfmt
-    runs-on: ubuntu-latest
-    needs: [check, test]
-    steps:
-      - uses: actions/checkout@v2
-      - run: |
-          rustup update stable && rustup default stable
-          rustup component add rustfmt
-          cargo fmt --all -- --check
 
-  clippy:
-    name: clippy
-    runs-on: ubuntu-latest
-    needs: [check, test]
-    steps:
-      - uses: actions/checkout@v2
-      - run: |
-          rustup update stable && rustup default stable
-          rustup component add clippy
-          cargo clippy -- -D warnings
-
-  coverage:
+  grcov:
+    name: coverage
     runs-on: ubuntu-latest
     needs: [check]
     steps:
@@ -100,3 +80,25 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ${{ steps.coverage.outputs.report }}
+
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    needs: [check, test]
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          rustup update stable && rustup default stable
+          rustup component add rustfmt
+          cargo fmt --all -- --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    needs: [check, test]
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          rustup update stable && rustup default stable
+          rustup component add clippy
+          cargo clippy -- -D warnings
