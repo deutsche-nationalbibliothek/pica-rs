@@ -53,7 +53,7 @@ pub(self) fn parse_occurrence(i: &str) -> IResult<&str, &str> {
 /// unit separator or an record separator (\x1f). If the parse succeeds the
 /// remaining input and the parsed [`Subfield`] is returned as an tuple wrapped
 /// in an [`Ok`].
-pub(self) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
+pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     preceded(
         nom::character::complete::char('\x1f'),
         map(
