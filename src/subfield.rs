@@ -1,4 +1,5 @@
-use std::fmt;
+use crate::{error::PicaParseError, parser::parse_subfield};
+use std::{fmt, str::FromStr};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Subfield {
@@ -68,6 +69,27 @@ impl fmt::Display for Subfield {
     }
 }
 
+impl FromStr for Subfield {
+    type Err = PicaParseError;
+
+    /// Parse a Pica+ subfield.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::Subfield;
+    ///
+    /// let subfield = "\u{1f}a123".parse::<Subfield>().unwrap();
+    /// assert_eq!(subfield.code(), 'a');
+    /// assert_eq!(subfield.value(), "123");
+    /// ```
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_subfield(s) {
+            Ok((_, subfield)) => Ok(subfield),
+            _ => Err(PicaParseError {}),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -84,5 +106,14 @@ mod tests {
         let subfield = Subfield::new('a', "foo");
         assert_eq!(format!("{}", subfield), "$a foo");
         assert_eq!(subfield.to_string(), "$a foo");
+    }
+
+    #[test]
+    fn test_from_str() {
+        let subfield = "\u{1f}a123".parse::<Subfield>().unwrap();
+        assert_eq!(subfield.code, 'a');
+        assert_eq!(subfield.value, "123");
+
+        assert!("\u{1f}".parse::<Subfield>().is_err());
     }
 }
