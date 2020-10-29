@@ -1,5 +1,5 @@
 use crate::{error::PicaParseError, parser::parse_record, Field};
-use std::{default::Default, str::FromStr};
+use std::{default::Default, fmt, str::FromStr};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Record {
@@ -57,9 +57,24 @@ impl FromStr for Record {
     }
 }
 
+impl fmt::Display for Record {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            self.fields
+                .iter()
+                .map(|s| format!("{}", s))
+                .collect::<Vec<_>>()
+                .join("\n")
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Subfield;
 
     #[test]
     fn test_from_str() {
@@ -67,5 +82,25 @@ mod tests {
         assert_eq!(record.fields.len(), 1);
 
         assert!(Record::from_str("003@ \u{1f}0123456789").is_err());
+    }
+
+    #[test]
+    fn test_fmt() {
+        let record = Record::new();
+        assert_eq!(record.to_string(), "");
+
+        let mut record = Record::new();
+        record.fields.push(Field::new(
+            "012A",
+            None,
+            vec![Subfield::new('a', "123"), Subfield::new('b', "456")],
+        ));
+        record.fields.push(Field::new(
+            "012@",
+            Some("00"),
+            vec![Subfield::new('c', "567")],
+        ));
+
+        assert_eq!(record.to_string(), "012A $a 123 $b 456\n012@/00 $c 567");
     }
 }
