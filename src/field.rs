@@ -56,7 +56,7 @@ impl fmt::Display for Field {
             write!(f, "/{}", occurrence)?;
         }
 
-        if self.subfields.len() > 0 {
+        if !self.subfields.is_empty() {
             write!(
                 f,
                 " {}",
