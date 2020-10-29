@@ -1,4 +1,5 @@
 use crate::Subfield;
+use std::fmt;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Field {
@@ -26,6 +27,48 @@ impl Field {
             occurrence,
             subfields,
         }
+    }
+}
+
+impl fmt::Display for Field {
+    /// Format a field.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Field, Subfield};
+    ///
+    /// let field = Field::new(
+    ///     "012A",
+    ///     None,
+    ///     vec![
+    ///         Subfield::new('a', "123"),
+    ///         Subfield::new('b', "456"),
+    ///         Subfield::new('c', "789"),
+    ///     ],
+    /// );
+    ///
+    /// assert_eq!(field.to_string(), "012A $a 123 $b 456 $c 789");
+    /// ```
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.tag)?;
+
+        if let Some(ref occurrence) = self.occurrence {
+            write!(f, "/{}", occurrence)?;
+        }
+
+        if self.subfields.len() > 0 {
+            write!(
+                f,
+                " {}",
+                self.subfields
+                    .iter()
+                    .map(|s| format!("{}", s))
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            )?;
+        }
+
+        Ok(())
     }
 }
 
