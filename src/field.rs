@@ -89,4 +89,24 @@ mod tests {
         assert_eq!(field.occurrence, Some("".to_string()));
         assert!(field.subfields.is_empty());
     }
+
+    #[test]
+    fn test_fmt() {
+        let field = Field::new("012A", None, vec![]);
+        assert_eq!(format!("{}", field), "012A");
+
+        let field = Field::new("012A", Some("01"), vec![]);
+        assert_eq!(format!("{}", field), "012A/01");
+
+        let field =
+            Field::new("012A", Some("00"), vec![Subfield::new('a', "123")]);
+        assert_eq!(format!("{}", field), "012A/00 $a 123");
+
+        let field = Field::new(
+            "012A",
+            None,
+            vec![Subfield::new('a', "123"), Subfield::new('b', "456")],
+        );
+        assert_eq!(format!("{}", field), "012A $a 123 $b 456");
+    }
 }
