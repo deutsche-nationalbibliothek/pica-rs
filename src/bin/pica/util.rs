@@ -1,4 +1,3 @@
-use clap;
 use std::{convert::From, fmt, io};
 
 pub type App = clap::App<'static, 'static>;
