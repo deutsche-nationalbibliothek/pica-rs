@@ -7,3 +7,12 @@ license = "AGPL-3.0-only"
 
 [dependencies]
 nom = "5.1.2"
+clap = "2.33.3"
+
+[lib]
+path = "src/lib.rs"
+name = "pica"
+
+[[bin]]
+path = "src/bin/pica/main.rs"
+name = "pica"

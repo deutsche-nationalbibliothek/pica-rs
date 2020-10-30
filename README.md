@@ -7,7 +7,9 @@ Tools to work with bibliographic records encoded in Pica+.
 [![Coverage Status](https://coveralls.io/repos/github/niko2342/pica-rs/badge.svg?branch=main)](https://coveralls.io/github/niko2342/pica-rs?branch=main)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-## Usage
+## Commands
+
+* [print](https://github.com/niko2342/pica-rs/wiki/Commands#pica-print) — print records in human readable format
 
 ### Parser
 
@@ -25,7 +27,7 @@ fn main() {
 ## TODO
 
 - [x] Pica+ parser
-- [ ] `pica-dump` parse and pretty print records
+- [x] `pica print` print records in human readable format
 - [ ] `pica-filter` parse and filter records
 - [ ] `pica-convert` convert Pica+ records to other formats (csv, json, ...)
 - [ ] `pica-lint` check Pica+ records against field specs
