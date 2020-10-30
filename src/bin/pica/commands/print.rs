@@ -43,8 +43,8 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::from_str(&line) {
-            writer.write(record.to_string().as_bytes())?;
-            writer.write(b"\n").unwrap();
+            writer.write_all(record.to_string().as_bytes())?;
+            writer.write_all(b"\n").unwrap();
         } else if !args.is_present("skip-invalid") {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
@@ -53,5 +53,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     }
 
+    writer.flush()?;
     Ok(())
 }
