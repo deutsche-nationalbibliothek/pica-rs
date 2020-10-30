@@ -7,24 +7,9 @@ Tools to work with bibliographic records encoded in Pica+.
 [![Coverage Status](https://coveralls.io/repos/github/niko2342/pica-rs/badge.svg?branch=main)](https://coveralls.io/github/niko2342/pica-rs?branch=main)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-## Usage
-
-```bash
-USAGE:
-    pica <SUBCOMMAND>
-
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-SUBCOMMANDS:
-    help     Prints this message or the help of the given subcommand(s)
-    print    Print records in human readable format.
-```
-
 ## Commands
 
-* [print](https://github.com/niko2342/pica-rs/wiki/Commands#pica-print)
+* [print](https://github.com/niko2342/pica-rs/wiki/Commands#pica-print) — print records in human readable format
 
 ### Parser
 
