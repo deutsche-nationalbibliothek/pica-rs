@@ -22,32 +22,9 @@ SUBCOMMANDS:
     print    Print records in human readable format.
 ```
 
-### pica print
+## Commands
 
-```bash
-$ pica print --help
-
-Print records in human readable format.
-
-USAGE:
-    pica print [FLAGS] [OPTIONS] [FILENAME]
-
-FLAGS:
-    -h, --help            Prints help information
-    -s, --skip-invalid    skip invalid records
-    -V, --version         Prints version information
-
-OPTIONS:
-    -o, --output <file>    Write output to <file> instead of stdout.
-
-ARGS:
-    <FILENAME>
-
-$ echo -e "002@ \x1f0Tp1\x1e003@ \x1f012345679\x1e" | pica print
-002@ $0 Tp1
-003@ $0 123456789
-
-```
+* [print](https://github.com/niko2342/pica-rs/wiki/Commands#pica-print)
 
 ### Parser
 
