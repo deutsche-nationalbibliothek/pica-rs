@@ -46,6 +46,15 @@ pub(self) fn parse_occurrence(i: &str) -> IResult<&str, &str> {
     )(i)
 }
 
+/// Parse a subfield code.
+///
+/// A subfield code is a single character (uppercase, lowercase, digits). The
+/// list of codes is sorted by frequency. If the parser succeeds the remaining
+/// input and the parsed subfield code is returned.
+pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+    one_of("a0bd94eA7VSEBHtgDhcfpnmYrK5iuLv6xGjlFqJIoTyzOMP2sRNUX3kZQCw18W")(i)
+}
+
 /// Parse a subfield.
 ///
 /// A subfield starts with the unit separator (\x1f) followed by the subfield
@@ -57,11 +66,8 @@ pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     preceded(
         nom::character::complete::char('\x1f'),
         map(
-            pair(
-                one_of("a0bd94eA7VSEBHtgDhcfpnmYrK5iuLv6xGjlFqJIoTyzOMP2sRNUX3kZQCw18W"),
-                recognize(many0(none_of("\x1f\x1e"))),
-            ),
-            |(code, value)| { Subfield::new(code, value) },
+            pair(parse_subfield_code, recognize(many0(none_of("\x1f\x1e")))),
+            |(code, value)| Subfield::new(code, value),
         ),
     )(i)
 }
