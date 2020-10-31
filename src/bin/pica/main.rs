@@ -15,11 +15,15 @@ fn main() {
         .version(crate_version!())
         .author(crate_authors!())
         .subcommand(commands::print::cli())
+        .subcommand(commands::filter::cli())
         .get_matches();
 
     let result = match m.subcommand_name() {
         Some("print") => {
             commands::print::run(m.subcommand_matches("print").unwrap())
+        }
+        Some("filter") => {
+            commands::filter::run(m.subcommand_matches("filter").unwrap())
         }
         _ => unreachable!(),
     };
