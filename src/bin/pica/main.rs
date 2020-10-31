@@ -14,8 +14,7 @@ fn main() {
         .setting(AppSettings::SubcommandRequired)
         .version(crate_version!())
         .author(crate_authors!())
-        .subcommand(commands::print::cli())
-        .subcommand(commands::filter::cli())
+        .subcommands(commands::subcmds())
         .get_matches();
 
     let result = match m.subcommand_name() {
