@@ -12,12 +12,12 @@
 //! Value      ::= [^#x1f#x1e]+
 //! ```
 
-use crate::{Field, Record, Subfield};
+use crate::{Field, Path, Record, Subfield};
 use nom::{
-    character::complete::{none_of, one_of},
+    character::complete::{none_of, one_of, space0 as space},
     combinator::{all_consuming, map, opt, recognize},
     multi::{count, many0, many1},
-    sequence::{pair, preceded, terminated, tuple},
+    sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
@@ -108,9 +108,46 @@ pub fn parse_record(i: &str) -> IResult<&str, Record> {
     all_consuming(map(many1(parse_field), |fields| Record { fields }))(i)
 }
 
+/// Parse a path
+///
+/// # Example
+/// ```
+/// use pica::parser::parse_path;
+/// let (_, path) = parse_path(" 003@.0   ").unwrap();
+/// assert_eq!(path.tag(), "003@");
+/// assert_eq!(path.code(), '0');
+/// assert!(path.occurrence().is_none());
+/// ```
+pub fn parse_path(i: &str) -> IResult<&str, Path> {
+    all_consuming(map(
+        delimited(
+            space,
+            separated_pair(
+                pair(parse_tag, opt(parse_occurrence)),
+                nom::character::complete::char('.'),
+                parse_subfield_code,
+            ),
+            space,
+        ),
+        |((tag, occurrence), code)| Path::new(tag, occurrence, code),
+    ))(i)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parse_path() {
+        assert_eq!(
+            parse_path("   003@.0 "),
+            Ok(("", Path::new("003@", None, '0')))
+        );
+        assert_eq!(
+            parse_path("   003@/00.0 "),
+            Ok(("", Path::new("003@", Some("00"), '0')))
+        );
+    }
 
     #[test]
     fn test_parse_tag() {
