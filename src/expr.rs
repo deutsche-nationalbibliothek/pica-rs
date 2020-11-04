@@ -20,6 +20,7 @@ pub enum LogicalOp {
 pub enum Expr {
     Predicate(Path, ComparisonOp, String),
     Connective(Box<Expr>, LogicalOp, Box<Expr>),
+    Parens(Box<Expr>),
 }
 
 impl FromStr for Expr {

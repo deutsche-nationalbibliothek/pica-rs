@@ -89,6 +89,7 @@ impl Record {
                 LogicalOp::And => self.matches(lhs) && self.matches(rhs),
                 LogicalOp::Or => self.matches(lhs) || self.matches(rhs),
             },
+            Expr::Parens(expr) => self.matches(expr),
         }
     }
 }

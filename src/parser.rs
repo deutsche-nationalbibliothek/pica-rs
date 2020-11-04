@@ -2,7 +2,7 @@ use crate::{ComparisonOp, Expr, Field, LogicalOp, Path, Record, Subfield};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, none_of, one_of, space0};
-use nom::combinator::{all_consuming, map, opt, recognize, verify};
+use nom::combinator::{all_consuming, cut, map, opt, recognize, verify};
 use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{
     delimited, pair, preceded, separated_pair, terminated, tuple,
@@ -105,7 +105,9 @@ pub(crate) fn parse_logical_op(i: &str) -> IResult<&str, LogicalOp> {
 pub(crate) fn parse_literal(i: &str) -> IResult<&str, &str> {
     delimited(
         space0,
-        verify(recognize(many1(none_of("\"\\ "))), |s: &str| !s.is_empty()),
+        verify(recognize(many1(none_of("\"\\ ()"))), |s: &str| {
+            !s.is_empty()
+        }),
         space0,
     )(i)
 }
@@ -120,14 +122,38 @@ pub fn parse_predicate(i: &str) -> IResult<&str, Expr> {
 }
 
 pub fn parse_connective(i: &str) -> IResult<&str, Expr> {
+    delimited(
+        space0,
+        map(
+            pair(
+                pair(alt((parse_predicate, parse_parens)), parse_logical_op),
+                alt((parse_predicate, parse_parens)),
+            ),
+            |((lhs, op), rhs)| {
+                Expr::Connective(Box::new(lhs), op, Box::new(rhs))
+            },
+        ),
+        space0,
+    )(i)
+}
+
+pub fn parse_parens(i: &str) -> IResult<&str, Expr> {
     map(
-        pair(pair(parse_predicate, parse_logical_op), parse_predicate),
-        |((lhs, op), rhs)| Expr::Connective(Box::new(lhs), op, Box::new(rhs)),
+        delimited(
+            preceded(space0, char('(')),
+            preceded(space0, parse_expr),
+            preceded(space0, char(')')),
+        ),
+        |expr| Expr::Parens(Box::new(expr)),
     )(i)
 }
 
 pub fn parse_expr(i: &str) -> IResult<&str, Expr> {
-    alt((parse_connective, parse_predicate))(i)
+    delimited(
+        space0,
+        alt((parse_connective, parse_parens, parse_predicate)),
+        space0,
+    )(i)
 }
 
 #[cfg(test)]
@@ -190,8 +216,69 @@ mod tests {
         ));
 
         assert_eq!(
-            parse_connective("003@.0 == 123 || 002@.0 != Tp1"),
+            parse_expr("003@.0 == 123 || 002@.0 != Tp1"),
             Ok(("", Expr::Connective(lhs, LogicalOp::Or, rhs)))
+        );
+    }
+
+    #[test]
+    fn test_parse_parens() {
+        let p1 = Box::new(Expr::Predicate(
+            Path::new("003@", "", '0'),
+            ComparisonOp::Eq,
+            "123".to_string(),
+        ));
+        let p2 = Box::new(Expr::Predicate(
+            Path::new("002@", "", '0'),
+            ComparisonOp::Eq,
+            "Tp3".to_string(),
+        ));
+
+        assert_eq!(
+            parse_parens("(003@.0 == 123 && 002@.0 == Tp3)"),
+            Ok((
+                "",
+                Expr::Parens(Box::new(Expr::Connective(
+                    p1,
+                    LogicalOp::And,
+                    p2
+                )))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_parse_expr() {
+        let p1 = Box::new(Expr::Predicate(
+            Path::new("003@", "", '0'),
+            ComparisonOp::Eq,
+            "123".to_string(),
+        ));
+        let p2 = Box::new(Expr::Predicate(
+            Path::new("002@", "", '0'),
+            ComparisonOp::Eq,
+            "Tp3".to_string(),
+        ));
+        let p3 = Box::new(Expr::Predicate(
+            Path::new("002@", "", '0'),
+            ComparisonOp::Eq,
+            "Tf1".to_string(),
+        ));
+
+        assert_eq!(
+            parse_expr("(003@.0 == 123 && 002@.0 == Tp3) || 002@.0 == Tf1"),
+            Ok((
+                "",
+                Expr::Connective(
+                    Box::new(Expr::Parens(Box::new(Expr::Connective(
+                        p1,
+                        LogicalOp::And,
+                        p2
+                    )))),
+                    LogicalOp::Or,
+                    p3
+                )
+            ))
         );
     }
 

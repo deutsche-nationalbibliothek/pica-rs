@@ -40,7 +40,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         let line = line.unwrap();
         if let Ok(record) = Record::from_str(&line) {
             writer.write_all(record.pretty().as_bytes())?;
-            writer.write_all(b"\n")?;
+            writer.write_all(b"\n\n")?;
         } else if !args.is_present("skip-invalid") {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
