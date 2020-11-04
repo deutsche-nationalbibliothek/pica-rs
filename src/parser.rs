@@ -56,7 +56,7 @@ pub fn parse_field(i: &str) -> IResult<&str, Field> {
 }
 
 pub fn parse_record(i: &str) -> IResult<&str, Record> {
-    all_consuming(map(many1(parse_field), |fields| Record::new(fields)))(i)
+    all_consuming(map(many1(parse_field), Record::new))(i)
 }
 
 #[cfg(test)]
