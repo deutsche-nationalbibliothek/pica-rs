@@ -4,13 +4,36 @@ use crate::error::ParsePicaError;
 use crate::parser::parse_subfield;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Subfield {
     pub(crate) code: char,
     pub(crate) value: String,
 }
 
 impl Subfield {
+    /// Creates a new subfield.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::Subfield;
+    ///
+    /// let subfield = Subfield::new('0', "1234").unwrap();
+    /// assert_eq!(subfield.code(), '0');
+    /// assert_eq!(subfield.value(), "1234");
+    /// ```
+    pub fn new<S>(code: char, value: S) -> Result<Self, ParsePicaError>
+    where
+        S: Into<String>,
+    {
+        match code {
+            'a'..='z' | 'A'..='Z' | '0'..='9' => Ok(Subfield {
+                code,
+                value: value.into(),
+            }),
+            _ => Err(ParsePicaError::InvalidSubfield),
+        }
+    }
+
     /// Creates a new subfield without checking that the code is valid.
     ///
     /// # Example
@@ -21,7 +44,10 @@ impl Subfield {
     /// assert_eq!(subfield.code(), 'a');
     /// assert_eq!(subfield.value(), "123456789");
     /// ```
-    pub fn from_unchecked<S: Into<String>>(code: char, value: S) -> Self {
+    pub fn from_unchecked<S>(code: char, value: S) -> Self
+    where
+        S: Into<String>,
+    {
         Self {
             code,
             value: value.into(),
@@ -50,15 +76,28 @@ impl Subfield {
     /// let subfield = "\u{1f}a123".parse::<Subfield>().unwrap();
     /// assert_eq!(subfield.value(), "123");
     /// ```
-    pub fn value(&self) -> &String {
+    pub fn value(&self) -> &str {
         &self.value
+    }
+
+    /// Returns the subfield as an pretty formatted string.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::Subfield;
+    ///
+    /// let subfield = "\u{1f}a123".parse::<Subfield>().unwrap();
+    /// assert_eq!(subfield.pretty(), "$a 123");
+    /// ```
+    pub fn pretty(&self) -> String {
+        format!("${} {}", self.code, self.value)
     }
 }
 
 impl FromStr for Subfield {
     type Err = ParsePicaError;
 
-    /// Parse a pica+ encoded string.
+    /// Parse a pica+ encoded subfield.
     ///
     /// A Pica+ subfield constist of a alpha-numerical subfield code and a
     /// value (string literal). The subfield is preceded by a unit separator
@@ -89,5 +128,30 @@ impl FromStr for Subfield {
             Ok((_, subfield)) => Ok(subfield),
             _ => Err(ParsePicaError::InvalidSubfield),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_subfield_new() {
+        let subfield = Subfield::new('a', "123456789").unwrap();
+        assert_eq!(subfield.code(), 'a');
+        assert_eq!(subfield.value(), "123456789");
+    }
+
+    #[test]
+    fn test_subfield_unchecked() {
+        let subfield = Subfield::from_unchecked('!', String::new());
+        assert_eq!(subfield.code(), '!');
+    }
+
+    #[test]
+    fn test_subfield_from_str() {
+        let subfield = "\u{1f}a123456789".parse::<Subfield>().unwrap();
+        assert_eq!(subfield.code(), 'a');
+        assert_eq!(subfield.value(), "123456789");
     }
 }
