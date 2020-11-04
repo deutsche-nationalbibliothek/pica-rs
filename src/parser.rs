@@ -2,7 +2,7 @@ use crate::{ComparisonOp, Expr, Field, LogicalOp, Path, Record, Subfield};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, none_of, one_of, space0};
-use nom::combinator::{all_consuming, cut, map, opt, recognize, verify};
+use nom::combinator::{all_consuming, map, opt, recognize, verify};
 use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{
     delimited, pair, preceded, separated_pair, terminated, tuple,
