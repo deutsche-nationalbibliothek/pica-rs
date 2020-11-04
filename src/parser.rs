@@ -1,6 +1,6 @@
 use crate::{Field, Path, Record, Subfield};
 use nom::branch::alt;
-use nom::character::complete::{char, none_of, one_of, space0 as space};
+use nom::character::complete::{char, none_of, one_of, space0};
 use nom::combinator::{all_consuming, map, opt, recognize};
 use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{
@@ -64,15 +64,17 @@ pub fn parse_record(i: &str) -> IResult<&str, Record> {
 pub fn parse_path(i: &str) -> IResult<&str, Path> {
     all_consuming(map(
         delimited(
-            space,
+            space0,
             separated_pair(
                 pair(parse_field_tag, opt(parse_field_occurrence)),
                 nom::character::complete::char('.'),
                 parse_subfield_code,
             ),
-            space,
+            space0,
         ),
-        |((tag, occurrence), code)| Path::new(tag, occurrence, code),
+        |((tag, occurrence), code)| {
+            Path::new(tag, occurrence.unwrap_or_default(), code)
+        },
     ))(i)
 }
 
@@ -84,11 +86,11 @@ mod tests {
     fn test_parse_path() {
         assert_eq!(
             parse_path("   003@.0 "),
-            Ok(("", Path::new("003@", None, '0')))
+            Ok(("", Path::new("003@", "", '0')))
         );
         assert_eq!(
             parse_path("   003@/00.0 "),
-            Ok(("", Path::new("003@", Some("00"), '0')))
+            Ok(("", Path::new("003@", "00", '0')))
         );
     }
 

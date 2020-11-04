@@ -1,6 +1,6 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_record;
-use crate::Field;
+use crate::{Field, Path};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
@@ -52,6 +52,24 @@ impl Record {
                 .collect::<Vec<_>>()
                 .join("\n"),
         )
+    }
+
+    pub fn path(&self, path: Path) -> Vec<&str> {
+        let mut result: Vec<&str> = Vec::new();
+
+        for field in &self.0 {
+            if field.tag() == path.tag()
+                && field.occurrence() == path.occurrence()
+            {
+                for subfield in &field.subfields {
+                    if subfield.code() == path.code() {
+                        result.push(subfield.value());
+                    }
+                }
+            }
+        }
+
+        result
     }
 }
 

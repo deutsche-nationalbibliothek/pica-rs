@@ -1,5 +1,6 @@
 use crate::util::{App, CliArgs, CliResult};
 use clap::{Arg, SubCommand};
+use pica::{Path, Record};
 
 pub fn cli() -> App {
     SubCommand::with_name("filter")
@@ -26,5 +27,16 @@ pub fn cli() -> App {
 }
 
 pub fn run(_args: &CliArgs) -> CliResult<()> {
+    let record: Record = "012A \u{1f}a123\u{1f}a456\u{1e}012A \u{1f}c789\u{1e}"
+        .parse::<Record>()
+        .unwrap();
+
+    let query = _args.value_of("query").unwrap().parse::<Path>().unwrap();
+
+    // println!("RECORD = {:?}", record);
+    // println!("QUERY = {:?}", query);
+
+    let result = record.path(query);
+    println!("RESULT = {:?}", result);
     Ok(())
 }
