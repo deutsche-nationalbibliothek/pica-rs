@@ -1,6 +1,6 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_record;
-use crate::{Expr, Field, Op, Path};
+use crate::{ComparisonOp, Expr, Field, LogicalOp, Path};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
@@ -77,10 +77,18 @@ impl Record {
             Expr::Predicate(path, op, rvalue) => {
                 let lvalues = self.path(path);
                 match op {
-                    Op::Eq => lvalues.into_iter().any(|x| x == rvalue),
-                    Op::Ne => lvalues.into_iter().any(|x| x != rvalue),
+                    ComparisonOp::Eq => {
+                        lvalues.into_iter().any(|x| x == rvalue)
+                    }
+                    ComparisonOp::Ne => {
+                        lvalues.into_iter().any(|x| x != rvalue)
+                    }
                 }
             }
+            Expr::Connective(lhs, op, rhs) => match op {
+                LogicalOp::And => self.matches(lhs) && self.matches(rhs),
+                LogicalOp::Or => self.matches(lhs) || self.matches(rhs),
+            },
         }
     }
 }

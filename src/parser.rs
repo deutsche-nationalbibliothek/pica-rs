@@ -1,4 +1,4 @@
-use crate::{Expr, Field, Op, Path, Record, Subfield};
+use crate::{ComparisonOp, Expr, Field, LogicalOp, Path, Record, Subfield};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, none_of, one_of, space0};
@@ -8,6 +8,7 @@ use nom::sequence::{
     delimited, pair, preceded, separated_pair, terminated, tuple,
 };
 use nom::IResult;
+use std::boxed::Box;
 
 pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
     alt((
@@ -79,10 +80,24 @@ pub fn parse_path(i: &str) -> IResult<&str, Path> {
     )(i)
 }
 
-pub(crate) fn parse_op(i: &str) -> IResult<&str, Op> {
+pub(crate) fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
     delimited(
         space0,
-        alt((map(tag("=="), |_| Op::Eq), map(tag("!="), |_| Op::Ne))),
+        alt((
+            map(tag("=="), |_| ComparisonOp::Eq),
+            map(tag("!="), |_| ComparisonOp::Ne),
+        )),
+        space0,
+    )(i)
+}
+
+pub(crate) fn parse_logical_op(i: &str) -> IResult<&str, LogicalOp> {
+    delimited(
+        space0,
+        alt((
+            map(tag("&&"), |_| LogicalOp::And),
+            map(tag("||"), |_| LogicalOp::Or),
+        )),
         space0,
     )(i)
 }
@@ -95,13 +110,24 @@ pub(crate) fn parse_literal(i: &str) -> IResult<&str, &str> {
     )(i)
 }
 
-pub fn parse_expr(i: &str) -> IResult<&str, Expr> {
+pub fn parse_predicate(i: &str) -> IResult<&str, Expr> {
     map(
-        pair(pair(parse_path, parse_op), parse_literal),
+        pair(pair(parse_path, parse_comparison_op), parse_literal),
         |((path, op), literal)| {
             Expr::Predicate(path, op, String::from(literal))
         },
     )(i)
+}
+
+pub fn parse_connective(i: &str) -> IResult<&str, Expr> {
+    map(
+        pair(pair(parse_predicate, parse_logical_op), parse_predicate),
+        |((lhs, op), rhs)| Expr::Connective(Box::new(lhs), op, Box::new(rhs)),
+    )(i)
+}
+
+pub fn parse_expr(i: &str) -> IResult<&str, Expr> {
+    alt((parse_connective, parse_predicate))(i)
 }
 
 #[cfg(test)]
@@ -109,9 +135,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_op() {
-        assert_eq!(parse_op("  == "), Ok(("", Op::Eq)));
-        assert_eq!(parse_op("  != "), Ok(("", Op::Ne)));
+    fn test_parse_comparison_op() {
+        assert_eq!(parse_comparison_op("  == "), Ok(("", ComparisonOp::Eq)));
+        assert_eq!(parse_comparison_op("  != "), Ok(("", ComparisonOp::Ne)));
+    }
+    #[test]
+    fn test_parse_logical_op() {
+        assert_eq!(parse_logical_op("  && "), Ok(("", LogicalOp::And)));
+        assert_eq!(parse_logical_op("  || "), Ok(("", LogicalOp::Or)));
     }
 
     #[test]
@@ -120,14 +151,14 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_expr() {
+    fn test_parse_predicate() {
         assert_eq!(
             parse_expr("003@.0 == 123"),
             Ok((
                 "",
                 Expr::Predicate(
                     Path::new("003@", "", '0'),
-                    Op::Eq,
+                    ComparisonOp::Eq,
                     "123".to_string()
                 )
             ))
@@ -138,10 +169,29 @@ mod tests {
                 "",
                 Expr::Predicate(
                     Path::new("012A", "00", '0'),
-                    Op::Ne,
+                    ComparisonOp::Ne,
                     "123".to_string()
                 )
             ))
+        );
+    }
+
+    #[test]
+    fn test_parse_connective() {
+        let lhs = Box::new(Expr::Predicate(
+            Path::new("003@", "", '0'),
+            ComparisonOp::Eq,
+            "123".to_string(),
+        ));
+        let rhs = Box::new(Expr::Predicate(
+            Path::new("002@", "", '0'),
+            ComparisonOp::Ne,
+            "Tp1".to_string(),
+        ));
+
+        assert_eq!(
+            parse_connective("003@.0 == 123 || 002@.0 != Tp1"),
+            Ok(("", Expr::Connective(lhs, LogicalOp::Or, rhs)))
         );
     }
 

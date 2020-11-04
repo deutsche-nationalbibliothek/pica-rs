@@ -8,7 +8,7 @@ mod path;
 mod record;
 mod subfield;
 
-pub use expr::{Expr, Op};
+pub use expr::{ComparisonOp, Expr, LogicalOp};
 pub use field::Field;
 pub use path::Path;
 pub use record::Record;

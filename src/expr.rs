@@ -1,17 +1,25 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_expr;
 use crate::Path;
+use std::boxed::Box;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
-pub enum Op {
+pub enum ComparisonOp {
     Eq,
     Ne,
 }
 
 #[derive(Debug, PartialEq)]
+pub enum LogicalOp {
+    And,
+    Or,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Expr {
-    Predicate(Path, Op, String),
+    Predicate(Path, ComparisonOp, String),
+    Connective(Box<Expr>, LogicalOp, Box<Expr>),
 }
 
 impl FromStr for Expr {
