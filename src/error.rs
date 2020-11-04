@@ -4,4 +4,5 @@ pub enum ParsePicaError {
     InvalidField,
     InvalidRecord,
     InvalidPath,
+    InvalidExpr,
 }

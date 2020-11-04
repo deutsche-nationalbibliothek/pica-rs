@@ -1,7 +1,8 @@
-use crate::{Field, Path, Record, Subfield};
+use crate::{Expr, Field, Op, Path, Record, Subfield};
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::{char, none_of, one_of, space0};
-use nom::combinator::{all_consuming, map, opt, recognize};
+use nom::combinator::{all_consuming, map, opt, recognize, verify};
 use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{
     delimited, pair, preceded, separated_pair, terminated, tuple,
@@ -62,7 +63,7 @@ pub fn parse_record(i: &str) -> IResult<&str, Record> {
 }
 
 pub fn parse_path(i: &str) -> IResult<&str, Path> {
-    all_consuming(map(
+    map(
         delimited(
             space0,
             separated_pair(
@@ -75,12 +76,74 @@ pub fn parse_path(i: &str) -> IResult<&str, Path> {
         |((tag, occurrence), code)| {
             Path::new(tag, occurrence.unwrap_or_default(), code)
         },
-    ))(i)
+    )(i)
+}
+
+pub(crate) fn parse_op(i: &str) -> IResult<&str, Op> {
+    delimited(
+        space0,
+        alt((map(tag("=="), |_| Op::Eq), map(tag("!="), |_| Op::Ne))),
+        space0,
+    )(i)
+}
+
+pub(crate) fn parse_literal(i: &str) -> IResult<&str, &str> {
+    delimited(
+        space0,
+        verify(recognize(many1(none_of("\"\\ "))), |s: &str| !s.is_empty()),
+        space0,
+    )(i)
+}
+
+pub fn parse_expr(i: &str) -> IResult<&str, Expr> {
+    map(
+        pair(pair(parse_path, parse_op), parse_literal),
+        |((path, op), literal)| {
+            Expr::Predicate(path, op, String::from(literal))
+        },
+    )(i)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parse_op() {
+        assert_eq!(parse_op("  == "), Ok(("", Op::Eq)));
+        assert_eq!(parse_op("  != "), Ok(("", Op::Ne)));
+    }
+
+    #[test]
+    fn test_parse_literal() {
+        assert_eq!(parse_literal(" 0123456789X "), Ok(("", "0123456789X")));
+    }
+
+    #[test]
+    fn test_parse_expr() {
+        assert_eq!(
+            parse_expr("003@.0 == 123"),
+            Ok((
+                "",
+                Expr::Predicate(
+                    Path::new("003@", "", '0'),
+                    Op::Eq,
+                    "123".to_string()
+                )
+            ))
+        );
+        assert_eq!(
+            parse_expr("012A/00.0 != 123"),
+            Ok((
+                "",
+                Expr::Predicate(
+                    Path::new("012A", "00", '0'),
+                    Op::Ne,
+                    "123".to_string()
+                )
+            ))
+        );
+    }
 
     #[test]
     fn test_parse_path() {

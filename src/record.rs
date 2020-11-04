@@ -1,6 +1,6 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_record;
-use crate::{Field, Path};
+use crate::{Expr, Field, Op, Path};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
@@ -54,7 +54,7 @@ impl Record {
         )
     }
 
-    pub fn path(&self, path: Path) -> Vec<&str> {
+    pub fn path(&self, path: &Path) -> Vec<&str> {
         let mut result: Vec<&str> = Vec::new();
 
         for field in &self.0 {
@@ -70,6 +70,18 @@ impl Record {
         }
 
         result
+    }
+
+    pub fn matches(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Predicate(path, op, rvalue) => {
+                let lvalues = self.path(path);
+                match op {
+                    Op::Eq => lvalues.into_iter().any(|x| x == rvalue),
+                    Op::Ne => lvalues.into_iter().any(|x| x != rvalue),
+                }
+            }
+        }
     }
 }
 

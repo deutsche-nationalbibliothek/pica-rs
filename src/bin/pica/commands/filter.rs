@@ -1,6 +1,10 @@
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
-use pica::{Path, Record};
+use pica::{Expr, Record};
+use std::boxed::Box;
+use std::fs::File;
+use std::io::{self, BufRead, BufReader, Write};
+use std::str::FromStr;
 
 pub fn cli() -> App {
     SubCommand::with_name("filter")
@@ -26,17 +30,34 @@ pub fn cli() -> App {
         .arg(Arg::with_name("filename"))
 }
 
-pub fn run(_args: &CliArgs) -> CliResult<()> {
-    let record: Record = "012A \u{1f}a123\u{1f}a456\u{1e}012A \u{1f}c789\u{1e}"
-        .parse::<Record>()
-        .unwrap();
+pub fn run(args: &CliArgs) -> CliResult<()> {
+    let mut writer: Box<dyn Write> = match args.value_of("output") {
+        None => Box::new(io::stdout()),
+        Some(filename) => Box::new(File::create(filename)?),
+    };
 
-    let query = _args.value_of("query").unwrap().parse::<Path>().unwrap();
+    let reader: Box<dyn BufRead> = match args.value_of("filename") {
+        None => Box::new(BufReader::new(io::stdin())),
+        Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
+    };
 
-    // println!("RECORD = {:?}", record);
-    // println!("QUERY = {:?}", query);
+    let expr = args.value_of("query").unwrap().parse::<Expr>().unwrap();
 
-    let result = record.path(query);
-    println!("RESULT = {:?}", result);
+    for line in reader.lines() {
+        let line = line.unwrap();
+        if let Ok(record) = Record::from_str(&line) {
+            if record.matches(&expr) {
+                writer.write_all(line.as_bytes())?;
+                writer.write_all(b"\n")?;
+            }
+        } else if !args.is_present("skip-invalid") {
+            return Err(CliError::Other(format!(
+                "could not read record: {}",
+                line
+            )));
+        }
+    }
+
+    writer.flush()?;
     Ok(())
 }
