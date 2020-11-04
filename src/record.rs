@@ -1,106 +1,145 @@
-use crate::{error::PicaParseError, parser::parse_record, Field};
-use std::{default::Default, fmt, str::FromStr};
+use crate::error::ParsePicaError;
+use crate::parser::parse_record;
+use crate::Field;
+use std::ops::{Deref, DerefMut};
+use std::str::FromStr;
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Record {
-    pub fields: Vec<Field>,
-}
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct Record(Vec<Field>);
 
 impl Record {
-    /// Create a new record.
+    /// Creates a new record.
     ///
     /// # Example
     /// ```
-    /// use pica::Record;
+    /// use pica::{Field, Record, Subfield};
     ///
-    /// let record = Record::new();
-    /// assert!(record.fields.is_empty());
+    /// let record = Record::new(vec![Field::new(
+    ///     "003@",
+    ///     "",
+    ///     vec![Subfield::new('0', "123").unwrap()],
+    /// )]);
+    /// assert_eq!(record.len(), 1);
     /// ```
-    pub fn new() -> Self {
-        Record { fields: vec![] }
+    pub fn new(fields: Vec<Field>) -> Self {
+        Record(fields)
     }
-}
 
-impl Default for Record {
-    /// Create an empty pica record.
+    /// Returns the field as an pretty formatted string.
     ///
     /// # Example
     /// ```
-    /// use pica::Record;
+    /// use pica::{Field, Record, Subfield};
     ///
-    /// let record = Record::default();
-    /// assert!(record.fields.is_empty());
+    /// let record = Record::new(vec![
+    ///     Field::new("003@", "", vec![Subfield::new('0', "123456789").unwrap()]),
+    ///     Field::new(
+    ///         "012A",
+    ///         "00",
+    ///         vec![
+    ///             Subfield::new('a', "123").unwrap(),
+    ///             Subfield::new('b', "456").unwrap(),
+    ///         ],
+    ///     ),
+    /// ]);
+    /// assert_eq!(record.pretty(), "003@ $0 123456789\n012A/00 $a 123 $b 456");
     /// ```
-    fn default() -> Self {
-        Self::new()
+    pub fn pretty(&self) -> String {
+        String::from(
+            &*self
+                .iter()
+                .map(|s| s.pretty())
+                .collect::<Vec<_>>()
+                .join("\n"),
+        )
     }
 }
 
 impl FromStr for Record {
-    type Err = PicaParseError;
+    type Err = ParsePicaError;
 
-    /// Parse a Pica+ record from a string slice.
+    /// Parse a pica+ encoded record.
+    ///
+    /// A Pica+ record is just a list of [`Field`].
+    ///
+    /// # Grammar
+    ///
+    /// A record which conform to the following [EBNF] grammar will result in
+    /// an [`Ok`] being returned.
+    ///
+    /// ```text
+    /// Record     ::= Field*
+    /// Field      ::= Tag Occurrence? Subfield* '#x1e'
+    /// Tag        ::= [012] [0-9]{2} ([A-Z] | '@')
+    /// Occurrence ::= '/' [0-9]{2,3}
+    /// Subfield   ::= Code Value
+    /// Code       ::= [a-zA-Z0-9]
+    /// Value      ::= [^#x1e#x1f]
+    /// ```
+    ///
+    /// [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
     ///
     /// # Example
     /// ```
     /// use pica::Record;
-    /// use std::str::FromStr;
     ///
-    /// let result = Record::from_str("003@ \u{1f}0123456789\u{1e}");
-    /// assert!(result.is_ok());
+    /// assert!("003@ \u{1f}0123456789\u{1e}".parse::<Record>().is_ok());
+    /// assert!("\u{1f}!123456789".parse::<Record>().is_err());
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match parse_record(s) {
             Ok((_, record)) => Ok(record),
-            _ => Err(PicaParseError {}),
+            _ => Err(ParsePicaError::InvalidRecord),
         }
     }
 }
 
-impl fmt::Display for Record {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.fields
-                .iter()
-                .map(|s| format!("{}", s))
-                .collect::<Vec<_>>()
-                .join("\n")
-        )
+impl Deref for Record {
+    type Target = Vec<Field>;
+
+    fn deref(&self) -> &Vec<Field> {
+        &self.0
+    }
+}
+
+impl DerefMut for Record {
+    fn deref_mut(&mut self) -> &mut Vec<Field> {
+        &mut self.0
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Subfield;
+    use crate::{Field, Subfield};
 
     #[test]
-    fn test_from_str() {
-        let record = Record::from_str("003@ \u{1f}0123456789\u{1e}").unwrap();
-        assert_eq!(record.fields.len(), 1);
+    fn test_record_new() {
+        let field1 =
+            Field::new("003@", "", vec![Subfield::new('0', "12345").unwrap()]);
+        let field2 =
+            Field::new("012A", "00", vec![Subfield::new('a', "abc").unwrap()]);
 
-        assert!(Record::from_str("003@ \u{1f}0123456789").is_err());
+        let record = Record::new(vec![field1.clone(), field2.clone()]);
+        assert!(record.contains(&field1));
+        assert!(record.contains(&field2));
+        assert_eq!(record.len(), 2);
     }
 
     #[test]
-    fn test_fmt() {
-        let record = Record::new();
-        assert_eq!(record.to_string(), "");
+    fn test_record_from_str() {
+        let record: Record = "003@ \u{1f}0123\u{1e}012A/00 \u{1f}a123\u{1e}"
+            .parse()
+            .unwrap();
 
-        let mut record = Record::new();
-        record.fields.push(Field::new(
-            "012A",
-            None,
-            vec![Subfield::new('a', "123"), Subfield::new('b', "456")],
-        ));
-        record.fields.push(Field::new(
-            "012@",
-            Some("00"),
-            vec![Subfield::new('c', "567")],
-        ));
+        let field =
+            Field::new("003@", "", vec![Subfield::new('0', "123").unwrap()]);
+        assert!(record.contains(&field));
 
-        assert_eq!(record.to_string(), "012A $a 123 $b 456\n012@/00 $c 567");
+        let field =
+            Field::new("012A", "00", vec![Subfield::new('a', "123").unwrap()]);
+        assert!(record.contains(&field));
+
+        assert_eq!(record.len(), 2);
     }
 }
