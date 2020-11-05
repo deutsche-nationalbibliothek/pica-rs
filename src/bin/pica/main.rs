@@ -18,6 +18,7 @@ fn main() {
         .get_matches();
 
     let result = match m.subcommand_name() {
+        Some("cat") => commands::cat::run(m.subcommand_matches("cat").unwrap()),
         Some("print") => {
             commands::print::run(m.subcommand_matches("print").unwrap())
         }

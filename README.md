@@ -9,14 +9,15 @@ Tools to work with bibliographic records encoded in Pica+.
 
 ## Commands
 
-* [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
+* [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
 * [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
+* [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
 
 ## Usage
 
 ```bash
-$ cat DUMP.dat
-    | pica filter -s "(003@.0 == 123456789X && 002@.0 == Tx1) || 002@.0 != Ty2"
+$ pica cat --skip-invalid DUMP1.dat DUMP2.dat \
+    | pica filter "(003@.0 == 123456789X && 002@.0 == Tx1) || 002@.0 != Ty2" \
     | pica print
 ```
 
