@@ -204,4 +204,27 @@ mod tests {
 
         assert_eq!(record.path(&path), vec!["1", "2", "3"]);
     }
+
+    #[test]
+    fn test_matches() {
+        let record = "003@ \u{1f}0123456789X\u{1e}012A \u{1f}a3\u{1e}"
+            .parse::<Record>()
+            .unwrap();
+
+        let expr = "003@.0 == 123456789X".parse::<Expr>().unwrap();
+        assert!(record.matches(&expr));
+
+        let expr = "003@.0 != 123456789Y".parse::<Expr>().unwrap();
+        assert!(record.matches(&expr));
+
+        let expr = "003@.0 == 123456789X && 012A.a == 3"
+            .parse::<Expr>()
+            .unwrap();
+        assert!(record.matches(&expr));
+
+        let expr = "003@.0 == 123456789X && (012A.a == 4 || 012A.a == 3)"
+            .parse::<Expr>()
+            .unwrap();
+        assert!(record.matches(&expr));
+    }
 }
