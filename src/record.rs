@@ -54,6 +54,19 @@ impl Record {
         )
     }
 
+    /// Search the record for the given path and returns all values as an
+    /// vector.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Path, Record};
+    ///
+    /// let record = "012A \u{1f}a1\u{1f}a2\u{1e}012A \u{1f}a3\u{1e}"
+    ///     .parse::<Record>()
+    ///     .unwrap();
+    /// let path = "012A.a".parse::<Path>().unwrap();
+    /// assert_eq!(record.path(&path), vec!["1", "2", "3"]);
+    /// ```
     pub fn path(&self, path: &Path) -> Vec<&str> {
         let mut result: Vec<&str> = Vec::new();
 
@@ -180,5 +193,15 @@ mod tests {
         assert!(record.contains(&field));
 
         assert_eq!(record.len(), 2);
+    }
+
+    #[test]
+    fn test_record_path() {
+        let path = "012A.a".parse::<Path>().unwrap();
+        let record = "012A \u{1f}a1\u{1f}a2\u{1f}b3\u{1e}012A \u{1f}a3\u{1e}"
+            .parse::<Record>()
+            .unwrap();
+
+        assert_eq!(record.path(&path), vec!["1", "2", "3"]);
     }
 }
