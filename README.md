@@ -11,6 +11,7 @@ Tools to work with bibliographic records encoded in Pica+.
 
 * [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
 * [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
+* [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
 
 ## Usage
@@ -18,6 +19,7 @@ Tools to work with bibliographic records encoded in Pica+.
 ```bash
 $ pica cat --skip-invalid DUMP1.dat DUMP2.dat \
     | pica filter "(003@.0 == 123456789X && 002@.0 == Tx1) || 002@.0 != Ty2" \
+    | pica sample 42 \
     | pica print
 ```
 
