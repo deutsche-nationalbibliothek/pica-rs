@@ -125,5 +125,10 @@ mod tests {
                 Box::new(p3)
             )
         );
+
+        assert_eq!(
+            "(003@.0 == 123456789X(".parse::<Expr>().err(),
+            Some(ParsePicaError::InvalidExpr)
+        );
     }
 }
