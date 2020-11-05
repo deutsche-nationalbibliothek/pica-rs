@@ -61,6 +61,11 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                     reservoir[j] = line;
                 }
             }
+        } else if !args.is_present("skip-invalid") {
+            return Err(CliError::Other(format!(
+                "could not read record: {}",
+                line
+            )));
         }
     }
 
