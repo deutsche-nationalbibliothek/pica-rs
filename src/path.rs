@@ -109,3 +109,27 @@ impl FromStr for Path {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_path_new() {
+        let path = Path::new("012A", "000", '0');
+        assert_eq!(path.tag(), "012A");
+        assert_eq!(path.occurrence(), "000");
+        assert_eq!(path.code(), '0');
+    }
+
+    #[test]
+    fn test_path_from_str() {
+        let path = "012A/000.0".parse::<Path>().unwrap();
+        assert_eq!(path.tag(), "012A");
+        assert_eq!(path.occurrence(), "000");
+        assert_eq!(path.code(), '0');
+
+        let result = "003@.?".parse::<Path>();
+        assert_eq!(result.err(), Some(ParsePicaError::InvalidPath));
+    }
+}
