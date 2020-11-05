@@ -16,6 +16,12 @@ pub fn cli() -> App {
                 .help("skip invalid records"),
         )
         .arg(
+            Arg::with_name("invert-match")
+                .short("v")
+                .long("invert-match")
+                .help("Filter only records that did not match."),
+        )
+        .arg(
             Arg::with_name("output")
                 .short("o")
                 .long("--output")
@@ -52,10 +58,12 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     };
 
+    let invert_match = !args.is_present("invert-match");
+
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::from_str(&line) {
-            if record.matches(&query) {
+            if record.matches(&query) == invert_match {
                 writer.write_all(line.as_bytes())?;
                 writer.write_all(b"\n")?;
             }
