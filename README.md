@@ -16,7 +16,7 @@ Tools to work with bibliographic records encoded in Pica+.
 
 ```bash
 $ cat DUMP.dat
-    | pica filter -s "(003@.0 == 123456789X && 002@.0 == Tx1) || 002@.0 == Ty2"
+    | pica filter -s "(003@.0 == 123456789X && 002@.0 == Tx1) || 002@.0 != Ty2"
     | pica print
 ```
 
