@@ -25,6 +25,9 @@ fn main() {
         Some("filter") => {
             commands::filter::run(m.subcommand_matches("filter").unwrap())
         }
+        Some("sample") => {
+            commands::sample::run(m.subcommand_matches("sample").unwrap())
+        }
         _ => unreachable!(),
     };
 

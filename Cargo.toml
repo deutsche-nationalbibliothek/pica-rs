@@ -6,8 +6,9 @@ edition = "2018"
 license = "AGPL-3.0-only"
 
 [dependencies]
-nom = "6.0.0"
 clap = "2.33.3"
+nom = "6.0.0"
+rand = "0.7.3"
 
 [lib]
 path = "src/lib.rs"
