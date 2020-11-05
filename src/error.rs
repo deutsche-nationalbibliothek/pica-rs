@@ -3,4 +3,6 @@ pub enum ParsePicaError {
     InvalidSubfield,
     InvalidField,
     InvalidRecord,
+    InvalidPath,
+    InvalidQuery,
 }

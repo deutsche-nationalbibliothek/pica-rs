@@ -1,6 +1,6 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_record;
-use crate::Field;
+use crate::{ComparisonOp, Field, LogicalOp, Path, Query};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
@@ -52,6 +52,58 @@ impl Record {
                 .collect::<Vec<_>>()
                 .join("\n"),
         )
+    }
+
+    /// Search the record for the given path and returns all values as an
+    /// vector.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Path, Record};
+    ///
+    /// let record = "012A \u{1f}a1\u{1f}a2\u{1e}012A \u{1f}a3\u{1e}"
+    ///     .parse::<Record>()
+    ///     .unwrap();
+    /// let path = "012A.a".parse::<Path>().unwrap();
+    /// assert_eq!(record.path(&path), vec!["1", "2", "3"]);
+    /// ```
+    pub fn path(&self, path: &Path) -> Vec<&str> {
+        let mut result: Vec<&str> = Vec::new();
+
+        for field in &self.0 {
+            if field.tag() == path.tag()
+                && field.occurrence() == path.occurrence()
+            {
+                for subfield in &field.subfields {
+                    if subfield.code() == path.code() {
+                        result.push(subfield.value());
+                    }
+                }
+            }
+        }
+
+        result
+    }
+
+    pub fn matches(&self, query: &Query) -> bool {
+        match query {
+            Query::Predicate(path, op, rvalue) => {
+                let lvalues = self.path(path);
+                match op {
+                    ComparisonOp::Eq => {
+                        lvalues.into_iter().any(|x| x == rvalue)
+                    }
+                    ComparisonOp::Ne => {
+                        lvalues.into_iter().any(|x| x != rvalue)
+                    }
+                }
+            }
+            Query::Connective(lhs, op, rhs) => match op {
+                LogicalOp::And => self.matches(lhs) && self.matches(rhs),
+                LogicalOp::Or => self.matches(lhs) || self.matches(rhs),
+            },
+            Query::Parens(query) => self.matches(query),
+        }
     }
 }
 
@@ -141,5 +193,38 @@ mod tests {
         assert!(record.contains(&field));
 
         assert_eq!(record.len(), 2);
+    }
+
+    #[test]
+    fn test_record_path() {
+        let path = "012A.a".parse::<Path>().unwrap();
+        let record = "012A \u{1f}a1\u{1f}a2\u{1f}b3\u{1e}012A \u{1f}a3\u{1e}"
+            .parse::<Record>()
+            .unwrap();
+
+        assert_eq!(record.path(&path), vec!["1", "2", "3"]);
+    }
+
+    #[test]
+    fn test_matches() {
+        let record = "003@ \u{1f}0123456789X\u{1e}012A \u{1f}a3\u{1e}"
+            .parse::<Record>()
+            .unwrap();
+
+        let query = "003@.0 == 123456789X".parse::<Query>().unwrap();
+        assert!(record.matches(&query));
+
+        let query = "003@.0 != 123456789Y".parse::<Query>().unwrap();
+        assert!(record.matches(&query));
+
+        let query = "003@.0 == 123456789X && 012A.a == 3"
+            .parse::<Query>()
+            .unwrap();
+        assert!(record.matches(&query));
+
+        let query = "003@.0 == 123456789X && (012A.a == 4 || 012A.a == 3)"
+            .parse::<Query>()
+            .unwrap();
+        assert!(record.matches(&query));
     }
 }

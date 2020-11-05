@@ -10,8 +10,17 @@ Tools to work with bibliographic records encoded in Pica+.
 ## Commands
 
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#pica-print) — print records in human readable format
+* [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
 
-### Parser
+## Usage
+
+```bash
+$ cat DUMP.dat
+    | pica filter -s "(003@.0 == 123456789X && 002@.0 == Tx1) || 002@.0 != Ty2"
+    | pica print
+```
+
+## Parser
 
 ```rust
 use pica::Record;
@@ -26,11 +35,8 @@ fn main() {
 
 ## TODO
 
-- [x] Pica+ parser
-- [x] `pica print` print records in human readable format
-- [ ] `pica-filter` parse and filter records
-- [ ] `pica-convert` convert Pica+ records to other formats (csv, json, ...)
-- [ ] `pica-lint` check Pica+ records against field specs
+- [ ] `pica convert` convert Pica+ records to other formats (csv, json, ...)
+- [ ] `pica lint` check Pica+ records against field specs
 
 
 ## Related Projects
