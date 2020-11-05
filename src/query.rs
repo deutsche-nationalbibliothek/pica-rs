@@ -1,5 +1,5 @@
 use crate::error::ParsePicaError;
-use crate::parser::parse_expr;
+use crate::parser::parse_query;
 use crate::Path;
 use std::boxed::Box;
 use std::str::FromStr;
@@ -17,19 +17,19 @@ pub enum LogicalOp {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Expr {
+pub enum Query {
     Predicate(Path, ComparisonOp, String),
-    Connective(Box<Expr>, LogicalOp, Box<Expr>),
-    Parens(Box<Expr>),
+    Connective(Box<Query>, LogicalOp, Box<Query>),
+    Parens(Box<Query>),
 }
 
-impl FromStr for Expr {
+impl FromStr for Query {
     type Err = ParsePicaError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_expr(s) {
+        match parse_query(s) {
             Ok((_, path)) => Ok(path),
-            _ => Err(ParsePicaError::InvalidExpr),
+            _ => Err(ParsePicaError::InvalidQuery),
         }
     }
 }
@@ -40,83 +40,86 @@ mod tests {
 
     #[test]
     fn test_expr_from_str() {
-        let expr: Expr = "003@.0 == 123456789X".parse().unwrap();
+        let query: Query = "003@.0 == 123456789X".parse().unwrap();
         assert_eq!(
-            expr,
-            Expr::Predicate(
+            query,
+            Query::Predicate(
                 Path::new("003@", "", '0'),
                 ComparisonOp::Eq,
                 "123456789X".to_string()
             )
         );
 
-        let expr: Expr = "003@.0 != 123456789X".parse().unwrap();
+        let query: Query = "003@.0 != 123456789X".parse().unwrap();
         assert_eq!(
-            expr,
-            Expr::Predicate(
+            query,
+            Query::Predicate(
                 Path::new("003@", "", '0'),
                 ComparisonOp::Ne,
                 "123456789X".to_string()
             )
         );
 
-        let expr: Expr = "003@.0 == 123456789X && 012A.a == a".parse().unwrap();
-        let lhs = Expr::Predicate(
+        let query: Query =
+            "003@.0 == 123456789X && 012A.a == a".parse().unwrap();
+        let lhs = Query::Predicate(
             Path::new("003@", "", '0'),
             ComparisonOp::Eq,
             "123456789X".to_string(),
         );
-        let rhs = Expr::Predicate(
+        let rhs = Query::Predicate(
             Path::new("012A", "", 'a'),
             ComparisonOp::Eq,
             "a".to_string(),
         );
 
         assert_eq!(
-            expr,
-            Expr::Connective(Box::new(lhs), LogicalOp::And, Box::new(rhs))
+            query,
+            Query::Connective(Box::new(lhs), LogicalOp::And, Box::new(rhs))
         );
 
-        let expr: Expr = "003@.0 == 123456789X || 012A.a == a".parse().unwrap();
-        let lhs = Expr::Predicate(
+        let query: Query =
+            "003@.0 == 123456789X || 012A.a == a".parse().unwrap();
+        let lhs = Query::Predicate(
             Path::new("003@", "", '0'),
             ComparisonOp::Eq,
             "123456789X".to_string(),
         );
-        let rhs = Expr::Predicate(
+        let rhs = Query::Predicate(
             Path::new("012A", "", 'a'),
             ComparisonOp::Eq,
             "a".to_string(),
         );
 
         assert_eq!(
-            expr,
-            Expr::Connective(Box::new(lhs), LogicalOp::Or, Box::new(rhs))
+            query,
+            Query::Connective(Box::new(lhs), LogicalOp::Or, Box::new(rhs))
         );
 
-        let expr: Expr = "(003@.0 == 123456789X && 012A.a == a) || 012A.a == b"
-            .parse()
-            .unwrap();
-        let p1 = Expr::Predicate(
+        let query: Query =
+            "(003@.0 == 123456789X && 012A.a == a) || 012A.a == b"
+                .parse()
+                .unwrap();
+        let p1 = Query::Predicate(
             Path::new("003@", "", '0'),
             ComparisonOp::Eq,
             "123456789X".to_string(),
         );
-        let p2 = Expr::Predicate(
+        let p2 = Query::Predicate(
             Path::new("012A", "", 'a'),
             ComparisonOp::Eq,
             "a".to_string(),
         );
-        let p3 = Expr::Predicate(
+        let p3 = Query::Predicate(
             Path::new("012A", "", 'a'),
             ComparisonOp::Eq,
             "b".to_string(),
         );
 
         assert_eq!(
-            expr,
-            Expr::Connective(
-                Box::new(Expr::Parens(Box::new(Expr::Connective(
+            query,
+            Query::Connective(
+                Box::new(Query::Parens(Box::new(Query::Connective(
                     Box::new(p1),
                     LogicalOp::And,
                     Box::new(p2)
@@ -127,8 +130,8 @@ mod tests {
         );
 
         assert_eq!(
-            "(003@.0 == 123456789X(".parse::<Expr>().err(),
-            Some(ParsePicaError::InvalidExpr)
+            "(003@.0 == 123456789X(".parse::<Query>().err(),
+            Some(ParsePicaError::InvalidQuery)
         );
     }
 }

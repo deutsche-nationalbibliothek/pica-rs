@@ -1,4 +1,4 @@
-use crate::{ComparisonOp, Expr, Field, LogicalOp, Path, Record, Subfield};
+use crate::{ComparisonOp, Field, LogicalOp, Path, Query, Record, Subfield};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, none_of, one_of, space0};
@@ -112,16 +112,16 @@ pub(crate) fn parse_literal(i: &str) -> IResult<&str, &str> {
     )(i)
 }
 
-pub fn parse_predicate(i: &str) -> IResult<&str, Expr> {
+pub(crate) fn parse_predicate(i: &str) -> IResult<&str, Query> {
     map(
         pair(pair(parse_path, parse_comparison_op), parse_literal),
         |((path, op), literal)| {
-            Expr::Predicate(path, op, String::from(literal))
+            Query::Predicate(path, op, String::from(literal))
         },
     )(i)
 }
 
-pub fn parse_connective(i: &str) -> IResult<&str, Expr> {
+pub(crate) fn parse_connective(i: &str) -> IResult<&str, Query> {
     delimited(
         space0,
         map(
@@ -130,25 +130,25 @@ pub fn parse_connective(i: &str) -> IResult<&str, Expr> {
                 alt((parse_predicate, parse_parens)),
             ),
             |((lhs, op), rhs)| {
-                Expr::Connective(Box::new(lhs), op, Box::new(rhs))
+                Query::Connective(Box::new(lhs), op, Box::new(rhs))
             },
         ),
         space0,
     )(i)
 }
 
-pub fn parse_parens(i: &str) -> IResult<&str, Expr> {
+pub(crate) fn parse_parens(i: &str) -> IResult<&str, Query> {
     map(
         delimited(
             preceded(space0, char('(')),
-            preceded(space0, parse_expr),
+            preceded(space0, parse_query),
             preceded(space0, char(')')),
         ),
-        |expr| Expr::Parens(Box::new(expr)),
+        |query| Query::Parens(Box::new(query)),
     )(i)
 }
 
-pub fn parse_expr(i: &str) -> IResult<&str, Expr> {
+pub fn parse_query(i: &str) -> IResult<&str, Query> {
     delimited(
         space0,
         alt((parse_connective, parse_parens, parse_predicate)),
@@ -179,10 +179,10 @@ mod tests {
     #[test]
     fn test_parse_predicate() {
         assert_eq!(
-            parse_expr("003@.0 == 123"),
+            parse_query("003@.0 == 123"),
             Ok((
                 "",
-                Expr::Predicate(
+                Query::Predicate(
                     Path::new("003@", "", '0'),
                     ComparisonOp::Eq,
                     "123".to_string()
@@ -190,10 +190,10 @@ mod tests {
             ))
         );
         assert_eq!(
-            parse_expr("012A/00.0 != 123"),
+            parse_query("012A/00.0 != 123"),
             Ok((
                 "",
-                Expr::Predicate(
+                Query::Predicate(
                     Path::new("012A", "00", '0'),
                     ComparisonOp::Ne,
                     "123".to_string()
@@ -204,31 +204,31 @@ mod tests {
 
     #[test]
     fn test_parse_connective() {
-        let lhs = Box::new(Expr::Predicate(
+        let lhs = Box::new(Query::Predicate(
             Path::new("003@", "", '0'),
             ComparisonOp::Eq,
             "123".to_string(),
         ));
-        let rhs = Box::new(Expr::Predicate(
+        let rhs = Box::new(Query::Predicate(
             Path::new("002@", "", '0'),
             ComparisonOp::Ne,
             "Tp1".to_string(),
         ));
 
         assert_eq!(
-            parse_expr("003@.0 == 123 || 002@.0 != Tp1"),
-            Ok(("", Expr::Connective(lhs, LogicalOp::Or, rhs)))
+            parse_query("003@.0 == 123 || 002@.0 != Tp1"),
+            Ok(("", Query::Connective(lhs, LogicalOp::Or, rhs)))
         );
     }
 
     #[test]
     fn test_parse_parens() {
-        let p1 = Box::new(Expr::Predicate(
+        let p1 = Box::new(Query::Predicate(
             Path::new("003@", "", '0'),
             ComparisonOp::Eq,
             "123".to_string(),
         ));
-        let p2 = Box::new(Expr::Predicate(
+        let p2 = Box::new(Query::Predicate(
             Path::new("002@", "", '0'),
             ComparisonOp::Eq,
             "Tp3".to_string(),
@@ -238,7 +238,7 @@ mod tests {
             parse_parens("(003@.0 == 123 && 002@.0 == Tp3)"),
             Ok((
                 "",
-                Expr::Parens(Box::new(Expr::Connective(
+                Query::Parens(Box::new(Query::Connective(
                     p1,
                     LogicalOp::And,
                     p2
@@ -248,29 +248,29 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_expr() {
-        let p1 = Box::new(Expr::Predicate(
+    fn test_parse_query() {
+        let p1 = Box::new(Query::Predicate(
             Path::new("003@", "", '0'),
             ComparisonOp::Eq,
             "123".to_string(),
         ));
-        let p2 = Box::new(Expr::Predicate(
+        let p2 = Box::new(Query::Predicate(
             Path::new("002@", "", '0'),
             ComparisonOp::Eq,
             "Tp3".to_string(),
         ));
-        let p3 = Box::new(Expr::Predicate(
+        let p3 = Box::new(Query::Predicate(
             Path::new("002@", "", '0'),
             ComparisonOp::Eq,
             "Tf1".to_string(),
         ));
 
         assert_eq!(
-            parse_expr("(003@.0 == 123 && 002@.0 == Tp3) || 002@.0 == Tf1"),
+            parse_query("(003@.0 == 123 && 002@.0 == Tp3) || 002@.0 == Tf1"),
             Ok((
                 "",
-                Expr::Connective(
-                    Box::new(Expr::Parens(Box::new(Expr::Connective(
+                Query::Connective(
+                    Box::new(Query::Parens(Box::new(Query::Connective(
                         p1,
                         LogicalOp::And,
                         p2

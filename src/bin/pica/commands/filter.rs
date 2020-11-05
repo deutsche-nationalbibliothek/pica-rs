@@ -1,6 +1,6 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
-use pica::{Expr, Record};
+use pica::{Query, Record};
 use std::boxed::Box;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
@@ -41,12 +41,21 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
     };
 
-    let expr = args.value_of("query").unwrap().parse::<Expr>().unwrap();
+    let query_str = args.value_of("query").unwrap();
+    let query = match query_str.parse::<Query>() {
+        Ok(q) => q,
+        _ => {
+            return Err(CliError::Other(format!(
+                "invalid query: {}",
+                query_str
+            )))
+        }
+    };
 
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::from_str(&line) {
-            if record.matches(&expr) {
+            if record.matches(&query) {
                 writer.write_all(line.as_bytes())?;
                 writer.write_all(b"\n")?;
             }

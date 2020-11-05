@@ -1,6 +1,6 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_record;
-use crate::{ComparisonOp, Expr, Field, LogicalOp, Path};
+use crate::{ComparisonOp, Field, LogicalOp, Path, Query};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
@@ -85,9 +85,9 @@ impl Record {
         result
     }
 
-    pub fn matches(&self, expr: &Expr) -> bool {
-        match expr {
-            Expr::Predicate(path, op, rvalue) => {
+    pub fn matches(&self, query: &Query) -> bool {
+        match query {
+            Query::Predicate(path, op, rvalue) => {
                 let lvalues = self.path(path);
                 match op {
                     ComparisonOp::Eq => {
@@ -98,11 +98,11 @@ impl Record {
                     }
                 }
             }
-            Expr::Connective(lhs, op, rhs) => match op {
+            Query::Connective(lhs, op, rhs) => match op {
                 LogicalOp::And => self.matches(lhs) && self.matches(rhs),
                 LogicalOp::Or => self.matches(lhs) || self.matches(rhs),
             },
-            Expr::Parens(expr) => self.matches(expr),
+            Query::Parens(query) => self.matches(query),
         }
     }
 }
@@ -211,20 +211,20 @@ mod tests {
             .parse::<Record>()
             .unwrap();
 
-        let expr = "003@.0 == 123456789X".parse::<Expr>().unwrap();
-        assert!(record.matches(&expr));
+        let query = "003@.0 == 123456789X".parse::<Query>().unwrap();
+        assert!(record.matches(&query));
 
-        let expr = "003@.0 != 123456789Y".parse::<Expr>().unwrap();
-        assert!(record.matches(&expr));
+        let query = "003@.0 != 123456789Y".parse::<Query>().unwrap();
+        assert!(record.matches(&query));
 
-        let expr = "003@.0 == 123456789X && 012A.a == 3"
-            .parse::<Expr>()
+        let query = "003@.0 == 123456789X && 012A.a == 3"
+            .parse::<Query>()
             .unwrap();
-        assert!(record.matches(&expr));
+        assert!(record.matches(&query));
 
-        let expr = "003@.0 == 123456789X && (012A.a == 4 || 012A.a == 3)"
-            .parse::<Expr>()
+        let query = "003@.0 == 123456789X && (012A.a == 4 || 012A.a == 3)"
+            .parse::<Query>()
             .unwrap();
-        assert!(record.matches(&expr));
+        assert!(record.matches(&query));
     }
 }
