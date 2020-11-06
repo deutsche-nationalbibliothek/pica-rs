@@ -1,9 +1,10 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_field;
 use crate::Subfield;
+use serde::Serialize;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Field {
     pub(crate) tag: String,
     pub(crate) occurrence: String,

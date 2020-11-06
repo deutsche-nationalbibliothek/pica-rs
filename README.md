@@ -11,8 +11,9 @@ Tools to work with bibliographic records encoded in Pica+.
 
 * [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
 * [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
-* [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
+* [json](https://github.com/niko2342/pica-rs/wiki/Commands#json) — serialize pica records to JSON
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
+* [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
 
 ## Usage
 

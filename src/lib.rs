@@ -1,4 +1,6 @@
 extern crate nom;
+extern crate serde;
+extern crate serde_json;
 
 pub mod error;
 mod field;
