@@ -1,9 +1,8 @@
+use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
-use std::boxed::Box;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::BufRead;
 use std::str::FromStr;
 
 pub fn cli() -> App {
@@ -22,26 +21,21 @@ pub fn cli() -> App {
                 .value_name("file")
                 .help("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::with_name("FILENAME"))
+        .arg(Arg::with_name("filename"))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let mut writer: Box<dyn Write> = match args.value_of("output") {
-        None => Box::new(io::stdout()),
-        Some(filename) => Box::new(File::create(filename)?),
-    };
-
-    let reader: Box<dyn BufRead> = match args.value_of("FILENAME") {
-        None => Box::new(BufReader::new(io::stdin())),
-        Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
-    };
+    let ctx = Config::new();
+    let mut writer = ctx.writer(args.value_of("output"))?;
+    let reader = ctx.reader(args.value_of("filename"))?;
+    let skip_invalid = args.is_present("skip-invalid");
 
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::from_str(&line) {
             writer.write_all(record.pretty().as_bytes())?;
             writer.write_all(b"\n\n")?;
-        } else if !args.is_present("skip-invalid") {
+        } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
                 line

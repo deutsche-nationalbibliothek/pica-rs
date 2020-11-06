@@ -1,10 +1,9 @@
+use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
 use rand::{thread_rng, Rng};
-use std::boxed::Box;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::BufRead;
 use std::str::FromStr;
 
 pub fn cli() -> App {
@@ -28,40 +27,38 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let reader: Box<dyn BufRead> = match args.value_of("filename") {
-        None => Box::new(BufReader::new(io::stdin())),
-        Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
+    let config = Config::new();
+    let mut writer = config.writer(args.value_of("output"))?;
+    let reader = config.reader(args.value_of("filename"))?;
+    let skip_invalid = args.is_present("skip-invalid");
+
+    let sample_size = args.value_of("sample-size").unwrap();
+    let n = match sample_size.parse::<usize>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(CliError::Other(format!(
+                "invalid sample size '{}'. expected usize.",
+                sample_size
+            )));
+        }
     };
 
-    let mut writer: Box<dyn Write> = match args.value_of("output") {
-        None => Box::new(io::stdout()),
-        Some(filename) => Box::new(File::create(filename)?),
-    };
-
-    let sample_size =
-        match args.value_of("sample-size").unwrap().parse::<usize>() {
-            Ok(v) => v,
-            Err(_) => {
-                return Err(CliError::Other("invalid sample size".to_string()))
-            }
-        };
-
-    let mut reservoir: Vec<String> = Vec::with_capacity(sample_size);
+    let mut reservoir: Vec<String> = Vec::with_capacity(n);
     let mut rng = thread_rng();
 
     for (i, line) in reader.lines().enumerate() {
         let line = line.unwrap();
 
         if let Ok(_record) = Record::from_str(&line) {
-            if i < sample_size {
+            if i < n {
                 reservoir.push(line);
             } else {
                 let j = rng.gen_range(0, i);
-                if j < sample_size {
+                if j < n {
                     reservoir[j] = line;
                 }
             }
-        } else if !args.is_present("skip-invalid") {
+        } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
                 line
