@@ -1,3 +1,4 @@
+use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
@@ -26,10 +27,8 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let mut writer: Box<dyn Write> = match args.value_of("output") {
-        None => Box::new(io::stdout()),
-        Some(filename) => Box::new(File::create(filename)?),
-    };
+    let ctx = Config::new();
+    let mut writer = ctx.writer(args.value_of("output"))?;
 
     let reader: Box<dyn BufRead> = match args.value_of("FILENAME") {
         None => Box::new(BufReader::new(io::stdin())),

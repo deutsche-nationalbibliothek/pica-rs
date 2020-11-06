@@ -1,9 +1,9 @@
+use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
-use std::boxed::Box;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::str::FromStr;
 
 pub fn cli() -> App {
@@ -26,10 +26,8 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let mut writer: Box<dyn Write> = match args.value_of("output") {
-        None => Box::new(io::stdout()),
-        Some(filename) => Box::new(File::create(filename)?),
-    };
+    let ctx = Config::new();
+    let mut writer = ctx.writer(args.value_of("output"))?;
 
     for filename in args.values_of("filenames").unwrap() {
         let reader = BufReader::new(File::open(filename)?);
