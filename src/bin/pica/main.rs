@@ -23,10 +23,10 @@ fn main() {
 
     let result = match name {
         "cat" => commands::cat::run(args),
-        "convert" => commands::convert::run(args),
         "filter" => commands::filter::run(args),
         "print" => commands::print::run(args),
         "sample" => commands::sample::run(args),
+        "json" => commands::json::run(args),
         _ => unreachable!(),
     };
 
