@@ -30,6 +30,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let config = Config::new();
     let mut writer = config.writer(args.value_of("output"))?;
     let reader = config.reader(args.value_of("filename"))?;
+    let skip_invalid = args.is_present("skip-invalid");
 
     let sample_size =
         match args.value_of("sample-size").unwrap().parse::<usize>() {
@@ -54,7 +55,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                     reservoir[j] = line;
                 }
             }
-        } else if !args.is_present("skip-invalid") {
+        } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
                 line
