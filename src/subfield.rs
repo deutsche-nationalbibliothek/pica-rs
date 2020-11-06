@@ -2,9 +2,10 @@
 
 use crate::error::ParsePicaError;
 use crate::parser::parse_subfield;
+use serde::Serialize;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Subfield {
     pub(crate) code: char,
     pub(crate) value: String,

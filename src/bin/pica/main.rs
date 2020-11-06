@@ -26,6 +26,7 @@ fn main() {
         "filter" => commands::filter::run(args),
         "print" => commands::print::run(args),
         "sample" => commands::sample::run(args),
+        "json" => commands::json::run(args),
         _ => unreachable!(),
     };
 

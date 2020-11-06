@@ -1,10 +1,11 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_record;
 use crate::{ComparisonOp, Field, LogicalOp, Path, Query};
+use serde::Serialize;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Debug, Default, PartialEq, Eq)]
 pub struct Record(Vec<Field>);
 
 impl Record {
