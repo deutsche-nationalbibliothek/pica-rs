@@ -17,17 +17,14 @@ fn main() {
         .subcommands(commands::subcmds())
         .get_matches();
 
-    let result = match m.subcommand_name() {
-        Some("cat") => commands::cat::run(m.subcommand_matches("cat").unwrap()),
-        Some("print") => {
-            commands::print::run(m.subcommand_matches("print").unwrap())
-        }
-        Some("filter") => {
-            commands::filter::run(m.subcommand_matches("filter").unwrap())
-        }
-        Some("sample") => {
-            commands::sample::run(m.subcommand_matches("sample").unwrap())
-        }
+    let name = m.subcommand_name().unwrap();
+    let args = m.subcommand_matches(name).unwrap();
+
+    let result = match name {
+        "cat" => commands::cat::run(args),
+        "filter" => commands::filter::run(args),
+        "print" => commands::print::run(args),
+        "sample" => commands::sample::run(args),
         _ => unreachable!(),
     };
 
