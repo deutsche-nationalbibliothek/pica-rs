@@ -5,6 +5,7 @@ mod commands;
 mod util;
 
 use clap::{App, AppSettings};
+use std::io;
 use std::process;
 use util::CliError;
 
@@ -30,6 +31,12 @@ fn main() {
 
     match result {
         Ok(()) => process::exit(0),
+        Err(CliError::Io(ref err))
+            if err.kind() == io::ErrorKind::BrokenPipe =>
+        {
+            process::exit(0);
+        }
+
         Err(CliError::Io(err)) => {
             eprintln!("IO Error: {}", err);
             process::exit(1);
