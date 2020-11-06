@@ -2,9 +2,7 @@ use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
-use std::boxed::Box;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::BufRead;
 use std::str::FromStr;
 
 pub fn cli() -> App {
@@ -23,17 +21,13 @@ pub fn cli() -> App {
                 .value_name("file")
                 .help("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::with_name("FILENAME"))
+        .arg(Arg::with_name("filename"))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
     let mut writer = ctx.writer(args.value_of("output"))?;
-
-    let reader: Box<dyn BufRead> = match args.value_of("FILENAME") {
-        None => Box::new(BufReader::new(io::stdin())),
-        Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
-    };
+    let reader = ctx.reader(args.value_of("filename"))?;
 
     for line in reader.lines() {
         let line = line.unwrap();

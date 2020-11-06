@@ -2,8 +2,7 @@ use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
-use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
+use std::io::BufRead;
 use std::str::FromStr;
 
 pub fn cli() -> App {
@@ -26,11 +25,11 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
-    let mut writer = ctx.writer(args.value_of("output"))?;
+    let config = Config::new();
+    let mut writer = config.writer(args.value_of("output"))?;
 
     for filename in args.values_of("filenames").unwrap() {
-        let reader = BufReader::new(File::open(filename)?);
+        let reader = config.reader(Some(filename))?;
 
         for line in reader.lines() {
             let line = line.unwrap();

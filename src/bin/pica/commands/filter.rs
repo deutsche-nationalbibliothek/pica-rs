@@ -2,9 +2,7 @@ use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::{Query, Record};
-use std::boxed::Box;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::BufRead;
 use std::str::FromStr;
 
 pub fn cli() -> App {
@@ -38,13 +36,9 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
-    let mut writer = ctx.writer(args.value_of("output"))?;
-
-    let reader: Box<dyn BufRead> = match args.value_of("filename") {
-        None => Box::new(BufReader::new(io::stdin())),
-        Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
-    };
+    let config = Config::new();
+    let mut writer = config.writer(args.value_of("output"))?;
+    let reader = config.reader(args.value_of("filename"))?;
 
     let query_str = args.value_of("query").unwrap();
     let query = match query_str.parse::<Query>() {
