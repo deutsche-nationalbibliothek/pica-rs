@@ -96,3 +96,19 @@ where
         char('\''),
     )(i)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse_helper(i: &str) -> IResult<&str, String> {
+        parse_string(i)
+    }
+
+    #[test]
+    fn test_parse_string() {
+        assert_eq!(parse_helper("'abc'"), Ok(("", String::from("abc"))));
+        assert_eq!(parse_helper("'a\tb'"), Ok(("", String::from("a\tb"))));
+        assert_eq!(parse_helper("'\u{1f}'"), Ok(("", String::from("\u{1f}"))));
+    }
+}
