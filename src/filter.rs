@@ -33,3 +33,20 @@ impl FromStr for Filter {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_from_str() {
+        let filter = "003@.0[0]?".parse::<Filter>().unwrap();
+        assert_eq!(
+            filter,
+            Filter::ExistenceExpr(Path::new("003@", None, '0', Some(0)))
+        );
+
+        let result = "003@.0!".parse::<Filter>();
+        assert_eq!(result.err(), Some(ParsePicaError::InvalidFilter));
+    }
+}

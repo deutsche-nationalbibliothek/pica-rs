@@ -93,10 +93,11 @@ mod tests {
 
     #[test]
     fn test_path_new() {
-        let path = Path::new("012A", Some("000"), '0', None);
+        let path = Path::new("012A", Some("000"), '0', Some(0));
         assert_eq!(path.tag(), "012A");
         assert_eq!(path.occurrence(), Some("000"));
         assert_eq!(path.code(), '0');
+        assert_eq!(path.index(), Some(0));
     }
 
     #[test]
