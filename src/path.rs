@@ -49,7 +49,7 @@ impl Path {
     }
 
     pub fn occurrence(&self) -> Option<&str> {
-        self.occurrence.as_ref().map(|s| s.as_str())
+        self.occurrence.as_deref()
     }
 
     pub fn code(&self) -> char {

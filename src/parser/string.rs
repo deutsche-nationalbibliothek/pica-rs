@@ -28,7 +28,7 @@ where
 
     map_opt(
         map_res(parse_delimited_hex, move |hex| u32::from_str_radix(hex, 16)),
-        |value| std::char::from_u32(value),
+        std::char::from_u32,
     )(i)
 }
 

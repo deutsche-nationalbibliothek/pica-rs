@@ -61,7 +61,7 @@ impl Field {
     /// assert_eq!(field.occurrence(), Some("00"));
     /// ```
     pub fn occurrence(&self) -> Option<&str> {
-        self.occurrence.as_ref().map(|s| s.as_str())
+        self.occurrence.as_deref()
     }
 
     /// Returns the subfields of the field.

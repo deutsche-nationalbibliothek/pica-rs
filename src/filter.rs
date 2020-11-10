@@ -66,7 +66,7 @@ pub(crate) fn parse_comparison_expr(i: &str) -> IResult<&str, Filter> {
 }
 
 pub(crate) fn parse_existence_expr(i: &str) -> IResult<&str, Filter> {
-    terminated(map(parse_path, |p| Filter::ExistenceExpr(p)), char('?'))(i)
+    terminated(map(parse_path, Filter::ExistenceExpr), char('?'))(i)
 }
 
 pub(crate) fn parse_grouped_expr(i: &str) -> IResult<&str, Filter> {
