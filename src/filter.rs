@@ -1,0 +1,235 @@
+use crate::error::ParsePicaError;
+use crate::parser::{parse_path, parse_string};
+use crate::Path;
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::character::complete::{char, multispace0};
+use nom::combinator::{all_consuming, map, value};
+use nom::error::ParseError;
+use nom::multi::many0;
+use nom::sequence::{delimited, terminated, tuple};
+use nom::IResult;
+use std::str::FromStr;
+
+#[derive(Debug, PartialEq)]
+pub enum Filter {
+    ComparisonExpr(Path, ComparisonOp, String),
+    ExistenceExpr(Path),
+    BooleanExpr(Box<Filter>, BooleanOp, Box<Filter>),
+    GroupedExpr(Box<Filter>),
+}
+
+impl FromStr for Filter {
+    type Err = ParsePicaError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_filter_expr(s) {
+            Ok((_, path)) => Ok(path),
+            _ => Err(ParsePicaError::InvalidFilter),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ComparisonOp {
+    Eq,
+    Ne,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum BooleanOp {
+    And,
+    Or,
+}
+
+fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
+    inner: F,
+) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O, E>,
+{
+    delimited(multispace0, inner, multispace0)
+}
+
+pub(crate) fn parse_comparison_expr(i: &str) -> IResult<&str, Filter> {
+    map(
+        tuple((
+            ws(parse_path),
+            alt((
+                value(ComparisonOp::Eq, ws(tag("=="))),
+                value(ComparisonOp::Ne, ws(tag("!="))),
+            )),
+            ws(parse_string),
+        )),
+        |e| Filter::ComparisonExpr(e.0, e.1, e.2),
+    )(i)
+}
+
+pub(crate) fn parse_existence_expr(i: &str) -> IResult<&str, Filter> {
+    terminated(map(parse_path, |p| Filter::ExistenceExpr(p)), char('?'))(i)
+}
+
+pub(crate) fn parse_grouped_expr(i: &str) -> IResult<&str, Filter> {
+    map(
+        delimited(
+            char('('),
+            alt((parse_boolean_expr, parse_comparison_expr)),
+            char(')'),
+        ),
+        |e| Filter::GroupedExpr(Box::new(e)),
+    )(i)
+}
+
+fn parse_term_expr(i: &str) -> IResult<&str, Filter> {
+    alt((
+        parse_comparison_expr,
+        parse_existence_expr,
+        parse_grouped_expr,
+    ))(i)
+}
+
+pub(crate) fn parse_boolean_expr(i: &str) -> IResult<&str, Filter> {
+    let (i, (first, remainder)) = tuple((
+        parse_term_expr,
+        many0(tuple((
+            alt((
+                value(BooleanOp::And, ws(tag("&&"))),
+                value(BooleanOp::Or, ws(tag("||"))),
+            )),
+            parse_term_expr,
+        ))),
+    ))(i)?;
+
+    Ok((
+        i,
+        remainder.into_iter().fold(first, |prev, (op, next)| {
+            Filter::BooleanExpr(Box::new(prev), op, Box::new(next))
+        }),
+    ))
+}
+
+fn parse_filter_expr(i: &str) -> IResult<&str, Filter> {
+    all_consuming(alt((parse_boolean_expr, parse_term_expr)))(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Path;
+
+    #[test]
+    fn test_parse_comparison_expr() {
+        let path = Path::new("003@", None, '0', None);
+        let value = "123456789X".to_string();
+        let expected = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+        assert_eq!(
+            parse_comparison_expr("003@.0 == '123456789X'"),
+            Ok(("", expected))
+        );
+
+        let path = Path::new("003@", None, '0', None);
+        let value = "123456789X".to_string();
+        let expected = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
+        assert_eq!(
+            parse_comparison_expr("003@.0 != '123456789X'"),
+            Ok(("", expected))
+        );
+
+        let path = Path::new("028@", None, 'd', Some(0));
+        let value = "abc".to_string();
+        let expected = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+        assert_eq!(
+            parse_comparison_expr("028@.d[0] == 'abc'"),
+            Ok(("", expected))
+        );
+    }
+
+    #[test]
+    fn test_parse_boolean_expr() {
+        let term1 = Filter::ComparisonExpr(
+            Path::new("003@", None, '0', None),
+            ComparisonOp::Eq,
+            "123456789X".to_string(),
+        );
+
+        let path = Path::new("002@", None, '0', None);
+        let value = "Tp1".to_string();
+        let term2 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+
+        let path = Path::new("012A", None, '0', None);
+        let value = "foo".to_string();
+        let term3 = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
+
+        let expected = Filter::BooleanExpr(
+            Box::new(Filter::BooleanExpr(
+                Box::new(term1),
+                BooleanOp::Or,
+                Box::new(term2),
+            )),
+            BooleanOp::And,
+            Box::new(term3),
+        );
+        assert_eq!(
+            parse_boolean_expr(
+                "003@.0 == '123456789X' || 002@.0 == 'Tp1' && 012A.0 != 'foo'"
+            ),
+            Ok(("", expected))
+        );
+
+        let path = Path::new("003@", None, '0', None);
+        let value = "123456789X".to_string();
+        let term1 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+
+        let path = Path::new("002@", None, '0', None);
+        let value = "Tp1".to_string();
+        let term2 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+
+        let path = Path::new("012A", None, '0', None);
+        let value = "foo".to_string();
+        let term3 = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
+
+        let expected = Filter::BooleanExpr(
+            Box::new(Filter::GroupedExpr(Box::new(Filter::BooleanExpr(
+                Box::new(term1),
+                BooleanOp::Or,
+                Box::new(term2),
+            )))),
+            BooleanOp::And,
+            Box::new(term3),
+        );
+        assert_eq!(
+            parse_boolean_expr(
+                "(003@.0 == '123456789X' || 002@.0 == 'Tp1') && 012A.0 != 'foo'"
+            ),
+            Ok(("", expected))
+        );
+
+        let path = Path::new("003@", None, '0', None);
+        let value = "123456789X".to_string();
+        let term1 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+
+        let path = Path::new("002@", None, '0', None);
+        let value = "Tp1".to_string();
+        let term2 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+
+        let path = Path::new("012A", None, '0', None);
+        let value = "foo".to_string();
+        let term3 = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
+
+        let expected = Filter::BooleanExpr(
+            Box::new(term1),
+            BooleanOp::Or,
+            Box::new(Filter::GroupedExpr(Box::new(Filter::BooleanExpr(
+                Box::new(term2),
+                BooleanOp::And,
+                Box::new(term3),
+            )))),
+        );
+        assert_eq!(
+            parse_boolean_expr(
+                "003@.0 == '123456789X' || (002@.0 == 'Tp1' && 012A.0 != 'foo')"
+            ),
+            Ok(("", expected))
+        );
+    }
+}

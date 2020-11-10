@@ -1,7 +1,7 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
-use pica::{Query, Record};
+use pica::{Filter, Record};
 use std::io::BufRead;
 use std::str::FromStr;
 
@@ -28,8 +28,8 @@ pub fn cli() -> App {
                 .help("Write output to <file> instead of stdout."),
         )
         .arg(
-            Arg::with_name("query")
-                .help("A query expression used for searching.")
+            Arg::with_name("filter")
+                .help("A filter expression used for searching.")
                 .required(true),
         )
         .arg(Arg::with_name("filename"))
@@ -41,13 +41,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let reader = config.reader(args.value_of("filename"))?;
     let skip_invalid = args.is_present("skip-invalid");
 
-    let query_str = args.value_of("query").unwrap();
-    let query = match query_str.parse::<Query>() {
-        Ok(q) => q,
+    let filter_str = args.value_of("filter").unwrap();
+    let filter = match filter_str.parse::<Filter>() {
+        Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
-                "invalid query: {}",
-                query_str
+                "invalid filter: {}",
+                filter_str
             )))
         }
     };
@@ -57,7 +57,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::from_str(&line) {
-            if record.matches(&query) == invert_match {
+            if record.matches(&filter) == invert_match {
                 writer.write_all(line.as_bytes())?;
                 writer.write_all(b"\n")?;
             }

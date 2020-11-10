@@ -7,7 +7,7 @@ use std::str::FromStr;
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Field {
     pub(crate) tag: String,
-    pub(crate) occurrence: String,
+    pub(crate) occurrence: Option<String>,
     pub(crate) subfields: Vec<Subfield>,
 }
 
@@ -18,18 +18,22 @@ impl Field {
     /// ```
     /// use pica::Field;
     ///
-    /// let field = Field::new("003@", "", vec![]);
+    /// let field = Field::new("003@", None, vec![]);
     /// assert_eq!(field.tag(), "003@");
-    /// assert_eq!(field.occurrence(), "");
+    /// assert_eq!(field.occurrence(), None);
     /// assert_eq!(field.subfields(), vec![]);
     /// ```
-    pub fn new<S>(tag: S, occurrence: S, subfields: Vec<Subfield>) -> Self
+    pub fn new<S>(
+        tag: S,
+        occurrence: Option<S>,
+        subfields: Vec<Subfield>,
+    ) -> Self
     where
         S: Into<String>,
     {
         Self {
             tag: tag.into(),
-            occurrence: occurrence.into(),
+            occurrence: occurrence.map(|o| o.into()),
             subfields,
         }
     }
@@ -40,7 +44,7 @@ impl Field {
     /// ```
     /// use pica::Field;
     ///
-    /// let field = Field::new("003@", "", vec![]);
+    /// let field = Field::new("003@", None, vec![]);
     /// assert_eq!(field.tag(), "003@");
     /// ```
     pub fn tag(&self) -> &str {
@@ -53,11 +57,11 @@ impl Field {
     /// ```
     /// use pica::Field;
     ///
-    /// let field = Field::new("012A", "00", vec![]);
-    /// assert_eq!(field.occurrence(), "00");
+    /// let field = Field::new("012A", Some("00"), vec![]);
+    /// assert_eq!(field.occurrence(), Some("00"));
     /// ```
-    pub fn occurrence(&self) -> &str {
-        &self.occurrence
+    pub fn occurrence(&self) -> Option<&str> {
+        self.occurrence.as_ref().map(|s| s.as_str())
     }
 
     /// Returns the subfields of the field.
@@ -67,7 +71,7 @@ impl Field {
     /// use pica::{Field, Subfield};
     ///
     /// let field =
-    ///     Field::new("012A", "", vec![Subfield::new('a', "123").unwrap()]);
+    ///     Field::new("012A", None, vec![Subfield::new('a', "123").unwrap()]);
     /// assert_eq!(field.subfields(), vec![Subfield::new('a', "123").unwrap()]);
     /// ```
     pub fn subfields(&self) -> &[Subfield] {
@@ -82,7 +86,7 @@ impl Field {
     ///
     /// let field = Field::new(
     ///     "012A",
-    ///     "",
+    ///     None,
     ///     vec![
     ///         Subfield::new('a', "123").unwrap(),
     ///         Subfield::new('b', "456").unwrap(),
@@ -93,9 +97,9 @@ impl Field {
     pub fn pretty(&self) -> String {
         let mut pretty_str = String::from(&self.tag);
 
-        if !self.occurrence.is_empty() {
+        if let Some(occurrence) = self.occurrence() {
             pretty_str.push('/');
-            pretty_str.push_str(&self.occurrence);
+            pretty_str.push_str(&occurrence);
         }
 
         if !self.subfields.is_empty() {
@@ -159,9 +163,9 @@ mod tests {
 
     #[test]
     fn test_field_new() {
-        let field = Field::new("003@", "", vec![]);
+        let field = Field::new("003@", None, vec![]);
         assert_eq!(field.tag(), "003@");
-        assert_eq!(field.occurrence(), "");
+        assert_eq!(field.occurrence(), None);
         assert_eq!(field.subfields(), vec![]);
     }
 
@@ -169,7 +173,7 @@ mod tests {
     fn test_field_from_str() {
         let field = "012A/00 \u{1f}a123\u{1e}".parse::<Field>().unwrap();
         assert_eq!(field.tag(), "012A");
-        assert_eq!(field.occurrence(), "00");
+        assert_eq!(field.occurrence(), Some("00"));
         assert_eq!(field.subfields(), vec![Subfield::new('a', "123").unwrap()]);
     }
 }
