@@ -1,107 +1,69 @@
+//! Pica+ Path
+//!
+//! A path is a query syntax to address values within a pica+ record. The path
+//! consists of a [`Field`] tag and a [`Subfield`] code. A [`Field`] occurrence
+//! or an index is optional
+//!
+//! # Grammar
+//!
+//! ```text
+//! path       ::= tag occurrence? code index?
+//! tag        ::= [012] [0-9]{2} ([A-Z] | '@')
+//! occurrence ::= '/' [0-9]{2,3}
+//! code       ::= [a-z] | [A-Z] | [0-9]
+//! index      ::= '[' [0-9]+ ']'
+//! ```
+
 use crate::error::ParsePicaError;
 use crate::parser::parse_path;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Path {
     tag: String,
-    occurrence: String,
+    occurrence: Option<String>,
     code: char,
+    index: Option<usize>,
 }
 
 impl Path {
-    /// Creates a new path.
-    ///
-    /// # Example
-    /// ```
-    /// use pica::Path;
-    ///
-    /// let path = Path::new("012A", "000", '0');
-    /// assert_eq!(path.tag(), "012A");
-    /// assert_eq!(path.occurrence(), "000");
-    /// assert_eq!(path.code(), '0');
-    /// ```
-    pub fn new<S>(tag: S, occurrence: S, code: char) -> Self
+    pub fn new<S>(
+        tag: S,
+        occurrence: Option<S>,
+        code: char,
+        index: Option<usize>,
+    ) -> Self
     where
         S: Into<String>,
     {
         Path {
             tag: tag.into(),
-            occurrence: occurrence.into(),
+            occurrence: occurrence.map(|o| o.into()),
             code,
+            index,
         }
     }
 
-    /// Returns the tag of the path.
-    ///
-    /// # Example
-    /// ```
-    /// use pica::Path;
-    ///
-    /// let path = Path::new("012A", "000", '0');
-    /// assert_eq!(path.tag(), "012A");
-    /// ```
     pub fn tag(&self) -> &str {
         &self.tag
     }
 
-    /// Returns the occurrence of the path.
-    ///
-    /// # Example
-    /// ```
-    /// use pica::Path;
-    ///
-    /// let path = Path::new("012A", "000", '0');
-    /// assert_eq!(path.occurrence(), "000");
-    /// ```
-    pub fn occurrence(&self) -> &str {
-        &self.occurrence
+    pub fn occurrence(&self) -> Option<&str> {
+        self.occurrence.as_deref()
     }
 
-    /// Returns the code of the path.
-    ///
-    /// # Example
-    /// ```
-    /// use pica::Path;
-    ///
-    /// let path = Path::new("012A", "000", '0');
-    /// assert_eq!(path.code(), '0');
-    /// ```
     pub fn code(&self) -> char {
         self.code
+    }
+
+    pub fn index(&self) -> Option<usize> {
+        self.index
     }
 }
 
 impl FromStr for Path {
     type Err = ParsePicaError;
 
-    /// Parse a pica+ path.
-    ///
-    /// A Pica+ path is a tag, an optional occurrence and an optional code.
-    ///
-    /// # Grammar
-    ///
-    /// A path which conform to the following [EBNF] grammar will result in an
-    /// [`Ok`] being returned.
-    ///
-    /// ```text
-    /// Path      ::= Tag Occurrence? Code?
-    /// Tag        ::= [012] [0-9]{2} ([A-Z] | '@')
-    /// Occurrence ::= '/' [0-9]{2,3}
-    /// Code       ::= [a-zA-Z0-9]
-    /// ```
-    ///
-    /// [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
-    ///
-    /// # Example
-    /// ```
-    /// use pica::Path;
-    ///
-    /// let path = "003@.0".parse::<Path>().unwrap();
-    /// assert_eq!(path.tag(), "003@");
-    /// assert_eq!(path.occurrence(), "");
-    /// assert_eq!(path.code(), '0');
-    /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match parse_path(s) {
             Ok((_, path)) => Ok(path),
@@ -115,19 +77,36 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_parse_path() {
+        let data: Vec<(&str, Path)> = vec![
+            ("003@.0", Path::new("003@", None, '0', None)),
+            ("  003@.0 ", Path::new("003@", None, '0', None)),
+            ("012A/01.0", Path::new("012A", Some("01"), '0', None)),
+            ("003@.0[0]", Path::new("003@", None, '0', Some(0))),
+            ("012A/00.0[1]", Path::new("012A", Some("00"), '0', Some(1))),
+        ];
+
+        for (input, expected) in data {
+            assert_eq!(parse_path(input), Ok(("", expected)));
+        }
+    }
+
+    #[test]
     fn test_path_new() {
-        let path = Path::new("012A", "000", '0');
+        let path = Path::new("012A", Some("000"), '0', Some(0));
         assert_eq!(path.tag(), "012A");
-        assert_eq!(path.occurrence(), "000");
+        assert_eq!(path.occurrence(), Some("000"));
         assert_eq!(path.code(), '0');
+        assert_eq!(path.index(), Some(0));
     }
 
     #[test]
     fn test_path_from_str() {
         let path = "012A/000.0".parse::<Path>().unwrap();
         assert_eq!(path.tag(), "012A");
-        assert_eq!(path.occurrence(), "000");
+        assert_eq!(path.occurrence(), Some("000"));
         assert_eq!(path.code(), '0');
+        assert_eq!(path.index(), None);
 
         let result = "003@.?".parse::<Path>();
         assert_eq!(result.err(), Some(ParsePicaError::InvalidPath));

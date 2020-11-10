@@ -48,7 +48,7 @@ pub fn parse_field(i: &str) -> IResult<&str, Field> {
                 preceded(char(' '), many0(parse_subfield)),
             ),
             |((tag, occurrence), subfields)| {
-                Field::new(tag, occurrence.unwrap_or_default(), subfields)
+                Field::new(tag, occurrence, subfields)
             },
         ),
         char('\u{1e}'),
@@ -110,11 +110,11 @@ mod tests {
     fn test_parse_field() {
         assert_eq!(
             parse_field("012A/00 \u{1e}"),
-            Ok(("", Field::new("012A", "00", vec![])))
+            Ok(("", Field::new("012A", Some("00"), vec![])))
         );
         assert_eq!(
             parse_field("012A \u{1e}"),
-            Ok(("", Field::new("012A", "", vec![])))
+            Ok(("", Field::new("012A", None, vec![])))
         );
         assert_eq!(
             parse_field("003@ \u{1f}0123456789\u{1e}"),
@@ -122,7 +122,7 @@ mod tests {
                 "",
                 Field::new(
                     "003@",
-                    "",
+                    None,
                     vec![Subfield::from_unchecked('0', "123456789")]
                 )
             ))
@@ -137,7 +137,7 @@ mod tests {
                 "",
                 Record::new(vec![Field::new(
                     "003@",
-                    "",
+                    None,
                     vec![Subfield::new('0', "123456789").unwrap()]
                 )])
             ))
