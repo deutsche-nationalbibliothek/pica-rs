@@ -1,6 +1,7 @@
 use crate::error::ParsePicaError;
+use crate::filter::{BooleanOp, ComparisonOp};
 use crate::parser::parse_record;
-use crate::{BooleanOp, ComparisonOp, Field, Filter, Path};
+use crate::{Field, Filter, Path};
 use serde::Serialize;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;

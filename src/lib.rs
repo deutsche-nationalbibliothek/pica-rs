@@ -11,7 +11,7 @@ mod record;
 mod subfield;
 
 pub use field::Field;
-pub use filter::{BooleanOp, ComparisonOp, Filter};
+pub use filter::Filter;
 pub use path::Path;
 pub use record::Record;
 pub use subfield::Subfield;

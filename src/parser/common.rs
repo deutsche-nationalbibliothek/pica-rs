@@ -3,10 +3,13 @@
 use nom::character::complete::multispace0;
 use nom::error::ParseError;
 use nom::sequence::delimited;
-use nom::Parser;
+use nom::IResult;
 
-pub fn ws<'a, O, E: ParseError<&'a str>, F: Parser<&'a str, O, E>>(
-    f: F,
-) -> impl Parser<&'a str, O, E> {
-    delimited(multispace0, f, multispace0)
+pub fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
+    inner: F,
+) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O, E>,
+{
+    delimited(multispace0, inner, multispace0)
 }

@@ -1,8 +1,10 @@
 mod common;
+mod filter;
 mod path;
 mod string;
 
 pub use common::ws;
+pub use filter::parse_filter;
 pub use path::parse_path;
 pub use string::parse_string;
 
