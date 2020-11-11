@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate clap;
 
+extern crate csv;
+
 mod commands;
 mod util;
 
@@ -24,9 +26,10 @@ fn main() {
     let result = match name {
         "cat" => commands::cat::run(args),
         "filter" => commands::filter::run(args),
+        "json" => commands::json::run(args),
         "print" => commands::print::run(args),
         "sample" => commands::sample::run(args),
-        "json" => commands::json::run(args),
+        "select" => commands::select::run(args),
         _ => unreachable!(),
     };
 
@@ -40,6 +43,10 @@ fn main() {
 
         Err(CliError::Io(err)) => {
             eprintln!("IO Error: {}", err);
+            process::exit(1);
+        }
+        Err(CliError::Csv(err)) => {
+            eprintln!("CSV Error: {}", err);
             process::exit(1);
         }
         Err(CliError::Other(err)) => {
