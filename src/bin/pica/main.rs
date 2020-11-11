@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate clap;
-
 extern crate csv;
+extern crate regex;
 
 mod commands;
 mod util;

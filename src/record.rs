@@ -2,6 +2,7 @@ use crate::error::ParsePicaError;
 use crate::filter::{BooleanOp, ComparisonOp};
 use crate::parser::parse_record;
 use crate::{Field, Filter, Path};
+use regex::Regex;
 use serde::Serialize;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
@@ -115,6 +116,10 @@ impl Record {
                     }
                     ComparisonOp::Ne => {
                         lvalues.into_iter().any(|x| x != rvalue)
+                    }
+                    ComparisonOp::Re => {
+                        let re = Regex::new(rvalue).unwrap();
+                        lvalues.into_iter().any(|x| re.is_match(x))
                     }
                 }
             }
