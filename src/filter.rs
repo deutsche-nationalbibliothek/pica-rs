@@ -7,6 +7,7 @@ use std::str::FromStr;
 pub enum ComparisonOp {
     Eq,
     Ne,
+    Re,
 }
 
 #[derive(Debug, PartialEq)]
