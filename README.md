@@ -14,12 +14,13 @@ Tools to work with bibliographic records encoded in Pica+.
 * [json](https://github.com/niko2342/pica-rs/wiki/Commands#json) — serialize pica records to JSON
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
 * [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
+* [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a csv file
 
 ## Usage
 
 ```bash
 $ pica cat --skip-invalid DUMP1.dat DUMP2.dat \
-    | pica filter "(003@.0 == 123456789X && 002@.0 == Tx1) || 002@.0 != Ty2" \
+    | pica filter "(003@.0 == '123456789X' && 002@.0 == 'Tx1') || 002@.0 != 'Ty2'" \
     | pica sample 42 \
     | pica print
 ```

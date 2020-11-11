@@ -16,6 +16,7 @@
 
 use crate::error::ParsePicaError;
 use crate::parser::parse_path;
+use std::fmt;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -69,6 +70,24 @@ impl FromStr for Path {
             Ok((_, path)) => Ok(path),
             _ => Err(ParsePicaError::InvalidPath),
         }
+    }
+}
+
+impl fmt::Display for Path {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.tag)?;
+
+        if let Some(occurrence) = self.occurrence() {
+            write!(f, "/{}", &occurrence)?;
+        };
+
+        write!(f, ".{}", self.code)?;
+
+        if let Some(index) = self.index {
+            write!(f, "[{}]", index)?;
+        }
+
+        Ok(())
     }
 }
 

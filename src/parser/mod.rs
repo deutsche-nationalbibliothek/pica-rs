@@ -5,7 +5,7 @@ mod string;
 
 pub use common::ws;
 pub use filter::parse_filter;
-pub use path::parse_path;
+pub use path::{parse_path, parse_path_list};
 pub use string::parse_string;
 
 // OLD
