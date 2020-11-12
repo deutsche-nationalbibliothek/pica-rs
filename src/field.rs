@@ -1,3 +1,5 @@
+//! Pica+ Field
+
 use crate::error::ParsePicaError;
 use crate::parser::parse_field;
 use crate::Subfield;
@@ -154,26 +156,5 @@ impl FromStr for Field {
             Ok((_, field)) => Ok(field),
             _ => Err(ParsePicaError::InvalidField),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_field_new() {
-        let field = Field::new("003@", None, vec![]);
-        assert_eq!(field.tag(), "003@");
-        assert_eq!(field.occurrence(), None);
-        assert_eq!(field.subfields(), vec![]);
-    }
-
-    #[test]
-    fn test_field_from_str() {
-        let field = "012A/00 \u{1f}a123\u{1e}".parse::<Field>().unwrap();
-        assert_eq!(field.tag(), "012A");
-        assert_eq!(field.occurrence(), Some("00"));
-        assert_eq!(field.subfields(), vec![Subfield::new('a', "123").unwrap()]);
     }
 }
