@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::error::ParsePicaError;
+use pica::ParsePicaError;
 use pica::{Field, Subfield};
 
 #[test]

@@ -1,7 +1,7 @@
 extern crate pica;
 
-use pica::error::ParsePicaError;
 use pica::Filter;
+use pica::ParsePicaError;
 use pica::Record;
 
 const RECORD_STR: &'static str = concat!(

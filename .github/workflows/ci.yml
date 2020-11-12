@@ -73,7 +73,7 @@ jobs:
         env:
           CARGO_INCREMENTAL: '0'
           RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+          RUSTDOCFLAGS: '-Cpanic=abort'
       - id: coverage
         uses: actions-rs/grcov@v0.1
       - name: Coveralls upload
