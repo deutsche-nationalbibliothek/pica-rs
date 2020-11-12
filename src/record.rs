@@ -115,7 +115,7 @@ impl Record {
                         lvalues.into_iter().any(|x| x == rvalue)
                     }
                     ComparisonOp::Ne => {
-                        lvalues.into_iter().any(|x| x != rvalue)
+                        lvalues.into_iter().all(|x| x != rvalue)
                     }
                     ComparisonOp::Re => {
                         let re = Regex::new(rvalue).unwrap();
