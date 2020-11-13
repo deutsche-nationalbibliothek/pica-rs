@@ -30,34 +30,3 @@ pub fn parse_path(i: &str) -> IResult<&str, Path> {
 pub fn parse_path_list(i: &str) -> IResult<&str, Vec<Path>> {
     all_consuming(separated_list1(char(','), ws(parse_path)))(i)
 }
-
-#[cfg(config)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse_path() {
-        let data: Vec<(&str, Path)> = vec![
-            ("003@.0", Path::new("003@", None, '0', None)),
-            ("  003@.0 ", Path::new("003@", None, '0', None)),
-            ("012A/01.0", Path::new("012A", Some("01"), '0', None)),
-            ("003@.0[0]", Path::new("003@", None, '0', Some(0))),
-            ("012A/00.0[1]", Path::new("012A", Some("00"), '0', Some(1))),
-        ];
-
-        for (input, expected) in data {
-            assert_eq!(parse_path(input), Ok(("", expected)));
-        }
-    }
-
-    #[test]
-    fn test_parse_path_list() {
-        let path_list =
-            vec![Path::from_str("003@.0"), Path::from_str("002@.0[0]")];
-
-        assert_eq!(
-            parse_path_list(" 003@.0, 002@.0[0]  "),
-            Ok(("", path_list))
-        );
-    }
-}
