@@ -9,6 +9,7 @@ pub enum ComparisonOp {
     Ne,
     Re,
     StartsWith,
+    EndsWith,
 }
 
 #[derive(Debug, PartialEq)]

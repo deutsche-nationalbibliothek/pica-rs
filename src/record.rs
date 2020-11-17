@@ -75,6 +75,9 @@ impl Record {
                     ComparisonOp::StartsWith => {
                         lvalues.into_iter().any(|x| x.starts_with(rvalue))
                     }
+                    ComparisonOp::EndsWith => {
+                        lvalues.into_iter().any(|x| x.ends_with(rvalue))
+                    }
                 }
             }
         }
