@@ -19,7 +19,7 @@ Tools to work with bibliographic records encoded in Pica+.
 ## Usage
 
 ```bash
-$ pica cat --skip-invalid DUMP1.dat DUMP2.dat \
+$ pica cat --skip-invalid DUMP1.dat.gz DUMP2.dat \
     | pica filter "(003@.0 == '123456789X' && 002@.0 == 'Ts1') || 002@.0 ==~ '^Tp[123]$'" \
     | pica sample 42 \
     | pica print
