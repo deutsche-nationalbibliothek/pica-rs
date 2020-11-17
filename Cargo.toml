@@ -8,6 +8,7 @@ license = "AGPL-3.0-only"
 [dependencies]
 clap = "2.33.3"
 csv = "1.1"
+flate2 = "1.0.19"
 nom = "6.0.0"
 rand = "0.7.3"
 regex = "1.4.2"
