@@ -72,6 +72,12 @@ impl Record {
                         let re = Regex::new(rvalue).unwrap();
                         lvalues.into_iter().any(|x| re.is_match(x))
                     }
+                    ComparisonOp::StartsWith => {
+                        lvalues.into_iter().any(|x| x.starts_with(rvalue))
+                    }
+                    ComparisonOp::EndsWith => {
+                        lvalues.into_iter().any(|x| x.ends_with(rvalue))
+                    }
                 }
             }
         }

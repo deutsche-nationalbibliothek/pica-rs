@@ -19,6 +19,8 @@ pub(crate) fn parse_comparison_expr(i: &str) -> IResult<&str, Filter> {
                 map(ws(tag("==")), |_| ComparisonOp::Eq),
                 map(ws(tag("!=")), |_| ComparisonOp::Ne),
                 map(ws(tag("=~")), |_| ComparisonOp::Re),
+                map(ws(tag("=^")), |_| ComparisonOp::StartsWith),
+                map(ws(tag("=$")), |_| ComparisonOp::EndsWith),
             )),
             ws(parse_string),
         )),
@@ -111,6 +113,18 @@ mod tests {
             parse_comparison_expr("002@.0 =~ 'Tp[12]'"),
             Ok(("", expected))
         );
+
+        let path = Path::new("002@", None, '0', None);
+        let value = "Tp".to_string();
+        let expected =
+            Filter::ComparisonExpr(path, ComparisonOp::StartsWith, value);
+        assert_eq!(parse_comparison_expr("002@.0 =^ 'Tp'"), Ok(("", expected)));
+
+        let path = Path::new("002@", None, '0', None);
+        let value = "Tp".to_string();
+        let expected =
+            Filter::ComparisonExpr(path, ComparisonOp::EndsWith, value);
+        assert_eq!(parse_comparison_expr("002@.0 =$ 'Tp'"), Ok(("", expected)));
     }
 
     #[test]

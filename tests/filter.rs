@@ -55,6 +55,20 @@ fn regex_filter() {
 }
 
 #[test]
+fn startswith_filter() {
+    let record = RECORD_STR.parse::<Record>().unwrap();
+    let filter = "002@.0 =^ 'Tp'".parse::<Filter>().unwrap();
+    assert!(record.matches(&filter));
+}
+
+#[test]
+fn endswith_filter() {
+    let record = RECORD_STR.parse::<Record>().unwrap();
+    let filter = "002@.0 =$ 'p3'".parse::<Filter>().unwrap();
+    assert!(record.matches(&filter));
+}
+
+#[test]
 fn filter_exists() {
     let record = RECORD_STR.parse::<Record>().unwrap();
 
