@@ -22,3 +22,6 @@ name = "pica"
 [[bin]]
 path = "src/bin/pica/main.rs"
 name = "pica"
+
+[profile.release]
+lto = true
