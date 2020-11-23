@@ -2,6 +2,8 @@ extern crate nom;
 extern crate serde;
 extern crate serde_json;
 
+pub use self::subfield::Subfield;
+
 mod error;
 mod field;
 mod filter;
@@ -15,4 +17,3 @@ pub use field::Field;
 pub use filter::Filter;
 pub use path::Path;
 pub use record::Record;
-pub use subfield::Subfield;

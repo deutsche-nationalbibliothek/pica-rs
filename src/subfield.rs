@@ -1,11 +1,20 @@
 //! Pica+ Subfield
 
 use crate::error::ParsePicaError;
-use crate::parser::parse_subfield;
-use nom::Finish;
-use serde::Serialize;
-use std::str::FromStr;
 
+use nom::branch::alt;
+use nom::character::complete::{char, none_of, one_of};
+use nom::combinator::{map, recognize};
+use nom::multi::many0;
+use nom::sequence::{pair, preceded};
+use nom::IResult;
+
+use serde::Serialize;
+
+/// Representation of an PICA+ subfield.
+///
+/// This structure contains a single PICA+ subfield, which consists of a
+/// subfield code (alphanumerical ASCII character) and a subfield value.
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Subfield {
     pub(crate) code: char,
@@ -27,16 +36,6 @@ impl Subfield {
         }
     }
 
-    pub(crate) fn from_unchecked<S>(code: char, value: S) -> Self
-    where
-        S: Into<String>,
-    {
-        Self {
-            code,
-            value: value.into(),
-        }
-    }
-
     pub fn code(&self) -> char {
         self.code
     }
@@ -50,24 +49,27 @@ impl Subfield {
     }
 }
 
-impl FromStr for Subfield {
-    type Err = ParsePicaError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_subfield(s).finish() {
-            Ok((_, subfield)) => Ok(subfield),
-            _ => Err(ParsePicaError::InvalidSubfield),
-        }
-    }
+pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+    alt((
+        one_of("abcdefghijklmnopqrstuvwxyz"),
+        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+        one_of("0123456789"),
+    ))(i)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+fn parse_subfield_value(i: &str) -> IResult<&str, &str> {
+    recognize(many0(none_of("\u{1e}\u{1f}")))(i)
+}
 
-    #[test]
-    fn test_subfield_unchecked() {
-        let subfield = Subfield::from_unchecked('!', String::new());
-        assert_eq!(subfield.code(), '!');
-    }
+pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
+    preceded(
+        char('\u{1f}'),
+        map(
+            pair(parse_subfield_code, parse_subfield_value),
+            |(code, value)| Subfield {
+                code,
+                value: String::from(value),
+            },
+        ),
+    )(i)
 }
