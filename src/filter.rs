@@ -24,6 +24,7 @@ pub enum Filter {
     ExistenceExpr(Path),
     BooleanExpr(Box<Filter>, BooleanOp, Box<Filter>),
     GroupedExpr(Box<Filter>),
+    NotExpr(Box<Filter>),
 }
 
 impl FromStr for Filter {

@@ -214,6 +214,16 @@ pub(crate) fn parse_existence_expr(i: &str) -> IResult<&str, Filter> {
     terminated(map(parse_path, Filter::ExistenceExpr), char('?'))(i)
 }
 
+pub(crate) fn parse_not_expr(i: &str) -> IResult<&str, Filter> {
+    map(
+        preceded(
+            ws(char('!')),
+            alt((parse_existence_expr, parse_grouped_expr)),
+        ),
+        |e| Filter::NotExpr(Box::new(e)),
+    )(i)
+}
+
 pub(crate) fn parse_grouped_expr(i: &str) -> IResult<&str, Filter> {
     map(
         delimited(
@@ -230,6 +240,7 @@ fn parse_term_expr(i: &str) -> IResult<&str, Filter> {
         parse_comparison_expr,
         parse_existence_expr,
         parse_grouped_expr,
+        parse_not_expr,
     ))(i)
 }
 
