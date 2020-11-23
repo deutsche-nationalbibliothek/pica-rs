@@ -2,6 +2,7 @@
 
 use crate::error::ParsePicaError;
 use crate::parser::parse_subfield;
+use nom::Finish;
 use serde::Serialize;
 use std::str::FromStr;
 
@@ -52,26 +53,8 @@ impl Subfield {
 impl FromStr for Subfield {
     type Err = ParsePicaError;
 
-    /// Parse a pica+ encoded subfield.
-    ///
-    /// A Pica+ subfield constist of a alpha-numerical subfield code and a
-    /// value (string literal). The subfield is preceded by a unit separator
-    /// (`\x1f`).
-    ///
-    /// # Grammar
-    ///
-    /// All subfields which conform to the following [EBNF] grammar will result
-    /// in an [`Ok`] being returned.
-    ///
-    /// ```text
-    /// Subfield ::= Code Value
-    /// Code     ::= [a-zA-Z0-9]
-    /// Value    ::= [^#x1e#x1f]
-    /// ```
-    ///
-    /// [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_subfield(s) {
+        match parse_subfield(s).finish() {
             Ok((_, subfield)) => Ok(subfield),
             _ => Err(ParsePicaError::InvalidSubfield),
         }

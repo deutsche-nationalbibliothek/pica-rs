@@ -1,3 +1,24 @@
+//! This module provides functions to parse bibliographic records encoded in
+//! PICA+ and parsers used in the cli commands. PICA+ is the internal format
+//! used by the OCLC library system.
+//!
+//! NOTE: The code to parse excaped strings is based on the nom example; see
+//! https://git.io/JkoOn.
+//!
+//! # PICA+ Grammar
+//!
+//! ```text
+//! Record     ::= Field*
+//! Field      ::= Tag Occurrence? Subfield* #x1e
+//! Tag        ::= [012] [0-9]{2} [A-Z@]
+//! Occurrence ::= '/' [0-9]{2,3}
+//! Subfield   ::= Code Value
+//! Code       ::= [a-zA-Z0-9]
+//! Value      ::= [^#x1e#x1f]
+//! ```
+//!
+//! [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
+
 use crate::filter::{BooleanOp, ComparisonOp};
 use crate::{Field, Filter, Path, Record, Subfield};
 
@@ -15,7 +36,8 @@ use nom::multi::{count, fold_many0, many0, many1, many_m_n, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::IResult;
 
-pub fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
+/// Strip whitespaces from the beginning and end.
+fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
     inner: F,
 ) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
 where
@@ -24,6 +46,9 @@ where
     delimited(multispace0, inner, multispace0)
 }
 
+/// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1-6 hex
+/// numerals. We will combine this later with parse_escaped_char to parse
+/// sequences like \u{00AC}.
 fn parse_unicode<'a, E>(i: &'a str) -> IResult<&'a str, char, E>
 where
     E: ParseError<&'a str>
@@ -44,6 +69,7 @@ where
     )(i)
 }
 
+/// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
 fn parse_escaped_char<'a, E>(i: &'a str) -> IResult<&'a str, char, E>
 where
     E: ParseError<&'a str>
@@ -65,6 +91,7 @@ where
     )(i)
 }
 
+/// Parse a non-empty block of text that doesn't include \ or ".
 fn parse_literal<'a, E: ParseError<&'a str>>(
     i: &'a str,
 ) -> IResult<&'a str, &'a str, E> {
@@ -78,6 +105,8 @@ enum StringFragment<'a> {
     EscapedWS,
 }
 
+/// Combine parse_literal, parse_escaped_whitespace, and parse_escaped_char
+/// into a StringFragment.
 fn parse_fragment<'a, E>(i: &'a str) -> IResult<&'a str, StringFragment<'a>, E>
 where
     E: ParseError<&'a str>
@@ -90,6 +119,8 @@ where
     ))(i)
 }
 
+/// Parse a string. Use a loop of parse_fragment and push all of the fragments
+/// into an output string.
 pub fn parse_string<'a, E>(i: &'a str) -> IResult<&'a str, String, E>
 where
     E: ParseError<&'a str>
@@ -109,7 +140,7 @@ where
     )(i)
 }
 
-pub fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+fn parse_subfield_code(i: &str) -> IResult<&str, char> {
     alt((
         one_of("abcdefghijklmnopqrstuvwxyz"),
         one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
@@ -131,7 +162,7 @@ pub fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     )(i)
 }
 
-pub fn parse_field_tag(i: &str) -> IResult<&str, &str> {
+fn parse_field_tag(i: &str) -> IResult<&str, &str> {
     recognize(tuple((
         one_of("012"),
         count(one_of("0123456789"), 2),
@@ -139,7 +170,7 @@ pub fn parse_field_tag(i: &str) -> IResult<&str, &str> {
     )))(i)
 }
 
-pub fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
+fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
     preceded(char('/'), recognize(many_m_n(2, 3, one_of("0123456789"))))(i)
 }
 
