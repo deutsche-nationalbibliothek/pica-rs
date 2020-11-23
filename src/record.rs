@@ -56,6 +56,7 @@ impl Record {
         match filter {
             Filter::ExistenceExpr(path) => !self.path(path).is_empty(),
             Filter::GroupedExpr(filter) => self.matches(filter),
+            Filter::NotExpr(filter) => !self.matches(filter),
             Filter::BooleanExpr(lhs, op, rhs) => match op {
                 BooleanOp::And => self.matches(lhs) && self.matches(rhs),
                 BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
