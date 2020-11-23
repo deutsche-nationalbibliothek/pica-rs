@@ -2,6 +2,7 @@ use crate::error::ParsePicaError;
 use crate::filter::{BooleanOp, ComparisonOp};
 use crate::parser::parse_record;
 use crate::{Field, Filter, Path};
+use nom::Finish;
 use regex::Regex;
 use serde::Serialize;
 use std::ops::Deref;
@@ -87,36 +88,8 @@ impl Record {
 impl FromStr for Record {
     type Err = ParsePicaError;
 
-    /// Parse a pica+ encoded record.
-    ///
-    /// A Pica+ record is just a list of [`Field`].
-    ///
-    /// # Grammar
-    ///
-    /// A record which conform to the following [EBNF] grammar will result in
-    /// an [`Ok`] being returned.
-    ///
-    /// ```text
-    /// Record     ::= Field*
-    /// Field      ::= Tag Occurrence? Subfield* '#x1e'
-    /// Tag        ::= [012] [0-9]{2} ([A-Z] | '@')
-    /// Occurrence ::= '/' [0-9]{2,3}
-    /// Subfield   ::= Code Value
-    /// Code       ::= [a-zA-Z0-9]
-    /// Value      ::= [^#x1e#x1f]
-    /// ```
-    ///
-    /// [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
-    ///
-    /// # Example
-    /// ```
-    /// use pica::Record;
-    ///
-    /// assert!("003@ \u{1f}0123456789\u{1e}".parse::<Record>().is_ok());
-    /// assert!("\u{1f}!123456789".parse::<Record>().is_err());
-    /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_record(s) {
+        match parse_record(s).finish() {
             Ok((_, record)) => Ok(record),
             _ => Err(ParsePicaError::InvalidRecord),
         }
