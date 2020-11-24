@@ -1,7 +1,5 @@
 //! Pica+ Subfield
 
-use crate::error::ParsePicaError;
-
 use nom::branch::alt;
 use nom::character::complete::{char, none_of, one_of};
 use nom::combinator::{map, recognize};
@@ -12,24 +10,14 @@ use nom::IResult;
 use serde::Serialize;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
-pub struct Subfield {
+pub struct Subfield<'a> {
     pub(crate) code: char,
-    pub(crate) value: String,
+    pub(crate) value: &'a str,
 }
 
-impl Subfield {
-    pub fn new<S>(code: char, value: S) -> Result<Self, ParsePicaError>
-    where
-        S: Into<String>,
-    {
-        if code.is_ascii_alphanumeric() {
-            Ok(Subfield {
-                code,
-                value: value.into(),
-            })
-        } else {
-            Err(ParsePicaError::InvalidSubfield)
-        }
+impl<'a> Subfield<'a> {
+    pub fn new(code: char, value: &'a str) -> Subfield<'a> {
+        Subfield { code, value }
     }
 
     pub fn code(&self) -> char {
@@ -37,7 +25,7 @@ impl Subfield {
     }
 
     pub fn value(&self) -> &str {
-        &self.value
+        self.value
     }
 
     pub fn pretty(&self) -> String {
@@ -62,10 +50,7 @@ pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
         char('\u{1f}'),
         map(
             pair(parse_subfield_code, parse_subfield_value),
-            |(code, value)| Subfield {
-                code,
-                value: String::from(value),
-            },
+            |(code, value)| Subfield { code, value },
         ),
     )(i)
 }

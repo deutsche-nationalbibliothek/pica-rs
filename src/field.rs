@@ -8,10 +8,10 @@ use serde::Serialize;
 use std::str::FromStr;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
-pub struct Field {
+pub struct Field<'a> {
     pub(crate) tag: String,
     pub(crate) occurrence: Option<String>,
-    pub(crate) subfields: Vec<Subfield>,
+    pub(crate) subfields: Vec<Subfield<'a>>,
 }
 
 impl Field {
