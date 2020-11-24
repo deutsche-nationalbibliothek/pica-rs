@@ -8,29 +8,36 @@ use nom::sequence::{pair, preceded};
 use nom::IResult;
 
 use serde::Serialize;
+use std::borrow::Cow;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Subfield<'a> {
-    pub(crate) code: char,
-    pub(crate) value: &'a str,
+    code: char,
+    value: Cow<'a, str>,
 }
 
 impl<'a> Subfield<'a> {
-    pub fn new(code: char, value: &'a str) -> Subfield<'a> {
-        Subfield { code, value }
+    pub fn new<S>(code: char, value: S) -> Subfield<'a>
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        Subfield {
+            code,
+            value: value.into(),
+        }
     }
 
-    pub fn code(&self) -> char {
-        self.code
-    }
+    //     pub fn code(&self) -> char {
+    //         self.code
+    //     }
 
-    pub fn value(&self) -> &str {
-        self.value
-    }
+    //     pub fn value(&self) -> &str {
+    //         self.value
+    //     }
 
-    pub fn pretty(&self) -> String {
-        format!("${} {}", self.code, self.value)
-    }
+    //     pub fn pretty(&self) -> String {
+    //         format!("${} {}", self.code, self.value)
+    //     }
 }
 
 pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
@@ -50,7 +57,7 @@ pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
         char('\u{1f}'),
         map(
             pair(parse_subfield_code, parse_subfield_value),
-            |(code, value)| Subfield { code, value },
+            |(code, value)| Subfield::new(code, value),
         ),
     )(i)
 }
