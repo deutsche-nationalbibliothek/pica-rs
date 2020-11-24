@@ -11,10 +11,6 @@ use nom::IResult;
 
 use serde::Serialize;
 
-/// Representation of an PICA+ subfield.
-///
-/// This structure contains a single PICA+ subfield, which consists of a
-/// subfield code (alphanumerical ASCII character) and a subfield value.
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Subfield {
     pub(crate) code: char,
