@@ -3,7 +3,6 @@ use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
 use std::io::BufRead;
-use std::str::FromStr;
 
 pub fn cli() -> App {
     SubCommand::with_name("print")
@@ -32,8 +31,8 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     for line in reader.lines() {
         let line = line.unwrap();
-        if let Ok(record) = Record::from_str(&line) {
-            writer.write_all(record.pretty().as_bytes())?;
+        if let Ok(record) = Record::decode(&line) {
+            writer.write_all(record.pica3().as_bytes())?;
             writer.write_all(b"\n\n")?;
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
