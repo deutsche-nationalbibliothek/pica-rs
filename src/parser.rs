@@ -142,33 +142,6 @@ where
     )(i)
 }
 
-fn parse_field_tag(i: &str) -> IResult<&str, &str> {
-    recognize(tuple((
-        one_of("012"),
-        count(one_of("0123456789"), 2),
-        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-    )))(i)
-}
-
-fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
-    preceded(char('/'), recognize(many_m_n(2, 3, one_of("0123456789"))))(i)
-}
-
-pub fn parse_field(i: &str) -> IResult<&str, Field> {
-    terminated(
-        map(
-            pair(
-                pair(parse_field_tag, opt(parse_field_occurrence)),
-                preceded(char(' '), many0(parse_subfield)),
-            ),
-            |((tag, occurrence), subfields)| {
-                Field::new(tag, occurrence, subfields)
-            },
-        ),
-        char('\u{1e}'),
-    )(i)
-}
-
 pub fn parse_record(i: &str) -> IResult<&str, Record> {
     all_consuming(map(many1(parse_field), Record::new))(i)
 }
