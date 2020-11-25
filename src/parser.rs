@@ -142,10 +142,6 @@ where
     )(i)
 }
 
-pub fn parse_record(i: &str) -> IResult<&str, Record> {
-    all_consuming(map(many1(parse_field), Record::new))(i)
-}
-
 pub(crate) fn parse_comparison_expr(i: &str) -> IResult<&str, Filter> {
     map(
         tuple((
