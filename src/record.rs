@@ -4,13 +4,12 @@ use crate::field::{parse_field, Field};
 use nom::combinator::map;
 use nom::multi::many1;
 use nom::{Finish, IResult};
-use serde::Serialize;
 use std::ops::Deref;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParsePicaError;
 
-#[derive(Serialize, Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct Record<'a>(Vec<Field<'a>>);
 
 impl<'a> Record<'a> {
@@ -71,8 +70,14 @@ mod tests {
 
     #[test]
     fn test_record_decode() {
-        let record = Record::decode("003@ \u{1f}0123456789X\u{1e}").unwrap();
-        assert_eq!(record.len(), 1);
+        assert_eq!(
+            Record::decode("003@ \u{1f}0123456789X\u{1e}").unwrap(),
+            Record::new(vec![Field::new(
+                "003@",
+                None,
+                vec![Subfield::new('0', "123456789X")]
+            )])
+        );
 
         assert_eq!(Record::decode(""), Err(ParsePicaError));
     }
