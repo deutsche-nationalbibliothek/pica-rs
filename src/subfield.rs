@@ -1,14 +1,13 @@
 //! Pica+ Subfield
 
-use nom::branch::alt;
-use nom::character::complete::{char, none_of, one_of};
+use serde::Serialize;
+use std::borrow::Cow;
+
+use nom::character::complete::{char, none_of, satisfy};
 use nom::combinator::{map, recognize};
 use nom::multi::many0;
 use nom::sequence::{pair, preceded};
 use nom::IResult;
-
-use serde::Serialize;
-use std::borrow::Cow;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Subfield<'a> {
@@ -17,42 +16,46 @@ pub struct Subfield<'a> {
 }
 
 impl<'a> Subfield<'a> {
-    pub fn new<S>(code: char, value: S) -> Subfield<'a>
-    where
-        S: Into<Cow<'a, str>>,
-    {
+    // Creates a new Subfield
+    pub fn new<S: Into<Cow<'a, str>>>(code: char, value: S) -> Subfield<'a> {
         Subfield {
             code,
             value: value.into(),
         }
     }
 
-    //     pub fn code(&self) -> char {
-    //         self.code
-    //     }
+    /// Returns the code of the subfield.
+    pub fn code(&self) -> char {
+        self.code
+    }
 
-    //     pub fn value(&self) -> &str {
-    //         self.value
-    //     }
+    // Returns the value of the subfield.
+    pub fn value(&self) -> &str {
+        self.value.as_ref()
+    }
 
-    //     pub fn pretty(&self) -> String {
-    //         format!("${} {}", self.code, self.value)
-    //     }
+    /// Returns the subfield as an PICA3 encoded string.
+    pub fn pica3(&self) -> String {
+        format!("${} {}", self.code, self.value)
+    }
 }
 
-pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
-    alt((
-        one_of("abcdefghijklmnopqrstuvwxyz"),
-        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
-        one_of("0123456789"),
-    ))(i)
+/// Parses a PICA+ subfield code, which is a single alphanumeric ASCII
+/// character ([a-zA-Z0-9].
+fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+    satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
+/// Parses a PICA+ subfield value, which is a utf8 string (maybe an empty
+/// string) terminated by a record separator (\u{1e}) or an unit separator
+/// (\u{1f}).
 fn parse_subfield_value(i: &str) -> IResult<&str, &str> {
     recognize(many0(none_of("\u{1e}\u{1f}")))(i)
 }
 
-pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
+/// Parses a PICA+ subfield, which consists of an subfield code and an value
+/// preceded by an unit separator (\u{1f}).
+pub fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     preceded(
         char('\u{1f}'),
         map(
@@ -60,4 +63,24 @@ pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
             |(code, value)| Subfield::new(code, value),
         ),
     )(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_subfield() {
+        let subfield = Subfield::new('a', "1234567890");
+        assert_eq!(subfield.code(), 'a');
+        assert_eq!(subfield.value(), "1234567890");
+        assert_eq!(subfield.pica3(), "$a 1234567890");
+    }
+
+    #[test]
+    fn test_parse_subfield() {
+        let actual = parse_subfield("\u{1f}a123");
+        let expected = Subfield::new('a', "123");
+        assert_eq!(actual, Ok(("", expected)));
+    }
 }
