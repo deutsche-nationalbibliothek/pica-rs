@@ -127,6 +127,25 @@ fn parse_field_expr(i: &str) -> IResult<&str, Filter> {
     )(i)
 }
 
+fn parse_short_expr(i: &str) -> IResult<&str, Filter> {
+    map(
+        tuple((
+            pair(parse_field_tag, opt(parse_field_occurrence)),
+            preceded(
+                ws(char('.')),
+                cut(alt((parse_subfield_comparison, parse_subfield_exists))),
+            ),
+        )),
+        |((tag, occurrence), filter)| {
+            Filter::FieldExpr(
+                String::from(tag),
+                occurrence.map(String::from),
+                filter,
+            )
+        },
+    )(i)
+}
+
 fn parse_field_group(i: &str) -> IResult<&str, Filter> {
     map(
         preceded(ws(char('(')), cut(terminated(parse_filter_expr, char(')')))),
@@ -135,7 +154,7 @@ fn parse_field_group(i: &str) -> IResult<&str, Filter> {
 }
 
 fn parse_field_primary(i: &str) -> IResult<&str, Filter> {
-    alt((parse_field_group, parse_field_expr))(i)
+    alt((parse_field_group, parse_field_expr, parse_short_expr))(i)
 }
 
 fn parse_field_boolean_expr(i: &str) -> IResult<&str, Filter> {
@@ -213,7 +232,7 @@ mod tests {
 
         let filter =
             "(002@{0 == 'Tp1' || 0 == 'Tp2'} || 012A/00{x == 'abc'}) && \
-                      003@{0 == '123'}";
+                      003@.0 == '123'";
         let expected = Filter::BooleanExpr(
             Box::new(Filter::GroupedExpr(Box::new(Filter::BooleanExpr(
                 Box::new(fe1),
@@ -280,6 +299,25 @@ mod tests {
                         )),
                     )
                 )))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_parse_short_expr() {
+        assert_eq!(
+            parse_short_expr("012A/00.0 == '123456789X'"),
+            Ok((
+                "",
+                Filter::FieldExpr(
+                    "012A".to_string(),
+                    Some("00".to_string()),
+                    SubfieldFilter::ComparisonExpr(
+                        '0',
+                        ComparisonOp::Eq,
+                        "123456789X".to_string()
+                    )
+                )
             ))
         );
     }
