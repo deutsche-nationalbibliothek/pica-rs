@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn test_parse_unicode() {
         assert_eq!(
-            parse_helper("'\u{1f}\t'"),
+            parse_helper("'\u{001f}\t'"),
             Ok(("", String::from("\x1f\t")))
         );
     }

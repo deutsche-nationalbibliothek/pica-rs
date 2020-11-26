@@ -11,7 +11,7 @@ use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct ParseFilterError;
 
 #[derive(Debug, PartialEq)]

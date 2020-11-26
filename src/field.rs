@@ -167,6 +167,13 @@ mod tests {
         );
         assert!(field.matches(&filter));
 
+        let filter = SubfieldFilter::ComparisonExpr(
+            'a',
+            ComparisonOp::Ne,
+            "456".to_string(),
+        );
+        assert!(field.matches(&filter));
+
         let filter = SubfieldFilter::BooleanExpr(
             Box::new(SubfieldFilter::ComparisonExpr(
                 'a',
