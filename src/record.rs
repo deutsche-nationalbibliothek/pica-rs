@@ -1,6 +1,7 @@
 //! Pica+ Record
 
 use crate::field::{parse_field, Field};
+use crate::filter::{BooleanOp, Filter};
 use nom::combinator::map;
 use nom::multi::many1;
 use nom::{Finish, IResult};
@@ -23,6 +24,23 @@ impl<'a> Record<'a> {
         match parse_record(i).finish() {
             Ok((_, record)) => Ok(record),
             _ => Err(ParsePicaError),
+        }
+    }
+
+    pub fn matches(&self, filter: &Filter) -> bool {
+        match filter {
+            Filter::FieldExpr(tag, occurrence, filter) => {
+                self.iter().any(|field| {
+                    field.tag() == tag
+                        && field.occurrence() == occurrence.as_deref()
+                        && field.matches(filter)
+                })
+            }
+            Filter::BooleanExpr(lhs, op, rhs) => match op {
+                BooleanOp::And => self.matches(lhs) && self.matches(rhs),
+                BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
+            },
+            Filter::GroupedExpr(filter) => self.matches(filter),
         }
     }
 

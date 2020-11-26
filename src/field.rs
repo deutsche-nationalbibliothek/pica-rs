@@ -1,5 +1,6 @@
 //! Pica+ Field
 
+use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
 use crate::subfield::{parse_subfield, Subfield};
 
 use nom::character::complete::{char, one_of};
@@ -50,6 +51,28 @@ impl<'a> Field<'a> {
         &self.subfields
     }
 
+    pub fn matches(&self, filter: &SubfieldFilter) -> bool {
+        match filter {
+            SubfieldFilter::ComparisonExpr(code, op, value) => match op {
+                ComparisonOp::Eq => self.subfields.iter().any(|subfield| {
+                    subfield.code() == *code && subfield.value() == value
+                }),
+                ComparisonOp::Ne => self.subfields.iter().all(|subfield| {
+                    subfield.code() == *code && subfield.value() != value
+                }),
+            },
+            SubfieldFilter::BooleanExpr(lhs, op, rhs) => match op {
+                BooleanOp::And => self.matches(lhs) && self.matches(rhs),
+                BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
+            },
+            SubfieldFilter::GroupedExpr(filter) => self.matches(filter),
+            SubfieldFilter::ExistsExpr(code) => self
+                .subfields
+                .iter()
+                .any(|subfield| subfield.code() == *code),
+        }
+    }
+
     /// Returns the field as an PICA3 formatted string.
     pub fn pica3(&self) -> String {
         let mut pretty_str = String::from(self.tag.clone());
@@ -75,7 +98,7 @@ impl<'a> Field<'a> {
     }
 }
 
-fn parse_field_tag(i: &str) -> IResult<&str, &str> {
+pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, &str> {
     recognize(tuple((
         one_of("012"),
         count(one_of("0123456789"), 2),
@@ -83,7 +106,7 @@ fn parse_field_tag(i: &str) -> IResult<&str, &str> {
     )))(i)
 }
 
-fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
+pub(crate) fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
     preceded(char('/'), recognize(many_m_n(2, 3, one_of("0123456789"))))(i)
 }
 

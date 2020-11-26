@@ -42,7 +42,7 @@ impl<'a> Subfield<'a> {
 
 /// Parses a PICA+ subfield code, which is a single alphanumeric ASCII
 /// character ([a-zA-Z0-9].
-fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
     satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
