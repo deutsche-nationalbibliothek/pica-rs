@@ -72,6 +72,7 @@ pub fn parse_record(i: &str) -> IResult<&str, Record> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Filter;
     use crate::Subfield;
 
     #[test]
@@ -98,5 +99,17 @@ mod tests {
         );
 
         assert_eq!(Record::decode(""), Err(ParsePicaError));
+    }
+
+    #[test]
+    fn test_record_matches() {
+        let record =
+            Record::decode("003@ \u{1f}0123456789X\u{1e}002@ \u{1f}0Tp1\u{1e}")
+                .unwrap();
+        let filter =
+            "(002@{0 == 'Tp2' || 0 == 'Tp1'}) || 003@{0 == '123456789X'}"
+                .parse::<Filter>()
+                .unwrap();
+        assert!(record.matches(&filter))
     }
 }
