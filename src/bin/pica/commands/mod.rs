@@ -1,6 +1,6 @@
 // pub mod cat;
 mod common;
-// pub mod filter;
+pub mod filter;
 // pub mod json;
 pub mod print;
 // pub mod sample;
@@ -12,9 +12,9 @@ pub(crate) use common::Config;
 pub fn subcmds() -> Vec<App> {
     vec![
         print::cli(),
-        /* cat::cli(),
-         * filter::cli(),
-         * json::cli(),
+        // cat::cli(),
+        filter::cli(),
+        /* json::cli(),
          * sample::cli(),
          * select::cli(), */
     ]
