@@ -110,3 +110,20 @@ where
         char('\''),
     )(i)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse_helper(i: &str) -> IResult<&str, String> {
+        parse_string(i)
+    }
+
+    #[test]
+    fn test_parse_unicode() {
+        assert_eq!(
+            parse_helper("'\u{1f}\t'"),
+            Ok(("", String::from("\x1f\t")))
+        );
+    }
+}
