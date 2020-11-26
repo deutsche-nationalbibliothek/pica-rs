@@ -128,6 +128,7 @@ pub fn parse_field(i: &str) -> IResult<&str, Field> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
 
     #[test]
     fn test_field() {
@@ -152,5 +153,45 @@ mod tests {
                 )
             ))
         );
+    }
+
+    #[test]
+    fn test_field_matches() {
+        let field =
+            Field::new("012A", Some("00"), vec![Subfield::new('a', "123")]);
+
+        let filter = SubfieldFilter::ComparisonExpr(
+            'a',
+            ComparisonOp::Eq,
+            "123".to_string(),
+        );
+        assert!(field.matches(&filter));
+
+        let filter = SubfieldFilter::BooleanExpr(
+            Box::new(SubfieldFilter::ComparisonExpr(
+                'a',
+                ComparisonOp::Eq,
+                "456".to_string(),
+            )),
+            BooleanOp::Or,
+            Box::new(SubfieldFilter::ComparisonExpr(
+                'a',
+                ComparisonOp::Eq,
+                "123".to_string(),
+            )),
+        );
+        assert!(field.matches(&filter));
+
+        let filter = SubfieldFilter::GroupedExpr(Box::new(
+            SubfieldFilter::ComparisonExpr(
+                'a',
+                ComparisonOp::Eq,
+                "123".to_string(),
+            ),
+        ));
+        assert!(field.matches(&filter));
+
+        let filter = SubfieldFilter::ExistsExpr('a');
+        assert!(field.matches(&filter));
     }
 }
