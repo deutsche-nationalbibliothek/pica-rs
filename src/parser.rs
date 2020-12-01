@@ -21,13 +21,12 @@
 
 use crate::filter::{BooleanOp, ComparisonOp};
 use crate::string::parse_string;
-use crate::{Field, Filter, Path, Record, Subfield};
+use crate::subfield::{parse_subfield, parse_subfield_code};
+use crate::{Field, Filter, Path, Record};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{
-    char, digit1, multispace0, none_of, one_of, satisfy,
-};
+use nom::character::complete::{char, digit1, multispace0, one_of};
 use nom::combinator::{all_consuming, map, opt, recognize};
 use nom::error::ParseError;
 use nom::multi::{count, many0, many1, many_m_n, separated_list1};
@@ -42,27 +41,6 @@ where
     F: Fn(&'a str) -> IResult<&'a str, O, E>,
 {
     delimited(multispace0, inner, multispace0)
-}
-
-fn parse_subfield_code(i: &str) -> IResult<&str, char> {
-    satisfy(|c| c.is_ascii_alphanumeric())(i)
-}
-
-fn parse_subfield_value(i: &str) -> IResult<&str, &str> {
-    recognize(many0(none_of("\u{1e}\u{1f}")))(i)
-}
-
-pub fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
-    preceded(
-        char('\u{1f}'),
-        map(
-            pair(parse_subfield_code, parse_subfield_value),
-            |(code, value)| Subfield {
-                code,
-                value: value.into(),
-            },
-        ),
-    )(i)
 }
 
 fn parse_field_tag(i: &str) -> IResult<&str, &str> {
@@ -197,33 +175,7 @@ pub fn parse_path_list(i: &str) -> IResult<&str, Vec<Path>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Path;
-
-    #[test]
-    fn test_parse_subfield_code() {
-        for range in vec!['a'..='z', 'A'..='Z', '0'..='9'] {
-            for c in range {
-                assert_eq!(parse_subfield_code(&String::from(c)), Ok(("", c)));
-            }
-        }
-    }
-
-    #[test]
-    fn test_parse_subfield_value() {
-        assert_eq!(parse_subfield_value(""), Ok(("", "")));
-        assert_eq!(parse_subfield_value("abc"), Ok(("", "abc")));
-        assert_eq!(parse_subfield_value("ab\u{1f}c"), Ok(("\u{1f}c", "ab")));
-        assert_eq!(parse_subfield_value("ab\u{1e}c"), Ok(("\u{1e}c", "ab")));
-    }
-
-    #[test]
-    fn test_parse_subfield() {
-        assert_eq!(
-            parse_subfield("\u{1f}a123"),
-            Ok(("", Subfield::new('a', "123").unwrap()))
-        );
-        assert!(parse_subfield("!a123").is_err());
-    }
+    use crate::{Path, Subfield};
 
     #[test]
     fn test_field_tag() {
