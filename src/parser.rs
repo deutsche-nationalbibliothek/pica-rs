@@ -25,7 +25,9 @@ use crate::{Field, Filter, Path, Record, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, digit1, multispace0, none_of, one_of};
+use nom::character::complete::{
+    char, digit1, multispace0, none_of, one_of, satisfy,
+};
 use nom::combinator::{all_consuming, map, opt, recognize};
 use nom::error::ParseError;
 use nom::multi::{count, many0, many1, many_m_n, separated_list1};
@@ -43,11 +45,7 @@ where
 }
 
 fn parse_subfield_code(i: &str) -> IResult<&str, char> {
-    alt((
-        one_of("abcdefghijklmnopqrstuvwxyz"),
-        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
-        one_of("0123456789"),
-    ))(i)
+    satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
 fn parse_subfield_value(i: &str) -> IResult<&str, &str> {
