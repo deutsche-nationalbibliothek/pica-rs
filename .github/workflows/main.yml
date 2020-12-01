@@ -1,6 +1,8 @@
 name: main
 
 on:
+  schedule:
+    - cron: '40 14 * * *'
   push:
     branches: ['main']
 
