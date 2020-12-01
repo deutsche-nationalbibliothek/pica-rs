@@ -2,7 +2,7 @@ name: main
 
 on:
   schedule:
-    - cron: '35 15 * * *'
+    - cron: '40 14 * * *'
   push:
     branches: ['main']
 
