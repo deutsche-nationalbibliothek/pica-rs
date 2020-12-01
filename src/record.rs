@@ -6,14 +6,20 @@ use nom::Finish;
 use regex::Regex;
 use serde::Serialize;
 use std::ops::Deref;
-use std::str::FromStr;
 
 #[derive(Serialize, Debug, Default, PartialEq, Eq)]
-pub struct Record(Vec<Field>);
+pub struct Record<'a>(Vec<Field<'a>>);
 
-impl Record {
-    pub fn new(fields: Vec<Field>) -> Self {
-        Record(fields)
+impl<'a> Record<'a> {
+    pub fn new(fields: Vec<Field<'a>>) -> Self {
+        Self(fields)
+    }
+
+    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
+        match parse_record(s).finish() {
+            Ok((_, record)) => Ok(record),
+            _ => Err(ParsePicaError::InvalidRecord),
+        }
     }
 
     pub fn pretty(&self) -> String {
@@ -86,21 +92,10 @@ impl Record {
     }
 }
 
-impl FromStr for Record {
-    type Err = ParsePicaError;
+impl<'a> Deref for Record<'a> {
+    type Target = Vec<Field<'a>>;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_record(s).finish() {
-            Ok((_, record)) => Ok(record),
-            _ => Err(ParsePicaError::InvalidRecord),
-        }
-    }
-}
-
-impl Deref for Record {
-    type Target = Vec<Field>;
-
-    fn deref(&self) -> &Vec<Field> {
+    fn deref(&self) -> &Vec<Field<'a>> {
         &self.0
     }
 }

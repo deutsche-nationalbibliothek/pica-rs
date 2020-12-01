@@ -5,16 +5,16 @@ use crate::parser::parse_field;
 use crate::Subfield;
 use nom::Finish;
 use serde::Serialize;
-use std::str::FromStr;
+use std::borrow::Cow;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
-pub struct Field {
-    pub(crate) tag: String,
-    pub(crate) occurrence: Option<String>,
-    pub(crate) subfields: Vec<Subfield>,
+pub struct Field<'a> {
+    pub(crate) tag: Cow<'a, str>,
+    pub(crate) occurrence: Option<Cow<'a, str>>,
+    pub(crate) subfields: Vec<Subfield<'a>>,
 }
 
-impl Field {
+impl<'a> Field<'a> {
     /// Create a new field.
     ///
     /// # Example
@@ -29,15 +29,22 @@ impl Field {
     pub fn new<S>(
         tag: S,
         occurrence: Option<S>,
-        subfields: Vec<Subfield>,
+        subfields: Vec<Subfield<'a>>,
     ) -> Self
     where
-        S: Into<String>,
+        S: Into<Cow<'a, str>>,
     {
         Self {
             tag: tag.into(),
             occurrence: occurrence.map(|o| o.into()),
             subfields,
+        }
+    }
+
+    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
+        match parse_field(s).finish() {
+            Ok((_, field)) => Ok(field),
+            _ => Err(ParsePicaError::InvalidField),
         }
     }
 
@@ -98,7 +105,7 @@ impl Field {
     /// assert_eq!(field.pretty(), "012A $a 123 $b 456");
     /// ```
     pub fn pretty(&self) -> String {
-        let mut pretty_str = String::from(&self.tag);
+        let mut pretty_str = String::from(self.tag.clone());
 
         if let Some(occurrence) = self.occurrence() {
             pretty_str.push('/');
@@ -118,16 +125,5 @@ impl Field {
         }
 
         pretty_str
-    }
-}
-
-impl FromStr for Field {
-    type Err = ParsePicaError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_field(s).finish() {
-            Ok((_, field)) => Ok(field),
-            _ => Err(ParsePicaError::InvalidField),
-        }
     }
 }

@@ -4,7 +4,6 @@ use clap::{Arg, SubCommand};
 use pica::parser::parse_path_list;
 use pica::Record;
 use std::io::BufRead;
-use std::str::FromStr;
 
 pub fn cli() -> App {
     SubCommand::with_name("select")
@@ -46,7 +45,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     for line in reader.lines() {
         let line = line.unwrap();
-        if let Ok(record) = Record::from_str(&line) {
+        if let Ok(record) = Record::decode(&line) {
             let mut rows = Vec::<Vec<&str>>::new();
 
             for path in &paths {

@@ -21,7 +21,7 @@ fn parse_filter() {
 
 #[test]
 fn comp_eq_filter() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
 
     let filter = "003@.0 == '123456789X'".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));
@@ -35,7 +35,7 @@ fn comp_eq_filter() {
 
 #[test]
 fn comp_ne_filter() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
 
     let filter = "003@.0 != '23456789X1'".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));
@@ -49,28 +49,28 @@ fn comp_ne_filter() {
 
 #[test]
 fn regex_filter() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
     let filter = "002@.0 =~ '^Tp[123]$'".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));
 }
 
 #[test]
 fn startswith_filter() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
     let filter = "002@.0 =^ 'Tp'".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));
 }
 
 #[test]
 fn endswith_filter() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
     let filter = "002@.0 =$ 'p3'".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));
 }
 
 #[test]
 fn filter_exists() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
 
     let filter = "002@.0?".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));
@@ -81,7 +81,7 @@ fn filter_exists() {
 
 #[test]
 fn filter_boolean_and() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
 
     let filter = "002@.0 =~ '^T[pf]3$' && 010@.a == 'eng'"
         .parse::<Filter>()
@@ -96,7 +96,7 @@ fn filter_boolean_and() {
 
 #[test]
 fn filter_boolean_or() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
 
     let filter = "002@.0 =~ '^T[pf]4$' || 010@.a == 'eng'"
         .parse::<Filter>()
@@ -116,7 +116,7 @@ fn filter_boolean_or() {
 
 #[test]
 fn filter_grouped() {
-    let record = RECORD_STR.parse::<Record>().unwrap();
+    let record = Record::decode(RECORD_STR).unwrap();
 
     let filter = "(002@.0 =~ '^T[pf]3$')".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));

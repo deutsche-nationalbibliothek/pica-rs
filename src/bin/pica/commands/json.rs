@@ -3,7 +3,6 @@ use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
 use std::io::BufRead;
-use std::str::FromStr;
 
 pub fn cli() -> App {
     SubCommand::with_name("json")
@@ -34,7 +33,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     for (count, line) in reader.lines().enumerate() {
         let line = line.unwrap();
-        if let Ok(record) = Record::from_str(&line) {
+        if let Ok(record) = Record::decode(&line) {
             let j = serde_json::to_string(&record).unwrap();
             if count > 0 {
                 writer.write_all(b",")?;

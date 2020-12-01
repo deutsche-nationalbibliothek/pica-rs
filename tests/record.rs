@@ -57,9 +57,10 @@ fn record_pretty() {
 
 #[test]
 fn record_path() {
-    let record = "012A \u{1f}a1\u{1f}a2\u{1f}b3\u{1e}012A \u{1f}a3\u{1e}"
-        .parse::<Record>()
-        .unwrap();
+    let record = Record::decode(
+        "012A \u{1f}a1\u{1f}a2\u{1f}b3\u{1e}012A \u{1f}a3\u{1e}",
+    )
+    .unwrap();
 
     let path = "012A.a".parse::<Path>().unwrap();
     assert_eq!(record.path(&path), vec!["1", "2", "3"]);
@@ -72,10 +73,10 @@ fn record_path() {
 }
 
 #[test]
-fn record_from_str() {
-    let record: Record = "003@ \u{1f}0123\u{1e}012A/00 \u{1f}a123\u{1e}"
-        .parse()
-        .unwrap();
+fn record_decode() {
+    let record: Record =
+        Record::decode("003@ \u{1f}0123\u{1e}012A/00 \u{1f}a123\u{1e}")
+            .unwrap();
 
     let field =
         Field::new("003@", None, vec![Subfield::new('0', "123").unwrap()]);
@@ -89,15 +90,15 @@ fn record_from_str() {
     assert!(record.contains(&field));
     assert_eq!(record.len(), 2);
 
-    let result = "003@ \u{1f}0123\u{1e}012A/00 \u{1f}a123".parse::<Record>();
+    let result = Record::decode("003@ \u{1f}0123\u{1e}012A/00 \u{1f}a123");
     assert_eq!(result, Err(ParsePicaError::InvalidRecord));
 }
 
 #[test]
 fn record_matches() {
-    let record = "003@ \u{1f}0123456789X\u{1e}012A \u{1f}a3\u{1e}"
-        .parse::<Record>()
-        .unwrap();
+    let record =
+        Record::decode("003@ \u{1f}0123456789X\u{1e}012A \u{1f}a3\u{1e}")
+            .unwrap();
 
     let filter = "003@.0 == '123456789X'".parse::<Filter>().unwrap();
     assert!(record.matches(&filter));

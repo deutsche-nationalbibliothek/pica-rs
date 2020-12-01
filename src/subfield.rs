@@ -4,18 +4,18 @@ use crate::error::ParsePicaError;
 use crate::parser::parse_subfield;
 use nom::Finish;
 use serde::Serialize;
-use std::str::FromStr;
+use std::borrow::Cow;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
-pub struct Subfield {
+pub struct Subfield<'a> {
     pub(crate) code: char,
-    pub(crate) value: String,
+    pub(crate) value: Cow<'a, str>,
 }
 
-impl Subfield {
+impl<'a> Subfield<'a> {
     pub fn new<S>(code: char, value: S) -> Result<Self, ParsePicaError>
     where
-        S: Into<String>,
+        S: Into<Cow<'a, str>>,
     {
         if code.is_ascii_alphanumeric() {
             Ok(Subfield {
@@ -29,7 +29,7 @@ impl Subfield {
 
     pub(crate) fn from_unchecked<S>(code: char, value: S) -> Self
     where
-        S: Into<String>,
+        S: Into<Cow<'a, str>>,
     {
         Self {
             code,
@@ -37,27 +37,26 @@ impl Subfield {
         }
     }
 
-    pub fn code(&self) -> char {
-        self.code
-    }
-
-    pub fn value(&self) -> &str {
-        &self.value
-    }
-
-    pub fn pretty(&self) -> String {
-        format!("${} {}", self.code, self.value)
-    }
-}
-
-impl FromStr for Subfield {
-    type Err = ParsePicaError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
         match parse_subfield(s).finish() {
             Ok((_, subfield)) => Ok(subfield),
             _ => Err(ParsePicaError::InvalidSubfield),
         }
+    }
+
+    /// Returns the code of the subfield.
+    pub fn code(&self) -> char {
+        self.code
+    }
+
+    // Returns the value of the subfield.
+    pub fn value(&self) -> &str {
+        self.value.as_ref()
+    }
+
+    /// Returns the subfield as an PICA3 encoded string.
+    pub fn pretty(&self) -> String {
+        format!("${} {}", self.code, self.value)
     }
 }
 
