@@ -8,6 +8,7 @@ mod filter;
 pub mod parser;
 mod path;
 mod record;
+mod string;
 mod subfield;
 
 pub use error::ParsePicaError;
