@@ -25,9 +25,7 @@ fn field_pretty() {
 
 #[test]
 fn field_parse() {
-    let field = "012A/00 \u{1f}0abc\u{1f}0def\u{1e}"
-        .parse::<Field>()
-        .unwrap();
+    let field = Field::decode("012A/00 \u{1f}0abc\u{1f}0def\u{1e}").unwrap();
     assert_eq!(field.tag(), "012A");
     assert_eq!(field.occurrence(), Some("00"));
     assert_eq!(field.subfields().len(), 2);
@@ -40,6 +38,6 @@ fn field_parse() {
     assert_eq!(subfield.code(), '0');
     assert_eq!(subfield.value(), "def");
 
-    let result = "012A/00 \u{1f}0abc\u{1f}0def".parse::<Field>();
+    let result = Field::decode("012A/00 \u{1f}0abc\u{1f}0def");
     assert_eq!(result.err(), Some(ParsePicaError::InvalidField));
 }

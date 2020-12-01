@@ -4,7 +4,6 @@ use clap::{Arg, SubCommand};
 use pica::Record;
 use rand::{thread_rng, Rng};
 use std::io::BufRead;
-use std::str::FromStr;
 
 pub fn cli() -> App {
     SubCommand::with_name("sample")
@@ -49,7 +48,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for (i, line) in reader.lines().enumerate() {
         let line = line.unwrap();
 
-        if let Ok(_record) = Record::from_str(&line) {
+        if let Ok(_record) = Record::decode(&line) {
             if i < n {
                 reservoir.push(line);
             } else {
