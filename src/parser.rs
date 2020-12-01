@@ -19,18 +19,19 @@
 //!
 //! [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
 
+use crate::field::{parse_field, parse_field_occurrence, parse_field_tag};
 use crate::filter::{BooleanOp, ComparisonOp};
 use crate::string::parse_string;
-use crate::subfield::{parse_subfield, parse_subfield_code};
-use crate::{Field, Filter, Path, Record};
+use crate::subfield::parse_subfield_code;
+use crate::{Filter, Path, Record};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, digit1, multispace0, one_of};
-use nom::combinator::{all_consuming, map, opt, recognize};
+use nom::character::complete::{char, digit1, multispace0};
+use nom::combinator::{all_consuming, map, opt};
 use nom::error::ParseError;
-use nom::multi::{count, many0, many1, many_m_n, separated_list1};
-use nom::sequence::{delimited, pair, preceded, terminated, tuple};
+use nom::multi::{many0, many1, separated_list1};
+use nom::sequence::{delimited, preceded, terminated, tuple};
 use nom::IResult;
 
 /// Strip whitespaces from the beginning and end.
@@ -41,33 +42,6 @@ where
     F: Fn(&'a str) -> IResult<&'a str, O, E>,
 {
     delimited(multispace0, inner, multispace0)
-}
-
-fn parse_field_tag(i: &str) -> IResult<&str, &str> {
-    recognize(tuple((
-        one_of("012"),
-        count(one_of("0123456789"), 2),
-        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-    )))(i)
-}
-
-fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
-    preceded(char('/'), recognize(many_m_n(2, 3, one_of("0123456789"))))(i)
-}
-
-pub fn parse_field(i: &str) -> IResult<&str, Field> {
-    terminated(
-        map(
-            pair(
-                pair(parse_field_tag, opt(parse_field_occurrence)),
-                preceded(char(' '), many0(parse_subfield)),
-            ),
-            |((tag, occurrence), subfields)| {
-                Field::new(tag, occurrence, subfields)
-            },
-        ),
-        char('\u{1e}'),
-    )(i)
 }
 
 pub fn parse_record(i: &str) -> IResult<&str, Record> {
@@ -175,47 +149,7 @@ pub fn parse_path_list(i: &str) -> IResult<&str, Vec<Path>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Path, Subfield};
-
-    #[test]
-    fn test_field_tag() {
-        for tag in vec!["000A", "100A", "200A", "000A", "000@"] {
-            assert_eq!(parse_field_tag(tag), Ok(("", tag)));
-        }
-
-        for tag in vec!["300A", "0A0A", "00AA", "0001"] {
-            assert!(parse_field_tag(tag).is_err())
-        }
-    }
-
-    #[test]
-    fn test_parse_field_occurrence() {
-        assert_eq!(parse_field_occurrence("/00"), Ok(("", "00")));
-        assert_eq!(parse_field_occurrence("/001"), Ok(("", "001")));
-    }
-
-    #[test]
-    fn test_parse_field() {
-        assert_eq!(
-            parse_field("012A/00 \u{1e}"),
-            Ok(("", Field::new("012A", Some("00"), vec![])))
-        );
-        assert_eq!(
-            parse_field("012A \u{1e}"),
-            Ok(("", Field::new("012A", None, vec![])))
-        );
-        assert_eq!(
-            parse_field("003@ \u{1f}0123456789\u{1e}"),
-            Ok((
-                "",
-                Field::new(
-                    "003@",
-                    None,
-                    vec![Subfield::new('0', "123456789").unwrap()]
-                )
-            ))
-        );
-    }
+    use crate::{Field, Path, Subfield};
 
     #[test]
     fn test_parse_record() {
