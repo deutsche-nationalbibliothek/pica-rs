@@ -1,8 +1,11 @@
 //! Pica+ Subfield
 
 use crate::error::ParsePicaError;
-use crate::parser::parse_subfield;
-use nom::Finish;
+use nom::character::complete::{char, none_of, satisfy};
+use nom::combinator::{map, recognize};
+use nom::multi::many0;
+use nom::sequence::{pair, preceded};
+use nom::{Finish, IResult};
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -24,16 +27,6 @@ impl<'a> Subfield<'a> {
             })
         } else {
             Err(ParsePicaError::InvalidSubfield)
-        }
-    }
-
-    pub(crate) fn from_unchecked<S>(code: char, value: S) -> Self
-    where
-        S: Into<Cow<'a, str>>,
-    {
-        Self {
-            code,
-            value: value.into(),
         }
     }
 
@@ -60,13 +53,54 @@ impl<'a> Subfield<'a> {
     }
 }
 
+pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+    satisfy(|c| c.is_ascii_alphanumeric())(i)
+}
+
+fn parse_subfield_value(i: &str) -> IResult<&str, &str> {
+    recognize(many0(none_of("\u{1e}\u{1f}")))(i)
+}
+
+pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
+    preceded(
+        char('\u{1f}'),
+        map(
+            pair(parse_subfield_code, parse_subfield_value),
+            |(code, value)| Subfield {
+                code,
+                value: value.into(),
+            },
+        ),
+    )(i)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_subfield_unchecked() {
-        let subfield = Subfield::from_unchecked('!', String::new());
-        assert_eq!(subfield.code(), '!');
+    fn test_parse_subfield_code() {
+        for range in vec!['a'..='z', 'A'..='Z', '0'..='9'] {
+            for c in range {
+                assert_eq!(parse_subfield_code(&String::from(c)), Ok(("", c)));
+            }
+        }
+    }
+
+    #[test]
+    fn test_parse_subfield_value() {
+        assert_eq!(parse_subfield_value(""), Ok(("", "")));
+        assert_eq!(parse_subfield_value("abc"), Ok(("", "abc")));
+        assert_eq!(parse_subfield_value("ab\u{1f}c"), Ok(("\u{1f}c", "ab")));
+        assert_eq!(parse_subfield_value("ab\u{1e}c"), Ok(("\u{1e}c", "ab")));
+    }
+
+    #[test]
+    fn test_parse_subfield() {
+        assert_eq!(
+            parse_subfield("\u{1f}a123"),
+            Ok(("", Subfield::new('a', "123").unwrap()))
+        );
+        assert!(parse_subfield("!a123").is_err());
     }
 }
