@@ -1,8 +1,10 @@
 use crate::error::ParsePicaError;
+use crate::field::parse_field;
 use crate::filter::{BooleanOp, ComparisonOp};
-use crate::parser::parse_record;
 use crate::{Field, Filter, Path};
-use nom::Finish;
+use nom::combinator::{all_consuming, map};
+use nom::multi::many1;
+use nom::{Finish, IResult};
 use regex::Regex;
 use serde::Serialize;
 use std::ops::Deref;
@@ -17,7 +19,7 @@ impl<'a> Record<'a> {
 
     pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
         match parse_record(s).finish() {
-            Ok((_, record)) => Ok(record),
+            Ok((_remaining, record)) => Ok(record),
             _ => Err(ParsePicaError::InvalidRecord),
         }
     }
@@ -97,5 +99,30 @@ impl<'a> Deref for Record<'a> {
 
     fn deref(&self) -> &Vec<Field<'a>> {
         &self.0
+    }
+}
+
+fn parse_record(i: &str) -> IResult<&str, Record> {
+    all_consuming(map(many1(parse_field), Record::new))(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Field, Subfield};
+
+    #[test]
+    fn test_parse_record() {
+        assert_eq!(
+            parse_record("003@ \u{1f}0123456789\u{1e}"),
+            Ok((
+                "",
+                Record::new(vec![Field::new(
+                    "003@",
+                    None,
+                    vec![Subfield::new('0', "123456789").unwrap()]
+                )])
+            ))
+        );
     }
 }
