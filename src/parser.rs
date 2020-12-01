@@ -57,7 +57,10 @@ pub fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
         char('\u{1f}'),
         map(
             pair(parse_subfield_code, parse_subfield_value),
-            |(code, value)| Subfield::from_unchecked(code, value),
+            |(code, value)| Subfield {
+                code,
+                value: value.into(),
+            },
         ),
     )(i)
 }
@@ -217,7 +220,7 @@ mod tests {
     fn test_parse_subfield() {
         assert_eq!(
             parse_subfield("\u{1f}a123"),
-            Ok(("", Subfield::from_unchecked('a', "123")))
+            Ok(("", Subfield::new('a', "123").unwrap()))
         );
         assert!(parse_subfield("!a123").is_err());
     }
@@ -256,7 +259,7 @@ mod tests {
                 Field::new(
                     "003@",
                     None,
-                    vec![Subfield::from_unchecked('0', "123456789")]
+                    vec![Subfield::new('0', "123456789").unwrap()]
                 )
             ))
         );

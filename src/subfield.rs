@@ -27,16 +27,6 @@ impl<'a> Subfield<'a> {
         }
     }
 
-    pub(crate) fn from_unchecked<S>(code: char, value: S) -> Self
-    where
-        S: Into<Cow<'a, str>>,
-    {
-        Self {
-            code,
-            value: value.into(),
-        }
-    }
-
     pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
         match parse_subfield(s).finish() {
             Ok((_, subfield)) => Ok(subfield),
@@ -57,16 +47,5 @@ impl<'a> Subfield<'a> {
     /// Returns the subfield as an PICA3 encoded string.
     pub fn pretty(&self) -> String {
         format!("${} {}", self.code, self.value)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_subfield_unchecked() {
-        let subfield = Subfield::from_unchecked('!', String::new());
-        assert_eq!(subfield.code(), '!');
     }
 }
