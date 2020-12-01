@@ -19,18 +19,18 @@
 //!
 //! [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
 
-use crate::field::{parse_field, parse_field_occurrence, parse_field_tag};
+use crate::field::{parse_field_occurrence, parse_field_tag};
 use crate::filter::{BooleanOp, ComparisonOp};
 use crate::string::parse_string;
 use crate::subfield::parse_subfield_code;
-use crate::{Filter, Path, Record};
+use crate::{Filter, Path};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, digit1, multispace0};
 use nom::combinator::{all_consuming, map, opt};
 use nom::error::ParseError;
-use nom::multi::{many0, many1, separated_list1};
+use nom::multi::{many0, separated_list1};
 use nom::sequence::{delimited, preceded, terminated, tuple};
 use nom::IResult;
 
@@ -42,10 +42,6 @@ where
     F: Fn(&'a str) -> IResult<&'a str, O, E>,
 {
     delimited(multispace0, inner, multispace0)
-}
-
-pub fn parse_record(i: &str) -> IResult<&str, Record> {
-    all_consuming(map(many1(parse_field), Record::new))(i)
 }
 
 pub(crate) fn parse_comparison_expr(i: &str) -> IResult<&str, Filter> {
@@ -149,22 +145,7 @@ pub fn parse_path_list(i: &str) -> IResult<&str, Vec<Path>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Field, Path, Subfield};
-
-    #[test]
-    fn test_parse_record() {
-        assert_eq!(
-            parse_record("003@ \u{1f}0123456789\u{1e}"),
-            Ok((
-                "",
-                Record::new(vec![Field::new(
-                    "003@",
-                    None,
-                    vec![Subfield::new('0', "123456789").unwrap()]
-                )])
-            ))
-        );
-    }
+    use crate::Path;
 
     #[test]
     fn test_parse_comparison_expr() {
