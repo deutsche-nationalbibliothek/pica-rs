@@ -20,9 +20,9 @@ use crate::subfield::parse_subfield_code;
 use crate::utils::ws;
 
 use nom::character::complete::{char, digit1, multispace0};
-use nom::combinator::{all_consuming, map, opt};
+use nom::combinator::{all_consuming, cut, map, opt};
 use nom::multi::separated_list1;
-use nom::sequence::{delimited, preceded, tuple};
+use nom::sequence::{preceded, terminated, tuple};
 use nom::IResult;
 
 use std::fmt;
@@ -100,17 +100,23 @@ impl fmt::Display for Path {
     }
 }
 
+fn parse_index(i: &str) -> IResult<&str, usize> {
+    preceded(
+        char('['),
+        cut(terminated(
+            map(digit1, |v: &str| v.parse::<usize>().unwrap()),
+            char(']'),
+        )),
+    )(i)
+}
+
 pub fn parse_path(i: &str) -> IResult<&str, Path> {
     map(
         tuple((
             preceded(multispace0, parse_field_tag),
             opt(parse_field_occurrence),
             preceded(char('.'), parse_subfield_code),
-            opt(delimited(
-                char('['),
-                map(digit1, |v: &str| v.parse::<usize>().unwrap()),
-                char(']'),
-            )),
+            opt(parse_index),
             multispace0,
         )),
         |(tag, occurrence, code, index, _)| {
@@ -121,4 +127,19 @@ pub fn parse_path(i: &str) -> IResult<&str, Path> {
 
 pub fn parse_path_list(i: &str) -> IResult<&str, Vec<Path>> {
     all_consuming(separated_list1(char(','), ws(parse_path)))(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_path() {
+        assert_eq!(
+            parse_path("012A/000.a[0]"),
+            Ok(("", Path::new("012A", Some("000"), 'a', Some(0))))
+        );
+
+        assert!(parse_path("012A/000.a[a]").is_err());
+    }
 }
