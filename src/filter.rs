@@ -34,6 +34,7 @@ pub enum SubfieldFilter {
     Boolean(Box<SubfieldFilter>, BooleanOp, Box<SubfieldFilter>),
     Grouped(Box<SubfieldFilter>),
     Exists(char),
+    Not(Box<SubfieldFilter>),
 }
 
 #[derive(Debug, PartialEq)]
@@ -93,9 +94,21 @@ fn parse_subfield_group(i: &str) -> IResult<&str, SubfieldFilter> {
     )(i)
 }
 
+/// Parses a subfield not expression.
+fn parse_subfield_not_expr(i: &str) -> IResult<&str, SubfieldFilter> {
+    map(
+        preceded(
+            ws(char('!')),
+            cut(alt((parse_subfield_exists, parse_subfield_group))),
+        ),
+        |e| SubfieldFilter::Not(Box::new(e)),
+    )(i)
+}
+
 fn parse_subfield_primary(i: &str) -> IResult<&str, SubfieldFilter> {
     alt((
         parse_subfield_comparison,
+        parse_subfield_not_expr,
         parse_subfield_exists,
         parse_subfield_group,
     ))(i)
@@ -252,6 +265,21 @@ mod tests {
                 SubfieldFilter::Grouped(Box::new(SubfieldFilter::Grouped(
                     Box::new(SubfieldFilter::Exists('0'))
                 ),))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_subfield_not_expr() {
+        assert_eq!(
+            parse_subfield_not_expr("!(!a?)"),
+            Ok((
+                "",
+                SubfieldFilter::Not(Box::new(SubfieldFilter::Grouped(
+                    Box::new(SubfieldFilter::Not(Box::new(
+                        SubfieldFilter::Exists('a')
+                    )))
+                )))
             ))
         );
     }

@@ -117,6 +117,7 @@ impl<'a> Field<'a> {
                 BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
             },
             SubfieldFilter::Grouped(filter) => self.matches(filter),
+            SubfieldFilter::Not(filter) => !self.matches(filter),
             SubfieldFilter::Exists(code) => self
                 .subfields
                 .iter()
