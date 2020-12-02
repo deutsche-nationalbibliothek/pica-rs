@@ -1,13 +1,16 @@
 //! Pica+ Field
 
 use crate::error::ParsePicaError;
+use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
 use crate::subfield::{parse_subfield, Subfield};
+
 use nom::character::complete::{char, one_of};
 use nom::combinator::{map, opt, recognize};
 use nom::multi::{count, many0, many_m_n};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
+use regex::Regex;
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -90,6 +93,35 @@ impl<'a> Field<'a> {
     /// ```
     pub fn subfields(&self) -> &[Subfield] {
         &self.subfields
+    }
+
+    pub fn matches(&self, filter: &SubfieldFilter) -> bool {
+        match filter {
+            SubfieldFilter::Comparison(code, op, value) => match op {
+                ComparisonOp::Eq => self.subfields.iter().any(|subfield| {
+                    subfield.code() == *code && subfield.value() == value
+                }),
+                ComparisonOp::Ne => self.subfields.iter().all(|subfield| {
+                    subfield.code() == *code && subfield.value() != value
+                }),
+                ComparisonOp::Re => {
+                    let re = Regex::new(value).unwrap();
+                    self.subfields.iter().any(|subfield| {
+                        subfield.code() == *code
+                            && re.is_match(subfield.value())
+                    })
+                }
+            },
+            SubfieldFilter::Boolean(lhs, op, rhs) => match op {
+                BooleanOp::And => self.matches(lhs) && self.matches(rhs),
+                BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
+            },
+            SubfieldFilter::Grouped(filter) => self.matches(filter),
+            SubfieldFilter::Exists(code) => self
+                .subfields
+                .iter()
+                .any(|subfield| subfield.code() == *code),
+        }
     }
 
     /// Returns the field as an pretty formatted string.

@@ -1,7 +1,8 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
-use pica::{Filter, Record};
+use pica::Filter;
+use pica::Record;
 use std::io::BufRead;
 
 pub fn cli() -> App {
@@ -50,6 +51,8 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             )))
         }
     };
+
+    println!("filter = {:?}", filter);
 
     let invert_match = !args.is_present("invert-match");
 
