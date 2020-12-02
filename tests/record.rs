@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::{Field, Filter, ParsePicaError, Path, Record, Subfield};
+use pica::{Field, ParsePicaError, Path, Record, Subfield};
 
 #[test]
 fn record_new() {
@@ -92,27 +92,4 @@ fn record_decode() {
 
     let result = Record::decode("003@ \u{1f}0123\u{1e}012A/00 \u{1f}a123");
     assert_eq!(result, Err(ParsePicaError::InvalidRecord));
-}
-
-#[test]
-fn record_matches() {
-    let record =
-        Record::decode("003@ \u{1f}0123456789X\u{1e}012A \u{1f}a3\u{1e}")
-            .unwrap();
-
-    let filter = "003@.0 == '123456789X'".parse::<Filter>().unwrap();
-    assert!(record.matches(&filter));
-
-    let filter = "003@.0 != '123456789Y'".parse::<Filter>().unwrap();
-    assert!(record.matches(&filter));
-
-    let filter = "003@.0 == '123456789X' && 012A.a == '3'"
-        .parse::<Filter>()
-        .unwrap();
-    assert!(record.matches(&filter));
-
-    let filter = "003@.0 == '123456789X' && (012A.a == '4' || 012A.a == '3')"
-        .parse::<Filter>()
-        .unwrap();
-    assert!(record.matches(&filter));
 }

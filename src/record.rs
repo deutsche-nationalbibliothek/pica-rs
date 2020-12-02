@@ -1,11 +1,12 @@
 use crate::error::ParsePicaError;
 use crate::field::parse_field;
-use crate::filter::{BooleanOp, ComparisonOp};
-use crate::{Field, Filter, Path};
+use crate::filter::BooleanOp;
+use crate::Filter;
+use crate::{Field, Path};
 use nom::combinator::{all_consuming, map};
 use nom::multi::many1;
 use nom::{Finish, IResult};
-use regex::Regex;
+// use regex::Regex;
 use serde::Serialize;
 use std::ops::Deref;
 
@@ -62,34 +63,18 @@ impl<'a> Record<'a> {
 
     pub fn matches(&self, filter: &Filter) -> bool {
         match filter {
-            Filter::ExistenceExpr(path) => !self.path(path).is_empty(),
-            Filter::GroupedExpr(filter) => self.matches(filter),
-            Filter::NotExpr(filter) => !self.matches(filter),
-            Filter::BooleanExpr(lhs, op, rhs) => match op {
+            Filter::Field(tag, occurrence, filter) => {
+                self.iter().any(|field| {
+                    field.tag() == tag
+                        && field.occurrence() == occurrence.as_deref()
+                        && field.matches(filter)
+                })
+            }
+            Filter::Boolean(lhs, op, rhs) => match op {
                 BooleanOp::And => self.matches(lhs) && self.matches(rhs),
                 BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
             },
-            Filter::ComparisonExpr(path, op, rvalue) => {
-                let lvalues = self.path(path);
-                match op {
-                    ComparisonOp::Eq => {
-                        lvalues.into_iter().any(|x| x == rvalue)
-                    }
-                    ComparisonOp::Ne => {
-                        lvalues.into_iter().all(|x| x != rvalue)
-                    }
-                    ComparisonOp::Re => {
-                        let re = Regex::new(rvalue).unwrap();
-                        lvalues.into_iter().any(|x| re.is_match(x))
-                    }
-                    ComparisonOp::StartsWith => {
-                        lvalues.into_iter().any(|x| x.starts_with(rvalue))
-                    }
-                    ComparisonOp::EndsWith => {
-                        lvalues.into_iter().any(|x| x.ends_with(rvalue))
-                    }
-                }
-            }
+            Filter::Grouped(filter) => self.matches(filter),
         }
     }
 }

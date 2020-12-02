@@ -1,27 +1,19 @@
-use crate::error::ParsePicaError;
-use crate::path::parse_path;
+//! Filter Expressions
+
+use crate::field::{parse_field_occurrence, parse_field_tag};
 use crate::string::parse_string;
+use crate::subfield::parse_subfield_code;
 use crate::utils::ws;
-use crate::Path;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, map};
+use nom::combinator::{all_consuming, cut, map, opt};
 use nom::multi::many0;
-use nom::sequence::{delimited, preceded, terminated, tuple};
+use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
 use std::str::FromStr;
-
-#[derive(Debug, PartialEq)]
-pub enum ComparisonOp {
-    Eq,
-    Ne,
-    Re,
-    StartsWith,
-    EndsWith,
-}
 
 #[derive(Debug, PartialEq)]
 pub enum BooleanOp {
@@ -30,250 +22,367 @@ pub enum BooleanOp {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum ComparisonOp {
+    Eq,
+    Ne,
+    Re,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum SubfieldFilter {
+    Comparison(char, ComparisonOp, String),
+    Boolean(Box<SubfieldFilter>, BooleanOp, Box<SubfieldFilter>),
+    Grouped(Box<SubfieldFilter>),
+    Exists(char),
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Filter {
-    ComparisonExpr(Path, ComparisonOp, String),
-    ExistenceExpr(Path),
-    BooleanExpr(Box<Filter>, BooleanOp, Box<Filter>),
-    GroupedExpr(Box<Filter>),
-    NotExpr(Box<Filter>),
+    Field(String, Option<String>, SubfieldFilter),
+    Boolean(Box<Filter>, BooleanOp, Box<Filter>),
+    Grouped(Box<Filter>),
 }
 
-impl FromStr for Filter {
-    type Err = ParsePicaError;
+#[derive(Debug)]
+pub struct ParseFilterError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_filter(s).finish() {
-            Ok((_, path)) => Ok(path),
-            _ => Err(ParsePicaError::InvalidFilter),
-        }
-    }
-}
-
-fn parse_comparison_expr(i: &str) -> IResult<&str, Filter> {
-    map(
-        tuple((
-            ws(parse_path),
-            alt((
-                map(ws(tag("==")), |_| ComparisonOp::Eq),
-                map(ws(tag("!=")), |_| ComparisonOp::Ne),
-                map(ws(tag("=~")), |_| ComparisonOp::Re),
-                map(ws(tag("=^")), |_| ComparisonOp::StartsWith),
-                map(ws(tag("=$")), |_| ComparisonOp::EndsWith),
-            )),
-            ws(parse_string),
-        )),
-        |e| Filter::ComparisonExpr(e.0, e.1, e.2),
-    )(i)
-}
-
-fn parse_existence_expr(i: &str) -> IResult<&str, Filter> {
-    terminated(map(parse_path, Filter::ExistenceExpr), char('?'))(i)
-}
-
-fn parse_not_expr(i: &str) -> IResult<&str, Filter> {
-    map(
-        preceded(
-            ws(char('!')),
-            alt((parse_existence_expr, parse_grouped_expr, parse_not_expr)),
-        ),
-        |e| Filter::NotExpr(Box::new(e)),
-    )(i)
-}
-
-fn parse_grouped_expr(i: &str) -> IResult<&str, Filter> {
-    map(
-        delimited(
-            char('('),
-            alt((parse_boolean_expr, parse_comparison_expr)),
-            char(')'),
-        ),
-        |e| Filter::GroupedExpr(Box::new(e)),
-    )(i)
-}
-
-fn parse_term_expr(i: &str) -> IResult<&str, Filter> {
+/// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
+fn parse_boolean_op(i: &str) -> IResult<&str, BooleanOp> {
     alt((
-        parse_comparison_expr,
-        parse_existence_expr,
-        parse_grouped_expr,
-        parse_not_expr,
+        map(tag("&&"), |_| BooleanOp::And),
+        map(tag("||"), |_| BooleanOp::Or),
     ))(i)
 }
 
-fn parse_boolean_expr(i: &str) -> IResult<&str, Filter> {
+/// Parses a comparison operator (Equal (==), Not Equal (!=) or Regex (=~).
+fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
+    alt((
+        map(tag("=="), |_| ComparisonOp::Eq),
+        map(tag("!="), |_| ComparisonOp::Ne),
+        map(tag("=~"), |_| ComparisonOp::Re),
+    ))(i)
+}
+
+/// Parses a subfield comparison expression.
+fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
+    map(
+        tuple((
+            ws(parse_subfield_code),
+            ws(parse_comparison_op),
+            ws(parse_string),
+        )),
+        |(code, op, value)| SubfieldFilter::Comparison(code, op, value),
+    )(i)
+}
+
+/// Parses a subfield exists expression.
+fn parse_subfield_exists(i: &str) -> IResult<&str, SubfieldFilter> {
+    map(terminated(parse_subfield_code, char('?')), |code| {
+        SubfieldFilter::Exists(code)
+    })(i)
+}
+
+/// Parses a subfield group expression.
+fn parse_subfield_group(i: &str) -> IResult<&str, SubfieldFilter> {
+    map(
+        preceded(
+            ws(char('(')),
+            cut(terminated(parse_subfield_filter, char(')'))),
+        ),
+        |e| SubfieldFilter::Grouped(Box::new(e)),
+    )(i)
+}
+
+fn parse_subfield_primary(i: &str) -> IResult<&str, SubfieldFilter> {
+    alt((
+        parse_subfield_comparison,
+        parse_subfield_exists,
+        parse_subfield_group,
+    ))(i)
+}
+
+fn parse_subfield_boolean_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     let (i, (first, remainder)) = tuple((
-        parse_term_expr,
-        many0(tuple((
-            alt((
-                map(ws(tag("&&")), |_| BooleanOp::And),
-                map(ws(tag("||")), |_| BooleanOp::Or),
-            )),
-            parse_term_expr,
-        ))),
+        parse_subfield_primary,
+        many0(pair(ws(parse_boolean_op), ws(parse_subfield_primary))),
     ))(i)?;
 
     Ok((
         i,
         remainder.into_iter().fold(first, |prev, (op, next)| {
-            Filter::BooleanExpr(Box::new(prev), op, Box::new(next))
+            SubfieldFilter::Boolean(Box::new(prev), op, Box::new(next))
         }),
     ))
 }
 
+fn parse_subfield_filter(i: &str) -> IResult<&str, SubfieldFilter> {
+    alt((parse_subfield_boolean_expr, parse_subfield_primary))(i)
+}
+
+fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
+    map(
+        tuple((
+            pair(parse_field_tag, opt(parse_field_occurrence)),
+            preceded(
+                ws(char('{')),
+                cut(terminated(parse_subfield_filter, ws(char('}')))),
+            ),
+        )),
+        |((tag, occurrence), filter)| {
+            Filter::Field(
+                String::from(tag),
+                occurrence.map(String::from),
+                filter,
+            )
+        },
+    )(i)
+}
+
+fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
+    map(
+        tuple((
+            pair(parse_field_tag, opt(parse_field_occurrence)),
+            preceded(
+                ws(char('.')),
+                cut(alt((parse_subfield_comparison, parse_subfield_exists))),
+            ),
+        )),
+        |((tag, occurrence), filter)| {
+            Filter::Field(
+                String::from(tag),
+                occurrence.map(String::from),
+                filter,
+            )
+        },
+    )(i)
+}
+
+fn parse_field_expr(i: &str) -> IResult<&str, Filter> {
+    alt((parse_field_simple, parse_field_complex))(i)
+}
+
+fn parse_field_group(i: &str) -> IResult<&str, Filter> {
+    map(
+        preceded(ws(char('(')), cut(terminated(parse_filter_expr, char(')')))),
+        |e| Filter::Grouped(Box::new(e)),
+    )(i)
+}
+
+fn parse_field_primary(i: &str) -> IResult<&str, Filter> {
+    alt((parse_field_group, parse_field_expr))(i)
+}
+
+fn parse_field_boolean_expr(i: &str) -> IResult<&str, Filter> {
+    let (i, (first, remainder)) = tuple((
+        parse_field_primary,
+        many0(pair(ws(parse_boolean_op), ws(parse_field_primary))),
+    ))(i)?;
+
+    Ok((
+        i,
+        remainder.into_iter().fold(first, |prev, (op, next)| {
+            Filter::Boolean(Box::new(prev), op, Box::new(next))
+        }),
+    ))
+}
+
+fn parse_filter_expr(i: &str) -> IResult<&str, Filter> {
+    alt((parse_field_boolean_expr, parse_field_primary))(i)
+}
+
 fn parse_filter(i: &str) -> IResult<&str, Filter> {
-    all_consuming(alt((parse_boolean_expr, parse_term_expr)))(i)
+    all_consuming(parse_filter_expr)(i)
+}
+
+impl FromStr for Filter {
+    type Err = ParseFilterError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_filter(s).finish() {
+            Ok((_, filter)) => Ok(filter),
+            _ => Err(ParseFilterError),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Path;
 
     #[test]
-    fn test_parse_comparison_expr() {
-        let path = Path::new("003@", None, '0', None);
-        let value = "123456789X".to_string();
-        let expected = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
-        assert_eq!(
-            parse_comparison_expr("003@.0 == '123456789X'"),
-            Ok(("", expected))
-        );
-
-        let path = Path::new("003@", None, '0', None);
-        let value = "123456789X".to_string();
-        let expected = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
-        assert_eq!(
-            parse_comparison_expr("003@.0 != '123456789X'"),
-            Ok(("", expected))
-        );
-
-        let path = Path::new("028@", None, 'd', Some(0));
-        let value = "abc".to_string();
-        let expected = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
-        assert_eq!(
-            parse_comparison_expr("028@.d[0] == 'abc'"),
-            Ok(("", expected))
-        );
-
-        let path = Path::new("002@", None, '0', None);
-        let value = "Tp[12]".to_string();
-        let expected = Filter::ComparisonExpr(path, ComparisonOp::Re, value);
-        assert_eq!(
-            parse_comparison_expr("002@.0 =~ 'Tp[12]'"),
-            Ok(("", expected))
-        );
-
-        let path = Path::new("002@", None, '0', None);
-        let value = "Tp".to_string();
-        let expected =
-            Filter::ComparisonExpr(path, ComparisonOp::StartsWith, value);
-        assert_eq!(parse_comparison_expr("002@.0 =^ 'Tp'"), Ok(("", expected)));
-
-        let path = Path::new("002@", None, '0', None);
-        let value = "Tp".to_string();
-        let expected =
-            Filter::ComparisonExpr(path, ComparisonOp::EndsWith, value);
-        assert_eq!(parse_comparison_expr("002@.0 =$ 'Tp'"), Ok(("", expected)));
+    fn test_parse_boolean_op() {
+        assert_eq!(parse_boolean_op("&&"), Ok(("", BooleanOp::And)));
+        assert_eq!(parse_boolean_op("||"), Ok(("", BooleanOp::Or)));
     }
 
     #[test]
-    fn test_parse_boolean_expr() {
-        let term1 = Filter::ComparisonExpr(
-            Path::new("003@", None, '0', None),
+    fn test_parse_comparison_op() {
+        assert_eq!(parse_comparison_op("=="), Ok(("", ComparisonOp::Eq)));
+        assert_eq!(parse_comparison_op("!="), Ok(("", ComparisonOp::Ne)));
+        assert_eq!(parse_comparison_op("=~"), Ok(("", ComparisonOp::Re)));
+    }
+
+    #[test]
+    fn test_parse_subfield_comparison() {
+        let filter = SubfieldFilter::Comparison(
+            '0',
             ComparisonOp::Eq,
             "123456789X".to_string(),
         );
+        assert_eq!(
+            parse_subfield_comparison("0 == '123456789X'"),
+            Ok(("", filter))
+        );
+    }
 
-        let path = Path::new("002@", None, '0', None);
-        let value = "Tp1".to_string();
-        let term2 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
+    #[test]
+    fn test_parse_subfield_exists() {
+        assert_eq!(
+            parse_subfield_exists("0?"),
+            Ok(("", SubfieldFilter::Exists('0')))
+        );
+    }
 
-        let path = Path::new("012A", None, '0', None);
-        let value = "foo".to_string();
-        let term3 = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
+    #[test]
+    fn test_parse_subfield_gorup() {
+        assert_eq!(
+            parse_subfield_group("((0?))"),
+            Ok((
+                "",
+                SubfieldFilter::Grouped(Box::new(SubfieldFilter::Grouped(
+                    Box::new(SubfieldFilter::Exists('0'))
+                ),))
+            ))
+        );
+    }
 
-        let expected = Filter::BooleanExpr(
-            Box::new(Filter::BooleanExpr(
-                Box::new(term1),
+    #[test]
+    fn test_parse_subfield_boolean() {
+        assert_eq!(
+            parse_subfield_boolean_expr("0? && a?"),
+            Ok((
+                "",
+                SubfieldFilter::Boolean(
+                    Box::new(SubfieldFilter::Exists('0')),
+                    BooleanOp::And,
+                    Box::new(SubfieldFilter::Exists('a'))
+                )
+            ))
+        );
+
+        assert_eq!(
+            parse_subfield_boolean_expr("0? || a?"),
+            Ok((
+                "",
+                SubfieldFilter::Boolean(
+                    Box::new(SubfieldFilter::Exists('0')),
+                    BooleanOp::Or,
+                    Box::new(SubfieldFilter::Exists('a'))
+                )
+            ))
+        );
+    }
+
+    #[test]
+    fn test_parse_field_complex() {
+        let field_expr = Filter::Field(
+            "012A".to_string(),
+            Some("000".to_string()),
+            SubfieldFilter::Boolean(
+                Box::new(SubfieldFilter::Exists('0')),
                 BooleanOp::Or,
-                Box::new(term2),
+                Box::new(SubfieldFilter::Comparison(
+                    'a',
+                    ComparisonOp::Eq,
+                    "abc".to_string(),
+                )),
+            ),
+        );
+
+        assert_eq!(
+            parse_field_complex("012A/000{0? || a == 'abc'}"),
+            Ok(("", field_expr))
+        );
+    }
+
+    #[test]
+    fn test_parse_field_simple() {
+        let field_expr = Filter::Field(
+            "003@".to_string(),
+            None,
+            SubfieldFilter::Comparison(
+                '0',
+                ComparisonOp::Eq,
+                "abc".to_string(),
+            ),
+        );
+
+        assert_eq!(parse_field_simple("003@.0 == 'abc'"), Ok(("", field_expr)));
+    }
+
+    #[test]
+    fn test_parse_field_group() {
+        let field_expr = Filter::Grouped(Box::new(Filter::Field(
+            "003@".to_string(),
+            None,
+            SubfieldFilter::Comparison(
+                '0',
+                ComparisonOp::Eq,
+                "abc".to_string(),
+            ),
+        )));
+
+        assert_eq!(
+            parse_field_group("(003@.0 == 'abc')"),
+            Ok(("", field_expr))
+        );
+    }
+
+    #[test]
+    fn test_parse_field_boolean_expr() {
+        let filter_expr = Filter::Boolean(
+            Box::new(Filter::Field(
+                "003@".to_string(),
+                None,
+                SubfieldFilter::Comparison(
+                    '0',
+                    ComparisonOp::Eq,
+                    "abc".to_string(),
+                ),
             )),
             BooleanOp::And,
-            Box::new(term3),
+            Box::new(Filter::Field(
+                "012A".to_string(),
+                None,
+                SubfieldFilter::Boolean(
+                    Box::new(SubfieldFilter::Exists('a')),
+                    BooleanOp::And,
+                    Box::new(SubfieldFilter::Exists('b')),
+                ),
+            )),
         );
+
         assert_eq!(
-            parse_boolean_expr(
-                "003@.0 == '123456789X' || 002@.0 == 'Tp1' && 012A.0 != 'foo'"
-            ),
-            Ok(("", expected))
-        );
-
-        let path = Path::new("003@", None, '0', None);
-        let value = "123456789X".to_string();
-        let term1 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
-
-        let path = Path::new("002@", None, '0', None);
-        let value = "Tp1".to_string();
-        let term2 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
-
-        let path = Path::new("012A", None, '0', None);
-        let value = "foo".to_string();
-        let term3 = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
-
-        let expected = Filter::BooleanExpr(
-            Box::new(Filter::GroupedExpr(Box::new(Filter::BooleanExpr(
-                Box::new(term1),
-                BooleanOp::Or,
-                Box::new(term2),
-            )))),
-            BooleanOp::And,
-            Box::new(term3),
-        );
-        assert_eq!(
-            parse_boolean_expr(
-                "(003@.0 == '123456789X' || 002@.0 == 'Tp1') && 012A.0 != 'foo'"
-            ),
-            Ok(("", expected))
-        );
-
-        let path = Path::new("003@", None, '0', None);
-        let value = "123456789X".to_string();
-        let term1 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
-
-        let path = Path::new("002@", None, '0', None);
-        let value = "Tp1".to_string();
-        let term2 = Filter::ComparisonExpr(path, ComparisonOp::Eq, value);
-
-        let path = Path::new("012A", None, '0', None);
-        let value = "foo".to_string();
-        let term3 = Filter::ComparisonExpr(path, ComparisonOp::Ne, value);
-
-        let expected = Filter::BooleanExpr(
-            Box::new(term1),
-            BooleanOp::Or,
-            Box::new(Filter::GroupedExpr(Box::new(Filter::BooleanExpr(
-                Box::new(term2),
-                BooleanOp::And,
-                Box::new(term3),
-            )))),
-        );
-        assert_eq!(
-            parse_boolean_expr(
-                "003@.0 == '123456789X' || (002@.0 == 'Tp1' && 012A.0 != 'foo')"
-            ),
-            Ok(("", expected))
+            parse_field_boolean_expr("003@.0 == 'abc' && 012A{a? && b?}"),
+            Ok(("", filter_expr))
         );
     }
 
     #[test]
     fn test_from_str() {
-        let filter = "003@.0[0]?".parse::<Filter>().unwrap();
-        assert_eq!(
-            filter,
-            Filter::ExistenceExpr(Path::new("003@", None, '0', Some(0)))
+        let expected = Filter::Field(
+            "003@".to_string(),
+            None,
+            SubfieldFilter::Comparison(
+                '0',
+                ComparisonOp::Eq,
+                "123456789X".to_string(),
+            ),
         );
 
-        let result = "003@.0!".parse::<Filter>();
-        assert_eq!(result.err(), Some(ParsePicaError::InvalidFilter));
+        assert_eq!(
+            "003@.0 == '123456789X'".parse::<Filter>().unwrap(),
+            expected
+        );
     }
 }
