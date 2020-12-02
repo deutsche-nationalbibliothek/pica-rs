@@ -52,8 +52,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     };
 
-    println!("filter = {:?}", filter);
-
     let invert_match = !args.is_present("invert-match");
 
     for line in reader.lines() {
