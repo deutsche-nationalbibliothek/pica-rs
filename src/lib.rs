@@ -7,7 +7,6 @@ pub use path::{parse_path, parse_path_list, Path};
 mod error;
 mod field;
 mod filter;
-pub mod parser;
 mod path;
 mod record;
 mod string;
