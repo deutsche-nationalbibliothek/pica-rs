@@ -1,7 +1,7 @@
 extern crate pica;
 
-use pica::parser::{parse_path, parse_path_list};
 use pica::Path;
+use pica::{parse_path, parse_path_list};
 use std::str::FromStr;
 
 #[test]

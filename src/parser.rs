@@ -19,30 +19,19 @@
 //!
 //! [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
 
-use crate::field::{parse_field_occurrence, parse_field_tag};
 use crate::filter::{BooleanOp, ComparisonOp};
+use crate::path::parse_path;
 use crate::string::parse_string;
-use crate::subfield::parse_subfield_code;
-use crate::{Filter, Path};
+use crate::utils::ws;
+use crate::Filter;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, digit1, multispace0};
-use nom::combinator::{all_consuming, map, opt};
-use nom::error::ParseError;
-use nom::multi::{many0, separated_list1};
+use nom::character::complete::char;
+use nom::combinator::{all_consuming, map};
+use nom::multi::many0;
 use nom::sequence::{delimited, preceded, terminated, tuple};
 use nom::IResult;
-
-/// Strip whitespaces from the beginning and end.
-fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
-    inner: F,
-) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
-where
-    F: Fn(&'a str) -> IResult<&'a str, O, E>,
-{
-    delimited(multispace0, inner, multispace0)
-}
 
 pub(crate) fn parse_comparison_expr(i: &str) -> IResult<&str, Filter> {
     map(
@@ -117,29 +106,6 @@ pub(crate) fn parse_boolean_expr(i: &str) -> IResult<&str, Filter> {
 
 pub fn parse_filter(i: &str) -> IResult<&str, Filter> {
     all_consuming(alt((parse_boolean_expr, parse_term_expr)))(i)
-}
-
-pub fn parse_path(i: &str) -> IResult<&str, Path> {
-    map(
-        tuple((
-            preceded(multispace0, parse_field_tag),
-            opt(parse_field_occurrence),
-            preceded(char('.'), parse_subfield_code),
-            opt(delimited(
-                char('['),
-                map(digit1, |v: &str| v.parse::<usize>().unwrap()),
-                char(']'),
-            )),
-            multispace0,
-        )),
-        |(tag, occurrence, code, index, _)| {
-            Path::new(tag, occurrence, code, index)
-        },
-    )(i)
-}
-
-pub fn parse_path_list(i: &str) -> IResult<&str, Vec<Path>> {
-    all_consuming(separated_list1(char(','), ws(parse_path)))(i)
 }
 
 #[cfg(test)]

@@ -1,7 +1,7 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
-use pica::parser::parse_path_list;
+use pica::parse_path_list;
 use pica::Record;
 use std::io::BufRead;
 
