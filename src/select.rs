@@ -14,22 +14,18 @@ use std::ops::Deref;
 
 #[derive(Debug, PartialEq)]
 pub struct Selector<'a> {
-    pub(crate) tag: &'a str,
+    pub(crate) tag: Cow<'a, str>,
     pub(crate) occurrence: Option<Cow<'a, str>>,
     pub(crate) subfields: Vec<char>,
 }
 
 impl<'a> Selector<'a> {
-    pub fn new<S>(
-        tag: &'a str,
-        occurrence: Option<S>,
-        subfields: Vec<char>,
-    ) -> Self
+    pub fn new<S>(tag: S, occurrence: Option<S>, subfields: Vec<char>) -> Self
     where
         S: Into<Cow<'a, str>>,
     {
         Self {
-            tag,
+            tag: tag.into(),
             occurrence: occurrence.map(|o| o.into()),
             subfields,
         }
