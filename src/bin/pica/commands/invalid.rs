@@ -1,5 +1,5 @@
 use crate::commands::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{App, CliArgs, CliResult};
 use clap::{Arg, SubCommand};
 use pica::Record;
 use std::io::BufRead;
