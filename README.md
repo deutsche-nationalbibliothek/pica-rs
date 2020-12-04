@@ -12,9 +12,10 @@ Tools to work with bibliographic records encoded in Pica+.
 * [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
 * [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
 * [json](https://github.com/niko2342/pica-rs/wiki/Commands#json) — serialize pica records to JSON
+* [partition](https://github.com/niko2342/pica-rs/wiki/Commands#partition) — partition a list of records based on subfield values
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
 * [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
-* [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a csv file
+* [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a CSV file
 * [split](https://github.com/niko2342/pica-rs/wiki/Commands#split) — split a list of records into chunks
 
 ## Usage

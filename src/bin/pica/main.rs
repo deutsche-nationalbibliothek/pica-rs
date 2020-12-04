@@ -27,6 +27,7 @@ fn main() {
         "cat" => commands::cat::run(args),
         "filter" => commands::filter::run(args),
         "json" => commands::json::run(args),
+        "partition" => commands::partition::run(args),
         "print" => commands::print::run(args),
         "sample" => commands::sample::run(args),
         "select" => commands::select::run(args),
