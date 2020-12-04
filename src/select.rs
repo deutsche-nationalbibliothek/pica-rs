@@ -88,7 +88,7 @@ fn parse_selectors(i: &str) -> IResult<&str, Selectors> {
             ws(char(',')),
             alt((parse_single_selector, parse_multi_selector)),
         ),
-        |selectors| Selectors(selectors),
+        Selectors,
     )(i)
 }
 
