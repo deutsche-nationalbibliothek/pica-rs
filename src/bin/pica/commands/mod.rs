@@ -5,6 +5,7 @@ pub mod json;
 pub mod print;
 pub mod sample;
 pub mod select;
+pub mod split;
 
 use crate::util::App;
 pub(crate) use common::Config;
@@ -17,5 +18,6 @@ pub fn subcmds() -> Vec<App> {
         print::cli(),
         sample::cli(),
         select::cli(),
+        split::cli(),
     ]
 }
