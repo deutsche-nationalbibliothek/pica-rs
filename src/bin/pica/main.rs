@@ -30,6 +30,7 @@ fn main() {
         "print" => commands::print::run(args),
         "sample" => commands::sample::run(args),
         "select" => commands::select::run(args),
+        "split" => commands::split::run(args),
         _ => unreachable!(),
     };
 

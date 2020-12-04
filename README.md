@@ -15,6 +15,7 @@ Tools to work with bibliographic records encoded in Pica+.
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
 * [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
 * [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a csv file
+* [split](https://github.com/niko2342/pica-rs/wiki/Commands#split) — split a list of records into chunks
 
 ## Usage
 
