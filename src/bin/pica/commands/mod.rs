@@ -1,6 +1,7 @@
 pub mod cat;
 mod common;
 pub mod filter;
+pub mod invalid;
 pub mod json;
 pub mod partition;
 pub mod print;
@@ -15,6 +16,7 @@ pub fn subcmds() -> Vec<App> {
     vec![
         cat::cli(),
         filter::cli(),
+        invalid::cli(),
         json::cli(),
         partition::cli(),
         print::cli(),
