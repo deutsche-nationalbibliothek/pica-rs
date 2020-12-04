@@ -1,13 +1,14 @@
 use crate::error::ParsePicaError;
 use crate::field::parse_field;
 use crate::filter::BooleanOp;
+use crate::select::{Selector, Selectors};
 use crate::Filter;
 use crate::{Field, Path};
 use nom::combinator::{all_consuming, map};
 use nom::multi::many1;
 use nom::{Finish, IResult};
-// use regex::Regex;
 use serde::Serialize;
+use std::borrow::Cow;
 use std::ops::Deref;
 
 #[derive(Serialize, Debug, Default, PartialEq, Eq)]
@@ -57,6 +58,70 @@ impl<'a> Record<'a> {
                 return vec![];
             }
         }
+
+        result
+    }
+
+    fn collect(&self, selector: &Selector) -> Vec<Vec<String>> {
+        let mut retval: Vec<Vec<String>> = Vec::new();
+
+        for field in self.iter() {
+            if field.tag == selector.tag
+                && field.occurrence == selector.occurrence
+            {
+                let mut temp = vec![];
+                for code in &selector.subfields {
+                    let mut value = field
+                        .subfields()
+                        .iter()
+                        .filter(|subfield| subfield.code == *code)
+                        .map(|subfield| subfield.value.clone())
+                        .collect::<Vec<_>>();
+
+                    if value.is_empty() {
+                        value.push(Cow::Borrowed(""))
+                    }
+
+                    temp.push(value);
+                }
+
+                let mut result = temp.iter().fold(vec![vec![]], |acc, x| {
+                    let mut tmp: Vec<Vec<String>> = vec![];
+
+                    for item in x {
+                        for row in &acc {
+                            let mut new_row: Vec<String> = row.clone();
+                            new_row.push(String::from(item.clone()));
+                            tmp.push(new_row);
+                        }
+                    }
+
+                    tmp
+                });
+
+                retval.append(&mut result);
+            }
+        }
+
+        retval
+    }
+
+    pub fn select(&self, selectors: &Selectors) -> Vec<Vec<String>> {
+        let result = selectors
+            .iter()
+            .map(|selector| self.collect(&selector))
+            .fold(vec![vec![]], |acc, x| {
+                let mut tmp: Vec<Vec<String>> = vec![];
+                for mut item in x {
+                    for row in &acc {
+                        let mut new_row: Vec<String> = row.clone();
+                        new_row.append(&mut item);
+                        tmp.push(new_row.clone());
+                    }
+                }
+
+                tmp
+            });
 
         result
     }

@@ -1,8 +1,8 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::{Arg, SubCommand};
-use pica::parse_path_list;
 use pica::Record;
+use pica::Selectors;
 use std::io::BufRead;
 
 pub fn cli() -> App {
@@ -32,13 +32,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let reader = ctx.reader(args.value_of("filename"))?;
     let skip_invalid = args.is_present("skip-invalid");
 
-    let fields_str = args.value_of("fields").unwrap();
-    let paths = match parse_path_list(fields_str) {
-        Ok((_, paths)) => paths,
+    let selectors_str = args.value_of("fields").unwrap();
+    let selectors = match Selectors::parse(&selectors_str) {
+        Ok(val) => val,
         _ => {
             return Err(CliError::Other(format!(
-                "invalid field list: {}",
-                fields_str
+                "invalid select list: {}",
+                selectors_str
             )))
         }
     };
@@ -46,33 +46,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::decode(&line) {
-            let mut rows = Vec::<Vec<&str>>::new();
-
-            for path in &paths {
-                let mut values = record.path(&path);
-                if values.is_empty() {
-                    values = vec![""];
-                }
-
-                if rows.is_empty() {
-                    for value in values {
-                        rows.push(vec![value]);
-                    }
-                } else {
-                    let mut temp = Vec::<Vec<&str>>::new();
-
-                    for row in &mut rows {
-                        for value in &values {
-                            let mut new_row = row.clone();
-                            new_row.push(value);
-                            temp.push(new_row);
-                        }
-                    }
-
-                    rows = temp;
-                }
-            }
-
+            let rows = record.select(&selectors);
             for row in rows {
                 writer.write_record(row)?;
             }
