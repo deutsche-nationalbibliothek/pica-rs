@@ -11,6 +11,7 @@ Tools to work with bibliographic records encoded in Pica+.
 
 * [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
 * [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
+* [frequency](https://github.com/niko2342/pica-rs/wiki/Commands#frequency) — compute a frequency table of a subfield
 * [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
 * [json](https://github.com/niko2342/pica-rs/wiki/Commands#json) — serialize pica records to JSON
 * [partition](https://github.com/niko2342/pica-rs/wiki/Commands#partition) — partition a list of records based on subfield values

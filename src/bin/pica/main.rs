@@ -26,6 +26,7 @@ fn main() {
     let result = match name {
         "cat" => commands::cat::run(args),
         "filter" => commands::filter::run(args),
+        "frequency" => commands::frequency::run(args),
         "invalid" => commands::invalid::run(args),
         "json" => commands::json::run(args),
         "partition" => commands::partition::run(args),
