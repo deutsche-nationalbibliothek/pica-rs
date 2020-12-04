@@ -26,7 +26,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
         for line in reader.lines() {
             let line = line.unwrap();
-            if let Err(_) = Record::decode(&line) {
+            if Record::decode(&line).is_err() {
                 writer.write_all(line.as_bytes())?;
                 writer.write_all(b"\n")?;
             }
