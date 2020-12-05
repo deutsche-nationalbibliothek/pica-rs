@@ -7,6 +7,18 @@
 
 Tools to work with bibliographic records encoded in Pica+.
 
+## Installation
+
+In order to install the pica tools a [Rust](https://www.rust-lang.org/) installation is required.
+Just follow the [installation guide](https://www.rust-lang.org/learn/get-started) to get the Rust
+programming language with the `cargo` package manager.
+
+To install the latest stable release:
+
+```bash
+$ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
+```
+
 ## Commands
 
 * [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
