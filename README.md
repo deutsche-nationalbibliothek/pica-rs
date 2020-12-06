@@ -35,7 +35,7 @@ $ pica cat --skip-invalid DUMP1.dat.gz DUMP2.dat \
 use pica::Record;
 
 fn main() {
-    let record = Record::from_str("003@ \u{1f}0123456789\u{1e}")
+    let record = Record::decode("003@ \u{1f}0123456789\u{1e}")
         .expect("Invalid Pica+ record.");
 
     println!("Record = {:?}", record);
