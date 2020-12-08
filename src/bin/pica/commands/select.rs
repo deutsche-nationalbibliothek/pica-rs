@@ -1,28 +1,28 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use clap::{Arg, SubCommand};
+use clap::Arg;
 use pica::Record;
 use pica::Selectors;
 use std::io::BufRead;
 
 pub fn cli() -> App {
-    SubCommand::with_name("select")
+    App::new("select")
         .about("Select fields from a record.")
         .arg(
-            Arg::with_name("skip-invalid")
-                .short("s")
+            Arg::new("skip-invalid")
+                .short('s')
                 .long("skip-invalid")
-                .help("skip invalid records"),
+                .about("skip invalid records"),
         )
         .arg(
-            Arg::with_name("output")
-                .short("o")
+            Arg::new("output")
+                .short('o')
                 .long("--output")
                 .value_name("file")
-                .help("Write output to <file> instead of stdout."),
+                .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::with_name("fields").required(true))
-        .arg(Arg::with_name("filename"))
+        .arg(Arg::new("fields").required(true))
+        .arg(Arg::new("filename"))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
