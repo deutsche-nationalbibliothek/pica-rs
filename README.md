@@ -54,12 +54,6 @@ fn main() {
 }
 ```
 
-## TODO
-
-- [ ] `pica convert` convert Pica+ records to other formats (csv, json, ...)
-- [ ] `pica lint` check Pica+ records against field specs
-
-
 ## Related Projects
 
 - [PICA::Data](https://github.com/gbv/PICA-Data) -  Perl module to handle PICA+ data.
