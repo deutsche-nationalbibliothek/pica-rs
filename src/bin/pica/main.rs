@@ -3,28 +3,23 @@ extern crate clap;
 extern crate csv;
 extern crate regex;
 
+mod cli;
 mod commands;
 mod util;
 
-use clap::{App, AppSettings};
 use std::io;
 use std::process;
 use util::CliError;
 
 fn main() {
-    let m = App::new("pica")
-        .about("Tools to work with bibliographic records encoded in Pica+")
-        .setting(AppSettings::SubcommandRequired)
-        .version(crate_version!())
-        .author(crate_authors!())
-        .subcommands(commands::subcmds())
-        .get_matches();
-
+    let mut app = cli::build_cli();
+    let m = app.clone().get_matches();
     let name = m.subcommand_name().unwrap();
     let args = m.subcommand_matches(name).unwrap();
 
     let result = match name {
         "cat" => commands::cat::run(args),
+        "completion" => commands::completion::run(args, &mut app),
         "filter" => commands::filter::run(args),
         "frequency" => commands::frequency::run(args),
         "invalid" => commands::invalid::run(args),
