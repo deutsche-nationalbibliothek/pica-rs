@@ -19,7 +19,7 @@ pub fn cli() -> App {
                 .value_name("file")
                 .about("Write output to <file> instead of stdout."),
         )
-        .about("Generate shell completion scripts.")
+        .about("Generate a completions file for Bash, Fish or ZSH shell.")
 }
 
 pub fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {

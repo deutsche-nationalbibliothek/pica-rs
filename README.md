@@ -10,6 +10,7 @@ Tools to work with bibliographic records encoded in Pica+.
 ## Commands
 
 * [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
+* [completion](https://github.com/niko2342/pica-rs/wiki/Commands#completion) — generate a completions file for bash, fish or zsh.
 * [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
 * [frequency](https://github.com/niko2342/pica-rs/wiki/Commands#frequency) — compute a frequency table of a subfield
 * [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
