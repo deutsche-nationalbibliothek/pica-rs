@@ -5,7 +5,16 @@
 [![Coverage Status](https://coveralls.io/repos/github/niko2342/pica-rs/badge.svg?branch=main)](https://coveralls.io/github/niko2342/pica-rs?branch=main)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-Tools to work with bibliographic records encoded in Pica+.
+## About
+
+This repository provides a collection of tools to work with bibliographic
+records encoded in Pica+, the internal format of the OCLC Cataloging
+system. The core idea was to have a fast tool to flatten the complex structure
+of a record down to a two-dimonsional CSV record, which can be further
+processed by python/pandas.
+
+Most of the sub-commands are inspired by
+[xsv](https://github.com/BurntSushi/xsv), a tool to work with CSV data.
 
 ## Installation
 
@@ -47,7 +56,7 @@ $ pica cat --skip-invalid DUMP1.dat.gz DUMP2.dat \
 use pica::Record;
 
 fn main() {
-    let record = Record::from_str("003@ \u{1f}0123456789\u{1e}")
+    let record = Record::decode("003@ \u{1f}0123456789\u{1e}")
         .expect("Invalid Pica+ record.");
 
     println!("Record = {:?}", record);
@@ -56,10 +65,9 @@ fn main() {
 
 ## Related Projects
 
+- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) - Catmandu modules for working with PICA+ data.
+- [Metafacture](https://github.com/metafacture) - Tool suite for metadata processing.
 - [PICA::Data](https://github.com/gbv/PICA-Data) -  Perl module to handle PICA+ data.
 - [PICA::Record](https://github.com/gbv/PICA-Record) -  Perl module to handle PICA+ records (deprecated).
-- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) - Catmandu modules for working with PICA+ data.
 - [luapica](http://jakobvoss.de/luapica/) - Handle PICA+ data in Lua.
-
-
 
