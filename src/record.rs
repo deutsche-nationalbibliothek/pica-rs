@@ -110,12 +110,16 @@ impl<'a> Record<'a> {
         let result = selectors
             .iter()
             .map(|selector| self.collect(&selector))
-            .fold(vec![vec![]], |acc, x| {
+            .fold(vec![vec![]], |acc, mut x| {
+                if x.is_empty() {
+                    x = vec![vec!["".to_string()]];
+                }
+
                 let mut tmp: Vec<Vec<String>> = vec![];
-                for mut item in x {
+                for item in x {
                     for row in &acc {
                         let mut new_row: Vec<String> = row.clone();
-                        new_row.append(&mut item);
+                        new_row.append(&mut item.clone());
                         tmp.push(new_row.clone());
                     }
                 }
