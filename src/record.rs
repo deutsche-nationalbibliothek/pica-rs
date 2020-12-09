@@ -1,7 +1,7 @@
 use crate::error::ParsePicaError;
 use crate::field::parse_field;
 use crate::filter::BooleanOp;
-use crate::select::{Selector, Selectors};
+use crate::select::{Range, Selector, Selectors};
 use crate::Filter;
 use crate::{Field, Path};
 use nom::combinator::{all_consuming, map};
@@ -70,19 +70,32 @@ impl<'a> Record<'a> {
                 && field.occurrence == selector.occurrence
             {
                 let mut temp = vec![];
-                for code in &selector.subfields {
-                    let mut value = field
+                for (code, range) in &selector.subfields {
+                    let mut values: Vec<Cow<'_, str>> = field
                         .subfields()
                         .iter()
                         .filter(|subfield| subfield.code == *code)
                         .map(|subfield| subfield.value.clone())
                         .collect::<Vec<_>>();
 
-                    if value.is_empty() {
-                        value.push(Cow::Borrowed(""))
+                    let values_ranged = if let Some(range) = range {
+                        match range {
+                            Range::Range(start, end) => &values[*start..*end],
+                            Range::RangeTo(start) => &values[*start..],
+                            Range::RangeFrom(end) => &values[..*end],
+                            Range::RangeFull => &values[..],
+                        }
+                    } else {
+                        &values[..]
+                    };
+
+                    values = values_ranged.to_vec();
+
+                    if values.is_empty() {
+                        values.push(Cow::Borrowed(""))
                     }
 
-                    temp.push(value);
+                    temp.push(values);
                 }
 
                 let mut result = temp.iter().fold(vec![vec![]], |acc, x| {

@@ -3,24 +3,37 @@ use crate::subfield::parse_subfield_code;
 use crate::utils::ws;
 
 use nom::branch::alt;
-use nom::character::complete::char;
-use nom::combinator::{cut, map, opt};
+use nom::bytes::complete::tag;
+use nom::character::complete::{char, digit1};
+use nom::combinator::{cut, map, map_res, opt};
 use nom::multi::separated_list1;
-use nom::sequence::{preceded, terminated, tuple};
+use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
 use nom::{Finish, IResult};
 
 use std::borrow::Cow;
 use std::ops::Deref;
 
 #[derive(Debug, PartialEq)]
+pub enum Range {
+    Range(usize, usize),
+    RangeFrom(usize),
+    RangeTo(usize),
+    RangeFull,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Selector<'a> {
     pub(crate) tag: Cow<'a, str>,
     pub(crate) occurrence: Option<Cow<'a, str>>,
-    pub(crate) subfields: Vec<char>,
+    pub(crate) subfields: Vec<(char, Option<Range>)>,
 }
 
 impl<'a> Selector<'a> {
-    pub fn new<S>(tag: S, occurrence: Option<S>, subfields: Vec<char>) -> Self
+    pub fn new<S>(
+        tag: S,
+        occurrence: Option<S>,
+        subfields: Vec<(char, Option<Range>)>,
+    ) -> Self
     where
         S: Into<Cow<'a, str>>,
     {
@@ -52,12 +65,42 @@ impl<'a> Deref for Selectors<'a> {
     }
 }
 
+fn parse_usize(i: &str) -> IResult<&str, usize> {
+    map_res(digit1, |s: &str| s.parse::<usize>())(i)
+}
+
+fn parse_range(i: &str) -> IResult<&str, Range> {
+    preceded(
+        char('['),
+        cut(terminated(
+            alt((
+                map(
+                    separated_pair(parse_usize, tag(".."), parse_usize),
+                    |(start, end)| Range::Range(start, end),
+                ),
+                map(terminated(parse_usize, tag("..")), |start| {
+                    Range::RangeFrom(start)
+                }),
+                map(preceded(tag("..="), parse_usize), |end| {
+                    Range::RangeTo(end + 1)
+                }),
+                map(preceded(tag(".."), parse_usize), |end| {
+                    Range::RangeTo(end)
+                }),
+                map(tag(".."), |_| Range::RangeFull),
+                map(parse_usize, |index| Range::Range(index, index + 1)),
+            )),
+            char(']'),
+        )),
+    )(i)
+}
+
 fn parse_single_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
             parse_field_tag,
             opt(parse_field_occurrence),
-            preceded(char('.'), parse_subfield_code),
+            preceded(char('.'), pair(parse_subfield_code, opt(parse_range))),
         )),
         |(tag, occurrence, code)| Selector::new(tag, occurrence, vec![code]),
     )(i)
@@ -71,7 +114,10 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
             preceded(
                 ws(char('{')),
                 cut(terminated(
-                    separated_list1(ws(char(',')), parse_subfield_code),
+                    separated_list1(
+                        ws(char(',')),
+                        pair(parse_subfield_code, opt(parse_range)),
+                    ),
                     ws(char('}')),
                 )),
             ),
@@ -97,14 +143,30 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_parse_range() {
+        assert_eq!(parse_range("[1..1]"), Ok(("", Range::Range(1, 1))));
+        assert_eq!(parse_range("[0..1]"), Ok(("", Range::Range(0, 1))));
+        assert_eq!(parse_range("[1..]"), Ok(("", Range::RangeFrom(1))));
+        assert_eq!(parse_range("[..2]"), Ok(("", Range::RangeTo(2))));
+        assert_eq!(parse_range("[..=2]"), Ok(("", Range::RangeTo(3))));
+        assert_eq!(parse_range("[..]"), Ok(("", Range::RangeFull)));
+        assert_eq!(parse_range("[0]"), Ok(("", Range::Range(0, 1))));
+        assert_eq!(parse_range("[1]"), Ok(("", Range::Range(1, 2))));
+    }
+
+    #[test]
     fn test_parse_select_columns() {
         assert_eq!(
             parse_selectors("003@.0, 012A/00{a, b, c}"),
             Ok((
                 "",
                 Selectors(vec![
-                    Selector::new("003@", None, vec!['0']),
-                    Selector::new("012A", Some("00"), vec!['a', 'b', 'c'])
+                    Selector::new("003@", None, vec![('0', None)]),
+                    Selector::new(
+                        "012A",
+                        Some("00"),
+                        vec![('a', None), ('b', None), ('c', None)]
+                    )
                 ])
             ))
         );
