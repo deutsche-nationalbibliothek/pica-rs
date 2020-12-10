@@ -9,12 +9,11 @@
 
 This repository provides a collection of tools to work with bibliographic
 records encoded in Pica+, the internal format of the OCLC Cataloging
-system. The core idea was to have a fast tool to flatten the complex structure
-of a record down to a two-dimonsional CSV record, which can be further
-processed by python/pandas.
+system. The development of this tool was motivated by the wish to have a fast
+and efficient way to transform Pica+ records to a data format, which can be
+easily processed Python's [pandas](https://git.io/v7Qt8) library.
 
-Most of the sub-commands are inspired by
-[xsv](https://github.com/BurntSushi/xsv), a tool to work with CSV data.
+Most of the commands are inspired by the [xsv](https://git.io/JIoJG) toolkit.
 
 ## Installation
 
@@ -43,6 +42,15 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 * [split](https://github.com/niko2342/pica-rs/wiki/Commands#split) — split a list of records into chunks
 
 ## Usage
+
+A stream of records can be filtered by query expressions. Query expressions can
+be simple comparisons (`==` (equal), `!=` (not equal) or `=~` (regex)), which
+can be comninded by bollean connectives (`&&`, `||`), grouped in parentheses
+(`(A || (B && C))`) and negated (`!(A || B)`).
+
+```bash
+$ pica filter -s "(003@.0 == '123456789X' || 002@{0 =~ '^Tp[123]$' || 0 == 'Ts1'}"
+```
 
 ```bash
 $ pica cat --skip-invalid DUMP1.dat.gz DUMP2.dat \
