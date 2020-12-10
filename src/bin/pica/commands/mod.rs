@@ -1,5 +1,6 @@
 pub mod cat;
 mod common;
+pub mod completion;
 pub mod filter;
 pub mod frequency;
 pub mod invalid;
@@ -16,6 +17,7 @@ pub(crate) use common::Config;
 pub fn subcmds() -> Vec<App> {
     vec![
         cat::cli(),
+        completion::cli(),
         filter::cli(),
         frequency::cli(),
         invalid::cli(),

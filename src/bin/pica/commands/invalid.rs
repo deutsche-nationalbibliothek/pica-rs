@@ -1,20 +1,20 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliResult};
-use clap::{Arg, SubCommand};
+use clap::Arg;
 use pica::Record;
 use std::io::BufRead;
 
 pub fn cli() -> App {
-    SubCommand::with_name("invalid")
+    App::new("invalid")
         .about("Filter out invalid records.")
         .arg(
-            Arg::with_name("output")
-                .short("o")
+            Arg::new("output")
+                .short('o')
                 .long("--output")
                 .value_name("file")
-                .help("Write output to <file> instead of stdout."),
+                .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::with_name("filenames").multiple(true).required(true))
+        .arg(Arg::new("filenames").multiple(true).required(true))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {

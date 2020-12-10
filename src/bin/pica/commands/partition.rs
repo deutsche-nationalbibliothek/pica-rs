@@ -1,6 +1,6 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use clap::{Arg, SubCommand};
+use clap::Arg;
 use pica::Record;
 
 use std::collections::hash_map::Entry;
@@ -11,30 +11,30 @@ use std::io::Write;
 use std::path::Path;
 
 pub fn cli() -> App {
-    SubCommand::with_name("partition")
+    App::new("partition")
         .about("Partition a list of records by subfield value.")
         .arg(
-            Arg::with_name("skip-invalid")
-                .short("s")
+            Arg::new("skip-invalid")
+                .short('s')
                 .long("skip-invalid")
-                .help("skip invalid records"),
+                .about("skip invalid records"),
         )
         .arg(
-            Arg::with_name("outdir")
-                .short("o")
+            Arg::new("outdir")
+                .short('o')
                 .long("--outdir")
                 .value_name("outdir")
                 .default_value("."),
         )
         .arg(
-            Arg::with_name("template")
-                .short("t")
+            Arg::new("template")
+                .short('t')
                 .long("--template")
                 .value_name("template")
                 .default_value("{}.dat"),
         )
-        .arg(Arg::with_name("path").required(true))
-        .arg(Arg::with_name("filenames").multiple(true).required(true))
+        .arg(Arg::new("path").required(true))
+        .arg(Arg::new("filenames").multiple(true).required(true))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {

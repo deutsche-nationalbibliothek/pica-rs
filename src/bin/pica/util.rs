@@ -1,7 +1,7 @@
 use std::{convert::From, fmt, io};
 
-pub type App = clap::App<'static, 'static>;
-pub type CliArgs = clap::ArgMatches<'static>;
+pub type App = clap::App<'static>;
+pub type CliArgs = clap::ArgMatches;
 pub type CliResult<T> = Result<T, CliError>;
 
 #[derive(Debug)]

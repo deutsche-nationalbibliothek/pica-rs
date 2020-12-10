@@ -1,28 +1,28 @@
 use crate::commands::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use clap::{Arg, SubCommand};
+use clap::Arg;
 use pica::Record;
 use rand::{thread_rng, Rng};
 use std::io::BufRead;
 
 pub fn cli() -> App {
-    SubCommand::with_name("sample")
+    App::new("sample")
         .about("Selects a random permutation of records")
         .arg(
-            Arg::with_name("skip-invalid")
-                .short("s")
+            Arg::new("skip-invalid")
+                .short('s')
                 .long("skip-invalid")
-                .help("skip invalid records"),
+                .about("skip invalid records"),
         )
         .arg(
-            Arg::with_name("output")
-                .short("o")
+            Arg::new("output")
+                .short('o')
                 .long("--output")
                 .value_name("file")
-                .help("Write output to <file> instead of stdout."),
+                .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::with_name("sample-size").required(true))
-        .arg(Arg::with_name("filename"))
+        .arg(Arg::new("sample-size").required(true))
+        .arg(Arg::new("filename"))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
