@@ -43,20 +43,30 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 
 ## Usage
 
-The key component of the tool is the ability to filter for records, which meet
-a filter criterion. A filter consists of field expressions, which can be
-grouped in parentheses and connected with the boolean operators `&&` (and) or
-`||` (or). A field expression must contain the field tag, an optional
-occurrence and a subfield filter.
+### Filter
 
-Examples:
+The key component of the tool is the ability to filter for records, which meet
+a filter criterion. The basic building block are field expression, which
+consists of an field tag (ex. `003@`) and optional occurrence (ex. `/00`) and a
+subfield filter. These expressions can be combined to complex expressions by
+the boolean connectives AND (&&) and OR (||). Boolean expressions are evaluated
+lazy from left to right.
+
+Simple subfield filter consists of the subfield code (single alpha-numerical
+character, ex `0`) a comparison operator (equal `==`, not equal `!=` (not
+equal) or regex `=~`) and a value enclosed in single quotes.. These simple
+subfield expressions can be grouped in parentheses and combinded with boolean
+connectives (ex. `(0 == 'abc' || 0 == 'def')`). There is also a special
+existence operator, to check if a given subfield exists (`a?`).
+
+*Examples:*
 
 ```bash
-$ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
-$ pica filter -s "003@.0 == '123456789X' DUMP.dat
-$ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
 $ pica filter -s "002@.0 =~ '^O(?!lfo)$' && 010@{a == 'ger' || a == 'eng'}" DUMP.dat
 $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
+$ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
+$ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
+$ pica filter -s "003@.0 == '123456789X' DUMP.dat
 ```
 
 ## Related Projects
