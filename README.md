@@ -43,34 +43,19 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 
 ## Usage
 
-A stream of records can be filtered by query expressions. Query expressions can
-be simple comparisons (`==` (equal), `!=` (not equal) or `=~` (regex)), which
-can be comninded by bollean connectives (`&&`, `||`), grouped in parentheses
-(`(A || (B && C))`) and negated (`!(A || B)`).
+The key component of the tool is the ability to filter for records, which meet
+a filter criterion. A filter consists of field expressions, which can be
+grouped in parentheses and connected with the boolean operators `&&` (and) or
+`||` (or). A field expression must contain the field tag, an optional
+occurrence and a subfield filter.
 
-```bash
-$ pica filter -s "(003@.0 == '123456789X' || 002@{0 =~ '^Tp[123]$' || 0 == 'Ts1'}"
-```
+Examples:
 
-```bash
-$ pica cat --skip-invalid DUMP1.dat.gz DUMP2.dat \
-    | pica filter "(003@.0 == '123456789X' && 002@{0 == 'Ts1' || 0 == 'Ts2'}) || 002@.0 =~ '^Tp[123]$'" \
-    | pica sample 42 \
-    | pica print
-```
-
-## Parser
-
-```rust
-use pica::Record;
-
-fn main() {
-    let record = Record::decode("003@ \u{1f}0123456789\u{1e}")
-        .expect("Invalid Pica+ record.");
-
-    println!("Record = {:?}", record);
-}
-```
+ Expression                       | Description
+----------------------------------|----------------------------------------------------------------------------------
+`003@{0 == '123456789X'}`         | `true` if a field `003@` exists with at least one subfield, which is `123456789X`
+`003@.0 == '123455678X'`          | same as above, short syntax
+`010@{a == 'ger' \|\| a == 'eng'}`| `true` if a field's subfield `a` is either `ger` or `eng`
 
 ## Related Projects
 
