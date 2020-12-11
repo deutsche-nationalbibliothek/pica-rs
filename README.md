@@ -51,11 +51,13 @@ occurrence and a subfield filter.
 
 Examples:
 
- Expression                       | Description
-----------------------------------|----------------------------------------------------------------------------------
-`003@{0 == '123456789X'}`         | `true` if a field `003@` exists with at least one subfield, which is `123456789X`
-`003@.0 == '123455678X'`          | same as above, short syntax
-`010@{a == 'ger' \|\| a == 'eng'}`| `true` if a field's subfield `a` is either `ger` or `eng`
+```bash
+$ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
+$ pica filter -s "003@.0 == '123456789X' DUMP.dat
+$ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
+$ pica filter -s "002@.0 =~ '^O(?!lfo)$' && 010@{a == 'ger' || a == 'eng'}" DUMP.dat
+$ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
+```
 
 ## Related Projects
 
