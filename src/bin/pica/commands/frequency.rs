@@ -23,35 +23,32 @@ pub fn cli() -> App {
                 .about("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("path").required(true))
-        .arg(Arg::new("filenames").multiple(true).required(true))
+        .arg(Arg::new("filename"))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let config = Config::new();
+    let ctx = Config::new();
     let skip_invalid = args.is_present("skip-invalid");
     let path_str = args.value_of("path").unwrap();
     let path = path_str.parse::<Path>().unwrap();
 
-    let writer = config.writer(args.value_of("output"))?;
+    let reader = ctx.reader(args.value_of("filename"))?;
+    let writer = ctx.writer(args.value_of("output"))?;
     let mut writer = csv::Writer::from_writer(writer);
 
     let mut ftable: HashMap<String, u32> = HashMap::new();
 
-    for filename in args.values_of("filenames").unwrap() {
-        let reader = config.reader(Some(filename))?;
-
-        for line in reader.lines() {
-            let line = line.unwrap();
-            if let Ok(record) = Record::decode(&line) {
-                for value in record.path(&path) {
-                    *ftable.entry(String::from(value)).or_insert(0) += 1;
-                }
-            } else if !skip_invalid {
-                return Err(CliError::Other(format!(
-                    "could not read record: {}",
-                    line
-                )));
+    for line in reader.lines() {
+        let line = line.unwrap();
+        if let Ok(record) = Record::decode(&line) {
+            for value in record.path(&path) {
+                *ftable.entry(String::from(value)).or_insert(0) += 1;
             }
+        } else if !skip_invalid {
+            return Err(CliError::Other(format!(
+                "could not read record: {}",
+                line
+            )));
         }
     }
 
