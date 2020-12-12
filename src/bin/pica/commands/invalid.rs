@@ -14,22 +14,19 @@ pub fn cli() -> App {
                 .value_name("file")
                 .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filenames").multiple(true).required(true))
+        .arg(Arg::new("filename"))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
     let config = Config::new();
     let mut writer = config.writer(args.value_of("output"))?;
+    let reader = ctx.reader(args.value_of("filename"))?;
 
-    for filename in args.values_of("filenames").unwrap() {
-        let reader = config.reader(Some(filename))?;
-
-        for line in reader.lines() {
-            let line = line.unwrap();
-            if Record::decode(&line).is_err() {
-                writer.write_all(line.as_bytes())?;
-                writer.write_all(b"\n")?;
-            }
+    for line in reader.lines() {
+        let line = line.unwrap();
+        if Record::decode(&line).is_err() {
+            writer.write_all(line.as_bytes())?;
+            writer.write_all(b"\n")?;
         }
     }
 
