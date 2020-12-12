@@ -38,7 +38,7 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 * [json](https://git.io/JIiGy) — serialize pica records to JSON
 * [partition](https://git.io/JIiZy) — partition a list of records based on subfield values
 * [print](https://git.io/JIinZ) — print records in human readable format
-* [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
+* [sample](https://git.io/JIica) — selects a random permutation of records
 * [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a CSV file
 * [split](https://github.com/niko2342/pica-rs/wiki/Commands#split) — split a list of records into chunks
 
@@ -146,6 +146,15 @@ $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
 
 ```
 
+### Sample
+
+The `sample` command selects a random permutation of records of a given sample
+size. This command is particularly useful in combination with the `filter`
+command for QA purposes.
+
+```bash
+$ pica filter -s "002@.0 =~ 'Tp[123s]'" | pica sample 100 -o Tp-samples.dat
+```
 
 ## Related Projects
 
