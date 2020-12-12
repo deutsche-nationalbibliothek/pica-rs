@@ -35,7 +35,7 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 * [frequency](https://git.io/JIiG7) — compute a frequency table of a subfield
 * [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
 * [json](https://git.io/JIiGy) — serialize pica records to JSON
-* [partition](https://github.com/niko2342/pica-rs/wiki/Commands#partition) — partition a list of records based on subfield values
+* [partition](https://git.io/JIiZy) — partition a list of records based on subfield values
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
 * [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
 * [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a CSV file
@@ -116,6 +116,22 @@ $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
     }
   ]
 ]
+```
+
+### Partition
+
+In order to split a list of records into chunks based on a subfield value use
+the `partition` command. Note that if the subfield is repeatable, the record
+will be written to all partitions.
+
+```bash
+$ pica partition -s DUMP.gz -o outdir
+$ tree outdir/
+out
+├── Aa.dat
+├── Aal.dat
+├── Aan.dat
+├── ...
 ```
 
 ## Related Projects
