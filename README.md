@@ -29,9 +29,9 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 
 ## Commands
 
-* [cat](https://github.com/niko2342/pica-rs/wiki/Commands#cat) — concatenate records from multiple files
+* [cat](https://git.io/JI6H2) — concatenate records from multiple files
 * [completion](https://github.com/niko2342/pica-rs/wiki/Commands#completion) — generate a completions file for bash, fish or zsh.
-* [filter](https://github.com/niko2342/pica-rs/wiki/Commands#filter) — filter records by query expressions
+* [filter](https://git.io/JI6HE) — filter records by query expressions
 * [frequency](https://github.com/niko2342/pica-rs/wiki/Commands#frequency) — compute a frequency table of a subfield
 * [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
 * [json](https://github.com/niko2342/pica-rs/wiki/Commands#json) — serialize pica records to JSON
@@ -42,6 +42,14 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 * [split](https://github.com/niko2342/pica-rs/wiki/Commands#split) — split a list of records into chunks
 
 ## Usage
+
+### Cat
+
+Multiple pica dumps can be concatenated to a single record stream:
+
+```bash
+$ pica cat -s -o DUMP12.dat DUMP1.dat DUMP2.dat.gz
+```
 
 ### Filter
 
@@ -59,7 +67,7 @@ subfield expressions can be grouped in parentheses and combinded with boolean
 connectives (ex. `(0 == 'abc' || 0 == 'def')`). There is also a special
 existence operator, to check if a given subfield exists (`a?`).
 
-_Examples_
+**Examples**
 
 ```bash
 $ pica filter -s "002@.0 =~ '^O(?!lfo)$' && 010@{a == 'ger' || a == 'eng'}" DUMP.dat
@@ -68,6 +76,8 @@ $ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 ```
+
+
 
 ## Related Projects
 
