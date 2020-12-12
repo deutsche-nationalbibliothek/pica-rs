@@ -69,7 +69,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             if count % chunk_size == 0 {
                 writer.flush()?;
 
-                writer = config.writer(
+                writer = ctx.writer(
                     outdir
                         .join(
                             filename_template

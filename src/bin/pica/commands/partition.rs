@@ -61,7 +61,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                 let writer = match entry {
                     Entry::Occupied(ref mut occupied) => occupied.get_mut(),
                     Entry::Vacant(vacant) => {
-                        let writer = config.writer(
+                        let writer = ctx.writer(
                             outdir
                                 .join(filename_template.replace("{}", &value))
                                 .to_str(),

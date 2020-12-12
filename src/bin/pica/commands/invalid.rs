@@ -18,8 +18,8 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let config = Config::new();
-    let mut writer = config.writer(args.value_of("output"))?;
+    let ctx = Config::new();
+    let mut writer = ctx.writer(args.value_of("output"))?;
     let reader = ctx.reader(args.value_of("filename"))?;
 
     for line in reader.lines() {
