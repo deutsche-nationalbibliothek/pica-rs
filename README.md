@@ -32,9 +32,9 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 * [cat](https://git.io/JI6H2) — concatenate records from multiple files
 * [completion](https://github.com/niko2342/pica-rs/wiki/Commands#completion) — generate a completions file for bash, fish or zsh.
 * [filter](https://git.io/JI6HE) — filter records by query expressions
-* [frequency](https://github.com/niko2342/pica-rs/wiki/Commands#frequency) — compute a frequency table of a subfield
+* [frequency](https://git.io/JIiG7) — compute a frequency table of a subfield
 * [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
-* [json](https://github.com/niko2342/pica-rs/wiki/Commands#json) — serialize pica records to JSON
+* [json](https://git.io/JIiGy) — serialize pica records to JSON
 * [partition](https://github.com/niko2342/pica-rs/wiki/Commands#partition) — partition a list of records based on subfield values
 * [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
 * [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
@@ -90,6 +90,32 @@ $ pica filter --skip-invalid "002@.0 =~ '^A.*'" DUMP.dat.gz \
 ger,2888445
 eng,347171
 ...
+```
+
+### JSON
+
+To serialize a record to JSON, just run the following command:
+
+```bash
+$ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
+[
+  [
+    {
+      "tag": "003@",
+      "occurrence": null,
+      "subfields": [
+        {
+          "code": "0",
+          "value": "123456789"
+        },
+        {
+          "code": "a",
+          "value": "b"
+        }
+      ]
+    }
+  ]
+]
 ```
 
 ## Related Projects
