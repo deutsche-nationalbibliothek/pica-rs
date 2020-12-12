@@ -39,8 +39,8 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 * [partition](https://git.io/JIiZy) — partition a list of records based on subfield values
 * [print](https://git.io/JIinZ) — print records in human readable format
 * [sample](https://git.io/JIica) — selects a random permutation of records
-* [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a CSV file
-* [split](https://github.com/niko2342/pica-rs/wiki/Commands#split) — split a list of records into chunks
+* [select](https://git.io/JIiWZ) — write subfields to a CSV file
+* [split](https://git.io/JIiWE) — split a list of records into chunks
 
 ## Usage
 
@@ -172,6 +172,20 @@ $ pica select -s "003@.0,012A{a,b,c}" DUMP.dat.gz
 123456789X,d,e,f
 ```
 
+### Split
+
+This command is used to split a list of records into chunks of a given
+size. The default filename is `{}.dat`, whereby the curly braces are replaced
+by the number of the chunk.
+
+```
+$ pica split --skip-invalid --outdir out --template "CHUNK_{}.dat" DUMP.dat
+$ tree out
+out
+├── CHUNK_0.dat
+├── CHUNK_10.dat
+├── ...
+```
 
 ## Related Projects
 
