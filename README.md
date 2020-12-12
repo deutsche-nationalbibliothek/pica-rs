@@ -79,8 +79,18 @@ $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 
 ### Frequency
 
+The `frequency` command computes a frequency table of a subfield. The result is
+formatted as CSV (value,count). The following example builds the frequency
+table of the field `010@.a` of a filtered set of records.
 
+```bash
+$ pica filter --skip-invalid "002@.0 =~ '^A.*'" DUMP.dat.gz \
+    | pica frequency "010@.a"
 
+ger,2888445
+eng,347171
+...
+```
 
 ## Related Projects
 
