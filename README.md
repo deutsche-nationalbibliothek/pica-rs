@@ -17,9 +17,10 @@ Most of the commands are inspired by the [xsv](https://git.io/JIoJG) toolkit.
 
 ## Installation
 
-In order to install the pica tools a [Rust](https://www.rust-lang.org/) installation is required.
-Just follow the [installation guide](https://www.rust-lang.org/learn/get-started) to get the Rust
-programming language with the `cargo` package manager.
+In order to install the pica tools a [Rust](https://www.rust-lang.org/)
+installation is required.  Just follow the [installation
+guide](https://www.rust-lang.org/learn/get-started) to get the Rust programming
+language with the `cargo` package manager.
 
 To install the latest stable release:
 
@@ -36,7 +37,7 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 * [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
 * [json](https://git.io/JIiGy) — serialize pica records to JSON
 * [partition](https://git.io/JIiZy) — partition a list of records based on subfield values
-* [print](https://github.com/niko2342/pica-rs/wiki/Commands#print) — print records in human readable format
+* [print](https://git.io/JIinZ) — print records in human readable format
 * [sample](https://github.com/niko2342/pica-rs/wiki/Commands#sample) — selects a random permutation of records
 * [select](https://github.com/niko2342/pica-rs/wiki/Commands#select) — write subfields to a CSV file
 * [split](https://github.com/niko2342/pica-rs/wiki/Commands#split) — split a list of records into chunks
@@ -133,6 +134,18 @@ out
 ├── Aan.dat
 ├── ...
 ```
+
+### Print
+
+The `print` command is used to print records in a human-readable format. The
+format is similar to PICA3.
+
+```bash
+$ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
+003@ $0 123456789 $a b
+
+```
+
 
 ## Related Projects
 
