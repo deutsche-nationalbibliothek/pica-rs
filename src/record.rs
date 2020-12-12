@@ -116,6 +116,16 @@ impl<'a> Record<'a> {
             }
         }
 
+        if retval.is_empty() {
+            retval.push(
+                selector
+                    .subfields
+                    .iter()
+                    .map(|_| "".to_string())
+                    .collect::<Vec<_>>(),
+            )
+        }
+
         retval
     }
 
