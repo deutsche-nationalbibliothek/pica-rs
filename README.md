@@ -153,8 +153,25 @@ size. This command is particularly useful in combination with the `filter`
 command for QA purposes.
 
 ```bash
-$ pica filter -s "002@.0 =~ 'Tp[123s]'" | pica sample 100 -o Tp-samples.dat
+$ pica filter -s "002@.0 =~ '^Tp[123s]'" | pica sample 100 -o Tp-samples.dat
 ```
+
+### Select
+
+This command selects subfields of a record and print them as CSV data. A select
+expression consists of a non-empty list of selectors. A selector references a
+field and a list of subfields. If a selector's field or any subfield is
+repeatable, the rows are "multiplied". For example, if the first selector
+returns one row, the second selector two rows and a third selecor 3 rows, the
+result will contain `1 * 2 * 3 = 6` rows. Non-existing fields or subfields
+results in an empty column.
+
+```bash
+$ pica select -s "003@.0,012A{a,b,c}" DUMP.dat.gz
+123456789X,a,b,c
+123456789X,d,e,f
+```
+
 
 ## Related Projects
 
