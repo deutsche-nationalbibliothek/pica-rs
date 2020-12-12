@@ -49,8 +49,8 @@ The key component of the tool is the ability to filter for records, which meet
 a filter criterion. The basic building block are field expression, which
 consists of an field tag (ex. `003@`) and optional occurrence (ex. `/00`) and a
 subfield filter. These expressions can be combined to complex expressions by
-the boolean connectives AND (&&) and OR (||). Boolean expressions are evaluated
-lazy from left to right.
+the boolean connectives AND (`&&`) and OR (`||`). Boolean expressions are
+evaluated lazy from left to right.
 
 Simple subfield filter consists of the subfield code (single alpha-numerical
 character, ex `0`) a comparison operator (equal `==`, not equal `!=` (not
@@ -59,14 +59,14 @@ subfield expressions can be grouped in parentheses and combinded with boolean
 connectives (ex. `(0 == 'abc' || 0 == 'def')`). There is also a special
 existence operator, to check if a given subfield exists (`a?`).
 
-*Examples:*
+_Examples_
 
 ```bash
 $ pica filter -s "002@.0 =~ '^O(?!lfo)$' && 010@{a == 'ger' || a == 'eng'}" DUMP.dat
 $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
 $ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
-$ pica filter -s "003@.0 == '123456789X' DUMP.dat
+$ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 ```
 
 ## Related Projects
