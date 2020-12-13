@@ -128,7 +128,7 @@ will be written to all partitions.
 ```bash
 $ pica partition -s DUMP.gz -o outdir
 $ tree outdir/
-out
+outdir
 ├── Aa.dat
 ├── Aal.dat
 ├── Aan.dat
