@@ -31,7 +31,7 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 ## Commands
 
 * [cat](https://git.io/JI6H2) — concatenate records from multiple files
-* [completion](https://github.com/niko2342/pica-rs/wiki/Commands#completion) — generate a completions file for bash, fish or zsh.
+* [completion](https://github.com/niko2342/pica-rs/wiki/Commands#completion) — generate a completions file for bash, fish or zsh
 * [filter](https://git.io/JI6HE) — filter records by query expressions
 * [frequency](https://git.io/JIiG7) — compute a frequency table of a subfield
 * [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
@@ -46,7 +46,7 @@ $ cargo install --git https://github.com/niko2342/pica-rs.git --branch main
 
 ### Cat
 
-Multiple pica dumps can be concatenated to a single record stream:
+Multiple pica dumps can be concatenated to a single stream of records:
 
 ```bash
 $ pica cat -s -o DUMP12.dat DUMP1.dat DUMP2.dat.gz
@@ -62,9 +62,9 @@ the boolean connectives AND (`&&`) and OR (`||`). Boolean expressions are
 evaluated lazy from left to right.
 
 Simple subfield filter consists of the subfield code (single alpha-numerical
-character, ex `0`) a comparison operator (equal `==`, not equal `!=` (not
-equal) or regex `=~`) and a value enclosed in single quotes.. These simple
-subfield expressions can be grouped in parentheses and combinded with boolean
+character, ex `0`) a comparison operator (equal `==`, not equal `!=` not equal
+or regex `=~`) and a value enclosed in single quotes.. These simple subfield
+expressions can be grouped in parentheses and combinded with boolean
 connectives (ex. `(0 == 'abc' || 0 == 'def')`). There is also a special
 existence operator, to check if a given subfield exists (`a?`).
 
@@ -148,12 +148,16 @@ $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
 
 ### Sample
 
-The `sample` command selects a random permutation of records of a given sample
-size. This command is particularly useful in combination with the `filter`
-command for QA purposes.
+The `sample` command selects a random permutation of records of the given
+sample size. This command is particularly useful in combination with the
+`filter` command for QA purposes.
+
+The following command filters for records, that have a fied `002@` with a
+subfield `0` that is `Tp1` or `Tpz` and selects a random permutation of 100
+records.
 
 ```bash
-$ pica filter -s "002@.0 =~ '^Tp[123s]'" | pica sample 100 -o Tp-samples.dat
+$ pica filter -s "002@.0 =~ '^Tp[1z]'" | pica sample 100 -o samples.dat
 ```
 
 ### Select
@@ -166,8 +170,14 @@ returns one row, the second selector two rows and a third selecor 3 rows, the
 result will contain `1 * 2 * 3 = 6` rows. Non-existing fields or subfields
 results in an empty column.
 
+The list of the subfield values can be changed by range expressions. For
+example, `a[0]` takes just the first element, `a[1..]` takes all values from
+index 1, `a[1..3]` takes all values with an index from 1 to 2 (half-open
+range), `a[1..=3]` takes all values with an index from 1 to 3 and `a[..]` takes
+all values (default).
+
 ```bash
-$ pica select -s "003@.0,012A{a,b,c}" DUMP.dat.gz
+$ pica select -s "003@.0,012A{a[..],b[0],c}" DUMP.dat.gz
 123456789X,a,b,c
 123456789X,d,e,f
 ```
