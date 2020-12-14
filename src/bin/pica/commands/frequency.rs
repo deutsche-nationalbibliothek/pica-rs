@@ -16,6 +16,14 @@ pub fn cli() -> App {
                 .about("skip invalid records"),
         )
         .arg(
+            Arg::new("limit")
+                .short('l')
+                .long("--limit")
+                .value_name("n")
+                .about("Limit the result to the <n> most common items.")
+                .default_value("0"),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -29,6 +37,7 @@ pub fn cli() -> App {
 pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
     let skip_invalid = args.is_present("skip-invalid");
+    let limit: u64 = args.value_of("limit").unwrap().parse().unwrap();
     let path_str = args.value_of("path").unwrap();
     let path = path_str.parse::<Path>().unwrap();
 
@@ -36,7 +45,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let writer = ctx.writer(args.value_of("output"))?;
     let mut writer = csv::Writer::from_writer(writer);
 
-    let mut ftable: HashMap<String, u32> = HashMap::new();
+    let mut ftable: HashMap<String, u64> = HashMap::new();
 
     for line in reader.lines() {
         let line = line.unwrap();
@@ -52,10 +61,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     }
 
-    let mut ftable_sorted: Vec<(&String, &u32)> = ftable.iter().collect();
+    let mut ftable_sorted: Vec<(&String, &u64)> = ftable.iter().collect();
     ftable_sorted.sort_by(|a, b| b.1.cmp(a.1));
 
     for (value, frequency) in ftable_sorted {
+        if *frequency < limit {
+            break;
+        }
         writer.write_record(&[value, &frequency.to_string()])?;
     }
 
