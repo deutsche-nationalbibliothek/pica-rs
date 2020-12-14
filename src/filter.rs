@@ -9,8 +9,8 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{all_consuming, cut, map, opt};
-use nom::multi::many0;
-use nom::sequence::{pair, preceded, terminated, tuple};
+use nom::multi::{many0, separated_list1};
+use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
 use std::str::FromStr;
@@ -26,11 +26,12 @@ pub enum ComparisonOp {
     Eq,
     Ne,
     Re,
+    In,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum SubfieldFilter {
-    Comparison(char, ComparisonOp, String),
+    Comparison(char, ComparisonOp, Vec<String>),
     Boolean(Box<SubfieldFilter>, BooleanOp, Box<SubfieldFilter>),
     Grouped(Box<SubfieldFilter>),
     Exists(char),
@@ -72,7 +73,22 @@ fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
             ws(parse_comparison_op),
             ws(parse_string),
         )),
-        |(code, op, value)| SubfieldFilter::Comparison(code, op, value),
+        |(code, op, value)| SubfieldFilter::Comparison(code, op, vec![value]),
+    )(i)
+}
+
+fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
+    map(
+        tuple((
+            ws(parse_subfield_code),
+            map(tag("in"), |_| ComparisonOp::In),
+            delimited(
+                ws(char('[')),
+                separated_list1(ws(char(',')), parse_string),
+                ws(char(']')),
+            ),
+        )),
+        |(code, op, values)| SubfieldFilter::Comparison(code, op, values),
     )(i)
 }
 
@@ -109,6 +125,7 @@ fn parse_subfield_primary(i: &str) -> IResult<&str, SubfieldFilter> {
     alt((
         parse_subfield_comparison,
         parse_subfield_not_expr,
+        parse_subfield_in_expr,
         parse_subfield_exists,
         parse_subfield_group,
     ))(i)
@@ -157,7 +174,11 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
             pair(parse_field_tag, opt(parse_field_occurrence)),
             preceded(
                 ws(char('.')),
-                cut(alt((parse_subfield_comparison, parse_subfield_exists))),
+                cut(alt((
+                    parse_subfield_comparison,
+                    parse_subfield_exists,
+                    parse_subfield_in_expr,
+                ))),
             ),
         )),
         |((tag, occurrence), filter)| {
@@ -240,10 +261,29 @@ mod tests {
         let filter = SubfieldFilter::Comparison(
             '0',
             ComparisonOp::Eq,
-            "123456789X".to_string(),
+            vec!["123456789X".to_string()],
         );
         assert_eq!(
             parse_subfield_comparison("0 == '123456789X'"),
+            Ok(("", filter))
+        );
+    }
+
+    #[test]
+    fn test_parse_subfield_in_op() {
+        let filter = SubfieldFilter::Comparison(
+            '0',
+            ComparisonOp::In,
+            vec![
+                "123456789X".to_string(),
+                "123456789Y".to_string(),
+                "123456789Z".to_string(),
+            ],
+        );
+        assert_eq!(
+            parse_subfield_in_expr(
+                "0 in ['123456789X', '123456789Y', '123456789Z']"
+            ),
             Ok(("", filter))
         );
     }
@@ -322,7 +362,7 @@ mod tests {
                 Box::new(SubfieldFilter::Comparison(
                     'a',
                     ComparisonOp::Eq,
-                    "abc".to_string(),
+                    vec!["abc".to_string()],
                 )),
             ),
         );
@@ -341,7 +381,7 @@ mod tests {
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
-                "abc".to_string(),
+                vec!["abc".to_string()],
             ),
         );
 
@@ -356,7 +396,7 @@ mod tests {
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
-                "abc".to_string(),
+                vec!["abc".to_string()],
             ),
         )));
 
@@ -375,7 +415,7 @@ mod tests {
                 SubfieldFilter::Comparison(
                     '0',
                     ComparisonOp::Eq,
-                    "abc".to_string(),
+                    vec!["abc".to_string()],
                 ),
             )),
             BooleanOp::And,
@@ -404,7 +444,7 @@ mod tests {
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
-                "123456789X".to_string(),
+                vec!["123456789X".to_string()],
             ),
         );
 

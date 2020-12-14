@@ -97,20 +97,24 @@ impl<'a> Field<'a> {
 
     pub fn matches(&self, filter: &SubfieldFilter) -> bool {
         match filter {
-            SubfieldFilter::Comparison(code, op, value) => match op {
+            SubfieldFilter::Comparison(code, op, values) => match op {
                 ComparisonOp::Eq => self.subfields.iter().any(|subfield| {
-                    subfield.code() == *code && subfield.value() == value
+                    subfield.code() == *code && subfield.value() == values[0]
                 }),
                 ComparisonOp::Ne => self.subfields.iter().all(|subfield| {
-                    subfield.code() == *code && subfield.value() != value
+                    subfield.code() == *code && subfield.value() != values[0]
                 }),
                 ComparisonOp::Re => {
-                    let re = Regex::new(value).unwrap();
+                    let re = Regex::new(&values[0]).unwrap();
                     self.subfields.iter().any(|subfield| {
                         subfield.code() == *code
                             && re.is_match(subfield.value())
                     })
                 }
+                ComparisonOp::In => self.subfields.iter().any(|subfield| {
+                    subfield.code() == *code
+                        && values.contains(&String::from(subfield.value()))
+                }),
             },
             SubfieldFilter::Boolean(lhs, op, rhs) => match op {
                 BooleanOp::And => self.matches(lhs) && self.matches(rhs),
