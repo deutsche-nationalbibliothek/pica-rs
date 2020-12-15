@@ -74,6 +74,7 @@ existence operator, to check if a given subfield exists (`a?`).
 $ pica filter -s "002@.0 =~ '^O(?!lfo)$' && 010@{a == 'ger' || a == 'eng'}" DUMP.dat
 $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
 $ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
+$ pica filter -s "041A/*.9 in ['123', '456']" DUMP.dat
 $ pica filter -s "0100.a in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat

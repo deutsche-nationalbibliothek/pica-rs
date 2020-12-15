@@ -41,7 +41,7 @@ impl<'a> Record<'a> {
 
         for field in &self.0 {
             if field.tag() == path.tag()
-                && field.occurrence() == path.occurrence()
+                && field.occurrence().as_deref() == path.occurrence()
             {
                 for subfield in &field.subfields {
                     if subfield.code() == path.code() {
@@ -67,7 +67,7 @@ impl<'a> Record<'a> {
 
         for field in self.iter() {
             if field.tag == selector.tag
-                && field.occurrence == selector.occurrence
+                && selector.occurrence.equals(&field.occurrence)
             {
                 let mut temp = vec![];
                 for (code, range) in &selector.subfields {
@@ -158,7 +158,7 @@ impl<'a> Record<'a> {
             Filter::Field(tag, occurrence, filter) => {
                 self.iter().any(|field| {
                     field.tag() == tag
-                        && field.occurrence() == occurrence.as_deref()
+                        && occurrence.equals(&field.occurrence())
                         && field.matches(filter)
                 })
             }

@@ -13,6 +13,7 @@ pub use self::subfield::Subfield;
 mod error;
 mod field;
 mod filter;
+mod occurrence;
 mod path;
 mod record;
 mod select;

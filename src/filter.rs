@@ -1,6 +1,7 @@
 //! Filter Expressions
 
-use crate::field::{parse_field_occurrence, parse_field_tag};
+use crate::field::parse_field_tag;
+use crate::occurrence::{parse_occurrence, Occurrence};
 use crate::string::parse_string;
 use crate::subfield::parse_subfield_code;
 use crate::utils::ws;
@@ -12,8 +13,6 @@ use nom::combinator::{all_consuming, cut, map, opt};
 use nom::multi::{many0, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
-
-use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 pub enum BooleanOp {
@@ -39,10 +38,10 @@ pub enum SubfieldFilter {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Filter {
-    Field(String, Option<String>, SubfieldFilter),
-    Boolean(Box<Filter>, BooleanOp, Box<Filter>),
-    Grouped(Box<Filter>),
+pub enum Filter<'a> {
+    Field(String, Occurrence<'a>, SubfieldFilter),
+    Boolean(Box<Filter<'a>>, BooleanOp, Box<Filter<'a>>),
+    Grouped(Box<Filter<'a>>),
 }
 
 #[derive(Debug)]
@@ -152,7 +151,7 @@ fn parse_subfield_filter(i: &str) -> IResult<&str, SubfieldFilter> {
 fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
     map(
         tuple((
-            pair(parse_field_tag, opt(parse_field_occurrence)),
+            pair(parse_field_tag, opt(parse_occurrence)),
             preceded(
                 ws(char('{')),
                 cut(terminated(parse_subfield_filter, ws(char('}')))),
@@ -161,7 +160,7 @@ fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
         |((tag, occurrence), filter)| {
             Filter::Field(
                 String::from(tag),
-                occurrence.map(String::from),
+                occurrence.unwrap_or(Occurrence::None),
                 filter,
             )
         },
@@ -171,7 +170,7 @@ fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
 fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
     map(
         tuple((
-            pair(parse_field_tag, opt(parse_field_occurrence)),
+            pair(parse_field_tag, opt(parse_occurrence)),
             preceded(
                 ws(char('.')),
                 cut(alt((
@@ -184,7 +183,7 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
         |((tag, occurrence), filter)| {
             Filter::Field(
                 String::from(tag),
-                occurrence.map(String::from),
+                occurrence.unwrap_or(Occurrence::None),
                 filter,
             )
         },
@@ -228,10 +227,8 @@ fn parse_filter(i: &str) -> IResult<&str, Filter> {
     all_consuming(parse_filter_expr)(i)
 }
 
-impl FromStr for Filter {
-    type Err = ParseFilterError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl<'a> Filter<'a> {
+    pub fn decode(s: &'a str) -> Result<Self, ParseFilterError> {
         match parse_filter(s).finish() {
             Ok((_, filter)) => Ok(filter),
             _ => Err(ParseFilterError),

@@ -3,7 +3,6 @@
 use crate::error::ParsePicaError;
 use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
 use crate::subfield::{parse_subfield, Subfield};
-
 use nom::character::complete::{char, one_of};
 use nom::combinator::{map, opt, recognize};
 use nom::multi::{count, many0, many_m_n};
@@ -77,8 +76,8 @@ impl<'a> Field<'a> {
     /// let field = Field::new("012A", Some("00"), vec![]);
     /// assert_eq!(field.occurrence(), Some("00"));
     /// ```
-    pub fn occurrence(&self) -> Option<&str> {
-        self.occurrence.as_deref()
+    pub fn occurrence(&self) -> &Option<Cow<'a, str>> {
+        &self.occurrence
     }
 
     /// Returns the subfields of the field.
