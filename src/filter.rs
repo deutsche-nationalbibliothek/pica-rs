@@ -239,6 +239,7 @@ impl<'a> Filter<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::borrow::Cow;
 
     #[test]
     fn test_parse_boolean_op() {
@@ -352,7 +353,7 @@ mod tests {
     fn test_parse_field_complex() {
         let field_expr = Filter::Field(
             "012A".to_string(),
-            Some("000".to_string()),
+            Occurrence::Value(Cow::Borrowed("000")),
             SubfieldFilter::Boolean(
                 Box::new(SubfieldFilter::Exists('0')),
                 BooleanOp::Or,
@@ -374,7 +375,7 @@ mod tests {
     fn test_parse_field_simple() {
         let field_expr = Filter::Field(
             "003@".to_string(),
-            None,
+            Occurrence::None,
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
@@ -389,7 +390,7 @@ mod tests {
     fn test_parse_field_group() {
         let field_expr = Filter::Grouped(Box::new(Filter::Field(
             "003@".to_string(),
-            None,
+            Occurrence::None,
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
@@ -408,7 +409,7 @@ mod tests {
         let filter_expr = Filter::Boolean(
             Box::new(Filter::Field(
                 "003@".to_string(),
-                None,
+                Occurrence::None,
                 SubfieldFilter::Comparison(
                     '0',
                     ComparisonOp::Eq,
@@ -418,7 +419,7 @@ mod tests {
             BooleanOp::And,
             Box::new(Filter::Field(
                 "012A".to_string(),
-                None,
+                Occurrence::None,
                 SubfieldFilter::Boolean(
                     Box::new(SubfieldFilter::Exists('a')),
                     BooleanOp::And,
@@ -434,10 +435,10 @@ mod tests {
     }
 
     #[test]
-    fn test_from_str() {
+    fn test_decode() {
         let expected = Filter::Field(
             "003@".to_string(),
-            None,
+            Occurrence::None,
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
@@ -445,9 +446,6 @@ mod tests {
             ),
         );
 
-        assert_eq!(
-            "003@.0 == '123456789X'".parse::<Filter>().unwrap(),
-            expected
-        );
+        assert_eq!(Filter::decode("003@.0 == '123456789X'").unwrap(), expected);
     }
 }

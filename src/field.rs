@@ -29,7 +29,6 @@ impl<'a> Field<'a> {
     ///
     /// let field = Field::new("003@", None, vec![]);
     /// assert_eq!(field.tag(), "003@");
-    /// assert_eq!(field.occurrence(), None);
     /// assert_eq!(field.subfields(), vec![]);
     /// ```
     pub fn new<S>(
@@ -68,14 +67,6 @@ impl<'a> Field<'a> {
     }
 
     /// Returns the occurrence of the field.
-    ///
-    /// # Example
-    /// ```
-    /// use pica::Field;
-    ///
-    /// let field = Field::new("012A", Some("00"), vec![]);
-    /// assert_eq!(field.occurrence(), Some("00"));
-    /// ```
     pub fn occurrence(&self) -> &Option<Cow<'a, str>> {
         &self.occurrence
     }

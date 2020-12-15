@@ -2,13 +2,14 @@ extern crate pica;
 
 use pica::ParsePicaError;
 use pica::{Field, Subfield};
+use std::borrow::Cow;
 
 #[test]
 fn field_new() {
     let subfields = vec![Subfield::new('0', "123456789X").unwrap()];
     let field = Field::new("003@", None, subfields.clone());
     assert_eq!(field.tag(), "003@");
-    assert_eq!(field.occurrence(), None);
+    assert_eq!(field.occurrence(), &None);
     assert_eq!(field.subfields().len(), 1);
 
     let subfield = field.subfields().first().unwrap();
@@ -27,7 +28,7 @@ fn field_pretty() {
 fn field_parse() {
     let field = Field::decode("012A/00 \u{1f}0abc\u{1f}0def\u{1e}").unwrap();
     assert_eq!(field.tag(), "012A");
-    assert_eq!(field.occurrence(), Some("00"));
+    assert_eq!(field.occurrence(), &Some(Cow::Borrowed("00")));
     assert_eq!(field.subfields().len(), 2);
 
     let subfield = field.subfields().iter().nth(0).unwrap();

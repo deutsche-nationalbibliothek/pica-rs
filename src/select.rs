@@ -172,10 +172,10 @@ mod tests {
             Ok((
                 "",
                 Selectors(vec![
-                    Selector::new("003@", None, vec![('0', None)]),
+                    Selector::new("003@", Occurrence::None, vec![('0', None)]),
                     Selector::new(
                         "012A",
-                        Some(Occurrence::Value(Cow::Borrowed("00"))),
+                        Occurrence::Value(Cow::Borrowed("00")),
                         vec![('a', None), ('b', None), ('c', None)]
                     )
                 ])
