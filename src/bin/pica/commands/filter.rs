@@ -42,7 +42,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let skip_invalid = args.is_present("skip-invalid");
 
     let filter_str = args.value_of("filter").unwrap();
-    let filter = match filter_str.parse::<Filter>() {
+    let filter = match Filter::decode(filter_str) {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(

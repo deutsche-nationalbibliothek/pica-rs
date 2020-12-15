@@ -1,4 +1,5 @@
-use crate::field::{parse_field_occurrence, parse_field_tag};
+use crate::field::parse_field_tag;
+use crate::occurrence::{parse_occurrence, Occurrence};
 use crate::subfield::parse_subfield_code;
 use crate::utils::ws;
 
@@ -24,14 +25,14 @@ pub enum Range {
 #[derive(Debug, PartialEq)]
 pub struct Selector<'a> {
     pub(crate) tag: Cow<'a, str>,
-    pub(crate) occurrence: Option<Cow<'a, str>>,
+    pub(crate) occurrence: Occurrence<'a>,
     pub(crate) subfields: Vec<(char, Option<Range>)>,
 }
 
 impl<'a> Selector<'a> {
     pub fn new<S>(
         tag: S,
-        occurrence: Option<S>,
+        occurrence: Occurrence<'a>,
         subfields: Vec<(char, Option<Range>)>,
     ) -> Self
     where
@@ -39,7 +40,7 @@ impl<'a> Selector<'a> {
     {
         Self {
             tag: tag.into(),
-            occurrence: occurrence.map(|o| o.into()),
+            occurrence,
             subfields,
         }
     }
@@ -99,10 +100,16 @@ fn parse_single_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
             parse_field_tag,
-            opt(parse_field_occurrence),
+            opt(parse_occurrence),
             preceded(char('.'), pair(parse_subfield_code, opt(parse_range))),
         )),
-        |(tag, occurrence, code)| Selector::new(tag, occurrence, vec![code]),
+        |(tag, occurrence, code)| {
+            Selector::new(
+                tag,
+                occurrence.unwrap_or(Occurrence::None),
+                vec![code],
+            )
+        },
     )(i)
 }
 
@@ -110,7 +117,7 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
             parse_field_tag,
-            opt(parse_field_occurrence),
+            opt(parse_occurrence),
             preceded(
                 ws(char('{')),
                 cut(terminated(
@@ -123,7 +130,11 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
             ),
         )),
         |(tag, occurrence, subfields)| {
-            Selector::new(tag, occurrence, subfields)
+            Selector::new(
+                tag,
+                occurrence.unwrap_or(Occurrence::None),
+                subfields,
+            )
         },
     )(i)
 }
@@ -161,10 +172,10 @@ mod tests {
             Ok((
                 "",
                 Selectors(vec![
-                    Selector::new("003@", None, vec![('0', None)]),
+                    Selector::new("003@", Occurrence::None, vec![('0', None)]),
                     Selector::new(
                         "012A",
-                        Some("00"),
+                        Occurrence::Value(Cow::Borrowed("00")),
                         vec![('a', None), ('b', None), ('c', None)]
                     )
                 ])
