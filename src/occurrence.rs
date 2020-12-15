@@ -17,6 +17,8 @@ pub enum Occurrence<'a> {
 impl<'a> Occurrence<'a> {
     pub(crate) fn equals(&self, value: &Option<Cow<'a, str>>) -> bool {
         match self {
+            Occurrence::All => true,
+            Occurrence::None => value.is_none(),
             Occurrence::Value(val1) => {
                 if let Some(val2) = value {
                     val1 == val2
@@ -24,14 +26,6 @@ impl<'a> Occurrence<'a> {
                     false
                 }
             }
-            Occurrence::None => {
-                if value.is_none() {
-                    true
-                } else {
-                    false
-                }
-            }
-            Occurrence::All => true,
         }
     }
 }
