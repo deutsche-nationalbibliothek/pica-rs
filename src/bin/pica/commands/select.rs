@@ -48,7 +48,9 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         if let Ok(record) = Record::decode(&line) {
             let rows = record.select(&selectors);
             for row in rows {
-                writer.write_record(row)?;
+                if row.iter().all(|r| !r.is_empty()) {
+                    writer.write_record(row)?;
+                }
             }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
