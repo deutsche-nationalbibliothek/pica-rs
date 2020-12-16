@@ -128,7 +128,7 @@ the `partition` command. Note that if the subfield is repeatable, the record
 will be written to all partitions.
 
 ```bash
-$ pica partition -s DUMP.gz -o outdir
+$ pica partition -s -o outdir "002@.0" DUMP.dat.gz
 $ tree outdir/
 outdir
 ├── Aa.dat
@@ -191,9 +191,9 @@ size. The default filename is `{}.dat`, whereby the curly braces are replaced
 by the number of the chunk.
 
 ```
-$ pica split --skip-invalid --outdir out --template "CHUNK_{}.dat" DUMP.dat
-$ tree out
-out
+$ pica split --skip-invalid --outdir outdir --template "CHUNK_{}.dat" 100 DUMP.dat
+$ tree outdir
+outdir
 ├── CHUNK_0.dat
 ├── CHUNK_10.dat
 ├── ...
