@@ -39,7 +39,7 @@ pub fn cli() -> App {
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
-    let filename_template = args.value_of("filename").unwrap_or("{}.dat");
+    let filename_template = args.value_of("template").unwrap_or("{}.dat");
     let skip_invalid = args.is_present("skip-invalid");
     let path_str = args.value_of("path").unwrap();
     let path = path_str.parse::<pica::Path>().unwrap();
