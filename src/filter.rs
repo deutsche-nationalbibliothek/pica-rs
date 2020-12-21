@@ -25,6 +25,8 @@ pub enum ComparisonOp {
     Eq,
     Ne,
     Re,
+    StartsWith,
+    EndsWith,
     In,
 }
 
@@ -60,6 +62,8 @@ fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
     alt((
         map(tag("=="), |_| ComparisonOp::Eq),
         map(tag("!="), |_| ComparisonOp::Ne),
+        map(tag("=^"), |_| ComparisonOp::StartsWith),
+        map(tag("=$"), |_| ComparisonOp::EndsWith),
         map(tag("=~"), |_| ComparisonOp::Re),
     ))(i)
 }
@@ -251,6 +255,11 @@ mod tests {
     fn test_parse_comparison_op() {
         assert_eq!(parse_comparison_op("=="), Ok(("", ComparisonOp::Eq)));
         assert_eq!(parse_comparison_op("!="), Ok(("", ComparisonOp::Ne)));
+        assert_eq!(
+            parse_comparison_op("=^"),
+            Ok(("", ComparisonOp::StartsWith))
+        );
+        assert_eq!(parse_comparison_op("=$"), Ok(("", ComparisonOp::EndsWith)));
         assert_eq!(parse_comparison_op("=~"), Ok(("", ComparisonOp::Re)));
     }
 
