@@ -6,5 +6,5 @@ pub fn build_cli() -> App<'static> {
         .setting(AppSettings::SubcommandRequired)
         .version(crate_version!())
         .author(crate_authors!())
-        .subcommands(crate::commands::subcmds())
+        .subcommands(crate::cmds::subcmds())
 }

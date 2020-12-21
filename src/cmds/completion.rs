@@ -1,4 +1,4 @@
-use crate::commands::Config;
+use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
 use clap_generate::{

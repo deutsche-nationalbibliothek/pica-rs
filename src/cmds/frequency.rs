@@ -1,4 +1,4 @@
-use crate::commands::Config;
+use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
 use pica::{Path, Record};
