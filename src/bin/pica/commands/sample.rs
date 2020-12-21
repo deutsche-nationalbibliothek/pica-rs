@@ -52,7 +52,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             if i < n {
                 reservoir.push(line);
             } else {
-                let j = rng.gen_range(0, i);
+                let j = rng.gen_range(0..i);
                 if j < n {
                     reservoir[j] = line;
                 }
