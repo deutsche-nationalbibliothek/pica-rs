@@ -44,6 +44,7 @@ pub enum Filter<'a> {
     Field(String, Occurrence<'a>, SubfieldFilter),
     Boolean(Box<Filter<'a>>, BooleanOp, Box<Filter<'a>>),
     Grouped(Box<Filter<'a>>),
+    Not(Box<Filter<'a>>),
 }
 
 #[derive(Debug)]
@@ -205,8 +206,14 @@ fn parse_field_group(i: &str) -> IResult<&str, Filter> {
     )(i)
 }
 
+fn parse_field_not_expr(i: &str) -> IResult<&str, Filter> {
+    map(preceded(ws(char('!')), cut(parse_field_primary)), |e| {
+        Filter::Not(Box::new(e))
+    })(i)
+}
+
 fn parse_field_primary(i: &str) -> IResult<&str, Filter> {
-    alt((parse_field_group, parse_field_expr))(i)
+    alt((parse_field_group, parse_field_expr, parse_field_not_expr))(i)
 }
 
 fn parse_field_boolean_expr(i: &str) -> IResult<&str, Filter> {

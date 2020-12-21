@@ -167,6 +167,7 @@ impl<'a> Record<'a> {
                 BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
             },
             Filter::Grouped(filter) => self.matches(filter),
+            Filter::Not(filter) => !self.matches(filter),
         }
     }
 }
