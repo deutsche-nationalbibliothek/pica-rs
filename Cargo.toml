@@ -21,7 +21,7 @@ path = "src/lib.rs"
 name = "pica"
 
 [[bin]]
-path = "src/bin/pica/main.rs"
+path = "src/main.rs"
 name = "pica"
 
 [profile.release]

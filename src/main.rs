@@ -4,7 +4,7 @@ extern crate csv;
 extern crate regex;
 
 mod cli;
-mod commands;
+mod cmds;
 mod util;
 
 use std::io;
@@ -18,17 +18,17 @@ fn main() {
     let args = m.subcommand_matches(name).unwrap();
 
     let result = match name {
-        "cat" => commands::cat::run(args),
-        "completion" => commands::completion::run(args, &mut app),
-        "filter" => commands::filter::run(args),
-        "frequency" => commands::frequency::run(args),
-        "invalid" => commands::invalid::run(args),
-        "json" => commands::json::run(args),
-        "partition" => commands::partition::run(args),
-        "print" => commands::print::run(args),
-        "sample" => commands::sample::run(args),
-        "select" => commands::select::run(args),
-        "split" => commands::split::run(args),
+        "cat" => cmds::cat::run(args),
+        "completion" => cmds::completion::run(args, &mut app),
+        "filter" => cmds::filter::run(args),
+        "frequency" => cmds::frequency::run(args),
+        "invalid" => cmds::invalid::run(args),
+        "json" => cmds::json::run(args),
+        "partition" => cmds::partition::run(args),
+        "print" => cmds::print::run(args),
+        "sample" => cmds::sample::run(args),
+        "select" => cmds::select::run(args),
+        "split" => cmds::split::run(args),
         _ => unreachable!(),
     };
 
