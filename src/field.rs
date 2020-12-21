@@ -94,6 +94,18 @@ impl<'a> Field<'a> {
                 ComparisonOp::Ne => self.subfields.iter().all(|subfield| {
                     subfield.code() == *code && subfield.value() != values[0]
                 }),
+                ComparisonOp::StartsWith => {
+                    self.subfields.iter().any(|subfield| {
+                        subfield.code() == *code
+                            && subfield.value().starts_with(&values[0])
+                    })
+                }
+                ComparisonOp::EndsWith => {
+                    self.subfields.iter().any(|subfield| {
+                        subfield.code() == *code
+                            && subfield.value().ends_with(&values[0])
+                    })
+                }
                 ComparisonOp::Re => {
                     let re = Regex::new(&values[0]).unwrap();
                     self.subfields.iter().any(|subfield| {
