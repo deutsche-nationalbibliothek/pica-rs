@@ -77,6 +77,21 @@ impl<'a> Subfield<'a> {
         }
     }
 
+    /// Encodes a subfield
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// let subfield = Subfield::new('0', "123456789X").expect("valid subfield");
+    /// let encoded = subfield.encode();
+    /// assert_eq!(encoded, "\u{1f}0123456789X");
+    /// ```
+    pub fn encode(&self) -> String {
+        format!("\u{1f}{}{}", self.name, self.value)
+    }
+
     /// Returns the name of the subfield.
     ///
     /// # Example
@@ -171,6 +186,14 @@ mod tests {
         assert!(Subfield::decode("\u{1e}0123456789X").is_err());
         assert!(Subfield::decode("\u{1f}0\u{1f}").is_err());
         assert!(Subfield::decode("").is_err());
+    }
+
+    #[test]
+    fn test_encode() {
+        assert_eq!(
+            Subfield::new('0', "123456789X").unwrap().encode(),
+            "\u{1f}0123456789X"
+        );
     }
 
     #[test]
