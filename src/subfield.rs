@@ -1,11 +1,22 @@
-//! Pica+ Subfield
+//! This module provides a data type and parser functions releated to a PICA+
+//! subfield.
+//!
+//! # Grammar
+//!
+//! ```text
+//! Subfield := '\x1f' Code Value
+//! Code     := [0-9A-Za-z]
+//! Value    := [^\x1e\x1d]*
+//! ```
 
 use crate::error::ParsePicaError;
+
 use nom::character::complete::{char, none_of, satisfy};
 use nom::combinator::{map, recognize};
 use nom::multi::many0;
 use nom::sequence::{pair, preceded};
-use nom::{Finish, IResult};
+use nom::IResult;
+
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -16,51 +27,90 @@ pub struct Subfield<'a> {
 }
 
 impl<'a> Subfield<'a> {
+    /// Crates a new subfield
+    ///
+    /// # Arguments
+    ///
+    /// * `code` - An alpha-numeric ([0-9A-Za-z]) subfield code.
+    /// * `value` - A string or string slice holding the subfield value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// let subfield = Subfield::new('0', "123456789X");
+    /// assert!(subfield.is_ok());
+    /// ```
     pub fn new<S>(code: char, value: S) -> Result<Self, ParsePicaError>
     where
         S: Into<Cow<'a, str>>,
     {
-        if code.is_ascii_alphanumeric() {
-            Ok(Subfield {
-                code,
-                value: value.into(),
-            })
-        } else {
-            Err(ParsePicaError::InvalidSubfield)
-        }
-    }
+        let value = value.into();
 
-    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
-        match parse_subfield(s).finish() {
-            Ok((_, subfield)) => Ok(subfield),
-            _ => Err(ParsePicaError::InvalidSubfield),
+        if !code.is_ascii_alphanumeric()
+            || value.contains(&['\u{1e}', '\u{1f}'][..])
+        {
+            Err(ParsePicaError::InvalidSubfield)
+        } else {
+            Ok(Subfield { code, value })
         }
     }
 
     /// Returns the code of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// let subfield = Subfield::new('0', "123456789X").expect("valid subfield");
+    /// assert_eq!(subfield.code(), '0');
+    /// ```
     pub fn code(&self) -> char {
         self.code
     }
 
-    // Returns the value of the subfield.
+    /// Returns the value of the subfield
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// let subfield = Subfield::new('0', "123456789X").expect("valid subfield");
+    /// assert_eq!(subfield.value(), "123456789X");
+    /// ```
     pub fn value(&self) -> &str {
         self.value.as_ref()
     }
 
-    /// Returns the subfield as an PICA3 encoded string.
+    /// Returns the subfield as an human readable string
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// let subfield = Subfield::new('0', "123456789X").expect("valid subfield");
+    /// assert_eq!(subfield.pretty(), "$0 123456789X");
+    /// ```
     pub fn pretty(&self) -> String {
         format!("${} {}", self.code, self.value)
     }
 }
 
+/// Parses a subield code
 pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
     satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
+/// Parses a subfield value
 fn parse_subfield_value(i: &str) -> IResult<&str, &str> {
     recognize(many0(none_of("\u{1e}\u{1f}")))(i)
 }
 
+// Parses a subfield
 pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     preceded(
         char('\u{1f}'),
@@ -77,6 +127,20 @@ pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_subfield_new() {
+        let subfield = Subfield::new('0', "123456789X").unwrap();
+        assert_eq!(subfield.code(), '0');
+        assert_eq!(subfield.value(), "123456789X");
+
+        // invalid subfield code
+        assert!(Subfield::new('!', "123456789X").is_err());
+
+        // invalid subfield value
+        assert!(Subfield::new('a', "1\u{1e}23456789X").is_err());
+        assert!(Subfield::new('a', "1\u{1f}23456789X").is_err());
+    }
 
     #[test]
     fn test_parse_subfield_code() {
