@@ -1,6 +1,6 @@
 use crate::field::parse_field_tag;
 use crate::occurrence::{parse_occurrence, Occurrence};
-use crate::subfield::parse_subfield_code;
+use crate::subfield::parse_subfield_name;
 use crate::utils::ws;
 
 use nom::branch::alt;
@@ -101,13 +101,13 @@ fn parse_single_selector(i: &str) -> IResult<&str, Selector> {
         tuple((
             parse_field_tag,
             opt(parse_occurrence),
-            preceded(char('.'), pair(parse_subfield_code, opt(parse_range))),
+            preceded(char('.'), pair(parse_subfield_name, opt(parse_range))),
         )),
-        |(tag, occurrence, code)| {
+        |(tag, occurrence, name)| {
             Selector::new(
                 tag,
                 occurrence.unwrap_or(Occurrence::None),
-                vec![code],
+                vec![name],
             )
         },
     )(i)
@@ -123,7 +123,7 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
                 cut(terminated(
                     separated_list1(
                         ws(char(',')),
-                        pair(parse_subfield_code, opt(parse_range)),
+                        pair(parse_subfield_name, opt(parse_range)),
                     ),
                     ws(char('}')),
                 )),

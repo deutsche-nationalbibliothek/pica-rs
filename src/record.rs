@@ -44,7 +44,7 @@ impl<'a> Record<'a> {
                 && field.occurrence().as_deref() == path.occurrence()
             {
                 for subfield in &field.subfields {
-                    if subfield.code() == path.code() {
+                    if subfield.name() == path.name() {
                         result.push(subfield.value());
                     }
                 }
@@ -70,11 +70,11 @@ impl<'a> Record<'a> {
                 && selector.occurrence.equals(&field.occurrence)
             {
                 let mut temp = vec![];
-                for (code, range) in &selector.subfields {
+                for (name, range) in &selector.subfields {
                     let mut values: Vec<Cow<'_, str>> = field
                         .subfields()
                         .iter()
-                        .filter(|subfield| subfield.code == *code)
+                        .filter(|subfield| subfield.name == *name)
                         .map(|subfield| subfield.value.clone())
                         .collect::<Vec<_>>();
 

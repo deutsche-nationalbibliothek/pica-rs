@@ -3,7 +3,7 @@
 use crate::field::parse_field_tag;
 use crate::occurrence::{parse_occurrence, Occurrence};
 use crate::string::parse_string;
-use crate::subfield::parse_subfield_code;
+use crate::subfield::parse_subfield_name;
 use crate::utils::ws;
 
 use nom::branch::alt;
@@ -73,18 +73,18 @@ fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
 fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_name),
             ws(parse_comparison_op),
             ws(parse_string),
         )),
-        |(code, op, value)| SubfieldFilter::Comparison(code, op, vec![value]),
+        |(name, op, value)| SubfieldFilter::Comparison(name, op, vec![value]),
     )(i)
 }
 
 fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_name),
             map(tag("in"), |_| ComparisonOp::In),
             delimited(
                 ws(char('[')),
@@ -92,14 +92,14 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
                 ws(char(']')),
             ),
         )),
-        |(code, op, values)| SubfieldFilter::Comparison(code, op, values),
+        |(name, op, values)| SubfieldFilter::Comparison(name, op, values),
     )(i)
 }
 
 /// Parses a subfield exists expression.
 fn parse_subfield_exists(i: &str) -> IResult<&str, SubfieldFilter> {
-    map(terminated(parse_subfield_code, char('?')), |code| {
-        SubfieldFilter::Exists(code)
+    map(terminated(parse_subfield_name, char('?')), |name| {
+        SubfieldFilter::Exists(name)
     })(i)
 }
 

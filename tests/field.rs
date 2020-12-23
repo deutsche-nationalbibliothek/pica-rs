@@ -13,7 +13,7 @@ fn field_new() {
     assert_eq!(field.subfields().len(), 1);
 
     let subfield = field.subfields().first().unwrap();
-    assert_eq!(subfield.code(), '0');
+    assert_eq!(subfield.name(), '0');
     assert_eq!(subfield.value(), "123456789X");
 }
 
@@ -32,11 +32,11 @@ fn field_parse() {
     assert_eq!(field.subfields().len(), 2);
 
     let subfield = field.subfields().iter().nth(0).unwrap();
-    assert_eq!(subfield.code(), '0');
+    assert_eq!(subfield.name(), '0');
     assert_eq!(subfield.value(), "abc");
 
     let subfield = field.subfields().iter().nth(1).unwrap();
-    assert_eq!(subfield.code(), '0');
+    assert_eq!(subfield.name(), '0');
     assert_eq!(subfield.value(), "def");
 
     let result = Field::decode("012A/00 \u{1f}0abc\u{1f}0def");

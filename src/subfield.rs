@@ -20,9 +20,9 @@ use nom::IResult;
 use serde::Serialize;
 use std::borrow::Cow;
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Subfield<'a> {
-    pub(crate) code: char,
+    pub(crate) name: char,
     pub(crate) value: Cow<'a, str>,
 }
 
@@ -31,7 +31,7 @@ impl<'a> Subfield<'a> {
     ///
     /// # Arguments
     ///
-    /// * `code` - An alpha-numeric ([0-9A-Za-z]) subfield code.
+    /// * `name` - An alpha-numeric ([0-9A-Za-z]) subfield code.
     /// * `value` - A string or string slice holding the subfield value.
     ///
     /// # Example
@@ -42,22 +42,22 @@ impl<'a> Subfield<'a> {
     /// let subfield = Subfield::new('0', "123456789X");
     /// assert!(subfield.is_ok());
     /// ```
-    pub fn new<S>(code: char, value: S) -> Result<Self, ParsePicaError>
+    pub fn new<S>(name: char, value: S) -> Result<Self, ParsePicaError>
     where
         S: Into<Cow<'a, str>>,
     {
         let value = value.into();
 
-        if !code.is_ascii_alphanumeric()
+        if !name.is_ascii_alphanumeric()
             || value.contains(&['\u{1e}', '\u{1f}'][..])
         {
             Err(ParsePicaError::InvalidSubfield)
         } else {
-            Ok(Subfield { code, value })
+            Ok(Subfield { name, value })
         }
     }
 
-    /// Returns the code of the subfield.
+    /// Returns the name of the subfield.
     ///
     /// # Example
     ///
@@ -65,10 +65,10 @@ impl<'a> Subfield<'a> {
     /// use pica::Subfield;
     ///
     /// let subfield = Subfield::new('0', "123456789X").expect("valid subfield");
-    /// assert_eq!(subfield.code(), '0');
+    /// assert_eq!(subfield.name(), '0');
     /// ```
-    pub fn code(&self) -> char {
-        self.code
+    pub fn name(&self) -> char {
+        self.name
     }
 
     /// Returns the value of the subfield
@@ -96,12 +96,12 @@ impl<'a> Subfield<'a> {
     /// assert_eq!(subfield.pretty(), "$0 123456789X");
     /// ```
     pub fn pretty(&self) -> String {
-        format!("${} {}", self.code, self.value)
+        format!("${} {}", self.name, self.value)
     }
 }
 
-/// Parses a subield code
-pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+/// Parses a subield name
+pub(crate) fn parse_subfield_name(i: &str) -> IResult<&str, char> {
     satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
@@ -115,9 +115,9 @@ pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
     preceded(
         char('\u{1f}'),
         map(
-            pair(parse_subfield_code, parse_subfield_value),
-            |(code, value)| Subfield {
-                code,
+            pair(parse_subfield_name, parse_subfield_value),
+            |(name, value)| Subfield {
+                name,
                 value: value.into(),
             },
         ),
@@ -131,10 +131,10 @@ mod tests {
     #[test]
     fn test_subfield_new() {
         let subfield = Subfield::new('0', "123456789X").unwrap();
-        assert_eq!(subfield.code(), '0');
+        assert_eq!(subfield.name(), '0');
         assert_eq!(subfield.value(), "123456789X");
 
-        // invalid subfield code
+        // invalid subfield name
         assert!(Subfield::new('!', "123456789X").is_err());
 
         // invalid subfield value
@@ -143,10 +143,10 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_subfield_code() {
+    fn test_parse_subfield_name() {
         for range in vec!['a'..='z', 'A'..='Z', '0'..='9'] {
             for c in range {
-                assert_eq!(parse_subfield_code(&String::from(c)), Ok(("", c)));
+                assert_eq!(parse_subfield_name(&String::from(c)), Ok(("", c)));
             }
         }
     }
