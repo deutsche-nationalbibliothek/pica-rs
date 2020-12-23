@@ -16,7 +16,7 @@
 
 use crate::error::ParsePicaError;
 use crate::field::{parse_field_occurrence, parse_field_tag};
-use crate::subfield::parse_subfield_name;
+use crate::parser::parse_subfield_name;
 use crate::utils::ws;
 
 use nom::character::complete::{char, digit1, multispace0};

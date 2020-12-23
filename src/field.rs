@@ -2,7 +2,9 @@
 
 use crate::error::ParsePicaError;
 use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
-use crate::subfield::{parse_subfield, Subfield};
+use crate::parser::parse_subfield;
+use crate::subfield::Subfield;
+
 use nom::character::complete::{char, one_of};
 use nom::combinator::{map, opt, recognize};
 use nom::multi::{count, many0, many_m_n};

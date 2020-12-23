@@ -14,6 +14,7 @@ mod error;
 mod field;
 mod filter;
 mod occurrence;
+mod parser;
 mod path;
 mod record;
 mod select;
