@@ -2,7 +2,9 @@
 
 use crate::error::ParsePicaError;
 use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
-use crate::subfield::{parse_subfield, Subfield};
+use crate::parser::parse_subfield;
+use crate::subfield::Subfield;
+
 use nom::character::complete::{char, one_of};
 use nom::combinator::{map, opt, recognize};
 use nom::multi::{count, many0, many_m_n};
@@ -87,34 +89,34 @@ impl<'a> Field<'a> {
 
     pub fn matches(&self, filter: &SubfieldFilter) -> bool {
         match filter {
-            SubfieldFilter::Comparison(code, op, values) => match op {
+            SubfieldFilter::Comparison(name, op, values) => match op {
                 ComparisonOp::Eq => self.subfields.iter().any(|subfield| {
-                    subfield.code() == *code && subfield.value() == values[0]
+                    subfield.name() == *name && subfield.value() == values[0]
                 }),
                 ComparisonOp::Ne => self.subfields.iter().all(|subfield| {
-                    subfield.code() == *code && subfield.value() != values[0]
+                    subfield.name() == *name && subfield.value() != values[0]
                 }),
                 ComparisonOp::StartsWith => {
                     self.subfields.iter().any(|subfield| {
-                        subfield.code() == *code
+                        subfield.name() == *name
                             && subfield.value().starts_with(&values[0])
                     })
                 }
                 ComparisonOp::EndsWith => {
                     self.subfields.iter().any(|subfield| {
-                        subfield.code() == *code
+                        subfield.name() == *name
                             && subfield.value().ends_with(&values[0])
                     })
                 }
                 ComparisonOp::Re => {
                     let re = Regex::new(&values[0]).unwrap();
                     self.subfields.iter().any(|subfield| {
-                        subfield.code() == *code
+                        subfield.name() == *name
                             && re.is_match(subfield.value())
                     })
                 }
                 ComparisonOp::In => self.subfields.iter().any(|subfield| {
-                    subfield.code() == *code
+                    subfield.name() == *name
                         && values.contains(&String::from(subfield.value()))
                 }),
             },
@@ -124,10 +126,10 @@ impl<'a> Field<'a> {
             },
             SubfieldFilter::Grouped(filter) => self.matches(filter),
             SubfieldFilter::Not(filter) => !self.matches(filter),
-            SubfieldFilter::Exists(code) => self
+            SubfieldFilter::Exists(name) => self
                 .subfields
                 .iter()
-                .any(|subfield| subfield.code() == *code),
+                .any(|subfield| subfield.name() == *name),
         }
     }
 
