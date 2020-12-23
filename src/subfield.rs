@@ -12,10 +12,10 @@
 use crate::error::ParsePicaError;
 
 use nom::character::complete::{char, none_of, satisfy};
-use nom::combinator::{map, recognize};
+use nom::combinator::{all_consuming, map, recognize};
 use nom::multi::many0;
 use nom::sequence::{pair, preceded};
-use nom::IResult;
+use nom::{Finish, IResult};
 
 use serde::Serialize;
 use std::borrow::Cow;
@@ -54,6 +54,26 @@ impl<'a> Subfield<'a> {
             Err(ParsePicaError::InvalidSubfield)
         } else {
             Ok(Subfield { name, value })
+        }
+    }
+
+    /// Decodes a subfield
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - A string slice holding a PICA+ encoded subfield
+    ///
+    /// # Example
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// let result = Subfield::decode("\u{1f}0123456789X");
+    /// assert!(result.is_ok());
+    /// ```
+    pub fn decode(input: &'a str) -> Result<Self, ParsePicaError> {
+        match all_consuming(parse_subfield)(input).finish() {
+            Ok((_, subfield)) => Ok(subfield),
+            _ => Err(ParsePicaError::InvalidSubfield),
         }
     }
 
@@ -130,6 +150,7 @@ mod tests {
 
     #[test]
     fn test_subfield_new() {
+        // valid subfield
         let subfield = Subfield::new('0', "123456789X").unwrap();
         assert_eq!(subfield.name(), '0');
         assert_eq!(subfield.value(), "123456789X");
@@ -140,6 +161,16 @@ mod tests {
         // invalid subfield value
         assert!(Subfield::new('a', "1\u{1e}23456789X").is_err());
         assert!(Subfield::new('a', "1\u{1f}23456789X").is_err());
+    }
+
+    #[test]
+    fn test_subfield_decode() {
+        assert!(Subfield::decode("\u{1f}0123456789X").is_ok());
+        assert!(Subfield::decode("\u{1f}0").is_ok());
+        assert!(Subfield::decode("\u{1f}!123456789X").is_err());
+        assert!(Subfield::decode("\u{1e}0123456789X").is_err());
+        assert!(Subfield::decode("\u{1f}0\u{1f}").is_err());
+        assert!(Subfield::decode("").is_err());
     }
 
     #[test]
