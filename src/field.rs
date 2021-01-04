@@ -181,6 +181,23 @@ impl<'a> Field<'a> {
 impl<'a> Deref for Field<'a> {
     type Target = Vec<Subfield<'a>>;
 
+    /// Dereferences the value
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Field, Subfield};
+    ///
+    /// let field = Field::new(
+    ///     "012A",
+    ///     None,
+    ///     vec![
+    ///         Subfield::new('a', "123").unwrap(),
+    ///         Subfield::new('b', "456").unwrap(),
+    ///     ],
+    /// );
+    ///
+    /// assert_eq!(field.len(), 2);
+    /// ```
     fn deref(&self) -> &Vec<Subfield<'a>> {
         &self.subfields
     }
