@@ -1,6 +1,6 @@
 use crate::error::ParsePicaError;
-use crate::field::parse_field;
 use crate::filter::BooleanOp;
+use crate::parser::parse_field;
 use crate::select::{Range, Selector, Selectors};
 use crate::Filter;
 use crate::{Field, Path};
@@ -67,7 +67,7 @@ impl<'a> Record<'a> {
 
         for field in self.iter() {
             if field.tag == selector.tag
-                && selector.occurrence.equals(&field.occurrence)
+                && selector.occurrence.equals(&field.occurrence())
             {
                 let mut temp = vec![];
                 for (name, range) in &selector.subfields {
@@ -159,7 +159,7 @@ impl<'a> Record<'a> {
                 self.iter().any(|field| {
                     field.tag() == tag
                         && occurrence.equals(&field.occurrence())
-                        && field.matches(filter)
+                        && filter.matches(field)
                 })
             }
             Filter::Boolean(lhs, op, rhs) => match op {

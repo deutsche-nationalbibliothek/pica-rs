@@ -1,10 +1,11 @@
 //! Filter Expressions
 
-use crate::field::parse_field_tag;
 use crate::occurrence::{parse_occurrence, Occurrence};
+use crate::parser::parse_field_tag;
 use crate::parser::parse_subfield_name;
 use crate::string::parse_string;
 use crate::utils::ws;
+use crate::Field;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -13,6 +14,8 @@ use nom::combinator::{all_consuming, cut, map, opt};
 use nom::multi::{many0, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
+
+use regex::Regex;
 
 #[derive(Debug, PartialEq)]
 pub enum BooleanOp {
@@ -37,6 +40,49 @@ pub enum SubfieldFilter {
     Grouped(Box<SubfieldFilter>),
     Exists(char),
     Not(Box<SubfieldFilter>),
+}
+
+impl SubfieldFilter {
+    pub fn matches(&self, field: &Field) -> bool {
+        match self {
+            SubfieldFilter::Comparison(name, op, values) => match op {
+                ComparisonOp::Eq => field.iter().any(|subfield| {
+                    subfield.name() == *name && subfield.value() == values[0]
+                }),
+                ComparisonOp::Ne => field.iter().all(|subfield| {
+                    subfield.name() == *name && subfield.value() != values[0]
+                }),
+                ComparisonOp::StartsWith => field.iter().any(|subfield| {
+                    subfield.name() == *name
+                        && subfield.value().starts_with(&values[0])
+                }),
+                ComparisonOp::EndsWith => field.iter().any(|subfield| {
+                    subfield.name() == *name
+                        && subfield.value().ends_with(&values[0])
+                }),
+                ComparisonOp::Re => {
+                    let re = Regex::new(&values[0]).unwrap();
+                    field.iter().any(|subfield| {
+                        subfield.name() == *name
+                            && re.is_match(subfield.value())
+                    })
+                }
+                ComparisonOp::In => field.iter().any(|subfield| {
+                    subfield.name() == *name
+                        && values.contains(&String::from(subfield.value()))
+                }),
+            },
+            SubfieldFilter::Boolean(lhs, op, rhs) => match op {
+                BooleanOp::And => lhs.matches(field) && rhs.matches(field),
+                BooleanOp::Or => lhs.matches(field) || rhs.matches(field),
+            },
+            SubfieldFilter::Grouped(filter) => filter.matches(field),
+            SubfieldFilter::Not(filter) => !filter.matches(field),
+            SubfieldFilter::Exists(name) => {
+                field.iter().any(|subfield| subfield.name() == *name)
+            }
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]

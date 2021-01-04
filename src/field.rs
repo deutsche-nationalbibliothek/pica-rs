@@ -1,19 +1,14 @@
-//! Pica+ Field
+//! This module provides a data structure and functions related to a PICA+
+//! field.
 
 use crate::error::ParsePicaError;
-use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
-use crate::parser::parse_subfield;
+use crate::parser::parse_field;
 use crate::subfield::Subfield;
 
-use nom::character::complete::{char, one_of};
-use nom::combinator::{map, opt, recognize};
-use nom::multi::{count, many0, many_m_n};
-use nom::sequence::{pair, preceded, terminated, tuple};
-use nom::{Finish, IResult};
-
-use regex::Regex;
+use nom::{combinator::all_consuming, Finish};
 use serde::Serialize;
 use std::borrow::Cow;
+use std::ops::Deref;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Field<'a> {
@@ -48,8 +43,21 @@ impl<'a> Field<'a> {
         }
     }
 
-    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
-        match parse_field(s).finish() {
+    /// Decodes a field
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - A string slice holding a PICA+ encoded field
+    ///
+    /// # Example
+    /// ```rust
+    /// use pica::Field;
+    ///
+    /// let result = Field::decode("003@ \u{1f}0123456789X\u{1e}");
+    /// assert!(result.is_ok());
+    /// ```
+    pub fn decode(input: &'a str) -> Result<Self, ParsePicaError> {
+        match all_consuming(parse_field)(input).finish() {
             Ok((_, field)) => Ok(field),
             _ => Err(ParsePicaError::InvalidField),
         }
@@ -69,8 +77,17 @@ impl<'a> Field<'a> {
     }
 
     /// Returns the occurrence of the field.
-    pub fn occurrence(&self) -> &Option<Cow<'a, str>> {
-        &self.occurrence
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Field, Subfield};
+    ///
+    /// let field =
+    ///     Field::new("012A", Some("01"), vec![Subfield::new('a', "1").unwrap()]);
+    /// assert_eq!(field.occurrence(), Some("01"));
+    /// ```
+    pub fn occurrence(&self) -> Option<&str> {
+        self.occurrence.as_deref()
     }
 
     /// Returns the subfields of the field.
@@ -85,52 +102,6 @@ impl<'a> Field<'a> {
     /// ```
     pub fn subfields(&self) -> &[Subfield] {
         &self.subfields
-    }
-
-    pub fn matches(&self, filter: &SubfieldFilter) -> bool {
-        match filter {
-            SubfieldFilter::Comparison(name, op, values) => match op {
-                ComparisonOp::Eq => self.subfields.iter().any(|subfield| {
-                    subfield.name() == *name && subfield.value() == values[0]
-                }),
-                ComparisonOp::Ne => self.subfields.iter().all(|subfield| {
-                    subfield.name() == *name && subfield.value() != values[0]
-                }),
-                ComparisonOp::StartsWith => {
-                    self.subfields.iter().any(|subfield| {
-                        subfield.name() == *name
-                            && subfield.value().starts_with(&values[0])
-                    })
-                }
-                ComparisonOp::EndsWith => {
-                    self.subfields.iter().any(|subfield| {
-                        subfield.name() == *name
-                            && subfield.value().ends_with(&values[0])
-                    })
-                }
-                ComparisonOp::Re => {
-                    let re = Regex::new(&values[0]).unwrap();
-                    self.subfields.iter().any(|subfield| {
-                        subfield.name() == *name
-                            && re.is_match(subfield.value())
-                    })
-                }
-                ComparisonOp::In => self.subfields.iter().any(|subfield| {
-                    subfield.name() == *name
-                        && values.contains(&String::from(subfield.value()))
-                }),
-            },
-            SubfieldFilter::Boolean(lhs, op, rhs) => match op {
-                BooleanOp::And => self.matches(lhs) && self.matches(rhs),
-                BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
-            },
-            SubfieldFilter::Grouped(filter) => self.matches(filter),
-            SubfieldFilter::Not(filter) => !self.matches(filter),
-            SubfieldFilter::Exists(name) => self
-                .subfields
-                .iter()
-                .any(|subfield| subfield.name() == *name),
-        }
     }
 
     /// Returns the field as an pretty formatted string.
@@ -157,11 +128,10 @@ impl<'a> Field<'a> {
             pretty_str.push_str(&occurrence);
         }
 
-        if !self.subfields.is_empty() {
+        if !self.is_empty() {
             pretty_str.push(' ');
             pretty_str.push_str(
                 &self
-                    .subfields
                     .iter()
                     .map(|s| s.pretty())
                     .collect::<Vec<_>>()
@@ -173,74 +143,27 @@ impl<'a> Field<'a> {
     }
 }
 
-pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, &str> {
-    recognize(tuple((
-        one_of("012"),
-        count(one_of("0123456789"), 2),
-        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-    )))(i)
-}
+impl<'a> Deref for Field<'a> {
+    type Target = Vec<Subfield<'a>>;
 
-pub(crate) fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
-    preceded(char('/'), recognize(many_m_n(2, 3, one_of("0123456789"))))(i)
-}
-
-pub(crate) fn parse_field(i: &str) -> IResult<&str, Field> {
-    terminated(
-        map(
-            pair(
-                pair(parse_field_tag, opt(parse_field_occurrence)),
-                preceded(char(' '), many0(parse_subfield)),
-            ),
-            |((tag, occurrence), subfields)| {
-                Field::new(tag, occurrence, subfields)
-            },
-        ),
-        char('\u{1e}'),
-    )(i)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_field_tag() {
-        for tag in vec!["000A", "100A", "200A", "000A", "000@"] {
-            assert_eq!(parse_field_tag(tag), Ok(("", tag)));
-        }
-
-        for tag in vec!["300A", "0A0A", "00AA", "0001"] {
-            assert!(parse_field_tag(tag).is_err())
-        }
-    }
-
-    #[test]
-    fn test_parse_field_occurrence() {
-        assert_eq!(parse_field_occurrence("/00"), Ok(("", "00")));
-        assert_eq!(parse_field_occurrence("/001"), Ok(("", "001")));
-    }
-
-    #[test]
-    fn test_parse_field() {
-        assert_eq!(
-            parse_field("012A/00 \u{1e}"),
-            Ok(("", Field::new("012A", Some("00"), vec![])))
-        );
-        assert_eq!(
-            parse_field("012A \u{1e}"),
-            Ok(("", Field::new("012A", None, vec![])))
-        );
-        assert_eq!(
-            parse_field("003@ \u{1f}0123456789\u{1e}"),
-            Ok((
-                "",
-                Field::new(
-                    "003@",
-                    None,
-                    vec![Subfield::new('0', "123456789").unwrap()]
-                )
-            ))
-        );
+    /// Dereferences the value
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Field, Subfield};
+    ///
+    /// let field = Field::new(
+    ///     "012A",
+    ///     None,
+    ///     vec![
+    ///         Subfield::new('a', "123").unwrap(),
+    ///         Subfield::new('b', "456").unwrap(),
+    ///     ],
+    /// );
+    ///
+    /// assert_eq!(field.len(), 2);
+    /// ```
+    fn deref(&self) -> &Vec<Subfield<'a>> {
+        &self.subfields
     }
 }
