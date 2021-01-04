@@ -57,7 +57,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::decode(&line) {
-            if record.matches(&filter) == invert_match {
+            if filter.matches(&record) == invert_match {
                 writer.write_all(line.as_bytes())?;
                 writer.write_all(b"\n")?;
             }

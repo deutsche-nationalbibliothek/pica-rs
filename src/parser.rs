@@ -16,12 +16,11 @@
 //! <rs> := #x1e
 //! ```
 
-use crate::field::Field;
-use crate::subfield::Subfield;
+use crate::{Field, Record, Subfield};
 
 use nom::character::complete::{char, none_of, one_of, satisfy};
 use nom::combinator::{map, opt, recognize};
-use nom::multi::{count, many0, many_m_n};
+use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::IResult;
 
@@ -74,6 +73,10 @@ pub(crate) fn parse_field(i: &str) -> IResult<&str, Field> {
         ),
         char('\u{1e}'),
     )(i)
+}
+
+pub(crate) fn parse_record(i: &str) -> IResult<&str, Record> {
+    map(many1(parse_field), Record::new)(i)
 }
 
 #[cfg(test)]
@@ -142,6 +145,21 @@ mod tests {
                     None,
                     vec![Subfield::new('0', "123456789").unwrap()]
                 )
+            ))
+        );
+    }
+
+    #[test]
+    fn test_parse_record() {
+        assert_eq!(
+            parse_record("003@ \u{1f}0123456789\u{1e}"),
+            Ok((
+                "",
+                Record::new(vec![Field::new(
+                    "003@",
+                    None,
+                    vec![Subfield::new('0', "123456789").unwrap()]
+                )])
             ))
         );
     }

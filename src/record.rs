@@ -1,12 +1,13 @@
+//! This module provides a data structure and functions related to a PICA+
+//! record.
+
 use crate::error::ParsePicaError;
-use crate::filter::BooleanOp;
-use crate::parser::parse_field;
+use crate::parser::parse_record;
 use crate::select::{Range, Selector, Selectors};
-use crate::Filter;
 use crate::{Field, Path};
-use nom::combinator::{all_consuming, map};
-use nom::multi::many1;
-use nom::{Finish, IResult};
+
+use nom::{combinator::all_consuming, Finish};
+
 use serde::Serialize;
 use std::borrow::Cow;
 use std::ops::Deref;
@@ -15,17 +16,66 @@ use std::ops::Deref;
 pub struct Record<'a>(Vec<Field<'a>>);
 
 impl<'a> Record<'a> {
+    /// Creates a new record
+    ///
+    /// # Arguments
+    ///
+    /// * A vector of [`Field`]s
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Field, Record, Subfield};
+    ///
+    /// let record = Record::new(vec![Field::new("003@", None, vec![])]);
+    /// assert_eq!(record.len(), 1);
+    /// ```
     pub fn new(fields: Vec<Field<'a>>) -> Self {
         Self(fields)
     }
 
-    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
-        match parse_record(s).finish() {
+    /// Decodes a record
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - A string slice holding a PICA+ record
+    ///
+    /// # Example
+    /// ```
+    /// use pica::Record;
+    ///
+    /// let result = Record::decode("003@ \u{1f}0123456789X\u{1e}");
+    /// assert!(result.is_ok());
+    /// ```
+    pub fn decode(input: &'a str) -> Result<Self, ParsePicaError> {
+        match all_consuming(parse_record)(input).finish() {
             Ok((_remaining, record)) => Ok(record),
             _ => Err(ParsePicaError::InvalidRecord),
         }
     }
 
+    /// Returns the record as an pretty formatted string.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Field, Record, Subfield};
+    ///
+    /// let record = Record::new(vec![
+    ///     Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![Subfield::new('0', "123456789X").unwrap()],
+    ///     ),
+    ///     Field::new(
+    ///         "012A",
+    ///         None,
+    ///         vec![
+    ///             Subfield::new('a', "123").unwrap(),
+    ///             Subfield::new('b', "456").unwrap(),
+    ///         ],
+    ///     ),
+    /// ]);
+    /// assert_eq!(record.pretty(), "003@ $0 123456789X\n012A $a 123 $b 456");
+    /// ```
     pub fn pretty(&self) -> String {
         String::from(
             &*self
@@ -152,24 +202,6 @@ impl<'a> Record<'a> {
 
         result
     }
-
-    pub fn matches(&self, filter: &Filter) -> bool {
-        match filter {
-            Filter::Field(tag, occurrence, filter) => {
-                self.iter().any(|field| {
-                    field.tag() == tag
-                        && occurrence.equals(&field.occurrence())
-                        && filter.matches(field)
-                })
-            }
-            Filter::Boolean(lhs, op, rhs) => match op {
-                BooleanOp::And => self.matches(lhs) && self.matches(rhs),
-                BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
-            },
-            Filter::Grouped(filter) => self.matches(filter),
-            Filter::Not(filter) => !self.matches(filter),
-        }
-    }
 }
 
 impl<'a> Deref for Record<'a> {
@@ -177,30 +209,5 @@ impl<'a> Deref for Record<'a> {
 
     fn deref(&self) -> &Vec<Field<'a>> {
         &self.0
-    }
-}
-
-fn parse_record(i: &str) -> IResult<&str, Record> {
-    all_consuming(map(many1(parse_field), Record::new))(i)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{Field, Subfield};
-
-    #[test]
-    fn test_parse_record() {
-        assert_eq!(
-            parse_record("003@ \u{1f}0123456789\u{1e}"),
-            Ok((
-                "",
-                Record::new(vec![Field::new(
-                    "003@",
-                    None,
-                    vec![Subfield::new('0', "123456789").unwrap()]
-                )])
-            ))
-        );
     }
 }
