@@ -2,12 +2,10 @@
 //! field.
 
 use crate::error::ParsePicaError;
-use crate::filter::{BooleanOp, ComparisonOp, SubfieldFilter};
 use crate::parser::parse_field;
 use crate::subfield::Subfield;
 
-use nom::Finish;
-use regex::Regex;
+use nom::{combinator::all_consuming, Finish};
 use serde::Serialize;
 use std::borrow::Cow;
 use std::ops::Deref;
@@ -45,8 +43,21 @@ impl<'a> Field<'a> {
         }
     }
 
-    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
-        match parse_field(s).finish() {
+    /// Decodes a field
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - A string slice holding a PICA+ encoded field
+    ///
+    /// # Example
+    /// ```rust
+    /// use pica::Field;
+    ///
+    /// let result = Field::decode("003@ \u{1f}0123456789X\u{1e}");
+    /// assert!(result.is_ok());
+    /// ```
+    pub fn decode(input: &'a str) -> Result<Self, ParsePicaError> {
+        match all_consuming(parse_field)(input).finish() {
             Ok((_, field)) => Ok(field),
             _ => Err(ParsePicaError::InvalidField),
         }
@@ -91,52 +102,6 @@ impl<'a> Field<'a> {
     /// ```
     pub fn subfields(&self) -> &[Subfield] {
         &self.subfields
-    }
-
-    pub fn matches(&self, filter: &SubfieldFilter) -> bool {
-        match filter {
-            SubfieldFilter::Comparison(name, op, values) => match op {
-                ComparisonOp::Eq => self.subfields.iter().any(|subfield| {
-                    subfield.name() == *name && subfield.value() == values[0]
-                }),
-                ComparisonOp::Ne => self.subfields.iter().all(|subfield| {
-                    subfield.name() == *name && subfield.value() != values[0]
-                }),
-                ComparisonOp::StartsWith => {
-                    self.subfields.iter().any(|subfield| {
-                        subfield.name() == *name
-                            && subfield.value().starts_with(&values[0])
-                    })
-                }
-                ComparisonOp::EndsWith => {
-                    self.subfields.iter().any(|subfield| {
-                        subfield.name() == *name
-                            && subfield.value().ends_with(&values[0])
-                    })
-                }
-                ComparisonOp::Re => {
-                    let re = Regex::new(&values[0]).unwrap();
-                    self.subfields.iter().any(|subfield| {
-                        subfield.name() == *name
-                            && re.is_match(subfield.value())
-                    })
-                }
-                ComparisonOp::In => self.subfields.iter().any(|subfield| {
-                    subfield.name() == *name
-                        && values.contains(&String::from(subfield.value()))
-                }),
-            },
-            SubfieldFilter::Boolean(lhs, op, rhs) => match op {
-                BooleanOp::And => self.matches(lhs) && self.matches(rhs),
-                BooleanOp::Or => self.matches(lhs) || self.matches(rhs),
-            },
-            SubfieldFilter::Grouped(filter) => self.matches(filter),
-            SubfieldFilter::Not(filter) => !self.matches(filter),
-            SubfieldFilter::Exists(name) => self
-                .subfields
-                .iter()
-                .any(|subfield| subfield.name() == *name),
-        }
     }
 
     /// Returns the field as an pretty formatted string.

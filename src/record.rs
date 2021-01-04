@@ -159,7 +159,7 @@ impl<'a> Record<'a> {
                 self.iter().any(|field| {
                     field.tag() == tag
                         && occurrence.equals(&field.occurrence())
-                        && field.matches(filter)
+                        && filter.matches(field)
                 })
             }
             Filter::Boolean(lhs, op, rhs) => match op {
