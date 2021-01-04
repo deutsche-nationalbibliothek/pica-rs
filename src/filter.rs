@@ -1,7 +1,7 @@
 //! Filter Expressions
 
-use crate::field::parse_field_tag;
 use crate::occurrence::{parse_occurrence, Occurrence};
+use crate::parser::parse_field_tag;
 use crate::parser::parse_subfield_name;
 use crate::string::parse_string;
 use crate::utils::ws;

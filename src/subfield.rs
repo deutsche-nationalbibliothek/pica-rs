@@ -1,13 +1,5 @@
 //! This module provides a data type and parser functions releated to a PICA+
 //! subfield.
-//!
-//! # Grammar
-//!
-//! ```text
-//! Subfield := '\x1f' Code Value
-//! Code     := [0-9A-Za-z]
-//! Value    := [^\x1e\x1d]*
-//! ```
 
 use crate::error::ParsePicaError;
 use crate::parser::parse_subfield;

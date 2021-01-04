@@ -1,6 +1,6 @@
 use crate::error::ParsePicaError;
-use crate::field::parse_field;
 use crate::filter::BooleanOp;
+use crate::parser::parse_field;
 use crate::select::{Range, Selector, Selectors};
 use crate::Filter;
 use crate::{Field, Path};
