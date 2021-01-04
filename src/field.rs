@@ -10,6 +10,7 @@ use nom::Finish;
 use regex::Regex;
 use serde::Serialize;
 use std::borrow::Cow;
+use std::ops::Deref;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Field<'a> {
@@ -65,8 +66,17 @@ impl<'a> Field<'a> {
     }
 
     /// Returns the occurrence of the field.
-    pub fn occurrence(&self) -> &Option<Cow<'a, str>> {
-        &self.occurrence
+    ///
+    /// # Example
+    /// ```
+    /// use pica::{Field, Subfield};
+    ///
+    /// let field =
+    ///     Field::new("012A", Some("01"), vec![Subfield::new('a', "1").unwrap()]);
+    /// assert_eq!(field.occurrence(), Some("01"));
+    /// ```
+    pub fn occurrence(&self) -> Option<&str> {
+        self.occurrence.as_deref()
     }
 
     /// Returns the subfields of the field.
@@ -153,11 +163,10 @@ impl<'a> Field<'a> {
             pretty_str.push_str(&occurrence);
         }
 
-        if !self.subfields.is_empty() {
+        if !self.is_empty() {
             pretty_str.push(' ');
             pretty_str.push_str(
                 &self
-                    .subfields
                     .iter()
                     .map(|s| s.pretty())
                     .collect::<Vec<_>>()
@@ -166,5 +175,13 @@ impl<'a> Field<'a> {
         }
 
         pretty_str
+    }
+}
+
+impl<'a> Deref for Field<'a> {
+    type Target = Vec<Subfield<'a>>;
+
+    fn deref(&self) -> &Vec<Subfield<'a>> {
+        &self.subfields
     }
 }

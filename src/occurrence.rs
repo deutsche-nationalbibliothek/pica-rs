@@ -15,12 +15,12 @@ pub enum Occurrence<'a> {
 }
 
 impl<'a> Occurrence<'a> {
-    pub(crate) fn equals(&self, value: &Option<Cow<'a, str>>) -> bool {
+    pub(crate) fn equals(&self, value: &Option<&str>) -> bool {
         match self {
             Occurrence::All => true,
             Occurrence::None => value.is_none(),
             Occurrence::Value(val1) => {
-                if let Some(val2) = value {
+                if let Some(ref val2) = value {
                     val1 == val2
                 } else {
                     false
