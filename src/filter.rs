@@ -5,7 +5,7 @@ use crate::parser::parse_field_tag;
 use crate::parser::parse_subfield_name;
 use crate::string::parse_string;
 use crate::utils::ws;
-use crate::Field;
+use crate::{Field, Record};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -91,6 +91,26 @@ pub enum Filter<'a> {
     Boolean(Box<Filter<'a>>, BooleanOp, Box<Filter<'a>>),
     Grouped(Box<Filter<'a>>),
     Not(Box<Filter<'a>>),
+}
+
+impl<'a> Filter<'a> {
+    pub fn matches(&self, record: &Record) -> bool {
+        match self {
+            Filter::Field(tag, occurrence, filter) => {
+                record.iter().any(|field| {
+                    field.tag() == tag
+                        && occurrence.equals(&field.occurrence())
+                        && filter.matches(field)
+                })
+            }
+            Filter::Boolean(lhs, op, rhs) => match op {
+                BooleanOp::And => lhs.matches(record) && rhs.matches(record),
+                BooleanOp::Or => lhs.matches(record) || rhs.matches(record),
+            },
+            Filter::Grouped(filter) => filter.matches(record),
+            Filter::Not(filter) => !filter.matches(record),
+        }
+    }
 }
 
 #[derive(Debug)]
