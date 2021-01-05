@@ -3,7 +3,7 @@ mod common;
 use common::CliRunner;
 
 #[test]
-fn cat() {
+fn test_cat_cmd() {
     let sample1 = include_str!("data/1.dat");
     let sample2 = include_str!("data/2.dat");
 

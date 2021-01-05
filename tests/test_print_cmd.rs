@@ -3,7 +3,7 @@ mod common;
 use common::CliRunner;
 
 #[test]
-fn print() {
+fn test_print_cmd() {
     let result = CliRunner::new().invoke("print", &["tests/data/1.dat"]);
     assert!(result.status.success());
 

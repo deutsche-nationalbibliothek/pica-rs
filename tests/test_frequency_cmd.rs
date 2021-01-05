@@ -3,7 +3,7 @@ mod common;
 use common::CliRunner;
 
 #[test]
-fn frequency() {
+fn test_frequency_cmd() {
     let result = CliRunner::new()
         .invoke("frequency", &["-s", "002@.0", "tests/data/all.dat"]);
     assert!(result.status.success());
