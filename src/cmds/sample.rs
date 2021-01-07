@@ -33,13 +33,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     let sample_size = args.value_of("sample-size").unwrap();
     let n = match sample_size.parse::<usize>() {
-        Ok(v) => v,
-        Err(_) => {
+        Err(_) | Ok(0) => {
             return Err(CliError::Other(format!(
-                "invalid sample size '{}'. expected usize.",
+                "invalid sample size '{}'. expected non-zero usize.",
                 sample_size
             )));
         }
+        Ok(v) => v,
     };
 
     let mut reservoir: Vec<String> = Vec::with_capacity(n);
