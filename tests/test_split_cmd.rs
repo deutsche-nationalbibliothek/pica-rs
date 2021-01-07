@@ -8,7 +8,7 @@ static SAMPLE2: &'static str = include_str!("data/2.dat");
 static SAMPLE3: &'static str = include_str!("data/3.dat");
 
 #[test]
-fn test_partition_cmd_outdir_exists() {
+fn test_split_cmd_outdir_exists() {
     let tempdir = TempDir::new("split_test").unwrap();
     let outdir = tempdir.path();
 
@@ -35,7 +35,7 @@ fn test_partition_cmd_outdir_exists() {
 }
 
 #[test]
-fn test_partition_cmd_no_outdir() {
+fn test_split_cmd_no_outdir() {
     let tempdir = TempDir::new("split_test").unwrap();
     let outdir = tempdir.path().join("split-test");
 
