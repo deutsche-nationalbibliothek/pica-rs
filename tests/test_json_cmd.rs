@@ -26,7 +26,7 @@ fn test_json_cmd() {
     );
 
     let result = CliRunner::new()
-        .invoke("json", &["--skip-invalid", "tests/data/all.dat"]);
+        .invoke("json", &["--skip-invalid", "tests/data/all.dat.gz"]);
     assert!(result.status.success());
 
     assert_eq!(

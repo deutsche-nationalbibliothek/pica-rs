@@ -13,7 +13,7 @@ fn test_filter() {
         &[
             "--skip-invalid",
             "003@.0 == '123456789X'",
-            "tests/data/all.dat",
+            "tests/data/all.dat.gz",
         ],
     );
     assert!(result.status.success());
@@ -25,7 +25,7 @@ fn test_filter() {
         &[
             "--skip-invalid",
             "003@.0 == '123456789X' || 003@{0 == '234567891X'}",
-            "tests/data/all.dat",
+            "tests/data/all.dat.gz",
         ],
     );
     assert!(result.status.success());
@@ -44,7 +44,7 @@ fn test_invert_match() {
             "--skip-invalid",
             "--invert-match",
             "003@.0 == '123456789X'",
-            "tests/data/all.dat",
+            "tests/data/all.dat.gz",
         ],
     );
     assert!(result.status.success());

@@ -9,14 +9,14 @@ static SAMPLE3: &'static str = include_str!("data/3.dat");
 #[test]
 fn test_sample_cmd() {
     let result = CliRunner::new()
-        .invoke("sample", &["--skip-invalid", "1", "tests/data/all.dat"]);
+        .invoke("sample", &["--skip-invalid", "1", "tests/data/all.dat.gz"]);
     assert!(result.status.success());
 
     let output = String::from_utf8(result.stdout).unwrap();
     assert!(output == SAMPLE1 || output == SAMPLE2 || output == SAMPLE3);
 
     let result = CliRunner::new()
-        .invoke("sample", &["--skip-invalid", "2", "tests/data/all.dat"]);
+        .invoke("sample", &["--skip-invalid", "2", "tests/data/all.dat.gz"]);
     assert!(result.status.success());
 
     let output = String::from_utf8(result.stdout).unwrap();
@@ -38,21 +38,21 @@ fn test_sample_cmd() {
 #[test]
 fn test_invalid_sample_size() {
     let result = CliRunner::new()
-        .invoke("sample", &["--skip-invalid", "0", "tests/data/all.dat"]);
+        .invoke("sample", &["--skip-invalid", "0", "tests/data/all.dat.gz"]);
     assert!(!result.status.success());
 
     let result = CliRunner::new()
-        .invoke("sample", &["--skip-invalid", "-1", "tests/data/all.dat"]);
+        .invoke("sample", &["--skip-invalid", "-1", "tests/data/all.dat.gz"]);
     assert!(!result.status.success());
 
     let result = CliRunner::new()
-        .invoke("sample", &["--skip-invalid", "a", "tests/data/all.dat"]);
+        .invoke("sample", &["--skip-invalid", "a", "tests/data/all.dat.gz"]);
     assert!(!result.status.success());
 }
 
 #[test]
 fn test_invalid_records() {
     let result =
-        CliRunner::new().invoke("sample", &["1", "tests/data/all.dat"]);
+        CliRunner::new().invoke("sample", &["1", "tests/data/all.dat.gz"]);
     assert!(!result.status.success());
 }

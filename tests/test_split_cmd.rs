@@ -21,7 +21,7 @@ fn test_partition_cmd_outdir_exists() {
             "--outdir",
             outdir.to_str().unwrap(),
             "2",
-            "tests/data/all.dat",
+            "tests/data/all.dat.gz",
         ],
     );
 
@@ -48,7 +48,7 @@ fn test_partition_cmd_no_outdir() {
             "--outdir",
             outdir.to_str().unwrap(),
             "2",
-            "tests/data/all.dat",
+            "tests/data/all.dat.gz",
         ],
     );
 

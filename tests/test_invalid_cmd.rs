@@ -12,7 +12,7 @@ fn test_invalid_cmd() {
 
     assert_eq!(String::from_utf8(result.stdout).unwrap(), INVALID);
 
-    let result = CliRunner::new().invoke("invalid", &["tests/data/all.dat"]);
+    let result = CliRunner::new().invoke("invalid", &["tests/data/all.dat.gz"]);
     assert!(result.status.success());
     assert_eq!(String::from_utf8(result.stdout).unwrap(), INVALID);
 
