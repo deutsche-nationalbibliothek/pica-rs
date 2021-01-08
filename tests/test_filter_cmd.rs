@@ -262,6 +262,25 @@ fn test_exists_filter() {
 
     assert!(result.status.success());
     assert_eq!(String::from_utf8(result.stdout).unwrap(), SAMPLE2);
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &["--skip-invalid", "012A/00?", "tests/data/all.dat.gz"],
+    );
+
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}{}{}", SAMPLE1, SAMPLE2, SAMPLE3)
+    );
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &["--skip-invalid", "013B?", "tests/data/all.dat.gz"],
+    );
+
+    assert!(result.status.success());
+    assert!(String::from_utf8(result.stdout).unwrap().is_empty(),);
 }
 
 #[test]

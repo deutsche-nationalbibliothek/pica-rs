@@ -66,8 +66,10 @@ character, ex `0`) a comparison operator (equal `==`, not equal `!=` not equal,
 starts with prefix `=^`, ends with suffix `=$` or regex `=~`) and a value
 enclosed in single quotes.. These simple subfield expressions can be grouped in
 parentheses and combinded with boolean connectives (ex. `(0 == 'abc' || 0 ==
-'def')`). There is also a special existence operator, to check if a given
-subfield exists (`a?`).
+'def')`). 
+
+There is also a special existence operator to check if a given field
+(`012A/00?`) or a subfield (`002@.0?` or `002@{0?}`) exists.
 
 **Examples**
 
@@ -80,6 +82,7 @@ $ pica filter -s "0100.a in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
+$ pica filter -s "012AB/00?" DUMP.dat
 ```
 
 ### Frequency
