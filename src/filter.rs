@@ -89,6 +89,7 @@ impl SubfieldFilter {
 pub enum Filter<'a> {
     Field(String, Occurrence<'a>, SubfieldFilter),
     Boolean(Box<Filter<'a>>, BooleanOp, Box<Filter<'a>>),
+    Exists(String, Occurrence<'a>),
     Grouped(Box<Filter<'a>>),
     Not(Box<Filter<'a>>),
 }
@@ -103,6 +104,9 @@ impl<'a> Filter<'a> {
                         && filter.matches(field)
                 })
             }
+            Filter::Exists(tag, occurrence) => record.iter().any(|field| {
+                field.tag() == tag && occurrence.equals(&field.occurrence())
+            }),
             Filter::Boolean(lhs, op, rhs) => match op {
                 BooleanOp::And => lhs.matches(record) && rhs.matches(record),
                 BooleanOp::Or => lhs.matches(record) || rhs.matches(record),
@@ -258,8 +262,20 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
     )(i)
 }
 
+fn parse_field_exists(i: &str) -> IResult<&str, Filter> {
+    map(
+        terminated(pair(parse_field_tag, opt(parse_occurrence)), char('?')),
+        |(tag, occurrence)| {
+            Filter::Exists(
+                String::from(tag),
+                occurrence.unwrap_or(Occurrence::None),
+            )
+        },
+    )(i)
+}
+
 fn parse_field_expr(i: &str) -> IResult<&str, Filter> {
-    alt((parse_field_simple, parse_field_complex))(i)
+    alt((parse_field_simple, parse_field_complex, parse_field_exists))(i)
 }
 
 fn parse_field_group(i: &str) -> IResult<&str, Filter> {
