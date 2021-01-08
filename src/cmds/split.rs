@@ -38,6 +38,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
     let skip_invalid = args.is_present("skip-invalid");
     let filename_template = args.value_of("template").unwrap_or("{}.dat");
+
     let outdir = Path::new(args.value_of("outdir").unwrap());
     if !outdir.exists() {
         create_dir(outdir)?;

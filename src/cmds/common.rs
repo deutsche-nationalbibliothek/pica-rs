@@ -4,7 +4,6 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::Path;
 
-#[derive(Debug)]
 pub struct Config;
 
 impl Config {
