@@ -113,9 +113,6 @@ impl<'a> Filter<'a> {
     }
 }
 
-#[derive(Debug)]
-pub struct ParseFilterError;
-
 /// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
 fn parse_boolean_op(i: &str) -> IResult<&str, BooleanOp> {
     alt((
@@ -301,12 +298,15 @@ fn parse_filter_expr(i: &str) -> IResult<&str, Filter> {
 }
 
 fn parse_filter(i: &str) -> IResult<&str, Filter> {
-    all_consuming(parse_filter_expr)(i)
+    parse_filter_expr(i)
 }
+
+#[derive(Debug, PartialEq)]
+pub struct ParseFilterError;
 
 impl<'a> Filter<'a> {
     pub fn decode(s: &'a str) -> Result<Self, ParseFilterError> {
-        match parse_filter(s).finish() {
+        match all_consuming(parse_filter)(s).finish() {
             Ok((_, filter)) => Ok(filter),
             _ => Err(ParseFilterError),
         }

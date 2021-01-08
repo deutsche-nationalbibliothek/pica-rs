@@ -18,11 +18,9 @@ use crate::error::ParsePicaError;
 use crate::parser::{
     parse_field_occurrence, parse_field_tag, parse_subfield_name,
 };
-use crate::utils::ws;
 
 use nom::character::complete::{char, digit1, multispace0};
-use nom::combinator::{all_consuming, cut, map, opt};
-use nom::multi::separated_list1;
+use nom::combinator::{cut, map, opt};
 use nom::sequence::{preceded, terminated, tuple};
 use nom::IResult;
 
@@ -124,10 +122,6 @@ pub fn parse_path(i: &str) -> IResult<&str, Path> {
             Path::new(tag, occurrence, name, index)
         },
     )(i)
-}
-
-pub fn parse_path_list(i: &str) -> IResult<&str, Vec<Path>> {
-    all_consuming(separated_list1(char(','), ws(parse_path)))(i)
 }
 
 #[cfg(test)]

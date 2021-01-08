@@ -59,7 +59,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             for value in record.path(&path) {
                 let mut entry = writers.entry(value.as_bytes().to_vec());
                 let writer = match entry {
-                    Entry::Occupied(ref mut occupied) => occupied.get_mut(),
                     Entry::Vacant(vacant) => {
                         let writer = ctx.writer(
                             outdir
@@ -69,6 +68,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
                         vacant.insert(writer)
                     }
+                    Entry::Occupied(ref mut occupied) => occupied.get_mut(),
                 };
 
                 writer.write_all(line.as_bytes())?;
