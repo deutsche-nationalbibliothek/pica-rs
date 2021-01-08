@@ -118,7 +118,7 @@ fn test_or_filter() {
         "filter",
         &[
             "--skip-invalid",
-            "002@{0 == 'Tp1' || 0 == 'Tp3'}",
+            "002@{0 == 'T\n1\\ ' || 0 == 'Tp1' || 0 == 'Tp3'}",
             "tests/data/all.dat.gz",
         ],
     );
@@ -133,7 +133,7 @@ fn test_or_filter() {
         "filter",
         &[
             "--skip-invalid",
-            "002@{0 == 'Tp1' || 0 == 'Tp3'} || 003@.0 == '234567891X'",
+            "002@{0 == 'Tp1' || 0 == 'Tp3'} || 003@.0 == '234567891\u{0058}'",
             "tests/data/all.dat.gz",
         ],
     );
