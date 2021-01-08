@@ -470,6 +470,18 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_field_exists() {
+        let field_expr = Filter::Exists(
+            "012A".to_string(),
+            Occurrence::Value(Cow::Borrowed("00")),
+        );
+        assert_eq!(parse_field_exists("012A/00?"), Ok(("", field_expr)));
+
+        let field_expr = Filter::Exists("012A".to_string(), Occurrence::None);
+        assert_eq!(parse_field_exists("012A?"), Ok(("", field_expr)));
+    }
+
+    #[test]
     fn test_parse_field_simple() {
         let field_expr = Filter::Field(
             "003@".to_string(),
