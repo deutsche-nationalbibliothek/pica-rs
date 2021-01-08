@@ -131,8 +131,8 @@ impl<'a> Record<'a> {
                     let values_ranged = if let Some(range) = range {
                         match range {
                             Range::Range(start, end) => &values[*start..*end],
-                            Range::RangeTo(start) => &values[*start..],
-                            Range::RangeFrom(end) => &values[..*end],
+                            Range::RangeTo(end) => &values[..*end],
+                            Range::RangeFrom(start) => &values[*start..],
                             Range::RangeFull => &values[..],
                         }
                     } else {

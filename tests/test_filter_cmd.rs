@@ -95,6 +95,21 @@ fn test_in_filter() {
         String::from_utf8(result.stdout).unwrap(),
         format!("{}{}", SAMPLE1, SAMPLE3)
     );
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "002@{0 in ['Tp1', 'Tp3']}",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert!(result.status.success());
+
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}{}", SAMPLE1, SAMPLE3)
+    );
 }
 
 #[test]

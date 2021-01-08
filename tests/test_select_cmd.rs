@@ -33,6 +33,85 @@ fn test_select_cmd() {
 }
 
 #[test]
+fn test_select_range() {
+    let result = CliRunner::new().invoke(
+        "select",
+        &["--skip-invalid", "003@.0,012A/00.a[..]", "tests/data/2.dat"],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        concat!("234567891X,1\n", "234567891X,2\n")
+    );
+
+    let result = CliRunner::new().invoke(
+        "select",
+        &[
+            "--skip-invalid",
+            "003@.0[0],012A/00.a[0]",
+            "tests/data/2.dat",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        concat!("234567891X,1\n")
+    );
+
+    let result = CliRunner::new().invoke(
+        "select",
+        &["--skip-invalid", "003@.0,012A/00.a[1]", "tests/data/2.dat"],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        concat!("234567891X,2\n")
+    );
+
+    let result = CliRunner::new().invoke(
+        "select",
+        &[
+            "--skip-invalid",
+            "003@.0,012A/00.a[0..1]",
+            "tests/data/2.dat",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        concat!("234567891X,1\n")
+    );
+
+    let result = CliRunner::new().invoke(
+        "select",
+        &[
+            "--skip-invalid",
+            "003@.0,012A/00.a[..1]",
+            "tests/data/2.dat",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        concat!("234567891X,1\n")
+    );
+
+    let result = CliRunner::new().invoke(
+        "select",
+        &[
+            "--skip-invalid",
+            "003@.0,012A/00.a[1..]",
+            "tests/data/2.dat",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        concat!("234567891X,2\n")
+    );
+}
+
+#[test]
 fn test_invalid_selector() {
     let result =
         CliRunner::new().invoke("select", &["003!.0", "tests/data/1.dat"]);
