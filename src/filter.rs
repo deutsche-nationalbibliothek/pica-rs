@@ -10,7 +10,7 @@ use crate::{Field, Record};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map, opt};
+use nom::combinator::{all_consuming, cut, map, opt, verify};
 use nom::multi::{many0, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
@@ -136,6 +136,17 @@ fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
     ))(i)
 }
 
+fn parse_subfield_regex(i: &str) -> IResult<&str, SubfieldFilter> {
+    map(
+        tuple((
+            ws(parse_subfield_name),
+            map(ws(tag("=~")), |_| ComparisonOp::Re),
+            verify(ws(parse_string), |s| Regex::new(s).is_ok()),
+        )),
+        |(name, op, regex)| SubfieldFilter::Comparison(name, op, vec![regex]),
+    )(i)
+}
+
 /// Parses a subfield comparison expression.
 fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
@@ -195,6 +206,7 @@ fn parse_subfield_not_expr(i: &str) -> IResult<&str, SubfieldFilter> {
 fn parse_subfield_primary(i: &str) -> IResult<&str, SubfieldFilter> {
     alt((
         parse_subfield_comparison,
+        parse_subfield_regex,
         parse_subfield_not_expr,
         parse_subfield_in_expr,
         parse_subfield_exists,
@@ -363,6 +375,23 @@ mod tests {
             parse_subfield_comparison("0 == '123456789X'"),
             Ok(("", filter))
         );
+    }
+
+    #[test]
+    fn test_parse_subfield_regex() {
+        assert_eq!(
+            parse_subfield_regex("0 =~ '^Tp[123]$'"),
+            Ok((
+                "",
+                SubfieldFilter::Comparison(
+                    '0',
+                    ComparisonOp::Re,
+                    vec!["^Tp[123]$".to_string()],
+                )
+            ))
+        );
+
+        assert!(parse_subfield_regex("0 =~ '^Tp[123]($'").is_err());
     }
 
     #[test]
