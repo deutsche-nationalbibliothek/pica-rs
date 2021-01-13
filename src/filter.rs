@@ -1,6 +1,6 @@
 //! Filter Expressions
 
-use crate::occurrence::{parse_occurrence, Occurrence};
+use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
 use crate::parser::parse_field_tag;
 use crate::parser::parse_subfield_name;
 use crate::string::parse_string;
@@ -87,9 +87,9 @@ impl SubfieldFilter {
 
 #[derive(Debug, PartialEq)]
 pub enum Filter<'a> {
-    Field(String, Occurrence<'a>, SubfieldFilter),
+    Field(String, OccurrenceMatcher<'a>, SubfieldFilter),
     Boolean(Box<Filter<'a>>, BooleanOp, Box<Filter<'a>>),
-    Exists(String, Occurrence<'a>),
+    Exists(String, OccurrenceMatcher<'a>),
     Grouped(Box<Filter<'a>>),
     Not(Box<Filter<'a>>),
 }
@@ -235,7 +235,7 @@ fn parse_subfield_filter(i: &str) -> IResult<&str, SubfieldFilter> {
 fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
     map(
         tuple((
-            pair(parse_field_tag, opt(parse_occurrence)),
+            pair(parse_field_tag, opt(parse_occurrence_matcher)),
             preceded(
                 ws(char('{')),
                 cut(terminated(parse_subfield_filter, ws(char('}')))),
@@ -244,7 +244,7 @@ fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
         |((tag, occurrence), filter)| {
             Filter::Field(
                 String::from(tag),
-                occurrence.unwrap_or(Occurrence::None),
+                occurrence.unwrap_or(OccurrenceMatcher::None),
                 filter,
             )
         },
@@ -254,7 +254,7 @@ fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
 fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
     map(
         tuple((
-            pair(parse_field_tag, opt(parse_occurrence)),
+            pair(parse_field_tag, opt(parse_occurrence_matcher)),
             preceded(
                 ws(char('.')),
                 cut(alt((
@@ -267,7 +267,7 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
         |((tag, occurrence), filter)| {
             Filter::Field(
                 String::from(tag),
-                occurrence.unwrap_or(Occurrence::None),
+                occurrence.unwrap_or(OccurrenceMatcher::None),
                 filter,
             )
         },
@@ -276,11 +276,14 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
 
 fn parse_field_exists(i: &str) -> IResult<&str, Filter> {
     map(
-        terminated(pair(parse_field_tag, opt(parse_occurrence)), char('?')),
+        terminated(
+            pair(parse_field_tag, opt(parse_occurrence_matcher)),
+            char('?'),
+        ),
         |(tag, occurrence)| {
             Filter::Exists(
                 String::from(tag),
-                occurrence.unwrap_or(Occurrence::None),
+                occurrence.unwrap_or(OccurrenceMatcher::None),
             )
         },
     )(i)
@@ -480,7 +483,7 @@ mod tests {
     fn test_parse_field_complex() {
         let field_expr = Filter::Field(
             "012A".to_string(),
-            Occurrence::Value(Cow::Borrowed("000")),
+            OccurrenceMatcher::Value(Cow::Borrowed("000")),
             SubfieldFilter::Boolean(
                 Box::new(SubfieldFilter::Exists('0')),
                 BooleanOp::Or,
@@ -502,11 +505,12 @@ mod tests {
     fn test_parse_field_exists() {
         let field_expr = Filter::Exists(
             "012A".to_string(),
-            Occurrence::Value(Cow::Borrowed("00")),
+            OccurrenceMatcher::Value(Cow::Borrowed("00")),
         );
         assert_eq!(parse_field_exists("012A/00?"), Ok(("", field_expr)));
 
-        let field_expr = Filter::Exists("012A".to_string(), Occurrence::None);
+        let field_expr =
+            Filter::Exists("012A".to_string(), OccurrenceMatcher::None);
         assert_eq!(parse_field_exists("012A?"), Ok(("", field_expr)));
     }
 
@@ -514,7 +518,7 @@ mod tests {
     fn test_parse_field_simple() {
         let field_expr = Filter::Field(
             "003@".to_string(),
-            Occurrence::None,
+            OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
@@ -529,7 +533,7 @@ mod tests {
     fn test_parse_field_group() {
         let field_expr = Filter::Grouped(Box::new(Filter::Field(
             "003@".to_string(),
-            Occurrence::None,
+            OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
@@ -548,7 +552,7 @@ mod tests {
         let filter_expr = Filter::Boolean(
             Box::new(Filter::Field(
                 "003@".to_string(),
-                Occurrence::None,
+                OccurrenceMatcher::None,
                 SubfieldFilter::Comparison(
                     '0',
                     ComparisonOp::Eq,
@@ -558,7 +562,7 @@ mod tests {
             BooleanOp::And,
             Box::new(Filter::Field(
                 "012A".to_string(),
-                Occurrence::None,
+                OccurrenceMatcher::None,
                 SubfieldFilter::Boolean(
                     Box::new(SubfieldFilter::Exists('a')),
                     BooleanOp::And,
@@ -577,7 +581,7 @@ mod tests {
     fn test_decode() {
         let expected = Filter::Field(
             "003@".to_string(),
-            Occurrence::None,
+            OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
                 '0',
                 ComparisonOp::Eq,
