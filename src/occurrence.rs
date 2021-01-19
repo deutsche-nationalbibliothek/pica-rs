@@ -46,20 +46,6 @@ impl<'a> OccurrenceMatcher<'a> {
     pub fn none() -> Self {
         Self::None
     }
-
-    pub(crate) fn equals(&self, value: Option<&Occurrence>) -> bool {
-        match self {
-            OccurrenceMatcher::All => true,
-            OccurrenceMatcher::None => value.is_none(),
-            OccurrenceMatcher::Value(val1) => {
-                if let Some(val2) = value {
-                    val1 == &val2.0
-                } else {
-                    false
-                }
-            }
-        }
-    }
 }
 
 pub(crate) fn parse_occurrence_matcher(
