@@ -99,9 +99,20 @@ mod tests {
 
     #[test]
     fn test_partial_eq() {
+        assert_ne!(OccurrenceMatcher::none(), Some(&Occurrence::new("01")));
+        assert_eq!(OccurrenceMatcher::none(), None);
+
+        assert_eq!(OccurrenceMatcher::all(), Some(&Occurrence::new("01")));
+        assert_eq!(OccurrenceMatcher::all(), None);
+
+        assert_ne!(OccurrenceMatcher::value("01"), None);
         assert_eq!(
             OccurrenceMatcher::value("01"),
             Some(&Occurrence::new("01"))
+        );
+        assert_ne!(
+            OccurrenceMatcher::value("01"),
+            Some(&Occurrence::new("02"))
         );
     }
 }
