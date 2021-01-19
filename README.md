@@ -56,8 +56,8 @@ $ pica cat -s -o DUMP12.dat DUMP1.dat DUMP2.dat.gz
 
 The key component of the tool is the ability to filter for records, which meet
 a filter criterion. The basic building block are field expression, which
-consists of an field tag (ex. `003@`) and optional occurrence (ex. `/00`) and a
-subfield filter. These expressions can be combined to complex expressions by
+consists of an field tag (ex. `003@`), an optional occurrence (ex. `/00`), and
+a subfield filter. These expressions can be combined to complex expressions by
 the boolean connectives AND (`&&`) and OR (`||`). Boolean expressions are
 evaluated lazy from left to right.
 
@@ -65,8 +65,8 @@ Simple subfield filter consists of the subfield code (single alpha-numerical
 character, ex `0`) a comparison operator (equal `==`, not equal `!=` not equal,
 starts with prefix `=^`, ends with suffix `=$` or regex `=~`) and a value
 enclosed in single quotes.. These simple subfield expressions can be grouped in
-parentheses and combinded with boolean connectives (ex. `(0 == 'abc' || 0 ==
-'def')`). 
+parentheses and combined with boolean connectives (ex. `(0 == 'abc' || 0 ==
+'def')`).
 
 There is also a special existence operator to check if a given field
 (`012A/00?`) or a subfield (`002@.0?` or `002@{0?}`) exists.
@@ -74,7 +74,7 @@ There is also a special existence operator to check if a given field
 **Examples**
 
 ```bash
-$ pica filter -s "002@.0 =~ '^O(?!lfo)$' && 010@{a == 'ger' || a == 'eng'}" DUMP.dat
+$ pica filter -s "002@.0 =~ '^O[^a].*$' && 010@{a == 'ger' || a == 'eng'}" DUMP.dat
 $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
 $ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
 $ pica filter -s "041A/*.9 in ['123', '456']" DUMP.dat
@@ -150,7 +150,6 @@ format is similar to PICA3.
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
 003@ $0 123456789 $a b
-
 ```
 
 ### Sample
@@ -159,7 +158,7 @@ The `sample` command selects a random permutation of records of the given
 sample size. This command is particularly useful in combination with the
 `filter` command for QA purposes.
 
-The following command filters for records, that have a fied `002@` with a
+The following command filters for records, that have a field `002@` with a
 subfield `0` that is `Tp1` or `Tpz` and selects a random permutation of 100
 records.
 
