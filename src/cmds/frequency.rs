@@ -39,7 +39,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let skip_invalid = args.is_present("skip-invalid");
     let limit: u64 = args.value_of("limit").unwrap().parse().unwrap();
     let path_str = args.value_of("path").unwrap();
-    let path = path_str.parse::<Path>().unwrap();
+    let path = Path::decode(path_str).unwrap();
 
     let reader = ctx.reader(args.value_of("filename"))?;
     let writer = ctx.writer(args.value_of("output"))?;

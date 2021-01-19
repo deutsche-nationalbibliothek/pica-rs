@@ -4,6 +4,7 @@
 use crate::error::ParsePicaError;
 use crate::parser::parse_field;
 use crate::subfield::Subfield;
+use crate::Occurrence;
 
 use nom::{combinator::all_consuming, Finish};
 use serde::Serialize;
@@ -13,7 +14,7 @@ use std::ops::Deref;
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Field<'a> {
     pub(crate) tag: Cow<'a, str>,
-    pub(crate) occurrence: Option<Cow<'a, str>>,
+    pub(crate) occurrence: Option<Occurrence<'a>>,
     pub(crate) subfields: Vec<Subfield<'a>>,
 }
 
@@ -30,7 +31,7 @@ impl<'a> Field<'a> {
     /// ```
     pub fn new<S>(
         tag: S,
-        occurrence: Option<S>,
+        occurrence: Option<Occurrence<'a>>,
         subfields: Vec<Subfield<'a>>,
     ) -> Self
     where
@@ -38,7 +39,7 @@ impl<'a> Field<'a> {
     {
         Self {
             tag: tag.into(),
-            occurrence: occurrence.map(|o| o.into()),
+            occurrence,
             subfields,
         }
     }
@@ -80,14 +81,17 @@ impl<'a> Field<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{Field, Subfield};
+    /// use pica::{Field, Occurrence, Subfield};
     ///
-    /// let field =
-    ///     Field::new("012A", Some("01"), vec![Subfield::new('a', "1").unwrap()]);
-    /// assert_eq!(field.occurrence(), Some("01"));
+    /// let field = Field::new(
+    ///     "012A",
+    ///     Some(Occurrence::new("01")),
+    ///     vec![Subfield::new('a', "1").unwrap()],
+    /// );
+    /// assert_eq!(field.occurrence(), Some(&Occurrence::new("01")));
     /// ```
-    pub fn occurrence(&self) -> Option<&str> {
-        self.occurrence.as_deref()
+    pub fn occurrence(&self) -> Option<&Occurrence> {
+        self.occurrence.as_ref()
     }
 
     /// Returns the subfields of the field.
@@ -125,7 +129,7 @@ impl<'a> Field<'a> {
 
         if let Some(occurrence) = self.occurrence() {
             pretty_str.push('/');
-            pretty_str.push_str(&occurrence);
+            pretty_str.push_str(occurrence)
         }
 
         if !self.is_empty() {
