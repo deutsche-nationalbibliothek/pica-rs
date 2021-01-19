@@ -1,4 +1,4 @@
-use crate::occurrence::{parse_occurrence, Occurrence};
+use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
 use crate::parser::{parse_field_tag, parse_subfield_name};
 use crate::utils::ws;
 
@@ -24,14 +24,14 @@ pub enum Range {
 #[derive(Debug, PartialEq)]
 pub struct Selector<'a> {
     pub(crate) tag: Cow<'a, str>,
-    pub(crate) occurrence: Occurrence<'a>,
+    pub(crate) occurrence: OccurrenceMatcher<'a>,
     pub(crate) subfields: Vec<(char, Option<Range>)>,
 }
 
 impl<'a> Selector<'a> {
     pub fn new<S>(
         tag: S,
-        occurrence: Occurrence<'a>,
+        occurrence: OccurrenceMatcher<'a>,
         subfields: Vec<(char, Option<Range>)>,
     ) -> Self
     where
@@ -99,13 +99,13 @@ fn parse_single_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
             parse_field_tag,
-            opt(parse_occurrence),
+            opt(parse_occurrence_matcher),
             preceded(char('.'), pair(parse_subfield_name, opt(parse_range))),
         )),
         |(tag, occurrence, name)| {
             Selector::new(
                 tag,
-                occurrence.unwrap_or(Occurrence::None),
+                occurrence.unwrap_or(OccurrenceMatcher::None),
                 vec![name],
             )
         },
@@ -116,7 +116,7 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
             parse_field_tag,
-            opt(parse_occurrence),
+            opt(parse_occurrence_matcher),
             preceded(
                 ws(char('{')),
                 cut(terminated(
@@ -131,7 +131,7 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
         |(tag, occurrence, subfields)| {
             Selector::new(
                 tag,
-                occurrence.unwrap_or(Occurrence::None),
+                occurrence.unwrap_or(OccurrenceMatcher::None),
                 subfields,
             )
         },
@@ -171,10 +171,14 @@ mod tests {
             Ok((
                 "",
                 Selectors(vec![
-                    Selector::new("003@", Occurrence::None, vec![('0', None)]),
+                    Selector::new(
+                        "003@",
+                        OccurrenceMatcher::None,
+                        vec![('0', None)]
+                    ),
                     Selector::new(
                         "012A",
-                        Occurrence::Value(Cow::Borrowed("00")),
+                        OccurrenceMatcher::Value(Cow::Borrowed("00")),
                         vec![('a', None), ('b', None), ('c', None)]
                     )
                 ])

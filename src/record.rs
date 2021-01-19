@@ -117,7 +117,7 @@ impl<'a> Record<'a> {
 
         for field in self.iter() {
             if field.tag == selector.tag
-                && selector.occurrence.equals(&field.occurrence())
+                && selector.occurrence == field.occurrence()
             {
                 let mut temp = vec![];
                 for (name, range) in &selector.subfields {

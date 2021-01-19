@@ -16,7 +16,7 @@
 //! <rs> := #x1e
 //! ```
 
-use crate::{Field, Record, Subfield};
+use crate::{Field, Occurrence, Record, Subfield};
 
 use nom::character::complete::{char, none_of, one_of, satisfy};
 use nom::combinator::{map, opt, recognize};
@@ -56,8 +56,14 @@ pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, &str> {
     )))(i)
 }
 
-pub(crate) fn parse_field_occurrence(i: &str) -> IResult<&str, &str> {
-    preceded(char('/'), recognize(many_m_n(2, 3, one_of("0123456789"))))(i)
+pub(crate) fn parse_field_occurrence(i: &str) -> IResult<&str, Occurrence> {
+    preceded(
+        char('/'),
+        map(
+            recognize(many_m_n(2, 3, one_of("0123456789"))),
+            Occurrence::new,
+        ),
+    )(i)
 }
 
 pub(crate) fn parse_field(i: &str) -> IResult<&str, Field> {
@@ -122,15 +128,21 @@ mod tests {
 
     #[test]
     fn test_parse_field_occurrence() {
-        assert_eq!(parse_field_occurrence("/00"), Ok(("", "00")));
-        assert_eq!(parse_field_occurrence("/001"), Ok(("", "001")));
+        assert_eq!(
+            parse_field_occurrence("/00"),
+            Ok(("", Occurrence::new("00")))
+        );
+        assert_eq!(
+            parse_field_occurrence("/001"),
+            Ok(("", Occurrence::new("001")))
+        );
     }
 
     #[test]
     fn test_parse_field() {
         assert_eq!(
             parse_field("012A/00 \u{1e}"),
-            Ok(("", Field::new("012A", Some("00"), vec![])))
+            Ok(("", Field::new("012A", Some(Occurrence::new("00")), vec![])))
         );
         assert_eq!(
             parse_field("012A \u{1e}"),

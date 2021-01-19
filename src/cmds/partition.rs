@@ -42,7 +42,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let filename_template = args.value_of("template").unwrap_or("{}.dat");
     let skip_invalid = args.is_present("skip-invalid");
     let path_str = args.value_of("path").unwrap();
-    let path = path_str.parse::<pica::Path>().unwrap();
+    let path = pica::Path::decode(path_str).unwrap();
     let reader = ctx.reader(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());

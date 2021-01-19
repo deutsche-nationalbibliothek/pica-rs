@@ -1,7 +1,6 @@
 extern crate pica;
 
-use pica::ParsePicaError;
-use pica::{Field, Subfield};
+use pica::{Field, Occurrence, ParsePicaError, Subfield};
 
 #[test]
 fn field_new() {
@@ -19,7 +18,8 @@ fn field_new() {
 #[test]
 fn field_pretty() {
     let subfields = vec![Subfield::new('x', "abc").unwrap()];
-    let field = Field::new("012A", Some("00"), subfields.clone());
+    let field =
+        Field::new("012A", Some(Occurrence::new("00")), subfields.clone());
     assert_eq!(field.pretty(), "012A/00 $x abc");
 }
 
@@ -27,7 +27,7 @@ fn field_pretty() {
 fn field_parse() {
     let field = Field::decode("012A/00 \u{1f}0abc\u{1f}0def\u{1e}").unwrap();
     assert_eq!(field.tag(), "012A");
-    assert_eq!(field.occurrence(), Some("00"));
+    assert_eq!(field.occurrence(), Some(&Occurrence::new("00")));
     assert_eq!(field.subfields().len(), 2);
 
     let subfield = field.subfields().iter().nth(0).unwrap();

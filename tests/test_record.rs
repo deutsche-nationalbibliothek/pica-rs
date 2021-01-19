@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::{Field, ParsePicaError, Path, Record, Subfield};
+use pica::{Field, Occurrence, ParsePicaError, Path, Record, Subfield};
 
 #[test]
 fn record_new() {
@@ -44,7 +44,7 @@ fn record_pretty() {
         ),
         Field::new(
             "012A",
-            Some("00"),
+            Some(Occurrence::new("00")),
             vec![
                 Subfield::new('a', "123").unwrap(),
                 Subfield::new('b', "456").unwrap(),
@@ -62,13 +62,13 @@ fn record_path() {
     )
     .unwrap();
 
-    let path = "012A.a".parse::<Path>().unwrap();
+    let path = Path::decode("012A.a").unwrap();
     assert_eq!(record.path(&path), vec!["1", "2", "3"]);
 
-    let path = "012A.a[1]".parse::<Path>().unwrap();
+    let path = Path::decode("012A.a[1]").unwrap();
     assert_eq!(record.path(&path), vec!["2"]);
 
-    let path = "012A.a[9]".parse::<Path>().unwrap();
+    let path = Path::decode("012A.a[9]").unwrap();
     assert!(record.path(&path).is_empty());
 }
 
@@ -84,7 +84,7 @@ fn record_decode() {
 
     let field = Field::new(
         "012A",
-        Some("00"),
+        Some(Occurrence::new("00")),
         vec![Subfield::new('a', "123").unwrap()],
     );
     assert!(record.contains(&field));
