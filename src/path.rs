@@ -18,6 +18,7 @@ use crate::error::ParsePicaError;
 use crate::parser::{
     parse_field_occurrence, parse_field_tag, parse_subfield_name,
 };
+use crate::Occurrence;
 
 use nom::character::complete::{char, digit1, multispace0};
 use nom::combinator::{cut, map, opt};
@@ -25,20 +26,18 @@ use nom::sequence::{preceded, terminated, tuple};
 use nom::IResult;
 
 use std::fmt;
-use std::str::FromStr;
-
 #[derive(Debug, PartialEq, Clone)]
-pub struct Path {
+pub struct Path<'a> {
     tag: String,
-    occurrence: Option<String>,
+    occurrence: Option<Occurrence<'a>>,
     name: char,
     index: Option<usize>,
 }
 
-impl Path {
+impl<'a> Path<'a> {
     pub fn new<S>(
         tag: S,
-        occurrence: Option<S>,
+        occurrence: Option<Occurrence<'a>>,
         name: char,
         index: Option<usize>,
     ) -> Self
@@ -47,9 +46,16 @@ impl Path {
     {
         Path {
             tag: tag.into(),
-            occurrence: occurrence.map(|o| o.into()),
+            occurrence,
             name,
             index,
+        }
+    }
+
+    pub fn decode(s: &'a str) -> Result<Self, ParsePicaError> {
+        match parse_path(s) {
+            Ok((_, path)) => Ok(path),
+            _ => Err(ParsePicaError::InvalidPath),
         }
     }
 
@@ -57,8 +63,8 @@ impl Path {
         &self.tag
     }
 
-    pub fn occurrence(&self) -> Option<&str> {
-        self.occurrence.as_deref()
+    pub fn occurrence(&self) -> Option<&Occurrence> {
+        self.occurrence.as_ref()
     }
 
     pub fn name(&self) -> char {
@@ -70,23 +76,12 @@ impl Path {
     }
 }
 
-impl FromStr for Path {
-    type Err = ParsePicaError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_path(s) {
-            Ok((_, path)) => Ok(path),
-            _ => Err(ParsePicaError::InvalidPath),
-        }
-    }
-}
-
-impl fmt::Display for Path {
+impl<'a> fmt::Display for Path<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.tag)?;
 
         if let Some(occurrence) = self.occurrence() {
-            write!(f, "/{}", &occurrence)?;
+            write!(f, "/{}", occurrence.0)?;
         };
 
         write!(f, ".{}", self.name)?;
@@ -132,7 +127,10 @@ mod tests {
     fn test_parse_path() {
         assert_eq!(
             parse_path("012A/000.a[0]"),
-            Ok(("", Path::new("012A", Some("000"), 'a', Some(0))))
+            Ok((
+                "",
+                Path::new("012A", Some(Occurrence::new("000")), 'a', Some(0))
+            ))
         );
 
         assert!(parse_path("012A/000.a[a]").is_err());
