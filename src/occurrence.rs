@@ -35,6 +35,18 @@ pub enum OccurrenceMatcher<'a> {
 }
 
 impl<'a> OccurrenceMatcher<'a> {
+    pub fn value<S: Into<Cow<'a, str>>>(value: S) -> Self {
+        Self::Value(value.into())
+    }
+
+    pub fn all() -> Self {
+        Self::All
+    }
+
+    pub fn none() -> Self {
+        Self::None
+    }
+
     pub(crate) fn equals(&self, value: Option<&Occurrence>) -> bool {
         match self {
             OccurrenceMatcher::All => true,
@@ -63,4 +75,33 @@ pub(crate) fn parse_occurrence_matcher(
             map(char('*'), |_| OccurrenceMatcher::All),
         ))),
     )(i)
+}
+
+impl<'a> PartialEq<Option<&Occurrence<'a>>> for OccurrenceMatcher<'a> {
+    fn eq(&self, other: &Option<&Occurrence>) -> bool {
+        match self {
+            OccurrenceMatcher::All => true,
+            OccurrenceMatcher::None => other.is_none(),
+            OccurrenceMatcher::Value(lhs) => {
+                if let Some(ref rhs) = other {
+                    *lhs == rhs.0
+                } else {
+                    false
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_partial_eq() {
+        assert_eq!(
+            OccurrenceMatcher::value("01"),
+            Some(&Occurrence::new("01"))
+        );
+    }
 }
