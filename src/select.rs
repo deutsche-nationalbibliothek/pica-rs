@@ -99,16 +99,10 @@ fn parse_single_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
             parse_field_tag,
-            opt(parse_occurrence_matcher),
+            parse_occurrence_matcher,
             preceded(char('.'), pair(parse_subfield_name, opt(parse_range))),
         )),
-        |(tag, occurrence, name)| {
-            Selector::new(
-                tag,
-                occurrence.unwrap_or(OccurrenceMatcher::None),
-                vec![name],
-            )
-        },
+        |(tag, occurrence, name)| Selector::new(tag, occurrence, vec![name]),
     )(i)
 }
 
@@ -116,7 +110,7 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
             parse_field_tag,
-            opt(parse_occurrence_matcher),
+            parse_occurrence_matcher,
             preceded(
                 ws(char('{')),
                 cut(terminated(
@@ -129,11 +123,7 @@ fn parse_multi_selector(i: &str) -> IResult<&str, Selector> {
             ),
         )),
         |(tag, occurrence, subfields)| {
-            Selector::new(
-                tag,
-                occurrence.unwrap_or(OccurrenceMatcher::None),
-                subfields,
-            )
+            Selector::new(tag, occurrence, subfields)
         },
     )(i)
 }
