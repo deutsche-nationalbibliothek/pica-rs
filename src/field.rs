@@ -104,7 +104,7 @@ impl<'a> Field<'a> {
     ///     Field::new("012A", None, vec![Subfield::new('a', "123").unwrap()]);
     /// assert_eq!(field.subfields(), vec![Subfield::new('a', "123").unwrap()]);
     /// ```
-    pub fn subfields(&self) -> &[Subfield] {
+    pub fn subfields(&self) -> &Vec<Subfield> {
         &self.subfields
     }
 

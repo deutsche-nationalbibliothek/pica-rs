@@ -1,6 +1,6 @@
 use nom::branch::alt;
 use nom::character::complete::{char, satisfy};
-use nom::combinator::{cut, map, recognize};
+use nom::combinator::{cut, map, recognize, success};
 use nom::multi::many_m_n;
 use nom::sequence::preceded;
 use nom::IResult;
@@ -27,7 +27,7 @@ impl<'a> Deref for Occurrence<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum OccurrenceMatcher<'a> {
     Value(Cow<'a, str>),
     None,
@@ -51,16 +51,19 @@ impl<'a> OccurrenceMatcher<'a> {
 pub(crate) fn parse_occurrence_matcher(
     i: &str,
 ) -> IResult<&str, OccurrenceMatcher> {
-    preceded(
-        char('/'),
-        cut(alt((
-            map(
-                recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
-                |value| OccurrenceMatcher::Value(Cow::Borrowed(value)),
-            ),
-            map(char('*'), |_| OccurrenceMatcher::All),
-        ))),
-    )(i)
+    alt((
+        preceded(
+            char('/'),
+            cut(alt((
+                map(
+                    recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
+                    |value| OccurrenceMatcher::Value(Cow::Borrowed(value)),
+                ),
+                map(char('*'), |_| OccurrenceMatcher::All),
+            ))),
+        ),
+        success(OccurrenceMatcher::None),
+    ))(i)
 }
 
 impl<'a> PartialEq<Option<&Occurrence<'a>>> for OccurrenceMatcher<'a> {
@@ -82,6 +85,24 @@ impl<'a> PartialEq<Option<&Occurrence<'a>>> for OccurrenceMatcher<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parse_occurrence_matcher() {
+        assert_eq!(
+            parse_occurrence_matcher("abc"),
+            Ok(("abc", OccurrenceMatcher::None))
+        );
+
+        assert_eq!(
+            parse_occurrence_matcher("/01"),
+            Ok(("", OccurrenceMatcher::value("01")))
+        );
+
+        assert_eq!(
+            parse_occurrence_matcher("/*"),
+            Ok(("", OccurrenceMatcher::all()))
+        );
+    }
 
     #[test]
     fn test_partial_eq() {

@@ -1,8 +1,7 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::Record;
-use pica::Selectors;
+use pica::{Outcome, Record, Selectors};
 use std::io::BufRead;
 
 pub fn cli() -> App {
@@ -21,7 +20,7 @@ pub fn cli() -> App {
                 .value_name("file")
                 .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("fields").required(true))
+        .arg(Arg::new("selectors").required(true))
         .arg(Arg::new("filename"))
 }
 
@@ -32,8 +31,8 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let reader = ctx.reader(args.value_of("filename"))?;
     let skip_invalid = args.is_present("skip-invalid");
 
-    let selectors_str = args.value_of("fields").unwrap();
-    let selectors = match Selectors::parse(&selectors_str) {
+    let selectors_str = args.value_of("selectors").unwrap();
+    let selectors = match Selectors::decode(&selectors_str) {
         Ok(val) => val,
         _ => {
             return Err(CliError::Other(format!(
@@ -46,11 +45,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::decode(&line) {
-            let rows = record.select(&selectors);
-            for row in rows {
-                if row.iter().all(|r| !r.is_empty()) {
-                    writer.write_record(row)?;
-                }
+            let outcome = selectors
+                .iter()
+                .map(|selector| record.select(&selector))
+                .fold(Outcome::default(), |acc, x| acc * x);
+
+            for row in outcome.iter() {
+                writer.write_record(row)?;
             }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
