@@ -28,5 +28,9 @@ name = "pica"
 path = "src/bin/pica/main.rs"
 name = "pica"
 
+[[bin]]
+path = "src/bin/gnd2skos/main.rs"
+name = "gnd2skos"
+
 [profile.release]
 lto = true
