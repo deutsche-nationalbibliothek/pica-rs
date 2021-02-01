@@ -3,11 +3,10 @@ use crate::parser::{parse_field_tag, parse_subfield_name};
 use crate::utils::ws;
 
 use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{char, digit1, multispace0};
-use nom::combinator::{all_consuming, cut, map, map_res, opt};
+use nom::character::complete::{char, multispace0};
+use nom::combinator::{all_consuming, cut, map};
 use nom::multi::separated_list1;
-use nom::sequence::{delimited, preceded, separated_pair, terminated, tuple};
+use nom::sequence::{delimited, preceded, tuple};
 use nom::{Finish, IResult};
 
 use std::borrow::Cow;
@@ -15,18 +14,10 @@ use std::default::Default;
 use std::ops::{Add, Deref, Mul};
 
 #[derive(Debug, PartialEq)]
-pub enum Range {
-    Range(usize, usize),
-    RangeFrom(usize),
-    RangeTo(usize),
-    RangeFull,
-}
-
-#[derive(Debug, PartialEq)]
 pub struct Selector<'a> {
     pub(crate) tag: Cow<'a, str>,
     pub(crate) occurrence: OccurrenceMatcher<'a>,
-    pub(crate) subfields: Vec<(char, Option<Range>)>,
+    pub(crate) subfields: Vec<char>,
 }
 
 #[derive(Debug)]
@@ -110,7 +101,7 @@ impl<'a> Selector<'a> {
     pub fn new<S>(
         tag: S,
         occurrence: OccurrenceMatcher<'a>,
-        subfields: Vec<(char, Option<Range>)>,
+        subfields: Vec<char>,
     ) -> Self
     where
         S: Into<Cow<'a, str>>,
@@ -142,40 +133,6 @@ impl<'a> Deref for Selectors<'a> {
     }
 }
 
-fn parse_usize(i: &str) -> IResult<&str, usize> {
-    map_res(digit1, |s: &str| s.parse::<usize>())(i)
-}
-
-fn parse_range(i: &str) -> IResult<&str, Range> {
-    preceded(
-        char('['),
-        cut(terminated(
-            alt((
-                map(
-                    separated_pair(parse_usize, tag(".."), parse_usize),
-                    |(start, end)| Range::Range(start, end),
-                ),
-                map(terminated(parse_usize, tag("..")), |start| {
-                    Range::RangeFrom(start)
-                }),
-                map(preceded(tag("..="), parse_usize), |end| {
-                    Range::RangeTo(end + 1)
-                }),
-                map(preceded(tag(".."), parse_usize), |end| {
-                    Range::RangeTo(end)
-                }),
-                map(tag(".."), |_| Range::RangeFull),
-                map(parse_usize, |index| Range::Range(index, index + 1)),
-            )),
-            char(']'),
-        )),
-    )(i)
-}
-
-fn parse_subfield(i: &str) -> IResult<&str, (char, Option<Range>)> {
-    tuple((parse_subfield_name, opt(parse_range)))(i)
-}
-
 fn parse_selector(i: &str) -> IResult<&str, Selector> {
     map(
         tuple((
@@ -183,13 +140,14 @@ fn parse_selector(i: &str) -> IResult<&str, Selector> {
             parse_occurrence_matcher,
             alt((
                 // single subfield
-                map(preceded(char('.'), cut(parse_subfield)), |subfield| {
-                    vec![subfield]
-                }),
+                map(
+                    preceded(char('.'), cut(parse_subfield_name)),
+                    |subfield| vec![subfield],
+                ),
                 // multiple subfields
                 delimited(
                     ws(char('{')),
-                    separated_list1(ws(char(',')), ws(parse_subfield)),
+                    separated_list1(ws(char(',')), ws(parse_subfield_name)),
                     ws(char('}')),
                 ),
             )),
@@ -216,40 +174,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_range() {
-        assert_eq!(parse_range("[1..1]"), Ok(("", Range::Range(1, 1))));
-        assert_eq!(parse_range("[0..1]"), Ok(("", Range::Range(0, 1))));
-        assert_eq!(parse_range("[1..]"), Ok(("", Range::RangeFrom(1))));
-        assert_eq!(parse_range("[..2]"), Ok(("", Range::RangeTo(2))));
-        assert_eq!(parse_range("[..=2]"), Ok(("", Range::RangeTo(3))));
-        assert_eq!(parse_range("[..]"), Ok(("", Range::RangeFull)));
-        assert_eq!(parse_range("[0]"), Ok(("", Range::Range(0, 1))));
-        assert_eq!(parse_range("[1]"), Ok(("", Range::Range(1, 2))));
-    }
-
-    #[test]
     fn test_parse_selector() {
         assert_eq!(
-            parse_selector("003@.0[0]"),
+            parse_selector("003@.0"),
             Ok((
                 "",
-                Selector::new(
-                    "003@",
-                    OccurrenceMatcher::None,
-                    vec![('0', Some(Range::Range(0, 1)))]
-                )
-            ))
-        );
-
-        assert_eq!(
-            parse_selector("003@.0[0]"),
-            Ok((
-                "",
-                Selector::new(
-                    "003@",
-                    OccurrenceMatcher::None,
-                    vec![('0', Some(Range::Range(0, 1)))]
-                )
+                Selector::new("003@", OccurrenceMatcher::None, vec!['0'])
             ))
         );
 
@@ -260,21 +190,14 @@ mod tests {
                 Selector::new(
                     "044H",
                     OccurrenceMatcher::All,
-                    vec![('9', None), ('E', None), ('H', None)]
+                    vec!['9', 'E', 'H']
                 )
             ))
         );
 
         assert_eq!(
             parse_selector("012A/*.a"),
-            Ok((
-                "",
-                Selector::new(
-                    "012A",
-                    OccurrenceMatcher::All,
-                    vec![('a', None)]
-                )
-            ))
+            Ok(("", Selector::new("012A", OccurrenceMatcher::All, vec!['a'])))
         );
 
         assert_eq!(
@@ -284,7 +207,7 @@ mod tests {
                 Selector::new(
                     "012A",
                     OccurrenceMatcher::value("01"),
-                    vec![('a', None)]
+                    vec!['a']
                 )
             ))
         );

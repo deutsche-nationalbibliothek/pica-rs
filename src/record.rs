@@ -120,7 +120,7 @@ impl<'a> Record<'a> {
                 selector
                     .subfields
                     .iter()
-                    .map(|(name, _range)| {
+                    .map(|name| {
                         subfields
                             .iter()
                             .filter(|subfield| subfield.name() == *name)
