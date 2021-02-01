@@ -8,7 +8,7 @@ pub use self::filter::{Filter, ParseFilterError};
 pub use self::occurrence::Occurrence;
 pub use self::path::{parse_path, Path};
 pub use self::record::Record;
-pub use self::select::{Selector, Selectors};
+pub use self::select::{Outcome, Selector, Selectors};
 pub use self::subfield::Subfield;
 
 mod error;

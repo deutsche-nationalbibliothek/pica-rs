@@ -176,14 +176,8 @@ returns one row, the second selector two rows and a third selecor 3 rows, the
 result will contain `1 * 2 * 3 = 6` rows. Non-existing fields or subfields
 results in an empty column.
 
-The list of the subfield values can be changed by range expressions. For
-example, `a[0]` takes just the first element, `a[1..]` takes all values from
-index 1, `a[1..3]` takes all values with an index from 1 to 2 (half-open
-range), `a[1..=3]` takes all values with an index from 1 to 3 and `a[..]` takes
-all values (default).
-
 ```bash
-$ pica select -s "003@.0,012A{a[..],b[0],c}" DUMP.dat.gz
+$ pica select -s "003@.0,012A{a,b,c}" DUMP.dat.gz
 123456789X,a,b,c
 123456789X,d,e,f
 ```

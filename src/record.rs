@@ -3,13 +3,12 @@
 
 use crate::error::ParsePicaError;
 use crate::parser::parse_record;
-use crate::select::{Range, Selector, Selectors};
+use crate::select::{Outcome, Selector};
 use crate::{Field, Path};
 
 use nom::{combinator::all_consuming, Finish};
 
 use serde::Serialize;
-use std::borrow::Cow;
 use std::ops::Deref;
 
 #[derive(Serialize, Debug, Default, PartialEq, Eq)]
@@ -112,95 +111,32 @@ impl<'a> Record<'a> {
         result
     }
 
-    fn collect(&self, selector: &Selector) -> Vec<Vec<String>> {
-        let mut retval: Vec<Vec<String>> = Vec::new();
-
-        for field in self.iter() {
-            if field.tag == selector.tag
-                && selector.occurrence == field.occurrence()
-            {
-                let mut temp = vec![];
-                for (name, range) in &selector.subfields {
-                    let mut values: Vec<Cow<'_, str>> = field
-                        .subfields()
-                        .iter()
-                        .filter(|subfield| subfield.name == *name)
-                        .map(|subfield| subfield.value.clone())
-                        .collect::<Vec<_>>();
-
-                    let values_ranged = if let Some(range) = range {
-                        match range {
-                            Range::Range(start, end) => &values[*start..*end],
-                            Range::RangeTo(end) => &values[..*end],
-                            Range::RangeFrom(start) => &values[*start..],
-                            Range::RangeFull => &values[..],
-                        }
-                    } else {
-                        &values[..]
-                    };
-
-                    values = values_ranged.to_vec();
-
-                    if values.is_empty() {
-                        values.push(Cow::Borrowed(""))
-                    }
-
-                    temp.push(values);
-                }
-
-                let mut result = temp.iter().fold(vec![vec![]], |acc, x| {
-                    let mut tmp: Vec<Vec<String>> = vec![];
-
-                    for item in x {
-                        for row in &acc {
-                            let mut new_row: Vec<String> = row.clone();
-                            new_row.push(String::from(item.clone()));
-                            tmp.push(new_row);
-                        }
-                    }
-
-                    tmp
-                });
-
-                retval.append(&mut result);
-            }
-        }
-
-        if retval.is_empty() {
-            retval.push(
+    pub fn select(&self, selector: &Selector) -> Outcome {
+        self.iter()
+            .filter(|field| selector.tag == field.tag())
+            .filter(|field| selector.occurrence == field.occurrence())
+            .map(|field| field.subfields())
+            .map(|subfields| {
                 selector
                     .subfields
                     .iter()
-                    .map(|_| "".to_string())
-                    .collect::<Vec<_>>(),
-            )
-        }
-
-        retval
-    }
-
-    pub fn select(&self, selectors: &Selectors) -> Vec<Vec<String>> {
-        let result = selectors
-            .iter()
-            .map(|selector| self.collect(&selector))
-            .fold(vec![vec![]], |acc, mut x| {
-                if x.is_empty() {
-                    x = vec![vec!["".to_string()]];
-                }
-
-                let mut tmp: Vec<Vec<String>> = vec![];
-                for item in x {
-                    for row in &acc {
-                        let mut new_row: Vec<String> = row.clone();
-                        new_row.append(&mut item.clone());
-                        tmp.push(new_row.clone());
-                    }
-                }
-
-                tmp
-            });
-
-        result
+                    .map(|name| {
+                        subfields
+                            .iter()
+                            .filter(|subfield| subfield.name() == *name)
+                            .map(|subfield| vec![subfield.value()])
+                            .collect::<Vec<Vec<&str>>>()
+                    })
+                    .map(|x| {
+                        if x.is_empty() {
+                            Outcome::one()
+                        } else {
+                            Outcome(x)
+                        }
+                    })
+                    .fold(Outcome::default(), |acc, x| acc * x)
+            })
+            .fold(Outcome::default(), |acc, x| acc + x)
     }
 }
 

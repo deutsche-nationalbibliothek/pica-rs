@@ -27,7 +27,7 @@ impl<'a> Field<'a> {
     ///
     /// let field = Field::new("003@", None, vec![]);
     /// assert_eq!(field.tag(), "003@");
-    /// assert_eq!(field.subfields(), vec![]);
+    /// assert!(field.subfields().is_empty());
     /// ```
     pub fn new<S>(
         tag: S,
@@ -102,9 +102,9 @@ impl<'a> Field<'a> {
     ///
     /// let field =
     ///     Field::new("012A", None, vec![Subfield::new('a', "123").unwrap()]);
-    /// assert_eq!(field.subfields(), vec![Subfield::new('a', "123").unwrap()]);
+    /// assert_eq!(*field.subfields(), vec![Subfield::new('a', "123").unwrap()]);
     /// ```
-    pub fn subfields(&self) -> &[Subfield] {
+    pub fn subfields(&self) -> &Vec<Subfield> {
         &self.subfields
     }
 
