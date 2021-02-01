@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Nico Wagner <nwagner84@protonmail.com>"]
 edition = "2018"
 license = "AGPL-3.0-only"
+default-run = "pica"
 
 [dependencies]
 clap = "3.0.0-beta.2"
@@ -24,7 +25,7 @@ path = "src/lib.rs"
 name = "pica"
 
 [[bin]]
-path = "src/main.rs"
+path = "src/bin/pica/main.rs"
 name = "pica"
 
 [profile.release]
