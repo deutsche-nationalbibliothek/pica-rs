@@ -9,6 +9,7 @@ use crate::{Field, Path};
 use nom::{combinator::all_consuming, Finish};
 
 use serde::Serialize;
+use std::borrow::Cow;
 use std::ops::Deref;
 
 #[derive(Serialize, Debug, Default, PartialEq, Eq)]
@@ -85,7 +86,12 @@ impl<'a> Record<'a> {
         )
     }
 
-    pub fn path(&self, path: &Path) -> Vec<&str> {
+    pub fn path<S>(&self, path_str: S) -> Vec<&str>
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        let path_str = path_str.into();
+        let path = Path::decode(&path_str).unwrap();
         let mut result: Vec<&str> = Vec::new();
 
         for field in &self.0 {

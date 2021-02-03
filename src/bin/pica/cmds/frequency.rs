@@ -1,7 +1,7 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::{Path, Record};
+use pica::Record;
 
 use std::collections::HashMap;
 use std::io::BufRead;
@@ -39,8 +39,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let skip_invalid = args.is_present("skip-invalid");
     let limit: u64 = args.value_of("limit").unwrap().parse().unwrap();
     let path_str = args.value_of("path").unwrap();
-    let path = Path::decode(path_str).unwrap();
-
     let reader = ctx.reader(args.value_of("filename"))?;
     let writer = ctx.writer(args.value_of("output"))?;
     let mut writer = csv::Writer::from_writer(writer);
@@ -50,7 +48,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::decode(&line) {
-            for value in record.path(&path) {
+            for value in record.path(path_str) {
                 *ftable.entry(String::from(value)).or_insert(0) += 1;
             }
         } else if !skip_invalid {
