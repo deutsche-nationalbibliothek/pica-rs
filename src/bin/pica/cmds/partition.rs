@@ -42,7 +42,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let filename_template = args.value_of("template").unwrap_or("{}.dat");
     let skip_invalid = args.is_present("skip-invalid");
     let path_str = args.value_of("path").unwrap();
-    let path = pica::Path::decode(path_str).unwrap();
     let reader = ctx.reader(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
@@ -56,7 +55,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for line in reader.lines() {
         let line = line.unwrap();
         if let Ok(record) = Record::decode(&line) {
-            for value in record.path(&path) {
+            for value in record.path(path_str) {
                 let mut entry = writers.entry(value.as_bytes().to_vec());
                 let writer = match entry {
                     Entry::Vacant(vacant) => {

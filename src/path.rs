@@ -26,6 +26,7 @@ use nom::sequence::{preceded, terminated, tuple};
 use nom::IResult;
 
 use std::fmt;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Path<'a> {
     tag: String,

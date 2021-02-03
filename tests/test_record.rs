@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::{Field, Occurrence, ParsePicaError, Path, Record, Subfield};
+use pica::{Field, Occurrence, ParsePicaError, Record, Subfield};
 
 #[test]
 fn record_new() {
@@ -62,14 +62,9 @@ fn record_path() {
     )
     .unwrap();
 
-    let path = Path::decode("012A.a").unwrap();
-    assert_eq!(record.path(&path), vec!["1", "2", "3"]);
-
-    let path = Path::decode("012A.a[1]").unwrap();
-    assert_eq!(record.path(&path), vec!["2"]);
-
-    let path = Path::decode("012A.a[9]").unwrap();
-    assert!(record.path(&path).is_empty());
+    assert_eq!(record.path("012A.a"), vec!["1", "2", "3"]);
+    assert_eq!(record.path("012A.a[1]"), vec!["2"]);
+    assert!(record.path("012A.a[9]").is_empty());
 }
 
 #[test]
