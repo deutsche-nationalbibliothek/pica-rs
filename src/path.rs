@@ -25,7 +25,6 @@ use nom::combinator::{cut, map, opt};
 use nom::sequence::{preceded, terminated, tuple};
 use nom::IResult;
 
-use std::convert::TryFrom;
 use std::fmt;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -93,14 +92,6 @@ impl<'a> fmt::Display for Path<'a> {
         }
 
         Ok(())
-    }
-}
-
-impl<'a> TryFrom<&'a str> for Path<'a> {
-    type Error = ParsePicaError;
-
-    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        Path::decode(value)
     }
 }
 
