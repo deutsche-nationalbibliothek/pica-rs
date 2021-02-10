@@ -1,8 +1,9 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliResult};
+use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
-use std::io::BufRead;
+
+use pica::new::Record;
 
 pub fn cli() -> App {
     App::new("invalid")
@@ -20,12 +21,13 @@ pub fn cli() -> App {
 pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
     let mut writer = ctx.writer(args.value_of("output"))?;
-    let reader = ctx.reader(args.value_of("filename"))?;
+    let reader = ctx.reader(args.value_of("filename")).unwrap();
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        if Record::decode(&line).is_err() {
-            writer.write_all(line.as_bytes())?;
+    for result in reader.byte_lines() {
+        let line = result?;
+
+        if Record::from_bytes(&line).is_err() {
+            writer.write_all(&line)?;
             writer.write_all(b"\n")?;
         }
     }
