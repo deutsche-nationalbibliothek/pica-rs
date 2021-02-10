@@ -2,6 +2,11 @@ extern crate nom;
 extern crate serde;
 extern crate serde_json;
 
+/// FIXME: fake namespace to prevent naming clashes
+pub mod new {
+    pub use pica_record::Record;
+}
+
 pub use self::error::ParsePicaError;
 pub use self::field::Field;
 pub use self::filter::{Filter, ParseFilterError};
