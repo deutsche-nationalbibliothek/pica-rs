@@ -1,9 +1,9 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::new::Record;
 use rand::{thread_rng, Rng};
-use std::io::BufRead;
 
 pub fn cli() -> App {
     App::new("sample")
@@ -42,13 +42,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         Ok(v) => v,
     };
 
-    let mut reservoir: Vec<String> = Vec::with_capacity(n);
+    let mut reservoir: Vec<Vec<u8>> = Vec::with_capacity(n);
     let mut rng = thread_rng();
 
-    for (i, line) in reader.lines().enumerate() {
-        let line = line.unwrap();
+    for (i, result) in reader.byte_lines().enumerate() {
+        let line = result?;
 
-        if let Ok(_record) = Record::decode(&line) {
+        if Record::from_bytes(&line).is_ok() {
             if i < n {
                 reservoir.push(line);
             } else {
@@ -60,13 +60,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
-                line
+                String::from_utf8(line).unwrap()
             )));
         }
     }
 
     for line in reservoir {
-        writer.write_all(line.as_bytes())?;
+        writer.write_all(&line)?;
         writer.write_all(b"\n")?;
     }
 
