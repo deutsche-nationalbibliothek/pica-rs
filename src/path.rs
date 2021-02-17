@@ -14,9 +14,9 @@
 //! index      ::= '[' [0-9]+ ']'
 //! ```
 
-use crate::error::ParsePicaError;
 use crate::legacy::{
     parse_field_occurrence, parse_field_tag, parse_subfield_name, Occurrence,
+    ParsePicaError,
 };
 
 use nom::character::complete::{char, digit1, multispace0};

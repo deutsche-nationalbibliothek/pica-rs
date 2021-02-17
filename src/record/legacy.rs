@@ -1,7 +1,6 @@
 //! This module provides a data structure and functions related to a PICA+
 //! record.
 
-use crate::error::ParsePicaError;
 use crate::select::{Outcome, Selector};
 use crate::Path;
 
@@ -22,6 +21,15 @@ use serde::Serialize;
 use std::borrow::Cow;
 use std::cmp::PartialEq;
 use std::ops::Deref;
+
+#[derive(Debug, PartialEq)]
+pub enum ParsePicaError {
+    InvalidSubfield,
+    InvalidField,
+    InvalidRecord,
+    InvalidPath,
+    InvalidFilter,
+}
 
 /// Strip whitespaces from the beginning and end.
 pub(crate) fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
