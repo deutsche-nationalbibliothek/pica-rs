@@ -7,7 +7,9 @@ use crate::Path;
 
 use nom::branch::alt;
 use nom::bytes::streaming::{is_not, take_while_m_n};
-use nom::character::complete::{char, multispace1, none_of, one_of, satisfy};
+use nom::character::complete::{
+    char, multispace0, multispace1, none_of, one_of, satisfy,
+};
 use nom::combinator::{
     cut, map, map_opt, map_res, opt, recognize, success, value, verify,
 };
@@ -20,6 +22,16 @@ use serde::Serialize;
 use std::borrow::Cow;
 use std::cmp::PartialEq;
 use std::ops::Deref;
+
+/// Strip whitespaces from the beginning and end.
+pub(crate) fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
+    inner: F,
+) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O, E>,
+{
+    delimited(multispace0, inner, multispace0)
+}
 
 /// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1-6 hex
 /// numerals. We will combine this later with parse_escaped_char to parse

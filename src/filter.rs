@@ -2,9 +2,8 @@
 
 use crate::legacy::{
     parse_field_tag, parse_occurrence_matcher, parse_string,
-    parse_subfield_name, Field, OccurrenceMatcher, Record,
+    parse_subfield_name, ws, Field, OccurrenceMatcher, Record,
 };
-use crate::utils::ws;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
