@@ -2,9 +2,9 @@
 //! record.
 
 use crate::error::ParsePicaError;
-use crate::parser::{parse_record, parse_subfield};
+use crate::parser::{parse_field, parse_record, parse_subfield};
 use crate::select::{Outcome, Selector};
-use crate::{Field, Path};
+use crate::{Occurrence, Path};
 
 use nom::{combinator::all_consuming, Finish};
 
@@ -69,6 +69,93 @@ impl<'a> Subfield<'a> {
     }
 }
 
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+pub struct Field<'a> {
+    pub(crate) tag: Cow<'a, str>,
+    pub(crate) occurrence: Option<Occurrence<'a>>,
+    pub(crate) subfields: Vec<Subfield<'a>>,
+}
+
+impl<'a> Field<'a> {
+    /// Create a new field.
+    ///
+    /// # Example
+    /// ```
+    pub fn new<S>(
+        tag: S,
+        occurrence: Option<Occurrence<'a>>,
+        subfields: Vec<Subfield<'a>>,
+    ) -> Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        Self {
+            tag: tag.into(),
+            occurrence,
+            subfields,
+        }
+    }
+
+    /// Decodes a field
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - A string slice holding a PICA+ encoded field
+    pub fn decode(input: &'a str) -> Result<Self, ParsePicaError> {
+        match all_consuming(parse_field)(input).finish() {
+            Ok((_, field)) => Ok(field),
+            _ => Err(ParsePicaError::InvalidField),
+        }
+    }
+
+    /// Returns the tag of the field.
+    pub fn tag(&self) -> &str {
+        &self.tag
+    }
+
+    /// Returns the occurrence of the field.
+    pub fn occurrence(&self) -> Option<&Occurrence> {
+        self.occurrence.as_ref()
+    }
+
+    /// Returns the subfields of the field.
+    pub fn subfields(&self) -> &Vec<Subfield> {
+        &self.subfields
+    }
+
+    /// Returns the field as an pretty formatted string.
+    pub fn pretty(&self) -> String {
+        let mut pretty_str = String::from(self.tag.clone());
+
+        if let Some(occurrence) = self.occurrence() {
+            pretty_str.push('/');
+            pretty_str.push_str(occurrence)
+        }
+
+        if !self.is_empty() {
+            pretty_str.push(' ');
+            pretty_str.push_str(
+                &self
+                    .iter()
+                    .map(|s| s.pretty())
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            );
+        }
+
+        pretty_str
+    }
+}
+
+impl<'a> Deref for Field<'a> {
+    type Target = Vec<Subfield<'a>>;
+
+    /// Dereferences the value
+    fn deref(&self) -> &Vec<Subfield<'a>> {
+        &self.subfields
+    }
+}
+
 #[derive(Serialize, Debug, Default, PartialEq, Eq)]
 pub struct Record<'a>(Vec<Field<'a>>);
 
@@ -78,17 +165,6 @@ impl<'a> Record<'a> {
     /// # Arguments
     ///
     /// * A vector of [`Field`]s
-    ///
-    /// # Example
-    /// ```
-    /// use pica::{
-    ///     legacy::{Record, Subfield},
-    ///     Field,
-    /// };
-    ///
-    /// let record = Record::new(vec![Field::new("003@", None, vec![])]);
-    /// assert_eq!(record.len(), 1);
-    /// ```
     pub fn new(fields: Vec<Field<'a>>) -> Self {
         Self(fields)
     }
@@ -98,14 +174,6 @@ impl<'a> Record<'a> {
     /// # Arguments
     ///
     /// * `input` - A string slice holding a PICA+ record
-    ///
-    /// # Example
-    /// ```
-    /// use pica::legacy::Record;
-    ///
-    /// let result = Record::decode("003@ \u{1f}0123456789X\u{1e}");
-    /// assert!(result.is_ok());
-    /// ```
     pub fn decode(input: &'a str) -> Result<Self, ParsePicaError> {
         match all_consuming(parse_record)(input).finish() {
             Ok((_remaining, record)) => Ok(record),
@@ -114,31 +182,6 @@ impl<'a> Record<'a> {
     }
 
     /// Returns the record as an pretty formatted string.
-    ///
-    /// # Example
-    /// ```
-    /// use pica::{
-    ///     legacy::{Record, Subfield},
-    ///     Field,
-    /// };
-    ///
-    /// let record = Record::new(vec![
-    ///     Field::new(
-    ///         "003@",
-    ///         None,
-    ///         vec![Subfield::new('0', "123456789X").unwrap()],
-    ///     ),
-    ///     Field::new(
-    ///         "012A",
-    ///         None,
-    ///         vec![
-    ///             Subfield::new('a', "123").unwrap(),
-    ///             Subfield::new('b', "456").unwrap(),
-    ///         ],
-    ///     ),
-    /// ]);
-    /// assert_eq!(record.pretty(), "003@ $0 123456789X\n012A $a 123 $b 456");
-    /// ```
     pub fn pretty(&self) -> String {
         String::from(
             &*self

@@ -1,6 +1,9 @@
 extern crate pica;
 
-use pica::{legacy::Subfield, Field, Occurrence, ParsePicaError};
+use pica::{
+    legacy::{Field, Subfield},
+    Occurrence, ParsePicaError,
+};
 
 #[test]
 fn field_new() {

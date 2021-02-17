@@ -17,8 +17,8 @@
 //! ```
 
 use crate::{
-    legacy::{Record, Subfield},
-    Field, Occurrence,
+    legacy::{Field, Record, Subfield},
+    Occurrence,
 };
 
 use nom::character::complete::{char, none_of, one_of, satisfy};
