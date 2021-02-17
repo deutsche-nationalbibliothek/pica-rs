@@ -13,5 +13,4 @@ mod filter;
 mod path;
 mod record;
 mod select;
-mod string;
 mod utils;

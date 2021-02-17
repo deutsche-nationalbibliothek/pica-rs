@@ -1,10 +1,9 @@
 //! Filter Expressions
 
 use crate::legacy::{
-    parse_field_tag, parse_occurrence_matcher, parse_subfield_name, Field,
-    OccurrenceMatcher, Record,
+    parse_field_tag, parse_occurrence_matcher, parse_string,
+    parse_subfield_name, Field, OccurrenceMatcher, Record,
 };
-use crate::string::parse_string;
 use crate::utils::ws;
 
 use nom::branch::alt;
