@@ -3,7 +3,7 @@
 
 use crate::error::ParsePicaError;
 use crate::parser::parse_field;
-use crate::subfield::Subfield;
+use crate::record::legacy::Subfield;
 use crate::Occurrence;
 
 use nom::{combinator::all_consuming, Finish};
@@ -81,7 +81,7 @@ impl<'a> Field<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{Field, Occurrence, Subfield};
+    /// use pica::{legacy::Subfield, Field, Occurrence};
     ///
     /// let field = Field::new(
     ///     "012A",
@@ -98,7 +98,7 @@ impl<'a> Field<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{Field, Subfield};
+    /// use pica::{legacy::Subfield, Field};
     ///
     /// let field =
     ///     Field::new("012A", None, vec![Subfield::new('a', "123").unwrap()]);
@@ -112,7 +112,7 @@ impl<'a> Field<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{Field, Subfield};
+    /// use pica::{legacy::Subfield, Field};
     ///
     /// let field = Field::new(
     ///     "012A",
@@ -154,7 +154,7 @@ impl<'a> Deref for Field<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{Field, Subfield};
+    /// use pica::{legacy::Subfield, Field};
     ///
     /// let field = Field::new(
     ///     "012A",

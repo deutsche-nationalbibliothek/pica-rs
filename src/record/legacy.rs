@@ -2,7 +2,7 @@
 //! record.
 
 use crate::error::ParsePicaError;
-use crate::parser::parse_record;
+use crate::parser::{parse_record, parse_subfield};
 use crate::select::{Outcome, Selector};
 use crate::{Field, Path};
 
@@ -11,6 +11,63 @@ use nom::{combinator::all_consuming, Finish};
 use serde::Serialize;
 use std::borrow::Cow;
 use std::ops::Deref;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Subfield<'a> {
+    pub(crate) name: char,
+    pub(crate) value: Cow<'a, str>,
+}
+
+impl<'a> Subfield<'a> {
+    /// Crates a new subfield
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - An alpha-numeric ([0-9A-Za-z]) subfield code.
+    /// * `value` - A string or string slice holding the subfield value.
+    pub fn new<S>(name: char, value: S) -> Result<Self, ParsePicaError>
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        let value = value.into();
+
+        if !name.is_ascii_alphanumeric()
+            || value.contains(&['\u{1e}', '\u{1f}'][..])
+        {
+            Err(ParsePicaError::InvalidSubfield)
+        } else {
+            Ok(Subfield { name, value })
+        }
+    }
+
+    /// Decodes a subfield
+    pub fn decode(input: &'a str) -> Result<Self, ParsePicaError> {
+        match all_consuming(parse_subfield)(input).finish() {
+            Ok((_, subfield)) => Ok(subfield),
+            _ => Err(ParsePicaError::InvalidSubfield),
+        }
+    }
+
+    /// Encodes a subfield
+    pub fn encode(&self) -> String {
+        format!("\u{1f}{}{}", self.name, self.value)
+    }
+
+    /// Returns the name of the subfield.
+    pub fn name(&self) -> char {
+        self.name
+    }
+
+    /// Returns the value of the subfield
+    pub fn value(&self) -> &str {
+        self.value.as_ref()
+    }
+
+    /// Returns the subfield as an human readable string
+    pub fn pretty(&self) -> String {
+        format!("${} {}", self.name, self.value)
+    }
+}
 
 #[derive(Serialize, Debug, Default, PartialEq, Eq)]
 pub struct Record<'a>(Vec<Field<'a>>);
@@ -24,7 +81,10 @@ impl<'a> Record<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{legacy::Record, Field, Subfield};
+    /// use pica::{
+    ///     legacy::{Record, Subfield},
+    ///     Field,
+    /// };
     ///
     /// let record = Record::new(vec![Field::new("003@", None, vec![])]);
     /// assert_eq!(record.len(), 1);
@@ -57,7 +117,10 @@ impl<'a> Record<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{legacy::Record, Field, Subfield};
+    /// use pica::{
+    ///     legacy::{Record, Subfield},
+    ///     Field,
+    /// };
     ///
     /// let record = Record::new(vec![
     ///     Field::new(

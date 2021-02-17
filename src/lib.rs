@@ -9,7 +9,6 @@ pub use self::occurrence::Occurrence;
 pub use self::path::{parse_path, Path};
 pub use self::record::legacy;
 pub use self::select::{Outcome, Selector, Selectors};
-pub use self::subfield::Subfield;
 
 mod error;
 mod field;
