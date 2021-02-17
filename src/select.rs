@@ -1,4 +1,4 @@
-use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
+use crate::legacy::{parse_occurrence_matcher, OccurrenceMatcher};
 use crate::parser::{parse_field_tag, parse_subfield_name};
 use crate::utils::ws;
 

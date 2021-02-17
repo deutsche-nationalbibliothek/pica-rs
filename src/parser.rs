@@ -16,10 +16,7 @@
 //! <rs> := #x1e
 //! ```
 
-use crate::{
-    legacy::{Field, Record, Subfield},
-    Occurrence,
-};
+use crate::legacy::{Field, Occurrence, Record, Subfield};
 
 use nom::character::complete::{char, none_of, one_of, satisfy};
 use nom::combinator::{map, opt, recognize};

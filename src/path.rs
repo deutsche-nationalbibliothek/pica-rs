@@ -15,10 +15,10 @@
 //! ```
 
 use crate::error::ParsePicaError;
+use crate::legacy::Occurrence;
 use crate::parser::{
     parse_field_occurrence, parse_field_tag, parse_subfield_name,
 };
-use crate::Occurrence;
 
 use nom::character::complete::{char, digit1, multispace0};
 use nom::combinator::{cut, map, opt};

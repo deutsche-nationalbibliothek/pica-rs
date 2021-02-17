@@ -1,7 +1,8 @@
 //! Filter Expressions
 
-use crate::legacy::{Field, Record};
-use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
+use crate::legacy::{
+    parse_occurrence_matcher, Field, OccurrenceMatcher, Record,
+};
 use crate::parser::parse_field_tag;
 use crate::parser::parse_subfield_name;
 use crate::string::parse_string;

@@ -1,8 +1,8 @@
 extern crate pica;
 
 use pica::{
-    legacy::{Field, Record, Subfield},
-    Occurrence, ParsePicaError,
+    legacy::{Field, Occurrence, Record, Subfield},
+    ParsePicaError,
 };
 
 #[test]

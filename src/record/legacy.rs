@@ -4,12 +4,18 @@
 use crate::error::ParsePicaError;
 use crate::parser::{parse_field, parse_record, parse_subfield};
 use crate::select::{Outcome, Selector};
-use crate::{Occurrence, Path};
+use crate::Path;
 
-use nom::{combinator::all_consuming, Finish};
+use nom::branch::alt;
+use nom::character::complete::{char, satisfy};
+use nom::combinator::{cut, map, recognize, success};
+use nom::multi::many_m_n;
+use nom::sequence::preceded;
+use nom::{combinator::all_consuming, Finish, IResult};
 
 use serde::Serialize;
 use std::borrow::Cow;
+use std::cmp::PartialEq;
 use std::ops::Deref;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -66,6 +72,78 @@ impl<'a> Subfield<'a> {
     /// Returns the subfield as an human readable string
     pub fn pretty(&self) -> String {
         format!("${} {}", self.name, self.value)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+pub struct Occurrence<'a>(pub(crate) Cow<'a, str>);
+
+impl<'a> Occurrence<'a> {
+    pub fn new<S: Into<Cow<'a, str>>>(value: S) -> Self {
+        Self(value.into())
+    }
+}
+
+impl<'a> Deref for Occurrence<'a> {
+    type Target = Cow<'a, str>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum OccurrenceMatcher<'a> {
+    Value(Cow<'a, str>),
+    None,
+    All,
+}
+
+impl<'a> OccurrenceMatcher<'a> {
+    pub fn value<S: Into<Cow<'a, str>>>(value: S) -> Self {
+        Self::Value(value.into())
+    }
+
+    pub fn all() -> Self {
+        Self::All
+    }
+
+    pub fn none() -> Self {
+        Self::None
+    }
+}
+
+pub(crate) fn parse_occurrence_matcher(
+    i: &str,
+) -> IResult<&str, OccurrenceMatcher> {
+    alt((
+        preceded(
+            char('/'),
+            cut(alt((
+                map(
+                    recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
+                    |value| OccurrenceMatcher::Value(Cow::Borrowed(value)),
+                ),
+                map(char('*'), |_| OccurrenceMatcher::All),
+            ))),
+        ),
+        success(OccurrenceMatcher::None),
+    ))(i)
+}
+
+impl<'a> PartialEq<Option<&Occurrence<'a>>> for OccurrenceMatcher<'a> {
+    fn eq(&self, other: &Option<&Occurrence>) -> bool {
+        match self {
+            OccurrenceMatcher::All => true,
+            OccurrenceMatcher::None => other.is_none(),
+            OccurrenceMatcher::Value(lhs) => {
+                if let Some(ref rhs) = other {
+                    *lhs == rhs.0
+                } else {
+                    false
+                }
+            }
+        }
     }
 }
 

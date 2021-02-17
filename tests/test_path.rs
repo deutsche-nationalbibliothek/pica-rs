@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::{Occurrence, ParsePicaError, Path};
+use pica::{legacy::Occurrence, ParsePicaError, Path};
 
 #[test]
 fn path_new() {
