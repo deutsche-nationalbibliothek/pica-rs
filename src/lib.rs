@@ -5,6 +5,7 @@ extern crate serde_json;
 pub use self::filter::{Filter, ParseFilterError};
 pub use self::path::{parse_path, Path};
 pub use self::record::legacy;
+pub use self::record::Subfield;
 pub use self::select::{Outcome, Selector, Selectors};
 
 mod filter;
