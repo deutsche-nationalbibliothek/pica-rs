@@ -82,3 +82,10 @@ pub fn parse_field(i: &[u8]) -> ParseResult<Field> {
     )(i)
 }
 
+/// Parses a record.
+pub fn parse_record(i: &[u8]) -> ParseResult<Record> {
+    map(
+        all_consuming(terminated(many1(parse_field), opt(char(NL)))),
+        Record,
+    )(i)
+}

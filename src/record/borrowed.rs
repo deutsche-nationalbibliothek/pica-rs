@@ -1,8 +1,9 @@
 //! This module provides all data types related to a PICA+ record.
 
+use crate::record::parse_record;
 use bstr::BStr;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Subfield<'a> {
     pub(crate) code: char,
     pub(crate) value: &'a BStr,
@@ -30,3 +31,13 @@ pub struct Field<'a> {
     pub(crate) subfields: Vec<Subfield<'a>>,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct Record<'a>(pub(crate) Vec<Field<'a>>);
+
+impl<'a> Record<'a> {
+    /// Parses a record from a byte slice.
+    #[allow(clippy::result_unit_err)]
+    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ()> {
+        parse_record(data).map(|(_, record)| record).map_err(|_| ())
+    }
+}
