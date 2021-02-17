@@ -2,21 +2,78 @@
 //! record.
 
 use crate::error::ParsePicaError;
-use crate::parser::{parse_field, parse_record, parse_subfield};
 use crate::select::{Outcome, Selector};
 use crate::Path;
 
 use nom::branch::alt;
-use nom::character::complete::{char, satisfy};
-use nom::combinator::{cut, map, recognize, success};
-use nom::multi::many_m_n;
-use nom::sequence::preceded;
+use nom::character::complete::{char, none_of, one_of, satisfy};
+use nom::combinator::{cut, map, opt, recognize, success};
+use nom::multi::{count, many0, many1, many_m_n};
+use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::{combinator::all_consuming, Finish, IResult};
 
 use serde::Serialize;
 use std::borrow::Cow;
 use std::cmp::PartialEq;
 use std::ops::Deref;
+
+pub(crate) fn parse_subfield_name(i: &str) -> IResult<&str, char> {
+    satisfy(|c| c.is_ascii_alphanumeric())(i)
+}
+
+fn parse_subfield_value(i: &str) -> IResult<&str, &str> {
+    recognize(many0(none_of("\u{1e}\u{1f}")))(i)
+}
+
+pub(crate) fn parse_subfield(i: &str) -> IResult<&str, Subfield> {
+    preceded(
+        char('\u{1f}'),
+        map(
+            pair(parse_subfield_name, parse_subfield_value),
+            |(name, value)| Subfield {
+                name,
+                value: value.into(),
+            },
+        ),
+    )(i)
+}
+
+pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, &str> {
+    recognize(tuple((
+        one_of("012"),
+        count(one_of("0123456789"), 2),
+        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
+    )))(i)
+}
+
+pub(crate) fn parse_field_occurrence(i: &str) -> IResult<&str, Occurrence> {
+    preceded(
+        char('/'),
+        map(
+            recognize(many_m_n(2, 3, one_of("0123456789"))),
+            Occurrence::new,
+        ),
+    )(i)
+}
+
+pub(crate) fn parse_field(i: &str) -> IResult<&str, Field> {
+    terminated(
+        map(
+            pair(
+                pair(parse_field_tag, opt(parse_field_occurrence)),
+                preceded(char(' '), many0(parse_subfield)),
+            ),
+            |((tag, occurrence), subfields)| {
+                Field::new(tag, occurrence, subfields)
+            },
+        ),
+        char('\u{1e}'),
+    )(i)
+}
+
+pub(crate) fn parse_record(i: &str) -> IResult<&str, Record> {
+    map(many1(parse_field), Record::new)(i)
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Subfield<'a> {

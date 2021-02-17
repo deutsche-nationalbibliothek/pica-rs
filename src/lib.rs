@@ -10,7 +10,6 @@ pub use self::select::{Outcome, Selector, Selectors};
 
 mod error;
 mod filter;
-mod parser;
 mod path;
 mod record;
 mod select;
