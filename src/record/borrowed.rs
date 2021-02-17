@@ -19,3 +19,14 @@ impl<'a> Subfield<'a> {
         self.value
     }
 }
+
+#[derive(Debug, PartialEq)]
+pub struct Occurrence<'a>(pub(crate) &'a BStr);
+
+#[derive(Debug, PartialEq)]
+pub struct Field<'a> {
+    pub(crate) tag: &'a BStr,
+    pub(crate) occurrence: Option<Occurrence<'a>>,
+    pub(crate) subfields: Vec<Subfield<'a>>,
+}
+
