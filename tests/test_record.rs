@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::{Field, Occurrence, ParsePicaError, Record, Subfield};
+use pica::{legacy::Record, Field, Occurrence, ParsePicaError, Subfield};
 
 #[test]
 fn record_new() {

@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::Record;
+use pica::legacy::Record;
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};

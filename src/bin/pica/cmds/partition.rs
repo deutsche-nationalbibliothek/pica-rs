@@ -1,7 +1,7 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::Record;
+use pica::legacy::Record;
 
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;

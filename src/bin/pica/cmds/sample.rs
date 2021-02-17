@@ -1,7 +1,7 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::Record;
+use pica::legacy::Record;
 use rand::{thread_rng, Rng};
 use std::io::BufRead;
 

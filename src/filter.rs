@@ -5,7 +5,7 @@ use crate::parser::parse_field_tag;
 use crate::parser::parse_subfield_name;
 use crate::string::parse_string;
 use crate::utils::ws;
-use crate::{Field, Record};
+use crate::{legacy::Record, Field};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;

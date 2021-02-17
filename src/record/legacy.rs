@@ -24,7 +24,7 @@ impl<'a> Record<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{Field, Record, Subfield};
+    /// use pica::{legacy::Record, Field, Subfield};
     ///
     /// let record = Record::new(vec![Field::new("003@", None, vec![])]);
     /// assert_eq!(record.len(), 1);
@@ -41,7 +41,7 @@ impl<'a> Record<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::Record;
+    /// use pica::legacy::Record;
     ///
     /// let result = Record::decode("003@ \u{1f}0123456789X\u{1e}");
     /// assert!(result.is_ok());
@@ -57,7 +57,7 @@ impl<'a> Record<'a> {
     ///
     /// # Example
     /// ```
-    /// use pica::{Field, Record, Subfield};
+    /// use pica::{legacy::Record, Field, Subfield};
     ///
     /// let record = Record::new(vec![
     ///     Field::new(
