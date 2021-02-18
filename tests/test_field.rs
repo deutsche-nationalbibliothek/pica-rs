@@ -16,14 +16,6 @@ fn field_new() {
 }
 
 #[test]
-fn field_pretty() {
-    let subfields = vec![Subfield::new('x', "abc").unwrap()];
-    let field =
-        Field::new("012A", Some(Occurrence::new("00")), subfields.clone());
-    assert_eq!(field.pretty(), "012A/00 $x abc");
-}
-
-#[test]
 fn field_parse() {
     let field = Field::decode("012A/00 \u{1f}0abc\u{1f}0def\u{1e}").unwrap();
     assert_eq!(field.tag(), "012A");

@@ -242,11 +242,6 @@ impl<'a> Subfield<'a> {
     pub fn value(&self) -> &str {
         self.value.as_ref()
     }
-
-    /// Returns the subfield as an human readable string
-    pub fn pretty(&self) -> String {
-        format!("${} {}", self.name, self.value)
-    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
@@ -374,29 +369,6 @@ impl<'a> Field<'a> {
     pub fn subfields(&self) -> &Vec<Subfield> {
         &self.subfields
     }
-
-    /// Returns the field as an pretty formatted string.
-    pub fn pretty(&self) -> String {
-        let mut pretty_str = String::from(self.tag.clone());
-
-        if let Some(occurrence) = self.occurrence() {
-            pretty_str.push('/');
-            pretty_str.push_str(occurrence)
-        }
-
-        if !self.is_empty() {
-            pretty_str.push(' ');
-            pretty_str.push_str(
-                &self
-                    .iter()
-                    .map(|s| s.pretty())
-                    .collect::<Vec<_>>()
-                    .join(" "),
-            );
-        }
-
-        pretty_str
-    }
 }
 
 impl<'a> Deref for Field<'a> {
@@ -432,40 +404,6 @@ impl<'a> Record<'a> {
             _ => Err(ParsePicaError::InvalidRecord),
         }
     }
-
-    /// Returns the record as an pretty formatted string.
-    pub fn pretty(&self) -> String {
-        String::from(
-            &*self
-                .iter()
-                .map(|s| s.pretty())
-                .collect::<Vec<_>>()
-                .join("\n"),
-        )
-    }
-
-    // pub fn path<S>(&self, path_str: S) -> Vec<&str>
-    // where
-    //     S: Into<Cow<'a, str>>,
-    // {
-    //     let path_str = path_str.into();
-    //     let path = Path::from_bytes(path_str.as_bytes()).unwrap();
-    //     let mut result: Vec<&str> = Vec::new();
-
-    //     for field in &self.0 {
-    //         if field.tag == path.tag
-    //             && field.occurrence().unwrap() == path.occurrence.unwrap()
-    //         {
-    //             for subfield in &field.subfields {
-    //                 if subfield.name() == path.code {
-    //                     result.push(subfield.value());
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     result
-    // }
 
     pub fn select(&self, selector: &Selector) -> Outcome {
         self.iter()

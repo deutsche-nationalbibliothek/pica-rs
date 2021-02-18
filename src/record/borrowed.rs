@@ -4,6 +4,7 @@ use crate::record::parse_record;
 use crate::Path;
 
 use bstr::{BStr, BString};
+use std::ops::Deref;
 
 #[derive(Debug, PartialEq)]
 pub struct Subfield<'a> {
@@ -21,16 +22,71 @@ impl<'a> Subfield<'a> {
     pub fn value(&self) -> &'a BStr {
         self.value
     }
+
+    /// Returns the subfield as an human readable string.
+    pub fn pretty(&self) -> String {
+        let mut pretty_str = String::new();
+
+        pretty_str.push('$');
+        pretty_str.push(self.code);
+        pretty_str.push(' ');
+        pretty_str.push_str(&String::from_utf8(self.value.to_vec()).unwrap());
+        pretty_str
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Occurrence<'a>(pub(crate) &'a BStr);
+
+impl<'a> Deref for Occurrence<'a> {
+    type Target = BStr;
+
+    /// Dereferences the value
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Field<'a> {
     pub(crate) tag: &'a BStr,
     pub(crate) occurrence: Option<Occurrence<'a>>,
     pub(crate) subfields: Vec<Subfield<'a>>,
+}
+
+impl<'a> Field<'a> {
+    /// Returns the field as an human readable string.
+    pub fn pretty(&self) -> String {
+        let mut pretty_str = String::from_utf8(self.tag.to_vec()).unwrap();
+
+        if let Some(ref occurrence) = self.occurrence {
+            pretty_str.push('/');
+            pretty_str
+                .push_str(&String::from_utf8(occurrence.to_vec()).unwrap())
+        }
+
+        if !self.is_empty() {
+            pretty_str.push(' ');
+            pretty_str.push_str(
+                &self
+                    .iter()
+                    .map(|s| s.pretty())
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            );
+        }
+
+        pretty_str
+    }
+}
+
+impl<'a> Deref for Field<'a> {
+    type Target = Vec<Subfield<'a>>;
+
+    /// Dereferences the value
+    fn deref(&self) -> &Self::Target {
+        &self.subfields
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -43,6 +99,7 @@ impl<'a> Record<'a> {
         parse_record(data).map(|(_, record)| record).map_err(|_| ())
     }
 
+    /// Returns all subfield values of a given path.
     pub fn path(&self, path: &Path) -> Vec<BString> {
         let mut result: Vec<BString> = Vec::new();
 
@@ -57,5 +114,14 @@ impl<'a> Record<'a> {
         }
 
         result
+    }
+
+    /// Returns the record as an human readable string.
+    pub fn pretty(&self) -> String {
+        self.0
+            .iter()
+            .map(|s| s.pretty())
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
