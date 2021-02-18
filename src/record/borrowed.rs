@@ -128,7 +128,7 @@ impl<'a> Record<'a> {
             .join("\n")
     }
 
-    pub fn to_owned(self) -> owned::Record {
+    pub fn into_owned(self) -> owned::Record {
         owned::Record::from(self)
     }
 }

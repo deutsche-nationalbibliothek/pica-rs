@@ -18,8 +18,8 @@ impl<'a> From<&borrowed::Field<'a>> for owned::Field {
             occurrence: field
                 .occurrence
                 .map(|o| String::from_utf8(o.to_vec()).unwrap())
-                .map(|o| owned::Occurrence(o)),
-            subfields: field.iter().map(|s| owned::Subfield::from(s)).collect(),
+                .map(owned::Occurrence),
+            subfields: field.iter().map(owned::Subfield::from).collect(),
         }
     }
 }
@@ -27,7 +27,7 @@ impl<'a> From<&borrowed::Field<'a>> for owned::Field {
 impl<'a> From<borrowed::Record<'a>> for owned::Record {
     fn from(record: borrowed::Record) -> Self {
         Self {
-            fields: record.iter().map(|f| owned::Field::from(f)).collect(),
+            fields: record.iter().map(owned::Field::from).collect(),
         }
     }
 }
