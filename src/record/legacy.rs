@@ -2,7 +2,6 @@
 //! record.
 
 use crate::select::{Outcome, Selector};
-use crate::Path;
 
 use nom::branch::alt;
 use nom::bytes::streaming::{is_not, take_while_m_n};
@@ -445,36 +444,28 @@ impl<'a> Record<'a> {
         )
     }
 
-    pub fn path<S>(&self, path_str: S) -> Vec<&str>
-    where
-        S: Into<Cow<'a, str>>,
-    {
-        let path_str = path_str.into();
-        let path = Path::decode(&path_str).unwrap();
-        let mut result: Vec<&str> = Vec::new();
+    // pub fn path<S>(&self, path_str: S) -> Vec<&str>
+    // where
+    //     S: Into<Cow<'a, str>>,
+    // {
+    //     let path_str = path_str.into();
+    //     let path = Path::from_bytes(path_str.as_bytes()).unwrap();
+    //     let mut result: Vec<&str> = Vec::new();
 
-        for field in &self.0 {
-            if field.tag() == path.tag()
-                && field.occurrence().as_deref() == path.occurrence()
-            {
-                for subfield in &field.subfields {
-                    if subfield.name() == path.name() {
-                        result.push(subfield.value());
-                    }
-                }
-            }
-        }
+    //     for field in &self.0 {
+    //         if field.tag == path.tag
+    //             && field.occurrence().unwrap() == path.occurrence.unwrap()
+    //         {
+    //             for subfield in &field.subfields {
+    //                 if subfield.name() == path.code {
+    //                     result.push(subfield.value());
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        if let Some(index) = path.index() {
-            if let Some(value) = result.get(index) {
-                return vec![value];
-            } else {
-                return vec![];
-            }
-        }
-
-        result
-    }
+    //     result
+    // }
 
     pub fn select(&self, selector: &Selector) -> Outcome {
         self.iter()

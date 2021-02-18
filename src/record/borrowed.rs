@@ -1,7 +1,9 @@
 //! This module provides all data types related to a PICA+ record.
 
 use crate::record::parse_record;
-use bstr::BStr;
+use crate::Path;
+
+use bstr::{BStr, BString};
 
 #[derive(Debug, PartialEq)]
 pub struct Subfield<'a> {
@@ -21,7 +23,7 @@ impl<'a> Subfield<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Occurrence<'a>(pub(crate) &'a BStr);
 
 #[derive(Debug, PartialEq)]
@@ -39,5 +41,21 @@ impl<'a> Record<'a> {
     #[allow(clippy::result_unit_err)]
     pub fn from_bytes(data: &'a [u8]) -> Result<Self, ()> {
         parse_record(data).map(|(_, record)| record).map_err(|_| ())
+    }
+
+    pub fn path(&self, path: &Path) -> Vec<BString> {
+        let mut result: Vec<BString> = Vec::new();
+
+        for field in &self.0 {
+            if field.tag == path.tag && field.occurrence == path.occurrence {
+                for subfield in &field.subfields {
+                    if subfield.code == path.code {
+                        result.push(subfield.value.to_owned())
+                    }
+                }
+            }
+        }
+
+        result
     }
 }

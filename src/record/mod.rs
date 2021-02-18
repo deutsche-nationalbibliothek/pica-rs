@@ -6,4 +6,7 @@ pub mod legacy;
 mod parser;
 
 pub use borrowed::{Field, Occurrence, Record, Subfield};
-pub use parser::parse_record;
+pub(crate) use parser::{
+    parse_field_occurrence, parse_field_tag, parse_record, parse_subfield_code,
+    ParseResult,
+};

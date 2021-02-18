@@ -19,8 +19,8 @@ const SP: char = '\x20';
 /// Parser result.
 pub type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
 
-/// Parses a subfield name.
-pub(crate) fn parse_subfield_name(i: &[u8]) -> ParseResult<char> {
+/// Parses a subfield code.
+pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
     map(satisfy(|c| c.is_ascii_alphanumeric()), char::from)(i)
 }
 
@@ -34,7 +34,7 @@ pub(crate) fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
     map(
         preceded(
             char(US),
-            cut(pair(parse_subfield_name, parse_subfield_value)),
+            cut(pair(parse_subfield_code, parse_subfield_value)),
         ),
         |(code, value)| Subfield { code, value },
     )(i)
