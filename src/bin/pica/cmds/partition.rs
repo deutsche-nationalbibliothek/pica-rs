@@ -1,12 +1,13 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use bstr::io::BufReadExt;
+use bstr::ByteSlice;
 use clap::Arg;
-use pica::legacy::Record;
+use pica::{self, Record};
 
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::create_dir;
-use std::io::BufRead;
 use std::io::Write;
 use std::path::Path;
 
@@ -51,14 +52,17 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     let mut writers: HashMap<Vec<u8>, Box<dyn Write + 'static>> =
         HashMap::new();
+    let path = pica::Path::from_bytes(path_str.as_bytes()).unwrap();
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        if let Ok(record) = Record::decode(&line) {
-            for value in record.path(path_str) {
+    for result in reader.byte_lines() {
+        let line = result?;
+
+        if let Ok(record) = Record::from_bytes(&line) {
+            for value in record.path(&path) {
                 let mut entry = writers.entry(value.as_bytes().to_vec());
                 let writer = match entry {
                     Entry::Vacant(vacant) => {
+                        let value = String::from_utf8(value.to_vec()).unwrap();
                         let writer = ctx.writer(
                             outdir
                                 .join(filename_template.replace("{}", &value))
@@ -70,13 +74,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                     Entry::Occupied(ref mut occupied) => occupied.get_mut(),
                 };
 
-                writer.write_all(line.as_bytes())?;
+                writer.write_all(&line)?;
                 writer.write_all(b"\n")?;
             }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
-                line
+                String::from_utf8(line).unwrap()
             )));
         }
     }
