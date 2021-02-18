@@ -1,10 +1,9 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use bstr::{io::BufReadExt, BString};
 use clap::Arg;
-use pica::legacy::Record;
-
+use pica::{Path, Record};
 use std::collections::HashMap;
-use std::io::BufRead;
 
 pub fn cli() -> App {
     App::new("frequency")
@@ -43,30 +42,32 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let writer = ctx.writer(args.value_of("output"))?;
     let mut writer = csv::Writer::from_writer(writer);
 
-    let mut ftable: HashMap<String, u64> = HashMap::new();
+    let mut ftable: HashMap<BString, u64> = HashMap::new();
+    let path = Path::from_bytes(path_str.as_bytes()).unwrap();
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        if let Ok(record) = Record::decode(&line) {
-            for value in record.path(path_str) {
-                *ftable.entry(String::from(value)).or_insert(0) += 1;
+    for result in reader.byte_lines() {
+        let line = result?;
+
+        if let Ok(record) = Record::from_bytes(&line) {
+            for value in record.path(&path) {
+                *ftable.entry(value).or_insert(0) += 1;
             }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
-                line
+                String::from_utf8(line).unwrap()
             )));
         }
     }
 
-    let mut ftable_sorted: Vec<(&String, &u64)> = ftable.iter().collect();
+    let mut ftable_sorted: Vec<(&BString, &u64)> = ftable.iter().collect();
     ftable_sorted.sort_by(|a, b| b.1.cmp(a.1));
 
     for (value, frequency) in ftable_sorted {
         if *frequency < limit {
             break;
         }
-        writer.write_record(&[value, &frequency.to_string()])?;
+        writer.write_record(&[value, &BString::from(frequency.to_string())])?;
     }
 
     writer.flush()?;
