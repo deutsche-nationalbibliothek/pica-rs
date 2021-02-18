@@ -1,12 +1,13 @@
 //! This module provides all data types related to a PICA+ record.
 
-use crate::record::parse_record;
+use crate::record::{owned, parse_record};
 use crate::Path;
 
 use bstr::{BStr, BString};
+use serde::Serialize;
 use std::ops::Deref;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Subfield<'a> {
     pub(crate) code: char,
     pub(crate) value: &'a BStr,
@@ -35,7 +36,7 @@ impl<'a> Subfield<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Copy)]
 pub struct Occurrence<'a>(pub(crate) &'a BStr);
 
 impl<'a> Deref for Occurrence<'a> {
@@ -47,7 +48,7 @@ impl<'a> Deref for Occurrence<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Field<'a> {
     pub(crate) tag: &'a BStr,
     pub(crate) occurrence: Option<Occurrence<'a>>,
@@ -89,8 +90,10 @@ impl<'a> Deref for Field<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub struct Record<'a>(pub(crate) Vec<Field<'a>>);
+#[derive(Debug, PartialEq, Serialize)]
+pub struct Record<'a> {
+    pub(crate) fields: Vec<Field<'a>>,
+}
 
 impl<'a> Record<'a> {
     /// Parses a record from a byte slice.
@@ -103,7 +106,7 @@ impl<'a> Record<'a> {
     pub fn path(&self, path: &Path) -> Vec<BString> {
         let mut result: Vec<BString> = Vec::new();
 
-        for field in &self.0 {
+        for field in &self.fields {
             if field.tag == path.tag && field.occurrence == path.occurrence {
                 for subfield in &field.subfields {
                     if subfield.code == path.code {
@@ -118,10 +121,23 @@ impl<'a> Record<'a> {
 
     /// Returns the record as an human readable string.
     pub fn pretty(&self) -> String {
-        self.0
+        self.fields
             .iter()
             .map(|s| s.pretty())
             .collect::<Vec<_>>()
             .join("\n")
+    }
+
+    pub fn to_owned(self) -> owned::Record {
+        owned::Record::from(self)
+    }
+}
+
+impl<'a> Deref for Record<'a> {
+    type Target = Vec<Field<'a>>;
+
+    /// Dereferences the value
+    fn deref(&self) -> &Self::Target {
+        &self.fields
     }
 }

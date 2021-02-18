@@ -1,8 +1,10 @@
 //! This module contains data structures and functions to parse and work with
 //! bibliographic records encoded in PICA+.
 
-mod borrowed;
+pub(crate) mod borrowed;
+mod convert;
 pub mod legacy;
+pub mod owned;
 mod parser;
 
 pub use borrowed::{Field, Occurrence, Record, Subfield};
