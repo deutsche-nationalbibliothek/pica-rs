@@ -1,10 +1,10 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::legacy::Record;
+use pica::Record;
 
 use std::fs::create_dir;
-use std::io::BufRead;
 use std::path::Path;
 
 pub fn cli() -> App {
@@ -64,9 +64,10 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             .to_str(),
     )?;
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        if let Ok(_record) = Record::decode(&line) {
+    for result in reader.byte_lines() {
+        let line = result?;
+
+        if Record::from_bytes(&line).is_ok() {
             if count % chunk_size == 0 {
                 writer.flush()?;
 
@@ -81,13 +82,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                 chunks += 1;
             }
 
-            writer.write_all(line.as_bytes())?;
+            writer.write_all(&line)?;
             writer.write_all(b"\n")?;
             count += 1;
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
-                line
+                String::from_utf8(line).unwrap()
             )));
         }
     }
