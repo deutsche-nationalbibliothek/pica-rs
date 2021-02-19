@@ -37,10 +37,10 @@ impl<'a> Subfield<'a> {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Copy)]
-pub struct Occurrence<'a>(pub(crate) &'a BStr);
+pub struct Occurrence<'a>(pub(crate) Option<&'a BStr>);
 
 impl<'a> Deref for Occurrence<'a> {
-    type Target = BStr;
+    type Target = Option<&'a BStr>;
 
     /// Dereferences the value
     fn deref(&self) -> &Self::Target {
@@ -51,7 +51,7 @@ impl<'a> Deref for Occurrence<'a> {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Field<'a> {
     pub(crate) tag: &'a BStr,
-    pub(crate) occurrence: Option<Occurrence<'a>>,
+    pub(crate) occurrence: Occurrence<'a>,
     pub(crate) subfields: Vec<Subfield<'a>>,
 }
 
@@ -60,7 +60,7 @@ impl<'a> Field<'a> {
     pub fn pretty(&self) -> String {
         let mut pretty_str = String::from_utf8(self.tag.to_vec()).unwrap();
 
-        if let Some(ref occurrence) = self.occurrence {
+        if let Some(occurrence) = *self.occurrence {
             pretty_str.push('/');
             pretty_str
                 .push_str(&String::from_utf8(occurrence.to_vec()).unwrap())
