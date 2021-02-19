@@ -1,6 +1,6 @@
 extern crate pica;
 
-use pica::{Field, Occurrence, ParsePicaError, Subfield};
+use pica::legacy::{Field, Occurrence, ParsePicaError, Subfield};
 
 #[test]
 fn field_new() {
@@ -13,14 +13,6 @@ fn field_new() {
     let subfield = field.subfields().first().unwrap();
     assert_eq!(subfield.name(), '0');
     assert_eq!(subfield.value(), "123456789X");
-}
-
-#[test]
-fn field_pretty() {
-    let subfields = vec![Subfield::new('x', "abc").unwrap()];
-    let field =
-        Field::new("012A", Some(Occurrence::new("00")), subfields.clone());
-    assert_eq!(field.pretty(), "012A/00 $x abc");
 }
 
 #[test]

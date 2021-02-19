@@ -1,6 +1,7 @@
-use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
-use crate::parser::{parse_field_tag, parse_subfield_name};
-use crate::utils::ws;
+use crate::legacy::{
+    parse_field_tag, parse_occurrence_matcher, parse_subfield_name, ws,
+    OccurrenceMatcher,
+};
 
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};

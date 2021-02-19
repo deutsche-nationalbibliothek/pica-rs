@@ -1,7 +1,7 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::{Outcome, Record, Selectors};
+use pica::{legacy::Record, Outcome, Selectors};
 use std::io::BufRead;
 
 pub fn cli() -> App {

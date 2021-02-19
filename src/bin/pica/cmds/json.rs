@@ -1,8 +1,8 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use bstr::io::BufReadExt;
 use clap::Arg;
 use pica::Record;
-use std::io::BufRead;
 
 pub fn cli() -> App {
     App::new("json")
@@ -31,10 +31,11 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     writer.write_all(b"[")?;
 
-    for (count, line) in reader.lines().enumerate() {
-        let line = line.unwrap();
-        if let Ok(record) = Record::decode(&line) {
-            let j = serde_json::to_string(&record).unwrap();
+    for (count, result) in reader.byte_lines().enumerate() {
+        let line = result?;
+
+        if let Ok(record) = Record::from_bytes(&line) {
+            let j = serde_json::to_string(&record.into_owned()).unwrap();
             if count > 0 {
                 writer.write_all(b",")?;
             }
@@ -42,7 +43,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
-                line
+                String::from_utf8(line).unwrap()
             )));
         }
     }
