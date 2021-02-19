@@ -14,7 +14,7 @@
 //! ```
 
 use nom::character::complete::{char, multispace0};
-use nom::combinator::{cut, opt};
+use nom::combinator::cut;
 use nom::sequence::{preceded, terminated, tuple};
 
 use crate::record::{
@@ -27,7 +27,7 @@ use bstr::BStr;
 #[derive(Debug, PartialEq, Clone)]
 pub struct Path<'a> {
     pub(crate) tag: &'a BStr,
-    pub(crate) occurrence: Option<Occurrence<'a>>,
+    pub(crate) occurrence: Occurrence<'a>,
     pub(crate) code: char,
 }
 
@@ -42,7 +42,7 @@ impl<'a> Path<'a> {
 pub fn parse_path(i: &[u8]) -> ParseResult<Path> {
     let (i, (tag, occurrence, code)) = tuple((
         preceded(multispace0, parse_field_tag),
-        opt(parse_field_occurrence),
+        parse_field_occurrence,
         preceded(char('.'), cut(terminated(parse_subfield_code, multispace0))),
     ))(i)?;
 

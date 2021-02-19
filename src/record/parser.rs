@@ -2,9 +2,10 @@
 
 use bstr::{BStr, ByteSlice};
 
+use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, one_of, satisfy};
-use nom::combinator::{all_consuming, cut, map, opt, recognize};
+use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
 use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Err;
@@ -42,13 +43,16 @@ pub(crate) fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
 
 /// Parses a field occurrence.
 pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
-    map(
-        preceded(
-            tag(b"/"),
-            cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
+    alt((
+        map(
+            preceded(
+                tag(b"/"),
+                cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
+            ),
+            |value: &[u8]| Occurrence(Some(value.as_bstr())),
         ),
-        |value: &[u8]| Occurrence(value.as_bstr()),
-    )(i)
+        success(Occurrence(None)),
+    ))(i)
 }
 
 /// Parses a field tag.
@@ -69,7 +73,7 @@ pub fn parse_field(i: &[u8]) -> ParseResult<Field> {
         terminated(
             tuple((
                 parse_field_tag,
-                opt(parse_field_occurrence),
+                parse_field_occurrence,
                 preceded(char(SP), many0(parse_subfield)),
             )),
             char(RS),
