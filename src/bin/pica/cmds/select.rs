@@ -52,7 +52,9 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                 .fold(Outcome::default(), |acc, x| acc * x);
 
             for row in outcome.iter() {
-                writer.write_record(row)?;
+                if !row.iter().all(|col| col.is_empty()) {
+                    writer.write_record(row)?;
+                }
             }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(

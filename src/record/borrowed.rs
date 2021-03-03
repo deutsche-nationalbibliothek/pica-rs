@@ -4,7 +4,7 @@ use crate::record::{owned, parse_record};
 use crate::select::{Outcome, Selector};
 use crate::Path;
 
-use bstr::{BStr, BString};
+use bstr::{BStr, BString, ByteSlice};
 use serde::Serialize;
 use std::ops::Deref;
 
@@ -162,7 +162,13 @@ impl<'a> Record<'a> {
             .fold(Outcome::default(), |acc, x| acc + x);
 
         if result.is_empty() {
-            Outcome::one()
+            let mut values: Vec<&'a BStr> =
+                Vec::with_capacity(selector.subfields.len());
+            for _ in 0..selector.subfields.len() {
+                values.push(b"".as_bstr());
+            }
+
+            Outcome::from_values(values)
         } else {
             result
         }
