@@ -1,6 +1,6 @@
 //! Filter Expressions
 
-use crate::{Field, Occurrence, Record};
+use crate::{Field, Occurrence, Record, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag, take_while_m_n};
@@ -74,9 +74,18 @@ impl SubfieldFilter {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
                     subfield.code == *code && subfield.value() == values[0]
                 }),
-                ComparisonOp::Ne => field.iter().all(|subfield| {
-                    subfield.code == *code && subfield.value() != values[0]
-                }),
+                ComparisonOp::Ne => {
+                    let subfields = field
+                        .iter()
+                        .filter(|subfield| subfield.code == *code)
+                        .collect::<Vec<&Subfield>>();
+
+                    subfields.is_empty()
+                        || subfields
+                            .iter()
+                            .all(|subfield| subfield.value() != values[0])
+                }
+
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
                     subfield.code == *code
                         && subfield.value.starts_with(&values[0].as_bytes())
