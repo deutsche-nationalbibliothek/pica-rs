@@ -1,19 +1,46 @@
 //! Filter Expressions
 
-use crate::legacy::{
-    parse_field_tag, parse_occurrence_matcher, parse_string,
-    parse_subfield_name, ws, Field, OccurrenceMatcher, Record,
-};
+use crate::{Field, Occurrence, Record};
 
 use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map, opt, verify};
-use nom::multi::{many0, separated_list1};
+use nom::bytes::complete::{is_not, tag, take_while_m_n};
+use nom::character::complete::{
+    char, multispace0, multispace1, one_of, satisfy,
+};
+use nom::combinator::{
+    all_consuming, cut, map, map_opt, map_res, opt, recognize, success, value,
+    verify,
+};
+use nom::error::{FromExternalError, ParseError};
+use nom::multi::{count, fold_many0, many0, many_m_n, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
 use regex::Regex;
+use std::cmp::PartialEq;
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum OccurrenceMatcher {
+    Value(String),
+    Ignore,
+    None,
+}
+
+impl<'a> PartialEq<Occurrence<'a>> for OccurrenceMatcher {
+    fn eq(&self, other: &Occurrence<'a>) -> bool {
+        match self {
+            OccurrenceMatcher::Ignore => true,
+            OccurrenceMatcher::None => other.is_none(),
+            OccurrenceMatcher::Value(lhs) => {
+                if let Some(rhs) = other.0 {
+                    lhs == rhs
+                } else {
+                    false
+                }
+            }
+        }
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub enum BooleanOp {
@@ -43,31 +70,35 @@ pub enum SubfieldFilter {
 impl SubfieldFilter {
     pub fn matches(&self, field: &Field) -> bool {
         match self {
-            SubfieldFilter::Comparison(name, op, values) => match op {
+            SubfieldFilter::Comparison(code, op, values) => match op {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
-                    subfield.name() == *name && subfield.value() == values[0]
+                    subfield.code == *code && subfield.value() == values[0]
                 }),
                 ComparisonOp::Ne => field.iter().all(|subfield| {
-                    subfield.name() == *name && subfield.value() != values[0]
+                    subfield.code == *code && subfield.value() != values[0]
                 }),
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
-                    subfield.name() == *name
-                        && subfield.value().starts_with(&values[0])
+                    subfield.code == *code
+                        && subfield.value.starts_with(&values[0].as_bytes())
                 }),
                 ComparisonOp::EndsWith => field.iter().any(|subfield| {
-                    subfield.name() == *name
-                        && subfield.value().ends_with(&values[0])
+                    subfield.code == *code
+                        && subfield.value.ends_with(&values[0].as_bytes())
                 }),
                 ComparisonOp::Re => {
                     let re = Regex::new(&values[0]).unwrap();
                     field.iter().any(|subfield| {
-                        subfield.name() == *name
-                            && re.is_match(subfield.value())
+                        let value =
+                            String::from_utf8(subfield.value.to_vec()).unwrap();
+                        subfield.code == *code && re.is_match(&value)
                     })
                 }
                 ComparisonOp::In => field.iter().any(|subfield| {
-                    subfield.name() == *name
-                        && values.contains(&String::from(subfield.value()))
+                    subfield.code == *code
+                        && values.contains(
+                            &String::from_utf8(subfield.value.to_vec())
+                                .unwrap(),
+                        )
                 }),
             },
             SubfieldFilter::Boolean(lhs, op, rhs) => match op {
@@ -76,34 +107,34 @@ impl SubfieldFilter {
             },
             SubfieldFilter::Grouped(filter) => filter.matches(field),
             SubfieldFilter::Not(filter) => !filter.matches(field),
-            SubfieldFilter::Exists(name) => {
-                field.iter().any(|subfield| subfield.name() == *name)
+            SubfieldFilter::Exists(code) => {
+                field.iter().any(|subfield| subfield.code == *code)
             }
         }
     }
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Filter<'a> {
-    Field(String, OccurrenceMatcher<'a>, SubfieldFilter),
-    Boolean(Box<Filter<'a>>, BooleanOp, Box<Filter<'a>>),
-    Exists(String, OccurrenceMatcher<'a>),
-    Grouped(Box<Filter<'a>>),
-    Not(Box<Filter<'a>>),
+pub enum Filter {
+    Field(String, OccurrenceMatcher, SubfieldFilter),
+    Boolean(Box<Filter>, BooleanOp, Box<Filter>),
+    Exists(String, OccurrenceMatcher),
+    Grouped(Box<Filter>),
+    Not(Box<Filter>),
 }
 
-impl<'a> Filter<'a> {
+impl<'a> Filter {
     pub fn matches(&self, record: &Record) -> bool {
         match self {
             Filter::Field(tag, occurrence, filter) => {
                 record.iter().any(|field| {
-                    field.tag() == tag
-                        && *occurrence == field.occurrence()
+                    field.tag == tag
+                        && *occurrence == field.occurrence
                         && filter.matches(field)
                 })
             }
             Filter::Exists(tag, occurrence) => record.iter().any(|field| {
-                field.tag() == tag && *occurrence == field.occurrence()
+                field.tag == tag && *occurrence == field.occurrence
             }),
             Filter::Boolean(lhs, op, rhs) => match op {
                 BooleanOp::And => lhs.matches(record) && rhs.matches(record),
@@ -113,6 +144,140 @@ impl<'a> Filter<'a> {
             Filter::Not(filter) => !filter.matches(record),
         }
     }
+}
+
+/// Strip whitespaces from the beginning and end.
+pub(crate) fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
+    inner: F,
+) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O, E>,
+{
+    delimited(multispace0, inner, multispace0)
+}
+
+/// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1-6 hex
+/// numerals. We will combine this later with parse_escaped_char to parse
+/// sequences like \u{00AC}.
+fn parse_unicode<'a, E>(i: &'a str) -> IResult<&'a str, char, E>
+where
+    E: ParseError<&'a str>
+        + FromExternalError<&'a str, std::num::ParseIntError>,
+{
+    let parse_delimited_hex = preceded(
+        char('u'),
+        delimited(
+            char('{'),
+            take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit()),
+            char('}'),
+        ),
+    );
+
+    map_opt(
+        map_res(parse_delimited_hex, move |hex| u32::from_str_radix(hex, 16)),
+        std::char::from_u32,
+    )(i)
+}
+
+/// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
+fn parse_escaped_char<'a, E>(i: &'a str) -> IResult<&'a str, char, E>
+where
+    E: ParseError<&'a str>
+        + FromExternalError<&'a str, std::num::ParseIntError>,
+{
+    preceded(
+        char('\\'),
+        alt((
+            parse_unicode,
+            value('\n', char('n')),
+            value('\r', char('r')),
+            value('\t', char('t')),
+            value('\u{08}', char('b')),
+            value('\u{0C}', char('f')),
+            value('\\', char('\\')),
+            value('/', char('/')),
+            value('"', char('"')),
+        )),
+    )(i)
+}
+
+/// Parse a non-empty block of text that doesn't include \ or ".
+fn parse_literal<'a, E: ParseError<&'a str>>(
+    i: &'a str,
+) -> IResult<&'a str, &'a str, E> {
+    verify(is_not("\'\\"), |s: &str| !s.is_empty())(i)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum StringFragment<'a> {
+    Literal(&'a str),
+    EscapedChar(char),
+    EscapedWS,
+}
+
+/// Combine parse_literal, parse_escaped_whitespace, and parse_escaped_char
+/// into a StringFragment.
+fn parse_fragment<'a, E>(i: &'a str) -> IResult<&'a str, StringFragment<'a>, E>
+where
+    E: ParseError<&'a str>
+        + FromExternalError<&'a str, std::num::ParseIntError>,
+{
+    alt((
+        map(parse_literal, StringFragment::Literal),
+        map(parse_escaped_char, StringFragment::EscapedChar),
+        value(StringFragment::EscapedWS, preceded(char('\\'), multispace1)),
+    ))(i)
+}
+
+/// Parse a string. Use a loop of parse_fragment and push all of the fragments
+/// into an output string.
+pub(crate) fn parse_string<'a, E>(i: &'a str) -> IResult<&'a str, String, E>
+where
+    E: ParseError<&'a str>
+        + FromExternalError<&'a str, std::num::ParseIntError>,
+{
+    delimited(
+        char('\''),
+        fold_many0(parse_fragment, String::new(), |mut string, fragment| {
+            match fragment {
+                StringFragment::Literal(s) => string.push_str(s),
+                StringFragment::EscapedChar(c) => string.push(c),
+                StringFragment::EscapedWS => {}
+            }
+            string
+        }),
+        char('\''),
+    )(i)
+}
+
+/// Parses a field tag.
+fn parse_field_tag(i: &str) -> IResult<&str, &str> {
+    recognize(tuple((
+        one_of("012"),
+        count(one_of("0123456789"), 2),
+        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
+    )))(i)
+}
+
+/// Parses a subfield code.
+fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+    satisfy(|c| c.is_ascii_alphanumeric())(i)
+}
+
+fn parse_occurrence_matcher(i: &str) -> IResult<&str, OccurrenceMatcher> {
+    alt((
+        preceded(
+            char('/'),
+            cut(alt((
+                map(
+                    recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
+                    |value| OccurrenceMatcher::Value(String::from(value)),
+                ),
+                map(char('*'), |_| OccurrenceMatcher::Ignore),
+            ))),
+        ),
+        success(OccurrenceMatcher::None),
+    ))(i)
 }
 
 /// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
@@ -137,7 +302,7 @@ fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
 fn parse_subfield_regex(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_name),
+            ws(parse_subfield_code),
             map(ws(tag("=~")), |_| ComparisonOp::Re),
             verify(ws(parse_string), |s| Regex::new(s).is_ok()),
         )),
@@ -149,7 +314,7 @@ fn parse_subfield_regex(i: &str) -> IResult<&str, SubfieldFilter> {
 fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_name),
+            ws(parse_subfield_code),
             ws(parse_comparison_op),
             ws(parse_string),
         )),
@@ -160,7 +325,7 @@ fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
 fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_name),
+            ws(parse_subfield_code),
             map(tag("in"), |_| ComparisonOp::In),
             delimited(
                 ws(char('[')),
@@ -174,7 +339,7 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
 
 /// Parses a subfield exists expression.
 fn parse_subfield_exists(i: &str) -> IResult<&str, SubfieldFilter> {
-    map(terminated(parse_subfield_name, char('?')), |name| {
+    map(terminated(parse_subfield_code, char('?')), |name| {
         SubfieldFilter::Exists(name)
     })(i)
 }
@@ -333,8 +498,8 @@ fn parse_filter(i: &str) -> IResult<&str, Filter> {
 #[derive(Debug, PartialEq)]
 pub struct ParseFilterError;
 
-impl<'a> Filter<'a> {
-    pub fn decode(s: &'a str) -> Result<Self, ParseFilterError> {
+impl Filter {
+    pub fn decode(s: &str) -> Result<Self, ParseFilterError> {
         match all_consuming(parse_filter)(s).finish() {
             Ok((_, filter)) => Ok(filter),
             _ => Err(ParseFilterError),
@@ -345,7 +510,6 @@ impl<'a> Filter<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::borrow::Cow;
 
     #[test]
     fn test_parse_boolean_op() {
@@ -481,7 +645,7 @@ mod tests {
     fn test_parse_field_complex() {
         let field_expr = Filter::Field(
             "012A".to_string(),
-            OccurrenceMatcher::Value(Cow::Borrowed("000")),
+            OccurrenceMatcher::Value("000".to_string()),
             SubfieldFilter::Boolean(
                 Box::new(SubfieldFilter::Exists('0')),
                 BooleanOp::Or,
@@ -503,7 +667,7 @@ mod tests {
     fn test_parse_field_exists() {
         let field_expr = Filter::Exists(
             "012A".to_string(),
-            OccurrenceMatcher::Value(Cow::Borrowed("00")),
+            OccurrenceMatcher::Value("00".to_string()),
         );
         assert_eq!(parse_field_exists("012A/00?"), Ok(("", field_expr)));
 

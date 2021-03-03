@@ -1,9 +1,9 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::legacy::Record;
 use pica::Filter;
-use std::io::BufRead;
+use pica::Record;
 
 pub fn cli() -> App {
     App::new("filter")
@@ -54,17 +54,18 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     let invert_match = !args.is_present("invert-match");
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        if let Ok(record) = Record::decode(&line) {
+    for result in reader.byte_lines() {
+        let line = result?;
+
+        if let Ok(record) = Record::from_bytes(&line) {
             if filter.matches(&record) == invert_match {
-                writer.write_all(line.as_bytes())?;
+                writer.write_all(&line)?;
                 writer.write_all(b"\n")?;
             }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
-                line
+                String::from_utf8(line).unwrap()
             )));
         }
     }
