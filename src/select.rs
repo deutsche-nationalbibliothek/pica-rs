@@ -1,5 +1,5 @@
-use crate::legacy::{
-    parse_field_tag, parse_occurrence_matcher, parse_subfield_name, ws,
+use crate::filter::{
+    parse_field_tag, parse_occurrence_matcher, parse_subfield_code, ws,
     OccurrenceMatcher,
 };
 
@@ -10,27 +10,27 @@ use nom::multi::separated_list1;
 use nom::sequence::{delimited, preceded, tuple};
 use nom::{Finish, IResult};
 
-use std::borrow::Cow;
+use bstr::{BStr, ByteSlice};
 use std::default::Default;
 use std::ops::{Add, Deref, Mul};
 
 #[derive(Debug, PartialEq)]
-pub struct Selector<'a> {
-    pub(crate) tag: Cow<'a, str>,
-    pub(crate) occurrence: OccurrenceMatcher<'a>,
+pub struct Selector {
+    pub(crate) tag: String,
+    pub(crate) occurrence: OccurrenceMatcher,
     pub(crate) subfields: Vec<char>,
 }
 
 #[derive(Debug)]
-pub struct Outcome<'a>(pub(crate) Vec<Vec<&'a str>>);
+pub struct Outcome<'a>(pub(crate) Vec<Vec<&'a BStr>>);
 
 impl<'a> Outcome<'a> {
-    pub fn from_values(values: Vec<&'a str>) -> Self {
+    pub fn from_values(values: Vec<&'a BStr>) -> Self {
         Self(vec![values])
     }
 
     pub fn one() -> Self {
-        Self(vec![[""].to_vec()])
+        Self(vec![[b"".as_bstr()].to_vec()])
     }
 }
 
@@ -41,9 +41,9 @@ impl<'a> Default for Outcome<'a> {
 }
 
 impl<'a> Deref for Outcome<'a> {
-    type Target = Vec<Vec<&'a str>>;
+    type Target = Vec<Vec<&'a BStr>>;
 
-    fn deref(&self) -> &Vec<Vec<&'a str>> {
+    fn deref(&self) -> &Vec<Vec<&'a BStr>> {
         &self.0
     }
 }
@@ -52,8 +52,6 @@ impl<'a> Mul for Outcome<'a> {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self {
-        // println!("MUL: lhs = {:?}, rhs = {:?}", self, rhs);
-
         if self.is_empty() {
             return rhs;
         }
@@ -62,7 +60,7 @@ impl<'a> Mul for Outcome<'a> {
             return self;
         }
 
-        let mut result: Vec<Vec<&'a str>> = Vec::new();
+        let mut result: Vec<Vec<&'a BStr>> = Vec::new();
 
         for row_lhs in &self.0 {
             for row in &rhs.0 {
@@ -82,9 +80,7 @@ impl<'a> Add for Outcome<'a> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        // println!("ADD: lhs = {:?}, rhs = {:?}", self, rhs);
-
-        let mut result: Vec<Vec<&'a str>> = Vec::new();
+        let mut result: Vec<Vec<&'a BStr>> = Vec::new();
 
         for row in &self.0 {
             result.push(row.clone())
@@ -98,27 +94,24 @@ impl<'a> Add for Outcome<'a> {
     }
 }
 
-impl<'a> Selector<'a> {
-    pub fn new<S>(
-        tag: S,
-        occurrence: OccurrenceMatcher<'a>,
+impl Selector {
+    pub fn new(
+        tag: String,
+        occurrence: OccurrenceMatcher,
         subfields: Vec<char>,
-    ) -> Self
-    where
-        S: Into<Cow<'a, str>>,
-    {
+    ) -> Self {
         Self {
-            tag: tag.into(),
+            tag,
             occurrence,
             subfields,
         }
     }
 }
 
-pub struct Selectors<'a>(Vec<Selector<'a>>);
+pub struct Selectors(Vec<Selector>);
 
-impl<'a> Selectors<'a> {
-    pub fn decode(s: &'a str) -> Result<Self, String> {
+impl Selectors {
+    pub fn decode(s: &str) -> Result<Self, String> {
         match parse_selectors(s).finish() {
             Ok((_, selectors)) => Ok(selectors),
             _ => Err("invalid select statement".to_string()),
@@ -126,10 +119,10 @@ impl<'a> Selectors<'a> {
     }
 }
 
-impl<'a> Deref for Selectors<'a> {
-    type Target = Vec<Selector<'a>>;
+impl Deref for Selectors {
+    type Target = Vec<Selector>;
 
-    fn deref(&self) -> &Vec<Selector<'a>> {
+    fn deref(&self) -> &Vec<Selector> {
         &self.0
     }
 }
@@ -142,19 +135,19 @@ fn parse_selector(i: &str) -> IResult<&str, Selector> {
             alt((
                 // single subfield
                 map(
-                    preceded(char('.'), cut(parse_subfield_name)),
+                    preceded(char('.'), cut(parse_subfield_code)),
                     |subfield| vec![subfield],
                 ),
                 // multiple subfields
                 delimited(
                     ws(char('{')),
-                    separated_list1(ws(char(',')), ws(parse_subfield_name)),
+                    separated_list1(ws(char(',')), ws(parse_subfield_code)),
                     ws(char('}')),
                 ),
             )),
         )),
         |(tag, occurrence, subfields)| {
-            Selector::new(tag, occurrence, subfields)
+            Selector::new(String::from(tag), occurrence, subfields)
         },
     )(i)
 }
@@ -180,7 +173,11 @@ mod tests {
             parse_selector("003@.0"),
             Ok((
                 "",
-                Selector::new("003@", OccurrenceMatcher::None, vec!['0'])
+                Selector::new(
+                    "003@".to_string(),
+                    OccurrenceMatcher::None,
+                    vec!['0']
+                )
             ))
         );
 
@@ -189,8 +186,8 @@ mod tests {
             Ok((
                 "",
                 Selector::new(
-                    "044H",
-                    OccurrenceMatcher::All,
+                    "044H".to_string(),
+                    OccurrenceMatcher::Ignore,
                     vec!['9', 'E', 'H']
                 )
             ))
@@ -198,7 +195,14 @@ mod tests {
 
         assert_eq!(
             parse_selector("012A/*.a"),
-            Ok(("", Selector::new("012A", OccurrenceMatcher::All, vec!['a'])))
+            Ok((
+                "",
+                Selector::new(
+                    "012A".to_string(),
+                    OccurrenceMatcher::Ignore,
+                    vec!['a']
+                )
+            ))
         );
 
         assert_eq!(
@@ -206,8 +210,8 @@ mod tests {
             Ok((
                 "",
                 Selector::new(
-                    "012A",
-                    OccurrenceMatcher::value("01"),
+                    "012A".to_string(),
+                    OccurrenceMatcher::Value("01".to_string()),
                     vec!['a']
                 )
             ))

@@ -3,7 +3,7 @@
 
 pub(crate) mod borrowed;
 mod convert;
-pub mod legacy;
+// pub mod legacy;
 pub mod owned;
 mod parser;
 

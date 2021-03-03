@@ -1,8 +1,8 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::{legacy::Record, Outcome, Selectors};
-use std::io::BufRead;
+use pica::{Outcome, Record, Selectors};
 
 pub fn cli() -> App {
     App::new("select")
@@ -42,9 +42,10 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     };
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        if let Ok(record) = Record::decode(&line) {
+    for result in reader.byte_lines() {
+        let line = result?;
+
+        if let Ok(record) = Record::from_bytes(&line) {
             let outcome = selectors
                 .iter()
                 .map(|selector| record.select(&selector))
@@ -56,7 +57,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
-                line
+                String::from_utf8(line).unwrap()
             )));
         }
     }

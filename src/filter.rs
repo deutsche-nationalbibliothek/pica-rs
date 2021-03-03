@@ -260,7 +260,7 @@ where
 }
 
 /// Parses a field tag.
-fn parse_field_tag(i: &str) -> IResult<&str, &str> {
+pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, &str> {
     recognize(tuple((
         one_of("012"),
         count(one_of("0123456789"), 2),
@@ -269,11 +269,13 @@ fn parse_field_tag(i: &str) -> IResult<&str, &str> {
 }
 
 /// Parses a subfield code.
-fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
     satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
-fn parse_occurrence_matcher(i: &str) -> IResult<&str, OccurrenceMatcher> {
+pub(crate) fn parse_occurrence_matcher(
+    i: &str,
+) -> IResult<&str, OccurrenceMatcher> {
     alt((
         preceded(
             char('/'),

@@ -1,6 +1,7 @@
 //! This module provides all data types related to a PICA+ record.
 
 use crate::record::{owned, parse_record};
+use crate::select::{Outcome, Selector};
 use crate::Path;
 
 use bstr::{BStr, BString};
@@ -130,6 +131,34 @@ impl<'a> Record<'a> {
 
     pub fn into_owned(self) -> owned::Record {
         owned::Record::from(self)
+    }
+
+    pub fn select(&self, selector: &Selector) -> Outcome {
+        self.iter()
+            .filter(|field| selector.tag == field.tag)
+            .filter(|field| selector.occurrence == field.occurrence)
+            .map(|field| &field.subfields)
+            .map(|subfields| {
+                selector
+                    .subfields
+                    .iter()
+                    .map(|code| {
+                        subfields
+                            .iter()
+                            .filter(|subfield| subfield.code == *code)
+                            .map(|subfield| vec![subfield.value()])
+                            .collect::<Vec<Vec<&BStr>>>()
+                    })
+                    .map(|x| {
+                        if x.is_empty() {
+                            Outcome::one()
+                        } else {
+                            Outcome(x)
+                        }
+                    })
+                    .fold(Outcome::default(), |acc, x| acc * x)
+            })
+            .fold(Outcome::default(), |acc, x| acc + x)
     }
 }
 
