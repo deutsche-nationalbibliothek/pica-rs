@@ -134,7 +134,8 @@ impl<'a> Record<'a> {
     }
 
     pub fn select(&self, selector: &Selector) -> Outcome {
-        self.iter()
+        let result = self
+            .iter()
             .filter(|field| selector.tag == field.tag)
             .filter(|field| selector.occurrence == field.occurrence)
             .map(|field| &field.subfields)
@@ -158,7 +159,13 @@ impl<'a> Record<'a> {
                     })
                     .fold(Outcome::default(), |acc, x| acc * x)
             })
-            .fold(Outcome::default(), |acc, x| acc + x)
+            .fold(Outcome::default(), |acc, x| acc + x);
+
+        if result.is_empty() {
+            Outcome::one()
+        } else {
+            result
+        }
     }
 }
 
