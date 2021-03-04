@@ -1,0 +1,67 @@
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: Create Release
+
+jobs:
+  build:
+    name: Build release
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [linux, macos, windows]
+        include:
+          - build: linux
+            os: ubuntu-latest
+            rust: stable
+          - build: macos
+            os: macos-latest
+            rust: stable
+          - build: windows
+            os: windows-latest
+            rust: stable
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install Rust (rustup)
+      run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
+      if: matrix.os != 'macos-latest'
+      shell: bash
+
+    - name: Install Rust (macos)
+      run: |
+        curl https://sh.rustup.rs | sh -s -- -y
+        echo "##[add-path]$HOME/.cargo/bin"
+      if: matrix.os == 'macos-latest'
+
+    - name: Build
+      run: cargo build --verbose --release
+
+    - name: Create artifact directory
+      run: mkdir artifacts
+
+    - name: Create archive for Linux
+      run: 7z a -ttar -so -an ./target/release/pica | 7z a -si ./artifacts/pica-linux-x86_64.tar.gz
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Create archive for Windows
+      run: 7z a -tzip ./artifacts/pica-windows-x86_64.zip ./target/release/pica.exe
+      if: matrix.os == 'windows-latest'
+
+    - name: Install p7zip
+      run: brew install p7zip
+      if: matrix.os == 'macos-latest'
+
+    - name: Create archive for MacOS
+      run: 7z a -tzip ./artifacts/pica-macos-x86_64.zip ./target/release/pica
+      if: matrix.os == 'macos-latest'
+
+    - uses: actions/upload-artifact@v1
+      name: Upload archive
+      with:
+        name: ${{ runner.os }}
+        path: artifacts/
