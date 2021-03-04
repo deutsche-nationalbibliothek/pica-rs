@@ -31,10 +31,10 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --b
 ## Commands
 
 * [cat](#cat) — concatenate records from multiple files
-* [completion](#completion) — generate a completions file for bash, fish or zsh
+* completion — generate a completions file for bash, fish or zsh
 * [filter](#filter) — filter records by query expressions
 * [frequency](#frequency) — compute a frequency table of a subfield
-* [invalid](#invalid) — filter out invalid records
+* invalid — filter out invalid records
 * [json](#json) — serialize pica records to JSON
 * [partition](#partition) — partition a list of records based on subfield values
 * [print](#print) — print records in human readable format
