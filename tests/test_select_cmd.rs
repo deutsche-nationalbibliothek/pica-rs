@@ -13,6 +13,20 @@ fn test_select_cmd() {
         String::from_utf8(result.stdout).unwrap(),
         "123456789X,Tp1\n"
     );
+    let result = CliRunner::new().invoke(
+        "select",
+        &[
+            "--skip-invalid",
+            "--tsv",
+            "003@.0,002@.0",
+            "tests/data/1.dat",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        "123456789X\tTp1\n"
+    );
 
     let result = CliRunner::new().invoke(
         "select",
