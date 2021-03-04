@@ -179,7 +179,7 @@ result will contain `1 * 2 * 3 = 6` rows. Non-existing fields or subfields
 results in an empty column.
 
 ```bash
-$ pica select -s "003@.0,012A{a,b,c}" DUMP.dat.gz
+$ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
 123456789X,a,b,c
 123456789X,d,e,f
 ```
