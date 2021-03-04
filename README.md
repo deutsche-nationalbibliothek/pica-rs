@@ -30,17 +30,17 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --b
 
 ## Commands
 
-* [cat](https://git.io/JI6H2) — concatenate records from multiple files
-* [completion](https://github.com/niko2342/pica-rs/wiki/Commands#completion) — generate a completions file for bash, fish or zsh
-* [filter](https://git.io/JI6HE) — filter records by query expressions
-* [frequency](https://git.io/JIiG7) — compute a frequency table of a subfield
-* [invalid](https://github.com/niko2342/pica-rs/wiki/Commands#invalid) — filter out invalid records
-* [json](https://git.io/JIiGy) — serialize pica records to JSON
-* [partition](https://git.io/JIiZy) — partition a list of records based on subfield values
-* [print](https://git.io/JIinZ) — print records in human readable format
-* [sample](https://git.io/JIica) — selects a random permutation of records
-* [select](https://git.io/JIiWZ) — write subfields to a CSV file
-* [split](https://git.io/JIiWE) — split a list of records into chunks
+* [cat](#cat) — concatenate records from multiple files
+* completion — generate a completions file for bash, fish or zsh
+* [filter](#filter) — filter records by query expressions
+* [frequency](#frequency) — compute a frequency table of a subfield
+* invalid — filter out invalid records
+* [json](#json) — serialize pica records to JSON
+* [partition](#partition) — partition a list of records based on subfield values
+* [print](#print) — print records in human readable format
+* [sample](#sample) — selects a random permutation of records
+* [select](#select) — write subfields to a CSV file
+* [split](#split) — split a list of records into chunks
 
 ## Usage
 
@@ -107,22 +107,24 @@ To serialize a record to JSON, just run the following command:
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
 [
-  [
-    {
-      "tag": "003@",
-      "occurrence": null,
-      "subfields": [
-        {
-          "code": "0",
-          "value": "123456789"
-        },
-        {
-          "code": "a",
-          "value": "b"
-        }
-      ]
-    }
-  ]
+  {
+    "fields": [
+      {
+        "name": "003@",
+        "occurrence": null,
+        "subfields": [
+          {
+            "name": "0",
+            "value": "123456789"
+          },
+          {
+            "name": "a",
+            "value": "b"
+          }
+        ]
+      }
+    ]
+  }
 ]
 ```
 
@@ -177,7 +179,7 @@ result will contain `1 * 2 * 3 = 6` rows. Non-existing fields or subfields
 results in an empty column.
 
 ```bash
-$ pica select -s "003@.0,012A{a,b,c}" DUMP.dat.gz
+$ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
 123456789X,a,b,c
 123456789X,d,e,f
 ```
