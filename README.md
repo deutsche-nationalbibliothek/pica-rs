@@ -184,6 +184,14 @@ $ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
 123456789X,d,e,f
 ```
 
+In order to use TAB-character as field delimiter add the `--tsv` option:
+
+```bash
+$ pica select -s --tsv "003@.0,012A{a,b,c}" DUMP.dat.gz
+123456789X    a    b    c
+123456789X    d    e    f
+```
+
 ### Split
 
 This command is used to split a list of records into chunks of a given

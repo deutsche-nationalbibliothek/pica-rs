@@ -14,6 +14,12 @@ pub fn cli() -> App {
                 .about("skip invalid records"),
         )
         .arg(
+            Arg::new("tsv")
+                .short('t')
+                .long("tsv")
+                .about("use tabs as field delimiter"),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -27,9 +33,14 @@ pub fn cli() -> App {
 pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
     let writer = ctx.writer(args.value_of("output"))?;
-    let mut writer = csv::Writer::from_writer(writer);
     let reader = ctx.reader(args.value_of("filename"))?;
     let skip_invalid = args.is_present("skip-invalid");
+
+    let delimiter = if args.is_present("tsv") { b'\t' } else { b',' };
+
+    let mut writer = csv::WriterBuilder::new()
+        .delimiter(delimiter)
+        .from_writer(writer);
 
     let selectors_str = args.value_of("selectors").unwrap();
     let selectors = match Selectors::decode(&selectors_str) {
