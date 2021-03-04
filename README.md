@@ -107,22 +107,24 @@ To serialize a record to JSON, just run the following command:
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
 [
-  [
-    {
-      "tag": "003@",
-      "occurrence": null,
-      "subfields": [
-        {
-          "code": "0",
-          "value": "123456789"
-        },
-        {
-          "code": "a",
-          "value": "b"
-        }
-      ]
-    }
-  ]
+  {
+    "fields": [
+      {
+        "name": "003@",
+        "occurrence": null,
+        "subfields": [
+          {
+            "name": "0",
+            "value": "123456789"
+          },
+          {
+            "name": "a",
+            "value": "b"
+          }
+        ]
+      }
+    ]
+  }
 ]
 ```
 
