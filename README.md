@@ -30,17 +30,17 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --b
 
 ## Commands
 
-* [cat](https://github.com/deutsche-nationalbibliothek/pica-rs#cat) — concatenate records from multiple files
-* [completion](https://github.com/deutsche-nationalbibliothek/pica-rs#completion) — generate a completions file for bash, fish or zsh
-* [filter](https://github.com/deutsche-nationalbibliothek/pica-rs#filter) — filter records by query expressions
-* [frequency](https://github.com/deutsche-nationalbibliothek/pica-rs#frequency) — compute a frequency table of a subfield
-* [invalid](https://github.com/deutsche-nationalbibliothek/pica-rs#invalid) — filter out invalid records
-* [json](https://github.com/deutsche-nationalbibliothek/pica-rs#json) — serialize pica records to JSON
-* [partition](https://github.com/deutsche-nationalbibliothek/pica-rs#partition) — partition a list of records based on subfield values
-* [print](https://github.com/deutsche-nationalbibliothek/pica-rs#print) — print records in human readable format
-* [sample](https://github.com/deutsche-nationalbibliothek/pica-rs#sample) — selects a random permutation of records
-* [select](https://github.com/deutsche-nationalbibliothek/pica-rs#select) — write subfields to a CSV file
-* [split](https://github.com/deutsche-nationalbibliothek/pica-rs#split) — split a list of records into chunks
+* [cat](#cat) — concatenate records from multiple files
+* [completion](#completion) — generate a completions file for bash, fish or zsh
+* [filter](#filter) — filter records by query expressions
+* [frequency](#frequency) — compute a frequency table of a subfield
+* [invalid](#invalid) — filter out invalid records
+* [json](#json) — serialize pica records to JSON
+* [partition](#partition) — partition a list of records based on subfield values
+* [print](#print) — print records in human readable format
+* [sample](#sample) — selects a random permutation of records
+* [select](#select) — write subfields to a CSV file
+* [split](#split) — split a list of records into chunks
 
 ## Usage
 
