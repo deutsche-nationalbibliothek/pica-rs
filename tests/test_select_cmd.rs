@@ -29,7 +29,7 @@ fn test_select_cmd() {
         &["--skip-invalid", "013B.a,013B/00.c", "tests/data/2.dat"],
     );
     assert!(result.status.success());
-    assert_eq!(String::from_utf8(result.stdout).unwrap(), ",\n".to_string());
+    assert!(String::from_utf8(result.stdout).unwrap().is_empty());
 }
 
 #[test]
