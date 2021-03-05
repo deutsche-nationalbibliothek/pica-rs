@@ -184,6 +184,16 @@ $ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
 123456789X,d,e,f
 ```
 
+To filter for fields matching a subfield filter, the first part of a complex
+field expression can be a filter. The following select statement takes only
+`045E` fields into account, where the expression `E == 'm'` evaluates to
+`true`.
+
+```bash
+$ pica select -s "003@.0, 045E{ E == 'm', e}
+...
+```
+
 In order to use TAB-character as field delimiter add the `--tsv` option:
 
 ```bash
