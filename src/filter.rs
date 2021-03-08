@@ -130,6 +130,7 @@ pub enum Filter {
     Exists(String, OccurrenceMatcher),
     Grouped(Box<Filter>),
     Not(Box<Filter>),
+    True,
 }
 
 impl<'a> Filter {
@@ -151,6 +152,7 @@ impl<'a> Filter {
             },
             Filter::Grouped(filter) => filter.matches(record),
             Filter::Not(filter) => !filter.matches(record),
+            Filter::True => true,
         }
     }
 }
