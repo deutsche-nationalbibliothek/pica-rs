@@ -52,7 +52,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let end = args.value_of("end");
     let length = args.value_of("length");
 
-    let range = if let Some(end) = end {
+    let mut range = if let Some(end) = end {
         start..end.parse::<usize>().unwrap()
     } else if let Some(length) = length {
         let length = length.parse::<usize>().unwrap();
@@ -78,6 +78,8 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                 "could not read record: {}",
                 String::from_utf8(line).unwrap()
             )));
+        } else if length.is_some() {
+            range.end += 1;
         }
     }
 

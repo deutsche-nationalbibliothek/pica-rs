@@ -2,19 +2,20 @@ mod common;
 
 use common::CliRunner;
 
+static SAMPLE1: &'static str = include_str!("data/1.dat");
+static SAMPLE2: &'static str = include_str!("data/2.dat");
+static SAMPLE3: &'static str = include_str!("data/3.dat");
+static SAMPLE4: &'static str = include_str!("data/4.dat");
+
 #[test]
 fn test_slice_cmd() {
-    let sample1 = include_str!("data/1.dat");
-    let sample2 = include_str!("data/2.dat");
-    let sample3 = include_str!("data/3.dat");
-
     let result =
         CliRunner::new().invoke("slice", &["-s", "tests/data/all.dat.gz"]);
     assert!(result.status.success());
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}{}{}", sample1, sample2, sample3)
+        format!("{}{}{}{}", SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4)
     );
 
     let result = CliRunner::new()
@@ -23,7 +24,7 @@ fn test_slice_cmd() {
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}{}", sample2, sample3)
+        format!("{}{}{}", SAMPLE2, SAMPLE3, SAMPLE4)
     );
 
     let result = CliRunner::new()
@@ -32,7 +33,7 @@ fn test_slice_cmd() {
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}{}", sample1, sample2)
+        format!("{}{}", SAMPLE1, SAMPLE2)
     );
 
     let result = CliRunner::new().invoke(
@@ -43,7 +44,7 @@ fn test_slice_cmd() {
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}", sample2)
+        format!("{}", SAMPLE2)
     );
 
     let result = CliRunner::new().invoke(
@@ -53,7 +54,7 @@ fn test_slice_cmd() {
             "--start",
             "1",
             "--length",
-            "1",
+            "4",
             "tests/data/all.dat.gz",
         ],
     );
@@ -61,8 +62,15 @@ fn test_slice_cmd() {
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}", sample2)
+        format!("{}{}{}", SAMPLE2, SAMPLE3, SAMPLE4)
     );
+
+    let result = CliRunner::new().invoke(
+        "slice",
+        &["-s", "--start", "2", "--end", "4", "tests/data/all.dat.gz"],
+    );
+    assert!(result.status.success());
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), SAMPLE3);
 
     let result = CliRunner::new().invoke(
         "slice",
@@ -79,7 +87,7 @@ fn test_slice_cmd() {
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}", sample3)
+        format!("{}{}", SAMPLE3, SAMPLE4)
     );
 
     let result = CliRunner::new().invoke(
