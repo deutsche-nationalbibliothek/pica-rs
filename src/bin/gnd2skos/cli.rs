@@ -21,6 +21,7 @@ pub fn build_cli() -> App<'static> {
         .arg(
             Arg::new("output")
                 .about("Write output to <file> instead of stdout.")
+                .takes_value(true)
                 .long("--output")
                 .short('o'),
         )

@@ -80,6 +80,13 @@ impl<'a> Field<'a> {
 
         pretty_str
     }
+
+    pub fn first(&self, code: char) -> Option<String> {
+        self.iter()
+            .filter(|subfield| subfield.code == code)
+            .map(|subfield| String::from_utf8(subfield.value.to_vec()).unwrap())
+            .nth(0)
+    }
 }
 
 impl<'a> Deref for Field<'a> {
@@ -172,6 +179,14 @@ impl<'a> Record<'a> {
         } else {
             result
         }
+    }
+
+    pub fn first(&self, tag: &str) -> Option<&Field> {
+        self.iter().filter(|field| field.tag == tag).nth(0)
+    }
+
+    pub fn all(&self, tag: &str) -> Vec<&Field> {
+        self.iter().filter(|field| field.tag == tag).collect()
     }
 }
 
