@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Filter",""]],"fn":[["parse_path",""]],"struct":[["Field",""],["Occurrence",""],["Outcome",""],["ParseFilterError",""],["Path",""],["Record",""],["Selector",""],["Selectors",""],["Subfield",""]]});
