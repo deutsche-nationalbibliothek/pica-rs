@@ -37,10 +37,16 @@ impl<'a> Event<'a> {
                 'a' => {
                     result.push_str(&value.replace('@', ""));
                 }
-                'e' | 'x' => {
+                'e' | 'x' | 'b' => {
                     result.push_str(&format!(" / {}", value));
                 }
-                'g' => result.push_str(&format!(" ({})", value)),
+                'g' => {
+                    if parens.is_empty() {
+                        result.push_str(&format!(" ({})", value))
+                    } else {
+                        parens.push_str(&format!(" ({})", value))
+                    }
+                }
                 'n' | 'd' | 'c' => {
                     if !parens.is_empty() {
                         parens.push_str(", ");
