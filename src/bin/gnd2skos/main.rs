@@ -11,6 +11,7 @@ pub mod event;
 pub mod geoplace;
 pub mod person;
 pub mod topical_term;
+pub mod work;
 
 use bstr::io::BufReadExt;
 use flate2::read::GzDecoder;
@@ -25,7 +26,9 @@ use rdf::triple::Triple;
 use rdf::uri::Uri;
 use rdf::writer::{rdf_writer::RdfWriter, turtle_writer::TurtleWriter};
 
-use skos::{Concept, CorporateBody, Event, GeoPlace, Person, TopicalTerm};
+use skos::{
+    Concept, CorporateBody, Event, GeoPlace, Person, TopicalTerm, Work,
+};
 use utils::{CliError, CliResult};
 
 fn main() -> CliResult<()> {
@@ -88,6 +91,7 @@ fn main() -> CliResult<()> {
                 "Tg" => Box::new(GeoPlace(record)),
                 "Tf" => Box::new(Event(record)),
                 "Tb" => Box::new(CorporateBody(record)),
+                "Tu" => Box::new(Work(record)),
 
                 _ => unimplemented!(),
             };

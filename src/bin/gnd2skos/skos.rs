@@ -48,3 +48,4 @@ pub use crate::event::Event;
 pub use crate::geoplace::GeoPlace;
 pub use crate::person::Person;
 pub use crate::topical_term::TopicalTerm;
+pub use crate::work::Work;
