@@ -111,7 +111,10 @@ fn main() -> CliResult<()> {
                 g.add_triple(&Triple::new(&sub, &pred, &obj));
             }
 
-            // break;
+            // skos:hiddenLabel
+            for (pred, obj) in concept.hidden_labels() {
+                g.add_triple(&Triple::new(&sub, &pred, &obj));
+            }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",

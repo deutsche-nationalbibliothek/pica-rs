@@ -135,6 +135,18 @@ impl<'a> Concept for Person<'a> {
         result
     }
 
+    fn hidden_labels(&self) -> Vec<(Node, Node)> {
+        let mut result = Vec::new();
+
+        for field in self.all("028A") {
+            if let Some(label) = self.get_label(&field, false, "hiddenLabel") {
+                result.push(label)
+            }
+        }
+
+        result
+    }
+
     fn created(&self) -> Result {
         self.date("created", &self.0, "001A")
     }

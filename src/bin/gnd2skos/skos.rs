@@ -13,6 +13,10 @@ pub trait Concept {
     fn pref_label(&self) -> Result;
     fn alt_labels(&self) -> Vec<(Node, Node)>;
 
+    fn hidden_labels(&self) -> Vec<(Node, Node)> {
+        vec![]
+    }
+
     fn date(&self, predicate: &str, record: &Record, field: &str) -> Result {
         if let Some(field) = record.first(field) {
             if let Some(subfield) = field.first('0') {
