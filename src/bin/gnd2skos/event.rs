@@ -26,7 +26,7 @@ impl<'a> Event<'a> {
         for subfield in field.iter() {
             let value = String::from_utf8(subfield.value().to_vec()).unwrap();
 
-            if !check.contains(&subfield.code()) {
+            if !check.contains(&subfield.code()) && subfield.code() != 'g' {
                 if !parens.is_empty() {
                     result.push_str(&format!(" ({})", parens));
                     parens.clear();
