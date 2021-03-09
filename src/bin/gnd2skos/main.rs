@@ -6,6 +6,7 @@ mod skos;
 mod utils;
 #[macro_use]
 pub mod macros;
+pub mod event;
 pub mod geoplace;
 pub mod person;
 pub mod topical_term;
@@ -23,7 +24,7 @@ use rdf::triple::Triple;
 use rdf::uri::Uri;
 use rdf::writer::{rdf_writer::RdfWriter, turtle_writer::TurtleWriter};
 
-use skos::{Concept, GeoPlace, Person, TopicalTerm};
+use skos::{Concept, Event, GeoPlace, Person, TopicalTerm};
 use utils::{CliError, CliResult};
 
 fn main() -> CliResult<()> {
@@ -84,6 +85,8 @@ fn main() -> CliResult<()> {
                 "Tp" => Box::new(Person(record)),
                 "Ts" => Box::new(TopicalTerm(record)),
                 "Tg" => Box::new(GeoPlace(record)),
+                "Tf" => Box::new(Event(record)),
+
                 _ => unimplemented!(),
             };
 
