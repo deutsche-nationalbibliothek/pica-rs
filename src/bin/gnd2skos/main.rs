@@ -7,6 +7,7 @@ mod utils;
 #[macro_use]
 pub mod macros;
 pub mod person;
+pub mod topical_term;
 
 use bstr::io::BufReadExt;
 use flate2::read::GzDecoder;
@@ -21,7 +22,7 @@ use rdf::triple::Triple;
 use rdf::uri::Uri;
 use rdf::writer::{rdf_writer::RdfWriter, turtle_writer::TurtleWriter};
 
-use skos::{Concept, Person};
+use skos::{Concept, Person, TopicalTerm};
 use utils::{CliError, CliResult};
 
 fn main() -> CliResult<()> {
@@ -78,8 +79,9 @@ fn main() -> CliResult<()> {
             }
 
             let bbg = record.first("002@").unwrap().first('0').unwrap();
-            let concept = match &bbg[..2] {
-                "Tp" => Person(record),
+            let concept: Box<dyn Concept> = match &bbg[..2] {
+                "Tp" => Box::new(Person(record)),
+                "Ts" => Box::new(TopicalTerm(record)),
                 _ => unimplemented!(),
             };
 

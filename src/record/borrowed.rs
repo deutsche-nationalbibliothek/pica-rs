@@ -85,7 +85,14 @@ impl<'a> Field<'a> {
         self.iter()
             .filter(|subfield| subfield.code == code)
             .map(|subfield| String::from_utf8(subfield.value.to_vec()).unwrap())
-            .nth(0)
+            .next()
+    }
+
+    pub fn all(&self, code: char) -> Vec<String> {
+        self.iter()
+            .filter(|subfield| subfield.code == code)
+            .map(|subfield| String::from_utf8(subfield.value.to_vec()).unwrap())
+            .collect()
     }
 }
 
@@ -182,7 +189,7 @@ impl<'a> Record<'a> {
     }
 
     pub fn first(&self, tag: &str) -> Option<&Field> {
-        self.iter().filter(|field| field.tag == tag).nth(0)
+        self.iter().filter(|field| field.tag == tag).next()
     }
 
     pub fn all(&self, tag: &str) -> Vec<&Field> {

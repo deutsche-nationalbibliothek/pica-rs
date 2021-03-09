@@ -40,3 +40,4 @@ pub trait Concept {
 }
 
 pub use crate::person::Person;
+pub use crate::topical_term::TopicalTerm;
