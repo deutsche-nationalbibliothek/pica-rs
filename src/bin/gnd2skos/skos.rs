@@ -43,6 +43,7 @@ pub trait Concept {
     }
 }
 
+pub use crate::corporate_body::CorporateBody;
 pub use crate::event::Event;
 pub use crate::geoplace::GeoPlace;
 pub use crate::person::Person;
