@@ -37,7 +37,7 @@ impl<'a> Event<'a> {
                 'a' => {
                     result.push_str(&value.replace('@', ""));
                 }
-                'e' | 'x' | 'b' => {
+                'x' | 'b' => {
                     result.push_str(&format!(" / {}", value));
                 }
                 'g' => {
