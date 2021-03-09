@@ -189,7 +189,7 @@ impl<'a> Record<'a> {
     }
 
     pub fn first(&self, tag: &str) -> Option<&Field> {
-        self.iter().filter(|field| field.tag == tag).next()
+        self.iter().find(|field| field.tag == tag)
     }
 
     pub fn all(&self, tag: &str) -> Vec<&Field> {
