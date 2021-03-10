@@ -1,9 +1,7 @@
 use pica::{Field, Record};
-use rdf::node::Node;
-use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::concept::{Concept, Result};
+use crate::concept::Concept;
 
 pub struct GeoPlace<'a>(pub(crate) Record<'a>);
 
@@ -17,7 +15,7 @@ impl<'a> Deref for GeoPlace<'a> {
 }
 
 impl<'a> GeoPlace<'a> {
-    fn get_label(&self, field: &Field, predicate: &str) -> Result {
+    fn get_label(&self, field: &Field) -> Option<String> {
         let mut result = String::new();
 
         for subfield in field.iter() {
@@ -33,59 +31,36 @@ impl<'a> GeoPlace<'a> {
             }
         }
 
-        // result = result.replace('"', "\\\"");
-        // result = result.replace("'", "\\\'");
-
         if !result.is_empty() {
-            return Some((
-                Node::UriNode {
-                    uri: Uri::new(skos!(predicate)),
-                },
-                Node::LiteralNode {
-                    literal: result,
-                    data_type: None,
-                    language: None,
-                },
-            ));
+            return Some(result);
+        } else {
+            None
         }
-
-        None
     }
 }
 
 impl<'a> Concept for GeoPlace<'a> {
-    fn uri(&self) -> Uri {
-        Uri::new(format!(
-            "http://d-nb.info/gnd/{}",
-            self.first("003@").unwrap().first('0').unwrap()
-        ))
+    fn idn(&self) -> String {
+        self.first("003@").unwrap().first('0').unwrap()
     }
 
-    fn pref_label(&self) -> Result {
+    fn pref_label(&self) -> Option<String> {
         if let Some(field) = self.first("065A") {
-            self.get_label(&field, "prefLabel")
+            self.get_label(&field)
         } else {
             None
         }
     }
 
-    fn alt_labels(&self) -> Vec<(Node, Node)> {
+    fn alt_labels(&self) -> Vec<String> {
         let mut result = Vec::new();
 
         for field in self.all("065@") {
-            if let Some(label) = self.get_label(&field, "altLabel") {
+            if let Some(label) = self.get_label(&field) {
                 result.push(label)
             }
         }
 
         result
-    }
-
-    fn created(&self) -> Result {
-        self.date("created", &self.0, "001A")
-    }
-
-    fn modified(&self) -> Result {
-        self.date("modified", &self.0, "001B")
     }
 }

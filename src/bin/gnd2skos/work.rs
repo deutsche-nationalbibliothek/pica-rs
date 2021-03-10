@@ -1,9 +1,7 @@
 use pica::{Field, Record};
-use rdf::node::Node;
-use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::concept::{Concept, Result};
+use crate::concept::Concept;
 
 pub struct Work<'a>(pub(crate) Record<'a>);
 
@@ -17,12 +15,7 @@ impl<'a> Deref for Work<'a> {
 }
 
 impl<'a> Work<'a> {
-    fn get_label(
-        &self,
-        field: &Field,
-        prefix: &str,
-        predicate: &str,
-    ) -> Result {
+    fn get_label(&self, field: &Field, prefix: &str) -> Option<String> {
         let mut result = String::new();
 
         for subfield in field.iter() {
@@ -52,22 +45,10 @@ impl<'a> Work<'a> {
                 result = format!("{} : {}", prefix, result);
             }
 
-            // result = result.replace('"', "\\\"");
-            // result = result.replace("'", "\\\'");
-
-            return Some((
-                Node::UriNode {
-                    uri: Uri::new(skos!(predicate)),
-                },
-                Node::LiteralNode {
-                    literal: result,
-                    data_type: None,
-                    language: None,
-                },
-            ));
+            Some(result)
+        } else {
+            None
         }
-
-        None
     }
 
     fn get_prefix(&self) -> String {
@@ -241,40 +222,27 @@ impl<'a> Work<'a> {
 }
 
 impl<'a> Concept for Work<'a> {
-    fn uri(&self) -> Uri {
-        Uri::new(format!(
-            "http://d-nb.info/gnd/{}",
-            self.first("003@").unwrap().first('0').unwrap()
-        ))
+    fn idn(&self) -> String {
+        self.first("003@").unwrap().first('0').unwrap()
     }
 
-    fn pref_label(&self) -> Result {
+    fn pref_label(&self) -> Option<String> {
         if let Some(field) = self.first("022A") {
-            self.get_label(&field, &self.get_prefix(), "prefLabel")
+            self.get_label(&field, &self.get_prefix())
         } else {
             None
         }
     }
 
-    fn alt_labels(&self) -> Vec<(Node, Node)> {
+    fn alt_labels(&self) -> Vec<String> {
         let mut result = Vec::new();
 
         for field in self.all("022@") {
-            if let Some(label) =
-                self.get_label(&field, &self.get_prefix(), "altLabel")
-            {
+            if let Some(label) = self.get_label(&field, &self.get_prefix()) {
                 result.push(label)
             }
         }
 
         result
-    }
-
-    fn created(&self) -> Result {
-        self.date("created", &self.0, "001A")
-    }
-
-    fn modified(&self) -> Result {
-        self.date("modified", &self.0, "001B")
     }
 }

@@ -1,9 +1,7 @@
 use pica::{Field, Record};
-use rdf::node::Node;
-use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::concept::{Concept, Result};
+use crate::concept::Concept;
 
 pub struct Person<'a>(pub(crate) Record<'a>);
 
@@ -59,12 +57,7 @@ impl<'a> Person<'a> {
         result
     }
 
-    fn get_label(
-        &self,
-        field: &Field,
-        time_data: bool,
-        predicate: &str,
-    ) -> Result {
+    fn get_label(&self, field: &Field, time_data: bool) -> Option<String> {
         let mut result = Self::get_name(field);
         if time_data && !result.is_empty() {
             let field = self
@@ -94,20 +87,8 @@ impl<'a> Person<'a> {
             }
         }
 
-        // result = result.replace('"', "\\\"");
-        // result = result.replace("'", "\\\'");
-
         if !result.is_empty() {
-            return Some((
-                Node::UriNode {
-                    uri: Uri::new(skos!(predicate)),
-                },
-                Node::LiteralNode {
-                    literal: result,
-                    data_type: None,
-                    language: None,
-                },
-            ));
+            return Some(result);
         }
 
         None
@@ -115,26 +96,23 @@ impl<'a> Person<'a> {
 }
 
 impl<'a> Concept for Person<'a> {
-    fn uri(&self) -> Uri {
-        Uri::new(format!(
-            "http://d-nb.info/gnd/{}",
-            self.first("003@").unwrap().first('0').unwrap()
-        ))
+    fn idn(&self) -> String {
+        self.first("003@").unwrap().first('0').unwrap()
     }
 
-    fn pref_label(&self) -> Result {
+    fn pref_label(&self) -> Option<String> {
         if let Some(field) = self.first("028A") {
-            self.get_label(&field, true, "prefLabel")
+            self.get_label(&field, true)
         } else {
             None
         }
     }
 
-    fn alt_labels(&self) -> Vec<(Node, Node)> {
+    fn alt_labels(&self) -> Vec<String> {
         let mut result = Vec::new();
 
         for field in self.all("028@") {
-            if let Some(label) = self.get_label(&field, false, "altLabel") {
+            if let Some(label) = self.get_label(&field, false) {
                 result.push(label)
             }
         }
@@ -142,23 +120,15 @@ impl<'a> Concept for Person<'a> {
         result
     }
 
-    fn hidden_labels(&self) -> Vec<(Node, Node)> {
+    fn hidden_labels(&self) -> Vec<String> {
         let mut result = Vec::new();
 
         for field in self.all("028A") {
-            if let Some(label) = self.get_label(&field, false, "hiddenLabel") {
+            if let Some(label) = self.get_label(&field, false) {
                 result.push(label)
             }
         }
 
         result
-    }
-
-    fn created(&self) -> Result {
-        self.date("created", &self.0, "001A")
-    }
-
-    fn modified(&self) -> Result {
-        self.date("modified", &self.0, "001B")
     }
 }

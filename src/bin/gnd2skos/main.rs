@@ -3,15 +3,13 @@ extern crate clap;
 
 mod cli;
 mod concept;
+mod corporate_body;
+mod event;
+mod geoplace;
+mod person;
+mod topical_term;
 mod utils;
-#[macro_use]
-pub mod macros;
-pub mod corporate_body;
-pub mod event;
-pub mod geoplace;
-pub mod person;
-pub mod topical_term;
-pub mod work;
+mod work;
 
 use bstr::io::BufReadExt;
 use flate2::read::GzDecoder;
@@ -21,15 +19,21 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::Path;
 
-use rdf::graph::Graph;
-use rdf::triple::Triple;
-use rdf::uri::Uri;
-use rdf::writer::{rdf_writer::RdfWriter, turtle_writer::TurtleWriter};
+use sophia::graph::{inmem::FastGraph, inmem::LightGraph, *};
+use sophia::ns::Namespace;
+use sophia::ns::{rdf, xsd};
+use sophia::serializer::{nt::NtSerializer, *};
+use sophia::term::iri::Iri;
+use sophia::term::literal::Literal;
 
-use concept::{
-    Concept, CorporateBody, Event, GeoPlace, Person, TopicalTerm, Work,
-};
+use concept::Concept;
+use corporate_body::CorporateBody;
+use event::Event;
+use geoplace::GeoPlace;
+use person::Person;
+use topical_term::TopicalTerm;
 use utils::{CliError, CliResult};
+use work::Work;
 
 fn main() -> CliResult<()> {
     let args = cli::build_cli().get_matches();
@@ -69,12 +73,9 @@ fn main() -> CliResult<()> {
         None => Box::new(io::stdout()),
     };
 
-    let mut g = Graph::new(None);
-    add_namespace!(g, "xsd", "http://www.w3.org/2001/XMLSchema#");
-    add_namespace!(g, "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-    add_namespace!(g, "skos", "http://www.w3.org/2004/02/skos/core#");
-    add_namespace!(g, "dcterms", "http://purl.org/dc/terms/");
-    add_namespace!(g, "gnd", "http://d-nb.info/gnd/");
+    let mut g = FastGraph::new();
+    let skos = Namespace::new("http://www.w3.org/2004/02/skos/core#").unwrap();
+    let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
 
     for result in reader.byte_lines() {
         let line = result?;
@@ -95,35 +96,50 @@ fn main() -> CliResult<()> {
                 _ => unimplemented!(),
             };
 
-            // skos:Concept
-            let sub = g.create_uri_node(&concept.uri());
-            let pred = g.create_uri_node(&Uri::new(rdf!("type")));
-            let obj = g.create_uri_node(&Uri::new(skos!("Concept")));
-            add_triple!(g, &sub, &pred, &obj);
-
-            // dcterms:created
-            if let Some((pred, obj)) = concept.created() {
-                g.add_triple(&Triple::new(&sub, &pred, &obj));
-            }
-
-            // dcterms:modified
-            if let Some((pred, obj)) = concept.modified() {
-                g.add_triple(&Triple::new(&sub, &pred, &obj));
-            }
+            g.insert(
+                &gnd.get(&concept.idn()).unwrap(),
+                &rdf::type_,
+                &skos.get("Concept").unwrap(),
+            )
+            .unwrap();
 
             // skos:prefLabel
-            if let Some((pred, obj)) = concept.pref_label() {
-                g.add_triple(&Triple::new(&sub, &pred, &obj));
+            if let Some(pref_label) = concept.pref_label() {
+                g.insert(
+                    &gnd.get(&concept.idn()).unwrap(),
+                    &skos.get("prefLabel").unwrap(),
+                    &Literal::<Box<str>>::new_dt(
+                        pref_label,
+                        Iri::<&'static str>::from(xsd::string),
+                    ),
+                )
+                .unwrap();
             }
 
             // skos:altLabel
-            for (pred, obj) in concept.alt_labels() {
-                g.add_triple(&Triple::new(&sub, &pred, &obj));
+            for alt_label in concept.alt_labels() {
+                g.insert(
+                    &gnd.get(&concept.idn()).unwrap(),
+                    &skos.get("altLabel").unwrap(),
+                    &Literal::<Box<str>>::new_dt(
+                        alt_label,
+                        Iri::<&'static str>::from(xsd::string),
+                    ),
+                )
+                .unwrap();
             }
 
             // skos:hiddenLabel
-            for (pred, obj) in concept.hidden_labels() {
-                g.add_triple(&Triple::new(&sub, &pred, &obj));
+            for hidden_label in concept.hidden_labels() {
+                g.insert(
+                    &gnd.get(&concept.idn()).unwrap(),
+                    &skos.get("altLabel").unwrap(),
+                    &Literal::<Box<str>>::new_dt(
+                        hidden_label,
+                        Iri::<&'static str>::from(xsd::string),
+                    ),
+                )
+                .unwrap();
             }
 
             // break;
@@ -135,8 +151,14 @@ fn main() -> CliResult<()> {
         }
     }
 
-    let ttl_writer = TurtleWriter::new(&g.namespaces());
-    writer.write(ttl_writer.write_to_string(&g).unwrap().as_bytes())?;
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    writer.write(
+        nt_stringifier
+            .serialize_graph(&mut g)
+            .unwrap()
+            .as_str()
+            .as_bytes(),
+    )?;
 
     Ok(())
 }
