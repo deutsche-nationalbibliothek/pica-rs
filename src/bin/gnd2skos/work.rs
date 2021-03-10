@@ -52,8 +52,8 @@ impl<'a> Work<'a> {
                 result = format!("{} : {}", prefix, result);
             }
 
-            result = result.replace('"', "\\\"");
-            result = result.replace("'", "\\\'");
+            // result = result.replace('"', "\\\"");
+            // result = result.replace("'", "\\\'");
 
             return Some((
                 Node::UriNode {

@@ -60,8 +60,8 @@ impl<'a> Event<'a> {
             result.push_str(&format!(" ({})", parens));
         }
 
-        result = result.replace('"', "\\\"");
-        result = result.replace("'", "\\\'");
+        // result = result.replace('"', "\\\"");
+        // result = result.replace("'", "\\\'");
 
         if !result.is_empty() {
             return Some((

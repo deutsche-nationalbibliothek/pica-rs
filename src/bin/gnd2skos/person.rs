@@ -94,8 +94,8 @@ impl<'a> Person<'a> {
             }
         }
 
-        result = result.replace('"', "\\\"");
-        result = result.replace("'", "\\\'");
+        // result = result.replace('"', "\\\"");
+        // result = result.replace("'", "\\\'");
 
         if !result.is_empty() {
             return Some((
