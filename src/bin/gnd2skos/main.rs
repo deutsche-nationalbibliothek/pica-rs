@@ -19,11 +19,10 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::Path;
 
-use sophia::graph::{inmem::FastGraph, inmem::LightGraph, *};
+use sophia::graph::{inmem::LightGraph, *};
+use sophia::ns::rdf;
 use sophia::ns::Namespace;
-use sophia::ns::{rdf, xsd};
 use sophia::serializer::{nt::NtSerializer, *};
-use sophia::term::iri::Iri;
 use sophia::term::literal::Literal;
 
 use concept::Concept;
@@ -73,7 +72,7 @@ fn main() -> CliResult<()> {
         None => Box::new(io::stdout()),
     };
 
-    let mut g = FastGraph::new();
+    let mut g = LightGraph::new();
     let skos = Namespace::new("http://www.w3.org/2004/02/skos/core#").unwrap();
     let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
 
@@ -108,10 +107,7 @@ fn main() -> CliResult<()> {
                 g.insert(
                     &gnd.get(&concept.idn()).unwrap(),
                     &skos.get("prefLabel").unwrap(),
-                    &Literal::<Box<str>>::new_dt(
-                        pref_label,
-                        Iri::<&'static str>::from(xsd::string),
-                    ),
+                    &Literal::<Box<str>>::new_lang(pref_label, "de").unwrap(),
                 )
                 .unwrap();
             }
@@ -121,10 +117,7 @@ fn main() -> CliResult<()> {
                 g.insert(
                     &gnd.get(&concept.idn()).unwrap(),
                     &skos.get("altLabel").unwrap(),
-                    &Literal::<Box<str>>::new_dt(
-                        alt_label,
-                        Iri::<&'static str>::from(xsd::string),
-                    ),
+                    &Literal::<Box<str>>::new_lang(alt_label, "de").unwrap(),
                 )
                 .unwrap();
             }
@@ -134,10 +127,7 @@ fn main() -> CliResult<()> {
                 g.insert(
                     &gnd.get(&concept.idn()).unwrap(),
                     &skos.get("altLabel").unwrap(),
-                    &Literal::<Box<str>>::new_dt(
-                        hidden_label,
-                        Iri::<&'static str>::from(xsd::string),
-                    ),
+                    &Literal::<Box<str>>::new_lang(hidden_label, "de").unwrap(),
                 )
                 .unwrap();
             }
