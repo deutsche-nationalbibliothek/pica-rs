@@ -3,8 +3,7 @@ use rdf::node::Node;
 use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::skos;
-use skos::{Concept, Result};
+use crate::concept::{Concept, Result};
 
 pub struct TopicalTerm<'a>(pub(crate) Record<'a>);
 
@@ -35,6 +34,9 @@ impl<'a> TopicalTerm<'a> {
                 result.push_str(&format!(" / {}", subdivision.join(" / ")));
             }
         }
+
+        result = result.replace('"', "\\\"");
+        result = result.replace("'", "\\\'");
 
         if !result.is_empty() {
             return Some((

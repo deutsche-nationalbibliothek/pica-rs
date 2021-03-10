@@ -3,8 +3,7 @@ use rdf::node::Node;
 use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::skos;
-use skos::{Concept, Result};
+use crate::concept::{Concept, Result};
 
 pub struct Person<'a>(pub(crate) Record<'a>);
 
@@ -18,12 +17,7 @@ impl<'a> Deref for Person<'a> {
 }
 
 impl<'a> Person<'a> {
-    fn get_label(
-        &self,
-        field: &Field,
-        time_data: bool,
-        predicate: &str,
-    ) -> Result {
+    pub fn get_name(field: &Field) -> String {
         let mut result = String::new();
 
         if let Some(surname) = field.first('a') {
@@ -62,6 +56,16 @@ impl<'a> Person<'a> {
             }
         }
 
+        result
+    }
+
+    fn get_label(
+        &self,
+        field: &Field,
+        time_data: bool,
+        predicate: &str,
+    ) -> Result {
+        let mut result = Self::get_name(field);
         if time_data && !result.is_empty() {
             let field = self
                 .iter()
@@ -89,6 +93,9 @@ impl<'a> Person<'a> {
                 }
             }
         }
+
+        result = result.replace('"', "\\\"");
+        result = result.replace("'", "\\\'");
 
         if !result.is_empty() {
             return Some((

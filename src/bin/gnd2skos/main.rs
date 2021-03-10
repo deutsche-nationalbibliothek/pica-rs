@@ -2,7 +2,7 @@
 extern crate clap;
 
 mod cli;
-mod skos;
+mod concept;
 mod utils;
 #[macro_use]
 pub mod macros;
@@ -26,7 +26,7 @@ use rdf::triple::Triple;
 use rdf::uri::Uri;
 use rdf::writer::{rdf_writer::RdfWriter, turtle_writer::TurtleWriter};
 
-use skos::{
+use concept::{
     Concept, CorporateBody, Event, GeoPlace, Person, TopicalTerm, Work,
 };
 use utils::{CliError, CliResult};
@@ -86,13 +86,12 @@ fn main() -> CliResult<()> {
 
             let bbg = record.first("002@").unwrap().first('0').unwrap();
             let concept: Box<dyn Concept> = match &bbg[..2] {
+                "Tb" => Box::new(CorporateBody(record)),
+                "Tf" => Box::new(Event(record)),
+                "Tg" => Box::new(GeoPlace(record)),
                 "Tp" => Box::new(Person(record)),
                 "Ts" => Box::new(TopicalTerm(record)),
-                "Tg" => Box::new(GeoPlace(record)),
-                "Tf" => Box::new(Event(record)),
-                "Tb" => Box::new(CorporateBody(record)),
                 "Tu" => Box::new(Work(record)),
-
                 _ => unimplemented!(),
             };
 

@@ -4,6 +4,7 @@ use rdf::node::Node;
 use rdf::uri::Uri;
 
 pub type Result = Option<(Node, Node)>;
+
 use crate::{dcterms, xsd};
 
 pub trait Concept {

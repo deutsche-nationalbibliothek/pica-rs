@@ -3,8 +3,7 @@ use rdf::node::Node;
 use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::skos;
-use skos::{Concept, Result};
+use crate::concept::{Concept, Result};
 
 pub struct Work<'a>(pub(crate) Record<'a>);
 
@@ -52,6 +51,9 @@ impl<'a> Work<'a> {
             if !prefix.is_empty() {
                 result = format!("{} : {}", prefix, result);
             }
+
+            result = result.replace('"', "\\\"");
+            result = result.replace("'", "\\\'");
 
             return Some((
                 Node::UriNode {

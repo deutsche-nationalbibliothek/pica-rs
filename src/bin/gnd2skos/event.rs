@@ -3,8 +3,7 @@ use rdf::node::Node;
 use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::skos;
-use skos::{Concept, Result};
+use crate::concept::{Concept, Result};
 
 pub struct Event<'a>(pub(crate) Record<'a>);
 
@@ -60,6 +59,9 @@ impl<'a> Event<'a> {
         if !parens.is_empty() {
             result.push_str(&format!(" ({})", parens));
         }
+
+        result = result.replace('"', "\\\"");
+        result = result.replace("'", "\\\'");
 
         if !result.is_empty() {
             return Some((

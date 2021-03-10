@@ -3,8 +3,7 @@ use rdf::node::Node;
 use rdf::uri::Uri;
 use std::ops::Deref;
 
-use crate::skos;
-use skos::{Concept, Result};
+use crate::concept::{Concept, Result};
 
 pub struct CorporateBody<'a>(pub(crate) Record<'a>);
 
@@ -39,6 +38,9 @@ impl<'a> CorporateBody<'a> {
                 _ => continue,
             }
         }
+
+        result = result.replace('"', "\\\"");
+        result = result.replace("'", "\\\'");
 
         if !result.is_empty() {
             return Some((
