@@ -12,7 +12,6 @@ pub struct Person<'a>(pub(crate) Record<'a>);
 impl<'a> Deref for Person<'a> {
     type Target = Record<'a>;
 
-    /// Dereferences the value
     fn deref(&self) -> &Self::Target {
         &self.0
     }

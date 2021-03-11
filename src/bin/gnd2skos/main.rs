@@ -8,7 +8,7 @@ mod cli;
 #[macro_use]
 mod concept;
 mod corporate_body;
-// mod event;
+mod event;
 // mod geoplace;
 mod person;
 mod topical_term;
@@ -25,14 +25,11 @@ use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::Path;
 
 use sophia::graph::inmem::LightGraph;
-// use sophia::ns::rdf;
-// use sophia::ns::Namespace;
 use sophia::serializer::{nt::NtSerializer, *};
-// use sophia::term::literal::Literal;
 
 use concept::Concept;
 use corporate_body::CorporateBody;
-// use event::Event;
+use event::Event;
 // use geoplace::GeoPlace;
 use person::Person;
 use topical_term::TopicalTerm;
@@ -91,7 +88,7 @@ fn main() -> CliResult<()> {
 
             match &bbg[..2] {
                 "Tb" => CorporateBody(record).skosify(&mut g),
-                // "Tf" => Event(record).skosify(&mut g),
+                "Tf" => Event(record).skosify(&mut g),
                 // "Tg" => GeoPlace(record).skosify(&mut g),
                 "Tp" => Person(record).skosify(&mut g),
                 "Ts" => TopicalTerm(record).skosify(&mut g),
