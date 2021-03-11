@@ -1,44 +1,47 @@
 use pica::{Field, Record};
+use sophia::graph::MutableGraph;
+use sophia::ns::{rdf, Namespace};
 use std::ops::Deref;
 
-use crate::concept::Concept;
+use crate::concept::{Concept, StrLiteral};
+use crate::ns::skos;
 
 pub struct CorporateBody<'a>(pub(crate) Record<'a>);
 
 impl<'a> Deref for CorporateBody<'a> {
     type Target = Record<'a>;
 
-    /// Dereferences the value
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
 impl<'a> CorporateBody<'a> {
-    fn get_label(&self, field: &Field) -> Option<String> {
-        let mut result = String::new();
+    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+        let mut label = String::new();
 
         for subfield in field.iter() {
             let value = String::from_utf8(subfield.value().to_vec()).unwrap();
+
             match subfield.code() {
                 'a' => {
-                    result.push_str(&value.replace('@', ""));
+                    label.push_str(&value.replace('@', ""));
                 }
                 'g' => {
-                    result.push_str(&format!(" ({})", value));
+                    label.push_str(&format!(" ({})", value));
                 }
                 'x' | 'b' => {
-                    result.push_str(&format!(" / {}", value));
+                    label.push_str(&format!(" / {}", value));
                 }
                 'n' => {
-                    result.push_str(&format!(", {}", value));
+                    label.push_str(&format!(", {}", value));
                 }
                 _ => continue,
             }
         }
 
-        if !result.is_empty() {
-            Some(result)
+        if !label.is_empty() {
+            Some(StrLiteral::new_lang(label, "de").unwrap())
         } else {
             None
         }
@@ -46,27 +49,24 @@ impl<'a> CorporateBody<'a> {
 }
 
 impl<'a> Concept for CorporateBody<'a> {
-    fn idn(&self) -> String {
-        self.first("003@").unwrap().first('0').unwrap()
-    }
+    fn skosify<G: MutableGraph>(&self, graph: &mut G) {
+        let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
+        let idn = self.first("003@").unwrap().first('0').unwrap();
+        let subj = gnd.get(&idn).unwrap();
 
-    fn pref_label(&self) -> Option<String> {
-        if let Some(field) = self.first("029A") {
-            self.get_label(&field)
-        } else {
-            None
+        // skos:Concept
+        graph.insert(&subj, &rdf::type_, &skos::Concept).unwrap();
+
+        // skos:prefLabel
+        if let Some(label) = Self::get_label(self.first("029A").unwrap()) {
+            graph.insert(&subj, &skos::prefLabel, &label).unwrap();
         }
-    }
 
-    fn alt_labels(&self) -> Vec<String> {
-        let mut result = Vec::new();
-
+        // skos:altLabel
         for field in self.all("029@") {
-            if let Some(label) = self.get_label(&field) {
-                result.push(label)
+            if let Some(label) = Self::get_label(field) {
+                graph.insert(&subj, &skos::altLabel, &label).unwrap();
             }
         }
-
-        result
     }
 }
