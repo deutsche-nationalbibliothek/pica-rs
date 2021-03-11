@@ -81,6 +81,10 @@ impl<'a> Field<'a> {
         pretty_str
     }
 
+    pub fn exists(&self, code: char) -> bool {
+        self.iter().any(|subfield| subfield.code == code)
+    }
+
     pub fn first(&self, code: char) -> Option<String> {
         self.iter()
             .filter(|subfield| subfield.code == code)

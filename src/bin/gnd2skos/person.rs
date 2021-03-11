@@ -1,7 +1,11 @@
 use pica::{Field, Record};
+use sophia::graph::MutableGraph;
+use sophia::ns::{rdf, Namespace};
+
 use std::ops::Deref;
 
-use crate::concept::Concept;
+use crate::concept::{Concept, StrLiteral};
+use crate::ns::skos;
 
 pub struct Person<'a>(pub(crate) Record<'a>);
 
@@ -15,120 +19,117 @@ impl<'a> Deref for Person<'a> {
 }
 
 impl<'a> Person<'a> {
-    pub fn get_name(field: &Field) -> String {
-        let mut result = String::new();
+    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+        let mut label = String::new();
 
-        if let Some(surname) = field.first('a') {
-            result.push_str(&surname);
-
-            if let Some(firstname) = field.first('d') {
-                result.push_str(", ");
-                result.push_str(&firstname);
-            }
-
-            if let Some(prefix) = field.first('c') {
-                result.push_str(" ");
-                result.push_str(&prefix);
-            }
-        } else if let Some(name) = field.first('P') {
-            result.push_str(&name);
+        if field.exists('a') {
+            push_value!(label, field.first('a'));
+            push_value!(label, field.first('d'), ", ");
+            push_value!(label, field.first('c'), " ");
+        } else if field.exists('P') {
+            push_value!(label, field.first('P'));
 
             let numeration = field.first('n');
             let title = field.first('l');
 
             if numeration.is_some() || title.is_some() {
-                result.push_str(" (");
+                label.push_str(" (");
 
-                if let Some(numeration) = numeration {
-                    result.push_str(&numeration);
+                if numeration.is_some() {
                     if title.is_some() {
-                        result.push_str(", ");
+                        push_value!(label, numeration, "", ", ");
+                    } else {
+                        push_value!(label, numeration);
                     }
                 }
 
-                if let Some(title) = title {
-                    result.push_str(&title);
-                }
-
-                result.push(')');
+                push_value!(label, title);
+                label.push(')');
             }
         }
 
-        result
-    }
-
-    fn get_label(&self, field: &Field, time_data: bool) -> Option<String> {
-        let mut result = Self::get_name(field);
-        if time_data && !result.is_empty() {
-            let field = self
-                .iter()
-                .filter(|field| {
-                    field.iter().any(|subfield| {
-                        subfield.code() == '4' && subfield.value() == "datl"
-                    })
-                })
-                .nth(0);
-
-            if let Some(field) = field {
-                let from = field.first('a');
-                let to = field.first('b');
-
-                if from.is_some() && to.is_some() {
-                    result.push_str(&format!(
-                        " ({}-{})",
-                        &from.unwrap(),
-                        &to.unwrap()
-                    ));
-                } else if let Some(time) = field.first('c') {
-                    result.push_str(&format!(" ({})", &time));
-                } else if let Some(time) = field.first('d') {
-                    result.push_str(&format!(" ({})", &time));
-                }
-            }
-        }
-
-        if !result.is_empty() {
-            return Some(result);
-        }
-
-        None
-    }
-}
-
-impl<'a> Concept for Person<'a> {
-    fn idn(&self) -> String {
-        self.first("003@").unwrap().first('0').unwrap()
-    }
-
-    fn pref_label(&self) -> Option<String> {
-        if let Some(field) = self.first("028A") {
-            self.get_label(&field, true)
+        if !label.is_empty() {
+            Some(StrLiteral::new_lang(label, "de").unwrap())
         } else {
             None
         }
     }
 
-    fn alt_labels(&self) -> Vec<String> {
-        let mut result = Vec::new();
+    fn get_time_data(&self) -> Option<String> {
+        let mut time_data = String::new();
 
-        for field in self.all("028@") {
-            if let Some(label) = self.get_label(&field, false) {
-                result.push(label)
+        let field = self
+            .iter()
+            .filter(|field| {
+                field.iter().any(|subfield| {
+                    subfield.code() == '4' && subfield.value() == "datl"
+                })
+            })
+            .nth(0);
+
+        if let Some(field) = field {
+            let from = field.first('a');
+            let to = field.first('b');
+
+            if from.is_some() && to.is_some() {
+                time_data.push_str(&format!(
+                    " ({}-{})",
+                    &from.unwrap(),
+                    &to.unwrap()
+                ));
+            } else if let Some(time) = field.first('c') {
+                time_data.push_str(&format!(" ({})", &time));
+            } else if let Some(time) = field.first('d') {
+                time_data.push_str(&format!(" ({})", &time));
             }
         }
 
-        result
+        if !time_data.is_empty() {
+            Some(time_data)
+        } else {
+            None
+        }
     }
+}
 
-    fn hidden_labels(&self) -> Vec<String> {
-        let mut result = Vec::new();
+impl<'a> Concept for Person<'a> {
+    fn skosify<G: MutableGraph>(&self, graph: &mut G) {
+        let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
+        let idn = self.first("003@").unwrap().first('0').unwrap();
+        let subj = gnd.get(&idn).unwrap();
 
-        for field in self.all("028A") {
-            if let Some(label) = self.get_label(&field, false) {
-                result.push(label)
+        // skos:Concept
+        graph.insert(&subj, &rdf::type_, &skos::Concept).unwrap();
+
+        // skos:prefLabel
+        if let Some(label) = Self::get_label(self.first("028A").unwrap()) {
+            if let Some(time_data) = self.get_time_data() {
+                graph
+                    .insert(
+                        &subj,
+                        &skos::prefLabel,
+                        &StrLiteral::new_lang(
+                            format!("{}{}", label.txt(), time_data),
+                            "de",
+                        )
+                        .unwrap(),
+                    )
+                    .unwrap();
+            } else {
+                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
             }
         }
 
-        result
+        // skos:altLabel
+        for field in self.all("028@") {
+            if let Some(label) = Self::get_label(field) {
+                graph.insert(&subj, &skos::altLabel, &label).unwrap();
+            }
+        }
+
+        // skos:hiddenLabel
+        if let Some(label) = Self::get_label(self.first("028A").unwrap()) {
+            graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
+        }
     }
 }

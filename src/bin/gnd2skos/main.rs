@@ -1,15 +1,20 @@
 #[macro_use]
 extern crate clap;
 
+#[macro_use]
+extern crate sophia_api;
+
 mod cli;
+#[macro_use]
 mod concept;
-mod corporate_body;
-mod event;
-mod geoplace;
+// mod corporate_body;
+// mod event;
+// mod geoplace;
 mod person;
-mod topical_term;
+// mod topical_term;
 mod utils;
-mod work;
+// mod work;
+mod ns;
 
 use bstr::io::BufReadExt;
 use flate2::read::GzDecoder;
@@ -19,20 +24,20 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::Path;
 
-use sophia::graph::{inmem::LightGraph, *};
-use sophia::ns::rdf;
-use sophia::ns::Namespace;
+use sophia::graph::inmem::LightGraph;
+// use sophia::ns::rdf;
+// use sophia::ns::Namespace;
 use sophia::serializer::{nt::NtSerializer, *};
-use sophia::term::literal::Literal;
+// use sophia::term::literal::Literal;
 
 use concept::Concept;
-use corporate_body::CorporateBody;
-use event::Event;
-use geoplace::GeoPlace;
+// use corporate_body::CorporateBody;
+// use event::Event;
+// use geoplace::GeoPlace;
 use person::Person;
-use topical_term::TopicalTerm;
+// use topical_term::TopicalTerm;
 use utils::{CliError, CliResult};
-use work::Work;
+// use work::Work;
 
 fn main() -> CliResult<()> {
     let args = cli::build_cli().get_matches();
@@ -73,8 +78,6 @@ fn main() -> CliResult<()> {
     };
 
     let mut g = LightGraph::new();
-    let skos = Namespace::new("http://www.w3.org/2004/02/skos/core#").unwrap();
-    let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
 
     for result in reader.byte_lines() {
         let line = result?;
@@ -85,54 +88,65 @@ fn main() -> CliResult<()> {
             }
 
             let bbg = record.first("002@").unwrap().first('0').unwrap();
-            let concept: Box<dyn Concept> = match &bbg[..2] {
-                "Tb" => Box::new(CorporateBody(record)),
-                "Tf" => Box::new(Event(record)),
-                "Tg" => Box::new(GeoPlace(record)),
-                "Tp" => Box::new(Person(record)),
-                "Ts" => Box::new(TopicalTerm(record)),
-                "Tu" => Box::new(Work(record)),
+
+            match &bbg[..2] {
+                // "Tb" => CorporateBody(record).skosify(&mut g),
+                // "Tf" => Event(record).skosify(&mut g),
+                // "Tg" => GeoPlace(record).skosify(&mut g),
+                "Tp" => Person(record).skosify(&mut g),
+                // "Ts" => TopicalTerm(record).skosify(&mut g),
+                // "Tu" => Work(record).skosify(&mut g),
                 _ => unimplemented!(),
-            };
-
-            g.insert(
-                &gnd.get(&concept.idn()).unwrap(),
-                &rdf::type_,
-                &skos.get("Concept").unwrap(),
-            )
-            .unwrap();
-
-            // skos:prefLabel
-            if let Some(pref_label) = concept.pref_label() {
-                g.insert(
-                    &gnd.get(&concept.idn()).unwrap(),
-                    &skos.get("prefLabel").unwrap(),
-                    &Literal::<Box<str>>::new_lang(pref_label, "de").unwrap(),
-                )
-                .unwrap();
             }
 
-            // skos:altLabel
-            for alt_label in concept.alt_labels() {
-                g.insert(
-                    &gnd.get(&concept.idn()).unwrap(),
-                    &skos.get("altLabel").unwrap(),
-                    &Literal::<Box<str>>::new_lang(alt_label, "de").unwrap(),
-                )
-                .unwrap();
-            }
+            // let concept: Box<dyn Concept> = match &bbg[..2] {
+            //     "Tb" => Box::new(CorporateBody(record)),
+            //     "Tf" => Box::new(Event(record)),
+            //     "Tg" => Box::new(GeoPlace(record)),
+            //     "Tp" => Box::new(Person(record)),
+            //     "Ts" => Box::new(TopicalTerm(record)),
+            //     "Tu" => Box::new(Work(record)),
+            //     _ => unimplemented!(),
+            // };
 
-            // skos:hiddenLabel
-            for hidden_label in concept.hidden_labels() {
-                g.insert(
-                    &gnd.get(&concept.idn()).unwrap(),
-                    &skos.get("altLabel").unwrap(),
-                    &Literal::<Box<str>>::new_lang(hidden_label, "de").unwrap(),
-                )
-                .unwrap();
-            }
+            // g.insert(
+            //     &gnd.get(&concept.idn()).unwrap(),
+            //     &rdf::type_,
+            //     &skos.get("Concept").unwrap(),
+            // )
+            // .unwrap();
 
-            // break;
+            // // skos:prefLabel
+            // if let Some(pref_label) = concept.pref_label() {
+            //     g.insert(
+            //         &gnd.get(&concept.idn()).unwrap(),
+            //         &skos.get("prefLabel").unwrap(),
+            //         &Literal::<Box<str>>::new_lang(pref_label,
+            // "de").unwrap(),     )
+            //     .unwrap();
+            // }
+
+            // // skos:altLabel
+            // for alt_label in concept.alt_labels() {
+            //     g.insert(
+            //         &gnd.get(&concept.idn()).unwrap(),
+            //         &skos.get("altLabel").unwrap(),
+            //         &Literal::<Box<str>>::new_lang(alt_label, "de").unwrap(),
+            //     )
+            //     .unwrap();
+            // }
+
+            // // skos:hiddenLabel
+            // for hidden_label in concept.hidden_labels() {
+            //     g.insert(
+            //         &gnd.get(&concept.idn()).unwrap(),
+            //         &skos.get("altLabel").unwrap(),
+            //         &Literal::<Box<str>>::new_lang(hidden_label,
+            // "de").unwrap(),     )
+            //     .unwrap();
+            // }
+
+            break;
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
