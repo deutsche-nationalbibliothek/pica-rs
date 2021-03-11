@@ -9,7 +9,7 @@ mod cli;
 mod concept;
 mod corporate_body;
 mod event;
-// mod geoplace;
+mod geoplace;
 mod person;
 mod topical_term;
 mod utils;
@@ -30,7 +30,7 @@ use sophia::serializer::{nt::NtSerializer, *};
 use concept::Concept;
 use corporate_body::CorporateBody;
 use event::Event;
-// use geoplace::GeoPlace;
+use geoplace::GeoPlace;
 use person::Person;
 use topical_term::TopicalTerm;
 use utils::{CliError, CliResult};
@@ -89,7 +89,7 @@ fn main() -> CliResult<()> {
             match &bbg[..2] {
                 "Tb" => CorporateBody(record).skosify(&mut g),
                 "Tf" => Event(record).skosify(&mut g),
-                // "Tg" => GeoPlace(record).skosify(&mut g),
+                "Tg" => GeoPlace(record).skosify(&mut g),
                 "Tp" => Person(record).skosify(&mut g),
                 "Ts" => TopicalTerm(record).skosify(&mut g),
                 // "Tu" => Work(record).skosify(&mut g),
