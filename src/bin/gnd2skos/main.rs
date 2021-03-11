@@ -95,8 +95,6 @@ fn main() -> CliResult<()> {
                 "Tu" => Work(record).skosify(&mut g),
                 _ => unimplemented!(),
             }
-
-            break;
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
                 "could not read record: {}",
@@ -106,9 +104,9 @@ fn main() -> CliResult<()> {
     }
 
     let mut nt_stringifier = NtSerializer::new_stringifier();
-    writer.write(
+    writer.write_all(
         nt_stringifier
-            .serialize_graph(&mut g)
+            .serialize_graph(&g)
             .unwrap()
             .as_str()
             .as_bytes(),

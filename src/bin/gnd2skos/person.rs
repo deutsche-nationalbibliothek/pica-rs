@@ -57,14 +57,11 @@ impl<'a> Person<'a> {
     fn get_time_data(&self) -> Option<String> {
         let mut time_data = String::new();
 
-        let field = self
-            .iter()
-            .filter(|field| {
-                field.iter().any(|subfield| {
-                    subfield.code() == '4' && subfield.value() == "datl"
-                })
+        let field = self.iter().find(|field| {
+            field.iter().any(|subfield| {
+                subfield.code() == '4' && subfield.value() == "datl"
             })
-            .nth(0);
+        });
 
         if let Some(field) = field {
             let from = field.first('a');
@@ -102,21 +99,17 @@ impl<'a> Concept for Person<'a> {
 
         // skos:prefLabel
         if let Some(label) = Self::get_label(self.first("028A").unwrap()) {
-            if let Some(time_data) = self.get_time_data() {
-                graph
-                    .insert(
-                        &subj,
-                        &skos::prefLabel,
-                        &StrLiteral::new_lang(
-                            format!("{}{}", label.txt(), time_data),
-                            "de",
-                        )
-                        .unwrap(),
-                    )
-                    .unwrap();
+            let label = if let Some(time_data) = self.get_time_data() {
+                StrLiteral::new_lang(
+                    format!("{}{}", label.txt(), time_data),
+                    "de",
+                )
+                .unwrap()
             } else {
-                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
-            }
+                label
+            };
+
+            graph.insert(&subj, &skos::prefLabel, &label).unwrap();
         }
 
         // skos:altLabel

@@ -55,15 +55,17 @@ impl<'a> Work<'a> {
     }
 
     pub fn get_prefix(&self) -> Option<StrLiteral> {
-        for tag in vec!["028R", "065R", "029R", "030R"] {
+        for tag in &["028R", "065R", "029R", "030R"] {
             for field in self.all(tag) {
-                if field.iter().any(|subfield| {
+                let relation_exists = field.iter().any(|subfield| {
                     subfield.code() == '4'
                         && (subfield.value() == "aut1"
                             || subfield.value() == "kom1"
                             || subfield.value() == "kue1")
-                }) {
-                    let prefix = match tag {
+                });
+
+                if relation_exists {
+                    let prefix = match *tag {
                         "028R" => Person::get_label(field),
                         "029R" => CorporateBody::get_label(field),
                         "030R" => Event::get_label(field),
