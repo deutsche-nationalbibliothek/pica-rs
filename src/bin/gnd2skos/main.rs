@@ -10,11 +10,11 @@ mod concept;
 mod corporate_body;
 mod event;
 mod geoplace;
+mod ns;
 mod person;
 mod topical_term;
 mod utils;
-// mod work;
-mod ns;
+mod work;
 
 use bstr::io::BufReadExt;
 use flate2::read::GzDecoder;
@@ -34,7 +34,7 @@ use geoplace::GeoPlace;
 use person::Person;
 use topical_term::TopicalTerm;
 use utils::{CliError, CliResult};
-// use work::Work;
+use work::Work;
 
 fn main() -> CliResult<()> {
     let args = cli::build_cli().get_matches();
@@ -92,7 +92,7 @@ fn main() -> CliResult<()> {
                 "Tg" => GeoPlace(record).skosify(&mut g),
                 "Tp" => Person(record).skosify(&mut g),
                 "Ts" => TopicalTerm(record).skosify(&mut g),
-                // "Tu" => Work(record).skosify(&mut g),
+                "Tu" => Work(record).skosify(&mut g),
                 _ => unimplemented!(),
             }
 
