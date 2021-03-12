@@ -123,11 +123,7 @@ impl<'a> Concept for Person<'a> {
 
         // skos:hiddenLabel
         if let Some(label) = Self::get_label(self.first("028A").unwrap()) {
-            if !(graph.contains(&subj, &skos::prefLabel, &label).unwrap()
-                || graph.contains(&subj, &skos::altLabel, &label).unwrap())
-            {
-                graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
-            }
+            graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
 
             if let Some(captures) = re.captures(label.txt()) {
                 let obj = StrLiteral::new_lang(
@@ -140,11 +136,7 @@ impl<'a> Concept for Person<'a> {
                 )
                 .unwrap();
 
-                if !(graph.contains(&subj, &skos::prefLabel, &obj).unwrap()
-                    || graph.contains(&subj, &skos::altLabel, &obj).unwrap())
-                {
-                    graph.insert(&subj, &skos::hiddenLabel, &obj).unwrap();
-                }
+                graph.insert(&subj, &skos::hiddenLabel, &obj).unwrap();
             }
         }
     }
