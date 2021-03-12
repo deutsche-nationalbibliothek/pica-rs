@@ -1,4 +1,5 @@
 use pica::{Field, Record};
+use regex::Regex;
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
 
@@ -92,6 +93,7 @@ impl<'a> Concept for Person<'a> {
     fn skosify<G: MutableGraph>(&self, graph: &mut G) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
+        let re = Regex::new(r"([^,]+),\s([^,]+)$").unwrap();
         let subj = gnd.get(&idn).unwrap();
 
         // skos:Concept
@@ -121,7 +123,29 @@ impl<'a> Concept for Person<'a> {
 
         // skos:hiddenLabel
         if let Some(label) = Self::get_label(self.first("028A").unwrap()) {
-            graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
+            if !(graph.contains(&subj, &skos::prefLabel, &label).unwrap()
+                || graph.contains(&subj, &skos::altLabel, &label).unwrap())
+            {
+                graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
+            }
+
+            if let Some(captures) = re.captures(label.txt()) {
+                let obj = StrLiteral::new_lang(
+                    format!(
+                        "{} {}",
+                        captures.get(2).unwrap().as_str(),
+                        captures.get(1).unwrap().as_str()
+                    ),
+                    "de",
+                )
+                .unwrap();
+
+                if !(graph.contains(&subj, &skos::prefLabel, &obj).unwrap()
+                    || graph.contains(&subj, &skos::altLabel, &obj).unwrap())
+                {
+                    graph.insert(&subj, &skos::hiddenLabel, &obj).unwrap();
+                }
+            }
         }
     }
 }
