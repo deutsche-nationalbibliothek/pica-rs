@@ -5,14 +5,16 @@ extern crate clap;
 extern crate sophia_api;
 
 mod cli;
-#[macro_use]
 mod concept;
 mod corporate_body;
 mod event;
 mod geoplace;
+#[macro_use]
+mod macros;
 mod ns;
 mod person;
 mod topical_term;
+
 mod utils;
 mod work;
 
