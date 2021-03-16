@@ -93,7 +93,7 @@ impl<'a> Concept for Person<'a> {
     fn skosify<G: MutableGraph>(&self, graph: &mut G) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
-        let _re = Regex::new(r"([^,]+),\s([^,]+)$").unwrap();
+        let re = Regex::new(r"([^,]+),\s([^,]+)$").unwrap();
         let subj = gnd.get(&idn).unwrap();
 
         // skos:Concept
@@ -125,19 +125,19 @@ impl<'a> Concept for Person<'a> {
         if let Some(label) = Self::get_label(self.first("028A").unwrap()) {
             graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
 
-            //     if let Some(captures) = re.captures(label.txt()) {
-            //         let obj = StrLiteral::new_lang(
-            //             format!(
-            //                 "{} {}",
-            //                 captures.get(2).unwrap().as_str(),
-            //                 captures.get(1).unwrap().as_str()
-            //             ),
-            //             "de",
-            //         )
-            //         .unwrap();
+            if let Some(captures) = re.captures(label.txt()) {
+                let obj = StrLiteral::new_lang(
+                    format!(
+                        "{} {}",
+                        captures.get(2).unwrap().as_str(),
+                        captures.get(1).unwrap().as_str()
+                    ),
+                    "de",
+                )
+                .unwrap();
 
-            //         graph.insert(&subj, &skos::hiddenLabel, &obj).unwrap();
-            //     }
+                graph.insert(&subj, &skos::hiddenLabel, &obj).unwrap();
+            }
         }
     }
 }
