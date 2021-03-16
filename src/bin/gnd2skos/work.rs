@@ -96,7 +96,7 @@ impl<'a> Concept for Work<'a> {
         // skos:prefLabel
         if let Some(label) = Self::get_label(self.first("022A").unwrap()) {
             if let Some(prefix) = self.get_prefix() {
-                // graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
+                graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
 
                 let label = StrLiteral::new_lang(
                     format!("{} : {}", prefix.txt(), label.txt()),
