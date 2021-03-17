@@ -28,6 +28,7 @@ fn main() {
         "print" => cmds::print::run(args),
         "sample" => cmds::sample::run(args),
         "select" => cmds::select::run(args),
+        "slice" => cmds::slice::run(args),
         "split" => cmds::split::run(args),
         _ => unreachable!(),
     };
