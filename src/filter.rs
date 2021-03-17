@@ -51,6 +51,7 @@ pub enum BooleanOp {
 #[derive(Debug, PartialEq)]
 pub enum ComparisonOp {
     Eq,
+    StrictEq,
     Ne,
     Re,
     StartsWith,
@@ -74,6 +75,17 @@ impl SubfieldFilter {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
                     subfield.code == *code && subfield.value() == values[0]
                 }),
+                ComparisonOp::StrictEq => {
+                    let subfields = field
+                        .iter()
+                        .filter(|subfield| subfield.code == *code)
+                        .collect::<Vec<&Subfield>>();
+
+                    subfields.is_empty()
+                        || subfields
+                            .iter()
+                            .all(|subfield| subfield.value() == values[0])
+                }
                 ComparisonOp::Ne => {
                     let subfields = field
                         .iter()
@@ -85,7 +97,6 @@ impl SubfieldFilter {
                             .iter()
                             .all(|subfield| subfield.value() != values[0])
                 }
-
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
                     subfield.code == *code
                         && subfield.value.starts_with(&values[0].as_bytes())
@@ -299,9 +310,10 @@ fn parse_boolean_op(i: &str) -> IResult<&str, BooleanOp> {
     ))(i)
 }
 
-/// Parses a comparison operator (Equal (==), Not Equal (!=) or Regex (=~).
+/// Parses a comparison operator.
 fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
     alt((
+        map(tag("==="), |_| ComparisonOp::StrictEq),
         map(tag("=="), |_| ComparisonOp::Eq),
         map(tag("!="), |_| ComparisonOp::Ne),
         map(tag("=^"), |_| ComparisonOp::StartsWith),

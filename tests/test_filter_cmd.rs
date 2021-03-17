@@ -6,6 +6,7 @@ static SAMPLE1: &'static str = include_str!("data/1.dat");
 static SAMPLE2: &'static str = include_str!("data/2.dat");
 static SAMPLE3: &'static str = include_str!("data/3.dat");
 static SAMPLE4: &'static str = include_str!("data/4.dat");
+static SAMPLE5: &'static str = include_str!("data/5.dat");
 
 #[test]
 fn test_eq_filter() {
@@ -20,6 +21,16 @@ fn test_eq_filter() {
     assert!(result.status.success());
 
     assert_eq!(String::from_utf8(result.stdout).unwrap(), SAMPLE1);
+}
+
+#[test]
+fn test_strict_eq_filter() {
+    let result = CliRunner::new().invoke(
+        "filter",
+        &["--skip-invalid", "012A/*.a == '1'", "tests/data/5.dat"],
+    );
+    assert!(result.status.success());
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), SAMPLE5);
 }
 
 #[test]
