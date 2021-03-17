@@ -5,6 +5,7 @@ use common::CliRunner;
 static SAMPLE1: &'static str = include_str!("data/1.dat");
 static SAMPLE2: &'static str = include_str!("data/2.dat");
 static SAMPLE3: &'static str = include_str!("data/3.dat");
+static SAMPLE4: &'static str = include_str!("data/4.dat");
 
 #[test]
 fn test_sample_cmd() {
@@ -13,7 +14,12 @@ fn test_sample_cmd() {
     assert!(result.status.success());
 
     let output = String::from_utf8(result.stdout).unwrap();
-    assert!(output == SAMPLE1 || output == SAMPLE2 || output == SAMPLE3);
+    assert!(
+        output == SAMPLE1
+            || output == SAMPLE2
+            || output == SAMPLE3
+            || output == SAMPLE4
+    );
 
     let result = CliRunner::new()
         .invoke("sample", &["--skip-invalid", "2", "tests/data/all.dat.gz"]);
@@ -23,10 +29,16 @@ fn test_sample_cmd() {
     assert!(
         output == format!("{}{}", SAMPLE1, SAMPLE2)
             || output == format!("{}{}", SAMPLE1, SAMPLE3)
+            || output == format!("{}{}", SAMPLE1, SAMPLE4)
             || output == format!("{}{}", SAMPLE2, SAMPLE1)
             || output == format!("{}{}", SAMPLE2, SAMPLE3)
+            || output == format!("{}{}", SAMPLE2, SAMPLE4)
             || output == format!("{}{}", SAMPLE3, SAMPLE1)
             || output == format!("{}{}", SAMPLE3, SAMPLE2)
+            || output == format!("{}{}", SAMPLE3, SAMPLE4)
+            || output == format!("{}{}", SAMPLE4, SAMPLE1)
+            || output == format!("{}{}", SAMPLE4, SAMPLE2)
+            || output == format!("{}{}", SAMPLE4, SAMPLE3)
     );
 
     let result = CliRunner::new()

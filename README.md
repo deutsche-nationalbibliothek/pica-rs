@@ -40,6 +40,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --b
 * [print](#print) — print records in human readable format
 * [sample](#sample) — selects a random permutation of records
 * [select](#select) — write subfields to a CSV file
+* [slice](#slice) — return records withing a range (half-open interval)
 * [split](#split) — split a list of records into chunks
 
 ## Usage
@@ -190,6 +191,21 @@ In order to use TAB-character as field delimiter add the `--tsv` option:
 $ pica select -s --tsv "003@.0,012A{a,b,c}" DUMP.dat.gz
 123456789X    a    b    c
 123456789X    d    e    f
+```
+
+### Slice
+
+The `slice` command returns records within a range. The lower bound is
+inclusive, whereas the upper bound is exclusive (half-open interval).
+
+Examples:
+
+```bash
+# get records at position 1, 2 or 3 (without invalid record)
+$ pica slice --skip-invalid --start 1 --end 4 -o slice.dat DUMP.dat
+
+# get 10 records from position 10
+$ pica slice --skip-invalid --start 10 --length 10 -o slice.dat DUMP.dat
 ```
 
 ### Split

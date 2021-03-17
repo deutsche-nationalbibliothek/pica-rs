@@ -5,6 +5,7 @@ use common::CliRunner;
 static SAMPLE1: &'static str = include_str!("data/1.dat");
 static SAMPLE2: &'static str = include_str!("data/2.dat");
 static SAMPLE3: &'static str = include_str!("data/3.dat");
+static SAMPLE4: &'static str = include_str!("data/4.dat");
 
 #[test]
 fn test_eq_filter() {
@@ -35,7 +36,7 @@ fn test_ne_filter() {
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}{}", SAMPLE2, SAMPLE3)
+        format!("{}{}{}", SAMPLE2, SAMPLE3, SAMPLE4)
     );
 }
 
@@ -234,7 +235,7 @@ fn test_not_filter() {
     assert!(result.status.success());
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}{}", SAMPLE1, SAMPLE3)
+        format!("{}{}{}", SAMPLE1, SAMPLE3, SAMPLE4)
     );
 }
 
@@ -298,7 +299,7 @@ fn test_invert_match() {
 
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
-        format!("{}{}", SAMPLE2, SAMPLE3)
+        format!("{}{}{}", SAMPLE2, SAMPLE3, SAMPLE4)
     );
 }
 
