@@ -81,8 +81,8 @@ impl SubfieldFilter {
                         .filter(|subfield| subfield.code == *code)
                         .collect::<Vec<&Subfield>>();
 
-                    subfields.is_empty()
-                        || subfields
+                    !subfields.is_empty()
+                        && subfields
                             .iter()
                             .all(|subfield| subfield.value() == values[0])
                 }
