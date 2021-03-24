@@ -1,13 +1,13 @@
 use crate::filter::{
-    parse_field_tag, parse_occurrence_matcher, parse_subfield_code, ws,
-    OccurrenceMatcher,
+    parse_field_tag, parse_occurrence_matcher, parse_subfield_code,
+    parse_subfield_filter, ws, OccurrenceMatcher, SubfieldFilter,
 };
 
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
-use nom::combinator::{all_consuming, cut, map};
+use nom::combinator::{all_consuming, cut, map, opt};
 use nom::multi::separated_list1;
-use nom::sequence::{delimited, preceded, tuple};
+use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
 use bstr::{BStr, ByteSlice};
@@ -18,6 +18,7 @@ use std::ops::{Add, Deref, Mul};
 pub struct Selector {
     pub(crate) tag: String,
     pub(crate) occurrence: OccurrenceMatcher,
+    pub(crate) filter: Option<SubfieldFilter>,
     pub(crate) subfields: Vec<char>,
 }
 
@@ -98,11 +99,13 @@ impl Selector {
     pub fn new(
         tag: String,
         occurrence: OccurrenceMatcher,
+        filter: Option<SubfieldFilter>,
         subfields: Vec<char>,
     ) -> Self {
         Self {
             tag,
             occurrence,
+            filter,
             subfields,
         }
     }
@@ -128,28 +131,40 @@ impl Deref for Selectors {
 }
 
 fn parse_selector(i: &str) -> IResult<&str, Selector> {
-    map(
-        tuple((
-            parse_field_tag,
-            parse_occurrence_matcher,
-            alt((
-                // single subfield
-                map(
-                    preceded(char('.'), cut(parse_subfield_code)),
-                    |subfield| vec![subfield],
-                ),
-                // multiple subfields
+    alt((
+        map(
+            tuple((
+                parse_field_tag,
+                parse_occurrence_matcher,
+                preceded(char('.'), cut(parse_subfield_code)),
+            )),
+            |(tag, occurrence, subfield)| {
+                Selector::new(
+                    String::from(tag),
+                    occurrence,
+                    None,
+                    vec![subfield],
+                )
+            },
+        ),
+        map(
+            tuple((
+                parse_field_tag,
+                parse_occurrence_matcher,
                 delimited(
                     ws(char('{')),
-                    separated_list1(ws(char(',')), ws(parse_subfield_code)),
+                    pair(
+                        opt(terminated(parse_subfield_filter, ws(char(',')))),
+                        separated_list1(ws(char(',')), ws(parse_subfield_code)),
+                    ),
                     ws(char('}')),
                 ),
             )),
-        )),
-        |(tag, occurrence, subfields)| {
-            Selector::new(String::from(tag), occurrence, subfields)
-        },
-    )(i)
+            |(tag, occurrence, (filter, subfields))| {
+                Selector::new(String::from(tag), occurrence, filter, subfields)
+            },
+        ),
+    ))(i)
 }
 
 fn parse_selectors(i: &str) -> IResult<&str, Selectors> {
@@ -166,6 +181,7 @@ fn parse_selectors(i: &str) -> IResult<&str, Selectors> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::filter::ComparisonOp;
 
     #[test]
     fn test_parse_selector() {
@@ -176,6 +192,7 @@ mod tests {
                 Selector::new(
                     "003@".to_string(),
                     OccurrenceMatcher::None,
+                    None,
                     vec!['0']
                 )
             ))
@@ -188,6 +205,24 @@ mod tests {
                 Selector::new(
                     "044H".to_string(),
                     OccurrenceMatcher::Ignore,
+                    None,
+                    vec!['9', 'E', 'H']
+                )
+            ))
+        );
+
+        assert_eq!(
+            parse_selector("044H/*{ E == 'm', 9, E , H }"),
+            Ok((
+                "",
+                Selector::new(
+                    "044H".to_string(),
+                    OccurrenceMatcher::Ignore,
+                    Some(SubfieldFilter::Comparison(
+                        'E',
+                        ComparisonOp::Eq,
+                        vec!["m".to_string()]
+                    )),
                     vec!['9', 'E', 'H']
                 )
             ))
@@ -200,6 +235,7 @@ mod tests {
                 Selector::new(
                     "012A".to_string(),
                     OccurrenceMatcher::Ignore,
+                    None,
                     vec!['a']
                 )
             ))
@@ -212,6 +248,7 @@ mod tests {
                 Selector::new(
                     "012A".to_string(),
                     OccurrenceMatcher::Value("01".to_string()),
+                    None,
                     vec!['a']
                 )
             ))
