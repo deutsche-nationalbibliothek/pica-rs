@@ -414,7 +414,7 @@ fn parse_subfield_boolean_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     ))
 }
 
-fn parse_subfield_filter(i: &str) -> IResult<&str, SubfieldFilter> {
+pub(crate) fn parse_subfield_filter(i: &str) -> IResult<&str, SubfieldFilter> {
     alt((parse_subfield_boolean_expr, parse_subfield_primary))(i)
 }
 
