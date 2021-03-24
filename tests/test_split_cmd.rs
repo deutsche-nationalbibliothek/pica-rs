@@ -6,6 +6,7 @@ use tempdir::TempDir;
 static SAMPLE1: &'static str = include_str!("data/1.dat");
 static SAMPLE2: &'static str = include_str!("data/2.dat");
 static SAMPLE3: &'static str = include_str!("data/3.dat");
+static SAMPLE4: &'static str = include_str!("data/4.dat");
 
 #[test]
 fn test_split_cmd_outdir_exists() {
@@ -31,7 +32,7 @@ fn test_split_cmd_outdir_exists() {
     assert_eq!(content, format!("{}{}", SAMPLE1, SAMPLE2));
 
     let content = std::fs::read_to_string(outdir.join("SPLIT_1.dat")).unwrap();
-    assert_eq!(content, SAMPLE3);
+    assert_eq!(content, format!("{}{}", SAMPLE3, SAMPLE4));
 }
 
 #[test]
@@ -58,7 +59,7 @@ fn test_split_cmd_no_outdir() {
     assert_eq!(content, format!("{}{}", SAMPLE1, SAMPLE2));
 
     let content = std::fs::read_to_string(outdir.join("SPLIT_1.dat")).unwrap();
-    assert_eq!(content, SAMPLE3);
+    assert_eq!(content, format!("{}{}", SAMPLE3, SAMPLE4));
 }
 
 #[test]

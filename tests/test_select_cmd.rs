@@ -44,6 +44,21 @@ fn test_select_cmd() {
     );
     assert!(result.status.success());
     assert!(String::from_utf8(result.stdout).unwrap().is_empty());
+
+    // filter
+    let result = CliRunner::new().invoke(
+        "select",
+        &[
+            "--skip-invalid",
+            "003@.0,012A/*{b == '1', a}",
+            "tests/data/4.dat",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        "33445566X,1\n".to_string()
+    );
 }
 
 #[test]

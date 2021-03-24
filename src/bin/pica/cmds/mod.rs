@@ -9,6 +9,7 @@ pub mod partition;
 pub mod print;
 pub mod sample;
 pub mod select;
+pub mod slice;
 pub mod split;
 
 use crate::util::App;
@@ -26,6 +27,7 @@ pub fn subcmds() -> Vec<App> {
         print::cli(),
         sample::cli(),
         select::cli(),
+        slice::cli(),
         split::cli(),
     ]
 }

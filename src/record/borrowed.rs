@@ -156,6 +156,13 @@ impl<'a> Record<'a> {
             .iter()
             .filter(|field| selector.tag == field.tag)
             .filter(|field| selector.occurrence == field.occurrence)
+            .filter(|field| {
+                if let Some(filter) = &selector.filter {
+                    filter.matches(&field)
+                } else {
+                    true
+                }
+            })
             .map(|field| &field.subfields)
             .map(|subfields| {
                 selector
