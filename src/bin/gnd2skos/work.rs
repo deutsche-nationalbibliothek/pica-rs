@@ -40,7 +40,7 @@ impl<'a> Work<'a> {
                 'h' | 'f' => {
                     label.push_str(&format!(", {}", value));
                 }
-                'p' | 's' => {
+                'p' | 's' | 'x' => {
                     label.push_str(&format!(" / {}", value));
                 }
                 _ => continue,
@@ -89,15 +89,14 @@ impl<'a> Concept for Work<'a> {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let subj = gnd.get(&idn).unwrap();
+        let prefix = self.get_prefix();
 
         // skos:Concept
         graph.insert(&subj, &rdf::type_, &skos::Concept).unwrap();
 
         // skos:prefLabel
         if let Some(label) = Self::get_label(self.first("022A").unwrap()) {
-            if let Some(prefix) = self.get_prefix() {
-                graph.insert(&subj, &skos::hiddenLabel, &label).unwrap();
-
+            if let Some(ref prefix) = prefix {
                 let label = StrLiteral::new_lang(
                     format!("{} : {}", prefix.txt(), label.txt()),
                     "de",
@@ -113,7 +112,17 @@ impl<'a> Concept for Work<'a> {
         // skos:altLabel
         for field in self.all("022@") {
             if let Some(label) = Self::get_label(field) {
-                graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                if let Some(ref prefix) = prefix {
+                    let label = StrLiteral::new_lang(
+                        format!("{} : {}", prefix.txt(), label.txt()),
+                        "de",
+                    )
+                    .unwrap();
+
+                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                } else {
+                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                }
             }
         }
     }
