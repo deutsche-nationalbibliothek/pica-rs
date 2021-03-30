@@ -10,3 +10,9 @@ license = "AGPL-3.0-only"
 [lib]
 path = "src/lib.rs"
 name = "pica"
+
+[profile.release]
+codegen-units = 1
+panic = "abort"
+lto = true
+
