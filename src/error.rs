@@ -9,7 +9,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// An error that can occur when processing PICA+ data.
 #[derive(Debug)]
 pub enum Error {
+    InvalidField(String),
+    InvalidOccurrence(String),
     InvalidRecord(ParsePicaError),
+    InvalidSubfield(String),
     Io(io::Error),
 }
 
@@ -19,6 +22,9 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             Error::InvalidRecord(ref e) => e.fmt(f),
+            Error::InvalidSubfield(ref m) => f.write_str(m),
+            Error::InvalidField(ref m) => f.write_str(m),
+            Error::InvalidOccurrence(ref m) => f.write_str(m),
             Error::Io(ref e) => e.fmt(f),
         }
     }

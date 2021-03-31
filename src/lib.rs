@@ -1,12 +1,8 @@
 //! `pica-rs` provides a library and tools to work with bibliographic records
 //! encoded in PICA+.
-//!
-//! # Thanks
-//!
-//! Most of the architectural decisions and concepts are based on the CSV
-//! toolkit [xsv](<https://github.com/BurntSushi/xsv>) and Rust [CSV
-//! parser](<https://github.com/BurntSushi/rust-csv>) library written by Andrew
-//! Gallant.
+
+#[macro_use]
+extern crate lazy_static;
 
 pub use error::{Error, Result};
 pub use reader::{Reader, ReaderBuilder};

@@ -27,23 +27,29 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::{ByteRecord, Error, Field, ReaderBuilder, Subfield};
+    /// use pica::{ByteRecord, Field, ReaderBuilder, Subfield};
+    /// use std::error::Error;
     ///
-    /// let data = "003@ \x1f0123456789\x1e\n";
-    /// let mut reader = ReaderBuilder::new().from_reader(data.as_bytes());
-    /// let records = reader
-    ///     .records()
-    ///     .map(Result::unwrap)
-    ///     .collect::<Vec<ByteRecord>>();
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let data = "003@ \x1f0123456789\x1e\n";
+    ///     let mut reader = ReaderBuilder::new().from_reader(data.as_bytes());
+    ///     let records = reader
+    ///         .records()
+    ///         .map(Result::unwrap)
+    ///         .collect::<Vec<ByteRecord>>();
     ///
-    /// assert_eq!(
-    ///     records,
-    ///     vec![ByteRecord::new(vec![Field::new(
-    ///         "003@",
-    ///         None,
-    ///         vec![Subfield::new('0', "123456789")]
-    ///     )])]
-    /// );
+    ///     assert_eq!(
+    ///         records,
+    ///         vec![ByteRecord::new(vec![Field::new(
+    ///             "003@",
+    ///             None,
+    ///             vec![Subfield::new('0', "123456789")?]
+    ///         )?])]
+    ///     );
+    ///
+    ///     Ok(())
+    /// }
     /// ```
     pub fn new() -> ReaderBuilder {
         ReaderBuilder::default()

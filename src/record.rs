@@ -25,11 +25,111 @@ use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Err;
 
 use bstr::BString;
+use regex::bytes::Regex;
+use std::cmp::PartialEq;
 use std::fmt;
+use std::ops::Deref;
+
+use crate::error::Error;
 
 #[derive(Debug, PartialEq)]
 pub struct ByteRecord {
     pub(crate) fields: Vec<Field>,
+}
+
+impl Deref for ByteRecord {
+    type Target = Vec<Field>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.fields
+    }
+}
+
+impl ByteRecord {
+    /// Creates a new `ByteRecord`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record = ByteRecord::new(vec![Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![Subfield::new('0', "123456789X")?],
+    ///     )?]);
+    ///
+    ///     assert_eq!(record.len(), 1);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn new(fields: Vec<Field>) -> ByteRecord {
+        ByteRecord { fields }
+    }
+
+    /// Creates a new ByteRecord from a byte vector.
+    ///
+    /// Parses the given byte sequence and return the corresponding
+    /// `ByteRecord`. If an parse error occurs an `ParsePicaError` will be
+    /// returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record =
+    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
+    ///     assert_eq!(record.len(), 1);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes<T>(data: T) -> Result<ByteRecord, ParsePicaError>
+    where
+        T: Into<Vec<u8>>,
+    {
+        let data = data.into();
+
+        parse_record(&data)
+            .map_err(|_| ParsePicaError {
+                message: "Invalid record.".to_string(),
+                data: data.clone(),
+            })
+            .map(|(_, record)| record)
+    }
+
+    /// Returns `true` if a field with the specified `tag` exists.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let data = include_str!("../tests/data/12283643X.dat");
+    ///     let record = ByteRecord::from_bytes(data.as_bytes())?;
+    ///
+    ///     assert_eq!(record.contains_tag("003@"), true);
+    ///     assert_eq!(record.contains_tag("012A"), false);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn contains_tag<S>(&self, tag: S) -> bool
+    where
+        S: Into<BString>,
+    {
+        let tag = tag.into();
+
+        self.iter().any(|x| x.tag() == &tag)
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -39,19 +139,151 @@ pub struct Field {
     pub(crate) subfields: Vec<Subfield>,
 }
 
+impl Deref for Field {
+    type Target = Vec<Subfield>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.subfields
+    }
+}
+
 impl Field {
+    /// Creates a new `Field`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field =
+    ///         Field::new("003@", None, vec![Subfield::new('0', "123456789X")?])?;
+    ///     assert_eq!(field.tag(), "003@");
+    ///     assert_eq!(field.len(), 1);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn new<S>(
         tag: S,
         occurrence: Option<Occurrence>,
         subfields: Vec<Subfield>,
-    ) -> Self
+    ) -> Result<Field, Error>
     where
         S: Into<BString>,
     {
-        Self {
-            tag: tag.into(),
+        lazy_static! {
+            static ref RE: Regex = Regex::new("^[0-2][0-9]{2}[A-Z@]$").unwrap();
+        }
+
+        let tag = tag.into();
+
+        if !RE.is_match(tag.as_slice()) {
+            return Err(Error::InvalidField("Invalid field tag.".to_string()));
+        }
+
+        Ok(Field {
+            tag,
             occurrence,
             subfields,
+        })
+    }
+
+    /// Retrun the fields tag
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Field;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field = Field::new("003@", None, vec![])?;
+    ///     assert_eq!(field.tag(), "003@");
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn tag(&self) -> &BString {
+        &self.tag
+    }
+
+    /// Retrun the field's occurrence
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Occurrence};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field = Field::new("003@", Some(Occurrence::new("00")?), vec![])?;
+    ///     assert_eq!(field.occurrence().unwrap(), "00");
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn occurrence(&self) -> Option<&Occurrence> {
+        self.occurrence.as_ref()
+    }
+
+    /// Returns `true` if the `Field` contains a `Subfield` with the specified
+    ///  code.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field =
+    ///         Field::new("003@", None, vec![Subfield::new('0', "123456789X")?])?;
+    ///
+    ///     assert_eq!(field.contains_code('0'), true);
+    ///     assert_eq!(field.contains_code('1'), false);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn contains_code(&self, code: char) -> bool {
+        self.iter().any(|x| x.code == code)
+    }
+
+    /// Returns a list of references to all `Subfields` of the given subfield
+    /// code.
+    ///
+    /// If no subfield exists `None` is returned.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field =
+    ///         Field::new("003@", None, vec![Subfield::new('0', "123456789X")?])?;
+    ///
+    ///     assert_eq!(
+    ///         field.get('0'),
+    ///         Some(vec![&Subfield::new('0', "123456789X")?])
+    ///     );
+    ///     assert_eq!(field.get('1'), None);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn get(&self, code: char) -> Option<Vec<&Subfield>> {
+        let subfields = self
+            .iter()
+            .filter(|x| x.code == code)
+            .collect::<Vec<&Subfield>>();
+
+        if !subfields.is_empty() {
+            Some(subfields)
+        } else {
+            None
         }
     }
 }
@@ -63,8 +295,43 @@ pub struct Subfield {
 }
 
 impl Subfield {
-    /// TODO: eval code and value
-    pub fn new<S>(code: char, value: S) -> Self
+    /// Creates a new `Subfield`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// assert!(Subfield::new('0', "12283643X").is_ok());
+    /// assert!(Subfield::new('!', "12283643X").is_err());
+    /// assert!(Subfield::new('a', "123\x1f34").is_err());
+    /// assert!(Subfield::new('a', "123\x1e34").is_err());
+    /// ```
+    pub fn new<S>(code: char, value: S) -> Result<Subfield, Error>
+    where
+        S: Into<BString>,
+    {
+        let value: BString = value.into();
+
+        if !code.is_ascii_alphanumeric() {
+            return Err(Error::InvalidSubfield(format!(
+                "Invalid subfield code '{}'",
+                code
+            )));
+        }
+
+        if value.contains(&b'\x1e') || value.contains(&b'\x1f') {
+            return Err(Error::InvalidSubfield(
+                "Invalid subfield value.".to_string(),
+            ));
+        }
+
+        Ok(Subfield { code, value })
+    }
+
+    /// Creates a new `Subfield` without checking for valid code or value.
+    #[inline]
+    pub(crate) fn from_unchecked<S>(code: char, value: S) -> Subfield
     where
         S: Into<BString>,
     {
@@ -73,14 +340,111 @@ impl Subfield {
             value: value.into(),
         }
     }
+
+    /// Returns the subfield code.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let subfield = Subfield::new('a', "1234")?;
+    ///     assert_eq!(subfield.code(), 'a');
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn code(&self) -> char {
+        self.code
+    }
+
+    /// Returns the subfield value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Subfield;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let subfield = Subfield::new('a', "1234")?;
+    ///     assert_eq!(subfield.value(), "1234");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn value(&self) -> &BString {
+        &self.value
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Occurrence(pub(crate) BString);
 
+impl Deref for Occurrence {
+    type Target = BString;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl PartialEq<&str> for Occurrence {
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == other.as_bytes()
+    }
+}
+
+impl PartialEq<str> for Occurrence {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other.as_bytes()
+    }
+}
+
 impl Occurrence {
-    // TODO: eval occurrence
-    pub fn new<S>(occurrence: S) -> Self
+    /// Creates a new `Occurrence`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use bstr::BString;
+    /// use pica::Occurrence;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let occurrence = Occurrence::new("00")?;
+    ///     assert_eq!(occurrence, "00");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn new<S>(occurrence: S) -> Result<Occurrence, Error>
+    where
+        S: Into<BString>,
+    {
+        let occurrence = occurrence.into();
+
+        if occurrence.len() < 2 || occurrence.len() > 3 {
+            return Err(Error::InvalidOccurrence(
+                "length < 2 || length > 3".to_string(),
+            ));
+        }
+
+        if !occurrence.iter().all(u8::is_ascii_digit) {
+            return Err(Error::InvalidOccurrence(format!(
+                "Invalid occurrence '{}'",
+                occurrence
+            )));
+        }
+
+        Ok(Occurrence(occurrence))
+    }
+
+    /// Creates a new `Occurrence` without checking the input.
+    #[inline]
+    pub(crate) fn from_unchecked<S>(occurrence: S) -> Occurrence
     where
         S: Into<BString>,
     {
@@ -93,6 +457,8 @@ pub struct ParsePicaError {
     pub message: String,
     pub data: Vec<u8>,
 }
+
+impl std::error::Error for ParsePicaError {}
 
 impl fmt::Display for ParsePicaError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -119,23 +485,23 @@ fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
             char('\x1f'),
             cut(pair(parse_subfield_code, parse_subfield_value)),
         ),
-        |(code, value)| Subfield { code, value },
+        |(code, value)| Subfield::from_unchecked(code, value),
     )(i)
 }
 
 /// Parses a PICA+ field occurrence.
-pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
+fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
     map(
         preceded(
             tag(b"/"),
             cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
         ),
-        |value| Occurrence(BString::from(value)),
+        Occurrence::from_unchecked,
     )(i)
 }
 
 /// Parses a PICA+ Field tag.
-pub fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
+fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
     map(
         recognize(tuple((
             one_of("012"),
@@ -174,26 +540,11 @@ fn parse_record(i: &[u8]) -> ParseResult<ByteRecord> {
     )(i)
 }
 
-impl ByteRecord {
-    // Creates a new ByteRecord
-    pub fn new(fields: Vec<Field>) -> Self {
-        Self { fields }
-    }
-
-    /// Creates a new ByteRecord from a byte vector.
-    pub fn from_bytes(data: Vec<u8>) -> Result<Self, ParsePicaError> {
-        parse_record(&data)
-            .map_err(|_| ParsePicaError {
-                message: "Invalid record.".to_string(),
-                data: data.clone(),
-            })
-            .map(|(_, record)| record)
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
+
+    type TestResult = Result<(), Box<dyn std::error::Error>>;
 
     #[test]
     fn test_parse_subfield_code() {
@@ -218,24 +569,30 @@ mod test {
     }
 
     #[test]
-    fn test_parse_subfield() {
+    fn test_parse_subfield() -> TestResult {
         assert_eq!(
             parse_subfield(b"\x1fa123456789").unwrap().1,
-            Subfield::new('a', "123456789")
-        )
+            Subfield::new('a', "123456789")?
+        );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_field_occurrence() {
+    fn test_parse_field_occurrence() -> TestResult {
         assert_eq!(
             parse_field_occurrence(b"/01").unwrap().1,
-            Occurrence::new("01")
+            Occurrence::new("01")?
         );
+
         assert_eq!(
             parse_field_occurrence(b"/001").unwrap().1,
-            Occurrence::new("001")
+            Occurrence::new("001")?
         );
+
         assert!(parse_field_occurrence(b"/0A").is_err());
+
+        Ok(())
     }
 
     #[test]
@@ -248,41 +605,43 @@ mod test {
     }
 
     #[test]
-    fn test_parse_field() {
+    fn test_parse_field() -> TestResult {
         assert_eq!(
             parse_field(b"012A/00 \x1fa123\x1fb456\x1fc789\x1e")
                 .unwrap()
                 .1,
             Field::new(
                 "012A",
-                Some(Occurrence::new("00")),
+                Some(Occurrence::new("00")?),
                 vec![
-                    Subfield::new('a', "123"),
-                    Subfield::new('b', "456"),
-                    Subfield::new('c', "789")
+                    Subfield::new('a', "123")?,
+                    Subfield::new('b', "456")?,
+                    Subfield::new('c', "789")?,
                 ]
-            )
+            )?
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_record() {
+    fn test_parse_record() -> TestResult {
         let record_str =
             b"012A \x1fc789\x1e012A/00 \x1fa123\x1e012A/01 \x1fb456\x1e";
         assert_eq!(
             parse_record(record_str).unwrap().1,
             ByteRecord::new(vec![
-                Field::new("012A", None, vec![Subfield::new('c', "789"),]),
+                Field::new("012A", None, vec![Subfield::new('c', "789")?])?,
                 Field::new(
                     "012A",
-                    Some(Occurrence::new("00")),
-                    vec![Subfield::new('a', "123"),]
-                ),
+                    Some(Occurrence::new("00")?),
+                    vec![Subfield::new('a', "123")?]
+                )?,
                 Field::new(
                     "012A",
-                    Some(Occurrence::new("01")),
-                    vec![Subfield::new('b', "456"),]
-                ),
+                    Some(Occurrence::new("01")?),
+                    vec![Subfield::new('b', "456")?]
+                )?,
             ])
         );
 
@@ -291,8 +650,10 @@ mod test {
             ByteRecord::new(vec![Field::new(
                 "012A",
                 None,
-                vec![Subfield::new('a', "123"),]
-            ),])
+                vec![Subfield::new('a', "123")?]
+            )?])
         );
+
+        Ok(())
     }
 }
