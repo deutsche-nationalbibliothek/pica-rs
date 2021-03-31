@@ -7,6 +7,8 @@
 //! toolkit xsv](https://github.com/BurntSushi/xsv) and [CSV parser
 //! library](https://github.com/BurntSushi/rust-csv) written by Andrew Gallant.
 
+pub use error::{Error, Result};
 pub use record::{ByteRecord, Field, Occurrence, ParsePicaError, Subfield};
 
+mod error;
 mod record;
