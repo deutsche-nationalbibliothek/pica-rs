@@ -1,0 +1,260 @@
+use crate::error::{Error, Result};
+use crate::{ByteRecord, ParsePicaError};
+use std::fs::File;
+use std::io::{BufRead, BufReader, Read};
+use std::ops::{Deref, DerefMut};
+use std::path::Path;
+
+/// Configures and builds a PICA+ reader.
+#[derive(Debug)]
+pub struct ReaderBuilder {
+    skip_invalid: bool,
+    buffer_size: usize,
+}
+
+impl Default for ReaderBuilder {
+    fn default() -> ReaderBuilder {
+        ReaderBuilder {
+            buffer_size: 65_536,
+            skip_invalid: true,
+        }
+    }
+}
+
+impl ReaderBuilder {
+    /// Create a new `ReaderBuilder` for reading PICA+ data.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::{ByteRecord, Error, Field, ReaderBuilder, Subfield};
+    ///
+    /// let data = "003@ \x1f0123456789\x1e\n";
+    /// let mut reader = ReaderBuilder::new().from_reader(data.as_bytes());
+    /// let records = reader
+    ///     .records()
+    ///     .map(Result::unwrap)
+    ///     .collect::<Vec<ByteRecord>>();
+    ///
+    /// assert_eq!(
+    ///     records,
+    ///     vec![ByteRecord::new(vec![Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![Subfield::new('0', "123456789")]
+    ///     )])]
+    /// );
+    /// ```
+    pub fn new() -> ReaderBuilder {
+        ReaderBuilder::default()
+    }
+
+    /// Builds a new `Reader` with the current configuration, that reads from a
+    /// file path.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::ReaderBuilder;
+    /// use std::error::Error;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut reader =
+    ///         ReaderBuilder::new().from_path("tests/data/12283643X.dat")?;
+    ///
+    ///     let record = reader.records().next().unwrap();
+    ///     assert!(record.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_path<P: AsRef<Path>>(&self, path: P) -> Result<Reader<File>> {
+        Ok(Reader::new(self, File::open(path)?))
+    }
+
+    /// Builds a new `Reader` with the current configuration, that reads from
+    /// an existing reader.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::ReaderBuilder;
+    /// use std::error::Error;
+    /// use std::io::Cursor;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let cursor = Cursor::new(b"003@ \x1f0123456789\x1e");
+    ///     let mut reader = ReaderBuilder::new().from_reader(cursor);
+    ///     let record = reader.records().next().unwrap();
+    ///     assert!(record.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_reader<R: Read>(&self, reader: R) -> Reader<R> {
+        Reader::new(self, reader)
+    }
+
+    /// Whether to skip invalid records or not.
+    ///
+    /// By default, if an invalid record occurs the reader moves forward until
+    /// the next valid record was found or the end of file is reached. When
+    /// this flag is disabled (`yes` is set to `false`), the iterator item wil
+    /// be an `pica::Error`.
+    ///
+    /// # Example
+    /// ```
+    /// use pica::ReaderBuilder;
+    /// use std::error::Error;
+    /// use std::io::Cursor;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let data = b"003@ \x1f0123\x1e\n003@ \x1f!456\x1e\n003@ \x1f0789\x1e\n";
+    ///
+    ///     let mut reader = ReaderBuilder::new()
+    ///         .skip_invalid(false)
+    ///         .from_reader(Cursor::new(data));
+    ///     let mut iter = reader.records();
+    ///
+    ///     assert!(iter.next().unwrap().is_ok());
+    ///     assert!(iter.next().unwrap().is_err());
+    ///     assert!(iter.next().unwrap().is_ok());
+    ///     assert!(iter.next().is_none());
+    ///
+    ///     let mut reader = ReaderBuilder::new()
+    ///         .skip_invalid(true)
+    ///         .from_reader(Cursor::new(data));
+    ///     let mut iter = reader.records();
+    ///
+    ///     assert!(iter.next().unwrap().is_ok());
+    ///     assert!(iter.next().unwrap().is_ok());
+    ///     assert!(iter.next().is_none());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn skip_invalid(mut self, yes: bool) -> Self {
+        self.skip_invalid = yes;
+        self
+    }
+
+    /// Change the inital capacity of an new `ByteRecord`.
+    ///
+    /// By default the inital capacity is set to `1024` bytes.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::ReaderBuilder;
+    /// use std::error::Error;
+    /// use std::io::Cursor;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let cursor = Cursor::new(b"003@ \x1f0123456789\x1e");
+    ///     let mut reader =
+    ///         ReaderBuilder::new().buffer_size(2048).from_reader(cursor);
+    ///     let record = reader.records().next().unwrap();
+    ///     assert!(record.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn buffer_size(mut self, buffer_size: usize) -> Self {
+        self.buffer_size = buffer_size;
+        self
+    }
+}
+
+/// A reader to read PICA+ records.
+#[derive(Debug)]
+pub struct Reader<R> {
+    reader: BufReader<R>,
+    skip_invalid: bool,
+    buffer_size: usize,
+}
+
+impl<R: Read> Reader<R> {
+    pub fn new(builder: &ReaderBuilder, reader: R) -> Reader<R> {
+        Self {
+            reader: BufReader::with_capacity(builder.buffer_size, reader),
+            skip_invalid: builder.skip_invalid,
+            buffer_size: builder.buffer_size,
+        }
+    }
+
+    pub fn records(&mut self) -> RecordsIter<R> {
+        RecordsIter::new(self)
+    }
+}
+
+impl<R: Read> Deref for Reader<R> {
+    type Target = BufReader<R>;
+
+    fn deref(&self) -> &<Self as Deref>::Target {
+        &self.reader
+    }
+}
+
+impl<R: Read> DerefMut for Reader<R> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.reader
+    }
+}
+
+/// An iterator that yields [`ByteRecord`]s.
+///
+/// Each iterator item is a [`Result<ByteRecord, ParsePicaError>`]. The caller
+/// must handly possbile errors ([`io::Error`] or [`ParsePicaError`]). If the
+/// `skip_invalid` flag is set, the iterator will ignore invalid records and
+/// move forward to the next valid record.
+pub struct RecordsIter<'r, R: 'r> {
+    reader: &'r mut Reader<R>,
+    line: usize,
+}
+
+impl<'r, R: Read> RecordsIter<'r, R> {
+    fn new(reader: &'r mut Reader<R>) -> RecordsIter<'r, R> {
+        Self { reader, line: 0 }
+    }
+}
+
+impl<'r, R: Read> Iterator for RecordsIter<'r, R> {
+    type Item = Result<ByteRecord>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut buffer: Vec<u8> = Vec::with_capacity(self.reader.buffer_size);
+
+        match self.reader.read_until(b'\n', &mut buffer) {
+            Err(e) => Some(Err(Error::from(e))),
+            Ok(0) => None,
+            Ok(_) => {
+                let result = ByteRecord::from_bytes(buffer);
+                self.line += 1;
+
+                if result.is_err() && self.reader.skip_invalid {
+                    // If the current item is invalid and the `skip_invalid`
+                    // flag is set, we move forward to the next item until a
+                    // valid item was found or the end of file is reached.
+                    self.next()
+                } else {
+                    Some(result.map_err(|e| {
+                        // Because the iterator tracks the current line, the
+                        // error message of an invalid record can be enriched
+                        // by the line number.
+                        Error::InvalidRecord(ParsePicaError {
+                            message: format!(
+                                "Invalid record on line {}.",
+                                self.line
+                            ),
+                            data: e.data,
+                        })
+                    }))
+                }
+            }
+        }
+    }
+}

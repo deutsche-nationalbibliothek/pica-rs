@@ -3,12 +3,15 @@
 //!
 //! # Thanks
 //!
-//! Most of the architectural decisions and concepts are based on the [CSV
-//! toolkit xsv](https://github.com/BurntSushi/xsv) and [CSV parser
-//! library](https://github.com/BurntSushi/rust-csv) written by Andrew Gallant.
+//! Most of the architectural decisions and concepts are based on the CSV
+//! toolkit [xsv](<https://github.com/BurntSushi/xsv>) and Rust [CSV
+//! parser](<https://github.com/BurntSushi/rust-csv>) library written by Andrew
+//! Gallant.
 
 pub use error::{Error, Result};
+pub use reader::{Reader, ReaderBuilder};
 pub use record::{ByteRecord, Field, Occurrence, ParsePicaError, Subfield};
 
 mod error;
+mod reader;
 mod record;

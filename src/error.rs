@@ -1,4 +1,5 @@
 use crate::ParsePicaError;
+use std::error;
 use std::fmt::{self, Display, Formatter};
 use std::io;
 
@@ -11,6 +12,8 @@ pub enum Error {
     InvalidRecord(ParsePicaError),
     Io(io::Error),
 }
+
+impl error::Error for Error {}
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
