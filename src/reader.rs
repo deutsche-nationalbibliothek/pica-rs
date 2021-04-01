@@ -105,6 +105,31 @@ impl ReaderBuilder {
         Reader::new(self, reader)
     }
 
+    /// Builds a new `Reader` with the current configuration, that reads from
+    /// the given path, if some was provided, otherwise from stdin.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::{ByteRecord, ReaderBuilder};
+    /// use std::error::Error;
+    /// use std::io::Cursor;
+    /// use std::path::Path;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut reader = ReaderBuilder::new()
+    ///         .from_path_or_stdin(Some("tests/data/119232022.dat.gz"))?;
+    ///     let record = reader.records().next().unwrap();
+    ///     assert!(record.is_ok());
+    ///
+    ///     let filename: Option<String> = None;
+    ///     let mut reader = ReaderBuilder::new().from_path_or_stdin(filename)?;
+    ///     assert!(reader.records().next().is_none());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn from_path_or_stdin<P: AsRef<Path>>(
         &self,
         path: Option<P>,
