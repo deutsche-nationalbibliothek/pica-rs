@@ -24,7 +24,7 @@ use nom::multi::{many0, many1, many_m_n};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Err;
 
-use bstr::BString;
+use bstr::{BString, ByteSlice};
 use regex::bytes::Regex;
 use std::cmp::PartialEq;
 use std::fmt;
@@ -129,6 +129,44 @@ impl ByteRecord {
         let tag = tag.into();
 
         self.iter().any(|x| x.tag() == &tag)
+    }
+
+    /// Returns `true` if no fields contains invalid subfield values.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, Error, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record = ByteRecord::new(vec![Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![Subfield::new('0', "123456789X")?],
+    ///     )?]);
+    ///     assert_eq!(record.valid().is_ok(), true);
+    ///
+    ///     let record = ByteRecord::new(vec![Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![
+    ///             Subfield::new('0', "234567890X")?,
+    ///             Subfield::new('1', vec![0, 159])?,
+    ///             Subfield::new('2', "123456789X")?,
+    ///         ],
+    ///     )?]);
+    ///     assert_eq!(record.valid().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn valid(&self) -> Result<(), Error> {
+        for field in &self.fields {
+            field.valid()?;
+        }
+
+        Ok(())
     }
 }
 
@@ -286,6 +324,41 @@ impl Field {
             None
         }
     }
+
+    /// Returns `true` if and only if all subfield values are valid UTF-8.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Error, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field =
+    ///         Field::new("003@", None, vec![Subfield::new('0', "123456789X")?])?;
+    ///     assert_eq!(field.valid().is_ok(), true);
+    ///
+    ///     let field = Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![
+    ///             Subfield::new('0', "234567890X")?,
+    ///             Subfield::new('1', vec![0, 159])?,
+    ///             Subfield::new('2', "123456789X")?,
+    ///         ],
+    ///     )?;
+    ///     assert_eq!(field.valid().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn valid(&self) -> Result<(), Error> {
+        for subfield in &self.subfields {
+            subfield.valid()?;
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -377,6 +450,36 @@ impl Subfield {
     /// ```
     pub fn value(&self) -> &BString {
         &self.value
+    }
+
+    /// Returns `true` if the subfield value is valid UTF-8 byte sequence.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Error, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let subfield = Subfield::new('0', "123456789X")?;
+    ///     assert_eq!(subfield.valid().is_ok(), true);
+    ///
+    ///     let subfield = Subfield::new('0', vec![0, 159])?;
+    ///     assert_eq!(subfield.valid().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn valid(&self) -> Result<(), Error> {
+        if self.value.is_ascii() {
+            return Ok(());
+        }
+
+        if let Err(e) = String::from_utf8(self.value.as_bytes().to_vec()) {
+            return Err(Error::Utf8Error(e));
+        }
+
+        Ok(())
     }
 }
 

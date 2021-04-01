@@ -1,7 +1,9 @@
 use crate::error::{Error, Result};
 use crate::{ByteRecord, ParsePicaError};
+use flate2::read::GzDecoder;
+use std::ffi::OsStr;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{self, BufRead, BufReader, Read};
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
 
@@ -101,6 +103,26 @@ impl ReaderBuilder {
     /// ```
     pub fn from_reader<R: Read>(&self, reader: R) -> Reader<R> {
         Reader::new(self, reader)
+    }
+
+    pub fn from_path_or_stdin<P: AsRef<Path>>(
+        &self,
+        path: Option<P>,
+    ) -> Result<Reader<Box<dyn Read>>> {
+        let reader: Box<dyn Read> = match path {
+            None => Box::new(io::stdin()),
+            Some(filename) => {
+                let filename = filename.as_ref();
+
+                if filename.extension() == Some(OsStr::new("gz")) {
+                    Box::new(GzDecoder::new(File::open(filename)?))
+                } else {
+                    Box::new(File::open(filename)?)
+                }
+            }
+        };
+
+        Ok(Reader::new(self, reader))
     }
 
     /// Whether to skip invalid records or not.

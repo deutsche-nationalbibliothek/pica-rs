@@ -4,9 +4,12 @@ version = "0.1.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2018"
 license = "AGPL-3.0-only"
+default-run = "pica"
 
 [dependencies]
 bstr = "0.2.15"
+clap = "3.0.0-beta.2"
+flate2 = "1.0"
 lazy_static = "1.4.0"
 nom = "6.1.2"
 regex = "1.4.5"
@@ -14,6 +17,11 @@ regex = "1.4.5"
 [lib]
 path = "src/lib.rs"
 name = "pica"
+
+[[bin]]
+path = "src/bin/pica/main.rs"
+name = "pica"
+
 
 [profile.release]
 codegen-units = 1
