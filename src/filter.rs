@@ -232,7 +232,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(
 enum StringFragment<'a> {
     Literal(&'a str),
     EscapedChar(char),
-    EscapedWS,
+    EscapedWs,
 }
 
 /// Combine parse_literal, parse_escaped_whitespace, and parse_escaped_char
@@ -245,7 +245,7 @@ where
     alt((
         map(parse_literal, StringFragment::Literal),
         map(parse_escaped_char, StringFragment::EscapedChar),
-        value(StringFragment::EscapedWS, preceded(char('\\'), multispace1)),
+        value(StringFragment::EscapedWs, preceded(char('\\'), multispace1)),
     ))(i)
 }
 
@@ -262,7 +262,7 @@ where
             match fragment {
                 StringFragment::Literal(s) => string.push_str(s),
                 StringFragment::EscapedChar(c) => string.push(c),
-                StringFragment::EscapedWS => {}
+                StringFragment::EscapedWs => {}
             }
             string
         }),
