@@ -28,12 +28,16 @@ use bstr::{BString, ByteSlice};
 use regex::bytes::Regex;
 use std::cmp::PartialEq;
 use std::fmt;
+use std::io::{self, Write};
 use std::ops::Deref;
 
 use crate::error::Error;
+use crate::Writer;
 
+/// A PICA+ record, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq)]
 pub struct ByteRecord {
+    pub(crate) raw_data: Option<Vec<u8>>,
     pub(crate) fields: Vec<Field>,
 }
 
@@ -67,7 +71,10 @@ impl ByteRecord {
     /// }
     /// ```
     pub fn new(fields: Vec<Field>) -> ByteRecord {
-        ByteRecord { fields }
+        ByteRecord {
+            fields,
+            raw_data: None,
+        }
     }
 
     /// Creates a new ByteRecord from a byte vector.
@@ -96,12 +103,17 @@ impl ByteRecord {
     {
         let data = data.into();
 
-        parse_record(&data)
+        let fields = parse_fields(&data)
             .map_err(|_| ParsePicaError {
                 message: "Invalid record.".to_string(),
                 data: data.clone(),
             })
-            .map(|(_, record)| record)
+            .map(|(_, record)| record)?;
+
+        Ok(ByteRecord {
+            raw_data: Some(data),
+            fields,
+        })
     }
 
     /// Returns `true` if a field with the specified `tag` exists.
@@ -168,8 +180,55 @@ impl ByteRecord {
 
         Ok(())
     }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield, WriterBuilder, Occurrence, ByteRecord};
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// # use std::fs::read_to_string;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
+    ///
+    ///     let record = ByteRecord::new(vec![
+    ///         Field::new("012A", Some(Occurrence::new("001")?), vec![
+    ///             Subfield::new('0', "123456789X")?,
+    ///         ])?,
+    ///         Field::new("012A", Some(Occurrence::new("002")?), vec![
+    ///             Subfield::new('0', "123456789X")?,
+    ///         ])?,
+    ///     ]);
+    ///     
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
+    ///     record.write(&mut writer)?;
+    ///     writer.flush()?;
+    ///
+    ///     # let result = read_to_string(path)?;
+    ///     # assert_eq!(result, String::from(
+    ///     #     "012A/001 \x1f0123456789X\x1e012A/002 \x1f0123456789X\x1e\n"));
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn write<W: io::Write>(
+        &self,
+        writer: &mut Writer<W>,
+    ) -> crate::error::Result<()> {
+        for field in &self.fields {
+            field.write(writer)?;
+        }
+
+        writer.write_all(b"\n")?;
+        Ok(())
+    }
 }
 
+/// A PICA+ field, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq)]
 pub struct Field {
     pub(crate) tag: BString,
@@ -359,8 +418,57 @@ impl Field {
 
         Ok(())
     }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield, WriterBuilder, Occurrence};
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// # use std::fs::read_to_string;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
+    ///
+    ///     let subfield = Subfield::new('0', "123456789X")?;
+    ///     let occurrence = Occurrence::new("001")?;
+    ///     let field = Field::new("012A", Some(occurrence), vec![subfield])?;
+    ///     
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
+    ///     field.write(&mut writer)?;
+    ///     writer.flush()?;
+    ///
+    ///     # let result = read_to_string(path)?;
+    ///     # assert_eq!(result, String::from("012A/001 \x1f0123456789X\x1e"));
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn write<W: io::Write>(
+        &self,
+        writer: &mut Writer<W>,
+    ) -> crate::error::Result<()> {
+        writer.write_all(self.tag.as_slice())?;
+
+        if let Some(ref occurrence) = self.occurrence {
+            write!(writer, "/{}", occurrence.0)?;
+        }
+
+        writer.write_all(&[b' '])?;
+
+        for subfield in &self.subfields {
+            subfield.write(writer)?;
+        }
+
+        writer.write_all(&[b'\x1e'])?;
+        Ok(())
+    }
 }
 
+/// A PICA+ subfield, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq)]
 pub struct Subfield {
     pub(crate) code: char,
@@ -481,8 +589,42 @@ impl Subfield {
 
         Ok(())
     }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Subfield, WriterBuilder};
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// # use std::fs::read_to_string;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
+    ///
+    ///     let subfield = Subfield::new('0', "123456789X")?;
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
+    ///     subfield.write(&mut writer)?;
+    ///     writer.flush()?;
+    ///
+    ///     # let result = read_to_string(path)?;
+    ///     # assert_eq!(result, String::from("\x1f0123456789X"));
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn write<W: io::Write>(
+        &self,
+        writer: &mut Writer<W>,
+    ) -> crate::error::Result<()> {
+        write!(writer, "\x1f{}{}", self.code, self.value)?;
+        Ok(())
+    }
 }
 
+/// A PICA+ occurrence.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Occurrence(pub(crate) BString);
 
@@ -555,6 +697,7 @@ impl Occurrence {
     }
 }
 
+/// An error that can occur when parsing PICA+ records.
 #[derive(Debug, PartialEq)]
 pub struct ParsePicaError {
     pub message: String,
@@ -636,11 +779,8 @@ fn parse_field(i: &[u8]) -> ParseResult<Field> {
 }
 
 /// Parse a PICA+ record.
-fn parse_record(i: &[u8]) -> ParseResult<ByteRecord> {
-    map(
-        all_consuming(terminated(many1(parse_field), opt(char('\n')))),
-        |fields| ByteRecord { fields },
-    )(i)
+fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
+    all_consuming(terminated(many1(parse_field), opt(char('\n'))))(i)
 }
 
 #[cfg(test)]
@@ -728,12 +868,12 @@ mod test {
     }
 
     #[test]
-    fn test_parse_record() -> TestResult {
+    fn test_parse_fields() -> TestResult {
         let record_str =
             b"012A \x1fc789\x1e012A/00 \x1fa123\x1e012A/01 \x1fb456\x1e";
         assert_eq!(
-            parse_record(record_str).unwrap().1,
-            ByteRecord::new(vec![
+            parse_fields(record_str).unwrap().1,
+            vec![
                 Field::new("012A", None, vec![Subfield::new('c', "789")?])?,
                 Field::new(
                     "012A",
@@ -745,16 +885,12 @@ mod test {
                     Some(Occurrence::new("01")?),
                     vec![Subfield::new('b', "456")?]
                 )?,
-            ])
+            ]
         );
 
         assert_eq!(
-            parse_record(b"012A \x1fa123\x1e\n").unwrap().1,
-            ByteRecord::new(vec![Field::new(
-                "012A",
-                None,
-                vec![Subfield::new('a', "123")?]
-            )?])
+            parse_fields(b"012A \x1fa123\x1e\n").unwrap().1,
+            vec![Field::new("012A", None, vec![Subfield::new('a', "123")?])?]
         );
 
         Ok(())

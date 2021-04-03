@@ -43,11 +43,9 @@ impl ReaderBuilder {
     ///
     ///     assert_eq!(
     ///         records,
-    ///         vec![ByteRecord::new(vec![Field::new(
-    ///             "003@",
-    ///             None,
-    ///             vec![Subfield::new('0', "123456789")?]
-    ///         )?])]
+    ///         vec![ByteRecord::from_bytes(
+    ///             "003@ \x1f0123456789\x1e\n".as_bytes()
+    ///         )?]
     ///     );
     ///
     ///     Ok(())
@@ -106,7 +104,7 @@ impl ReaderBuilder {
     }
 
     /// Builds a new `Reader` with the current configuration, that reads from
-    /// the given path, if some was provided, otherwise from stdin.
+    /// the given path, if some was provided, otherwise from `stdin`.
     ///
     /// # Example
     ///
