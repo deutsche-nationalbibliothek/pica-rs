@@ -17,6 +17,7 @@ fn main() {
 
     let result = match subcommand {
         "invalid" => commands::invalid::run(args),
+        "cat" => commands::cat::run(args),
         _ => unreachable!(),
     };
 
