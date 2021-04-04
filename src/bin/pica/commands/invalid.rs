@@ -37,7 +37,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for result in reader.records() {
         match result {
             Err(Error::InvalidRecord(ParsePicaError { data, .. })) => {
-                writer.write(&data)?;
+                writer.write_all(&data)?;
             }
             Err(e) => return Err(CliError::from(e)),
             _ => continue,

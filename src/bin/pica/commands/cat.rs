@@ -35,7 +35,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let mut writer: Writer<Box<dyn Write>> =
         WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
-    for result in reader.records() {
+    for result in reader.byte_records() {
         writer.write_byte_record(&result?)?;
     }
 

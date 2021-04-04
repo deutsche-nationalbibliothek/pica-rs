@@ -6,7 +6,9 @@ extern crate lazy_static;
 
 pub use error::{Error, Result};
 pub use reader::{Reader, ReaderBuilder};
-pub use record::{ByteRecord, Field, Occurrence, ParsePicaError, Subfield};
+pub use record::{
+    ByteRecord, Field, Occurrence, ParsePicaError, StringRecord, Subfield,
+};
 pub use writer::{Writer, WriterBuilder};
 
 mod error;

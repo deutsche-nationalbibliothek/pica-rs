@@ -2,7 +2,6 @@ use crate::ParsePicaError;
 use std::error;
 use std::fmt::{self, Display, Formatter};
 use std::io;
-use std::string::FromUtf8Error;
 
 /// A type alias for `Result<T, pica::Error>`.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -14,7 +13,7 @@ pub enum Error {
     InvalidOccurrence(String),
     InvalidRecord(ParsePicaError),
     InvalidSubfield(String),
-    Utf8Error(FromUtf8Error),
+    Utf8Error(std::str::Utf8Error),
     Io(io::Error),
 }
 
@@ -45,8 +44,8 @@ impl From<ParsePicaError> for Error {
     }
 }
 
-impl From<FromUtf8Error> for Error {
-    fn from(err: FromUtf8Error) -> Self {
+impl From<std::str::Utf8Error> for Error {
+    fn from(err: std::str::Utf8Error) -> Self {
         Self::Utf8Error(err)
     }
 }

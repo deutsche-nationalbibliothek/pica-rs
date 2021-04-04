@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::{ByteRecord, ParsePicaError};
+use crate::{ByteRecord, ParsePicaError, StringRecord};
 use flate2::read::GzDecoder;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -29,7 +29,7 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::{ByteRecord, Field, ReaderBuilder, Subfield};
+    /// use pica::{ByteRecord, ReaderBuilder, StringRecord};
     /// use std::error::Error;
     ///
     /// # fn main() { example().unwrap(); }
@@ -39,18 +39,19 @@ impl ReaderBuilder {
     ///     let records = reader
     ///         .records()
     ///         .map(Result::unwrap)
-    ///         .collect::<Vec<ByteRecord>>();
+    ///         .collect::<Vec<StringRecord>>();
     ///
     ///     assert_eq!(
     ///         records,
-    ///         vec![ByteRecord::from_bytes(
+    ///         vec![StringRecord::from_byte_record(ByteRecord::from_bytes(
     ///             "003@ \x1f0123456789\x1e\n".as_bytes()
-    ///         )?]
+    ///         )?)?]
     ///     );
     ///
     ///     Ok(())
     /// }
     /// ```
+    #[inline]
     pub fn new() -> ReaderBuilder {
         ReaderBuilder::default()
     }
@@ -111,7 +112,6 @@ impl ReaderBuilder {
     /// ```
     /// use pica::{ByteRecord, ReaderBuilder};
     /// use std::error::Error;
-    /// use std::io::Cursor;
     /// use std::path::Path;
     ///
     /// # fn main() { example().unwrap(); }
@@ -229,6 +229,34 @@ pub struct Reader<R> {
 }
 
 impl<R: Read> Reader<R> {
+    /// Create a new writer
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::{ByteRecord, Reader, ReaderBuilder, StringRecord};
+    /// use std::error::Error;
+    /// use std::io::Cursor;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let data = Cursor::new("003@ \x1f0123456789\x1e\n");
+    ///     let mut reader = Reader::new(&ReaderBuilder::default(), data);
+    ///     let records = reader
+    ///         .records()
+    ///         .map(Result::unwrap)
+    ///         .collect::<Vec<StringRecord>>();
+    ///
+    ///     assert_eq!(
+    ///         records,
+    ///         vec![StringRecord::from_byte_record(ByteRecord::from_bytes(
+    ///             "003@ \x1f0123456789\x1e\n".as_bytes()
+    ///         )?)?]
+    ///     );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn new(builder: &ReaderBuilder, reader: R) -> Reader<R> {
         Self {
             reader: BufReader::with_capacity(builder.buffer_size, reader),
@@ -237,8 +265,46 @@ impl<R: Read> Reader<R> {
         }
     }
 
-    pub fn records(&mut self) -> RecordsIter<R> {
-        RecordsIter::new(self)
+    /// Returns an iterator over all `StringRecord`s.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::ReaderBuilder;
+    /// use std::error::Error;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut reader =
+    ///         ReaderBuilder::new().from_path("tests/data/dump.dat")?;
+    ///     assert_eq!(reader.records().count(), 2);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn records(&mut self) -> StringRecordsIter<R> {
+        StringRecordsIter::new(self)
+    }
+
+    /// Returns an iterator over all `ByteRecord`s.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::ReaderBuilder;
+    /// use std::error::Error;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut reader =
+    ///         ReaderBuilder::new().from_path("tests/data/dump.dat")?;
+    ///     assert_eq!(reader.byte_records().count(), 2);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn byte_records(&mut self) -> ByteRecordsIter<R> {
+        ByteRecordsIter::new(self)
     }
 }
 
@@ -262,18 +328,18 @@ impl<R: Read> DerefMut for Reader<R> {
 /// must handly possbile errors ([`io::Error`] or [`ParsePicaError`]). If the
 /// `skip_invalid` flag is set, the iterator will ignore invalid records and
 /// move forward to the next valid record.
-pub struct RecordsIter<'r, R: 'r> {
+pub struct ByteRecordsIter<'r, R: 'r> {
     reader: &'r mut Reader<R>,
     line: usize,
 }
 
-impl<'r, R: Read> RecordsIter<'r, R> {
-    fn new(reader: &'r mut Reader<R>) -> RecordsIter<'r, R> {
+impl<'r, R: Read> ByteRecordsIter<'r, R> {
+    fn new(reader: &'r mut Reader<R>) -> ByteRecordsIter<'r, R> {
         Self { reader, line: 0 }
     }
 }
 
-impl<'r, R: Read> Iterator for RecordsIter<'r, R> {
+impl<'r, R: Read> Iterator for ByteRecordsIter<'r, R> {
     type Item = Result<ByteRecord>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -298,7 +364,7 @@ impl<'r, R: Read> Iterator for RecordsIter<'r, R> {
                         // by the line number.
                         Error::InvalidRecord(ParsePicaError {
                             message: format!(
-                                "Invalid record on line {}.",
+                                "Invalid byte record on line {}.",
                                 self.line
                             ),
                             data: e.data,
@@ -306,6 +372,44 @@ impl<'r, R: Read> Iterator for RecordsIter<'r, R> {
                     }))
                 }
             }
+        }
+    }
+}
+
+pub struct StringRecordsIter<'r, R: 'r> {
+    iter: ByteRecordsIter<'r, R>,
+    skip_invalid: bool,
+    // line: usize,
+}
+
+impl<'r, R: Read> StringRecordsIter<'r, R> {
+    fn new(reader: &'r mut Reader<R>) -> StringRecordsIter<'r, R> {
+        let skip_invalid = reader.skip_invalid;
+        let iter = ByteRecordsIter::new(reader);
+
+        Self {
+            iter,
+            skip_invalid,
+            // line: 0,
+        }
+    }
+}
+
+impl<'r, R: Read> Iterator for StringRecordsIter<'r, R> {
+    type Item = Result<StringRecord>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.iter.next() {
+            Some(Err(e)) => Some(Err(e)),
+            Some(Ok(byte_record)) => {
+                let result = StringRecord::from_byte_record(byte_record);
+                if result.is_err() && self.skip_invalid {
+                    self.next()
+                } else {
+                    Some(result)
+                }
+            }
+            None => None,
         }
     }
 }

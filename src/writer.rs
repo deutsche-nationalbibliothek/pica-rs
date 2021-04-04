@@ -30,7 +30,7 @@ impl WriterBuilder {
     ///
     /// ```rust
     /// use pica::{ByteRecord, WriterBuilder};
-    /// # use pica::ReaderBuilder;
+    /// # use pica::{ReaderBuilder, StringRecord};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -47,7 +47,8 @@ impl WriterBuilder {
     ///     writer.flush()?;
     ///     #
     ///     # let mut reader = ReaderBuilder::new().from_path(path)?;
-    ///     # assert_eq!(reader.records().next().unwrap()?, record);
+    ///     # assert_eq!(reader.records().next().unwrap()?,
+    ///     #     StringRecord::from_byte_record(record)?);
     ///
     ///     Ok(())
     /// }
@@ -63,7 +64,7 @@ impl WriterBuilder {
     ///
     /// ```rust
     /// use pica::{ByteRecord, WriterBuilder};
-    /// # use pica::ReaderBuilder;
+    /// # use pica::{ReaderBuilder, StringRecord};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -79,7 +80,8 @@ impl WriterBuilder {
     ///     writer.flush()?;
     ///     #
     ///     # let mut reader = ReaderBuilder::new().from_path(&tempfile.path())?;
-    ///     # assert_eq!(reader.records().next().unwrap()?, record);
+    ///     # assert_eq!(reader.records().next().unwrap()?,
+    ///     #     StringRecord::from_byte_record(record)?);
     ///
     ///     Ok(())
     /// }
@@ -95,7 +97,7 @@ impl WriterBuilder {
     ///
     /// ```rust
     /// use pica::{ByteRecord, WriterBuilder};
-    /// # use pica::ReaderBuilder;
+    /// # use pica::{ReaderBuilder, StringRecord};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -113,7 +115,8 @@ impl WriterBuilder {
     ///
     ///     #
     ///     # let mut reader = ReaderBuilder::new().from_path(&filename)?;
-    ///     # assert_eq!(reader.records().next().unwrap()?, record);
+    ///     # assert_eq!(reader.records().next().unwrap()?,
+    ///     #     StringRecord::from_byte_record(record)?);
     ///     Ok(())
     /// }
     /// ```
@@ -188,7 +191,7 @@ impl<W: Write> Writer<W> {
     ///
     /// ```rust
     /// use pica::{ByteRecord, Writer, WriterBuilder};
-    /// # use pica::ReaderBuilder;
+    /// # use pica::{ReaderBuilder, StringRecord};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -206,7 +209,8 @@ impl<W: Write> Writer<W> {
     ///
     ///     #
     ///     # let mut reader = ReaderBuilder::new().from_path(&filename)?;
-    ///     # assert_eq!(reader.records().next().unwrap()?, record);
+    ///     # assert_eq!(reader.records().next().unwrap()?,
+    ///     #     StringRecord::from_byte_record(record)?);
     ///     Ok(())
     /// }
     /// ```
@@ -222,7 +226,7 @@ impl<W: Write> Writer<W> {
     ///
     /// ```rust
     /// use pica::{ByteRecord, Writer, WriterBuilder};
-    /// # use pica::ReaderBuilder;
+    /// # use pica::{ReaderBuilder, StringRecord};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -240,7 +244,8 @@ impl<W: Write> Writer<W> {
     ///
     ///     #
     ///     # let mut reader = ReaderBuilder::new().from_path(&filename)?;
-    ///     # assert_eq!(reader.records().next().unwrap()?, record);
+    ///     # assert_eq!(reader.records().next().unwrap()?,
+    ///     #     StringRecord::from_byte_record(record)?);
     ///     Ok(())
     /// }
     /// ```
