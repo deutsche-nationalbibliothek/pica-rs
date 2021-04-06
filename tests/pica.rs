@@ -77,6 +77,33 @@ fn cat_command() {
 }
 
 #[test]
+fn completion_command() {
+    for shell in ["fish", "bash", "zsh"].iter() {
+        let result = CliRunner::new().invoke("completion", &[shell]);
+        assert!(result.status.success());
+        assert_eq!(String::from_utf8(result.stdout).unwrap().is_empty(), false);
+    }
+
+    let tempdir = TempDir::new().unwrap();
+    let outdir = tempdir.path();
+
+    let result = CliRunner::new().invoke(
+        "completion",
+        &[
+            "-o",
+            outdir.join("completion.bash").to_str().unwrap(),
+            "bash",
+        ],
+    );
+    assert!(result.status.success());
+    assert!(outdir.join("completion.bash").exists());
+
+    // invalid shell
+    let result = CliRunner::new().invoke("completion", &["powershell"]);
+    assert_eq!(result.status.success(), false);
+}
+
+#[test]
 fn frequency_command() {
     let result = CliRunner::new()
         .invoke("frequency", &["002@.0", "tests/data/119232022.dat.gz"]);

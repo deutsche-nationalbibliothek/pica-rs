@@ -10,15 +10,16 @@ use std::process;
 use cli::{build_cli, CliError};
 
 fn main() {
-    let app = build_cli();
+    let mut app = build_cli();
     let matches = app.clone().get_matches();
     let subcommand = matches.subcommand_name().unwrap();
     let args = matches.subcommand_matches(subcommand).unwrap();
 
     let result = match subcommand {
+        "cat" => commands::cat::run(args),
+        "completion" => commands::completion::run(args, &mut app),
         "frequency" => commands::frequency::run(args),
         "invalid" => commands::invalid::run(args),
-        "cat" => commands::cat::run(args),
         _ => unreachable!(),
     };
 
