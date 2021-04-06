@@ -1,12 +1,11 @@
-//! Filter out invalid PICA+ records.
+//! Concatenate records from multiple files.
 //!
-//! This command filters out invalid PICA+ records, which couldn't parsed
-//! sucessfully.
+//! This command concatenate PICA+ records from multiple files.
 
 use crate::cli::{App, CliArgs, CliResult};
 use clap::Arg;
-use pica::{Reader, ReaderBuilder, Writer, WriterBuilder};
-use std::io::{Read, Write};
+use pica::{ReaderBuilder, Writer, WriterBuilder};
+use std::io::Write;
 
 pub fn cli() -> App {
     App::new("cat")
@@ -24,19 +23,22 @@ pub fn cli() -> App {
                 .value_name("file")
                 .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filename").required(true))
+        .arg(Arg::new("filenames").required(true).multiple(true))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let mut reader: Reader<Box<dyn Read>> = ReaderBuilder::new()
-        .skip_invalid(args.is_present("skip-invalid"))
-        .from_path_or_stdin(args.value_of("filename"))?;
-
+    let skip_invalid = args.is_present("skip-invalid");
     let mut writer: Writer<Box<dyn Write>> =
         WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
-    for result in reader.byte_records() {
-        writer.write_byte_record(&result?)?;
+    for filename in args.values_of("filenames").unwrap() {
+        let mut reader = ReaderBuilder::new()
+            .skip_invalid(skip_invalid)
+            .from_path(filename)?;
+
+        for result in reader.byte_records() {
+            writer.write_byte_record(&result?)?;
+        }
     }
 
     writer.flush()?;

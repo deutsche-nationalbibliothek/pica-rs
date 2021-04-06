@@ -33,7 +33,12 @@ use std::ops::Deref;
 use std::result::Result as StdResult;
 
 use crate::error::{Error, Result};
-use crate::Writer;
+use crate::{Path, Writer};
+
+lazy_static! {
+    static ref FIELD_TAG_RE: Regex =
+        Regex::new("^[0-2][0-9]{2}[A-Z@]$").unwrap();
+}
 
 /// A PICA+ occurrence.
 #[derive(Clone, Debug, PartialEq)]
@@ -306,13 +311,9 @@ impl Field {
     where
         S: Into<BString>,
     {
-        lazy_static! {
-            static ref RE: Regex = Regex::new("^[0-2][0-9]{2}[A-Z@]$").unwrap();
-        }
-
         let tag = tag.into();
 
-        if !RE.is_match(tag.as_slice()) {
+        if !FIELD_TAG_RE.is_match(tag.as_slice()) {
             return Err(Error::InvalidField("Invalid field tag.".to_string()));
         }
 
@@ -560,8 +561,7 @@ impl ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
+    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
     ///     assert_eq!(record.len(), 1);
     ///
     ///     Ok(())
@@ -611,6 +611,42 @@ impl ByteRecord {
         let tag = tag.into();
 
         self.iter().any(|x| x.tag() == &tag)
+    }
+
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Path, StringRecord};
+    /// use std::str::FromStr;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record = StringRecord::from_bytes(
+    ///         "012A \x1fa123\x1fa456\x1e012A/00 \x1fa789\x1e",
+    ///     )?;
+    ///
+    ///     assert_eq!(
+    ///         record.path(&Path::from_str("012A/*.a")?),
+    ///         vec!["123", "456", "789"]
+    ///     );
+    ///
+    ///     assert_eq!(record.path(&Path::from_str("012A.a")?), vec!["123", "456"]);
+    ///     assert_eq!(record.path(&Path::from_str("012A/00.a")?), vec!["789"]);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn path(&self, path: &Path) -> Vec<&BString> {
+        self.fields
+            .iter()
+            .filter(|field| {
+                field.tag == path.tag
+                    && field.occurrence == path.occurrence
+                    && field.contains_code(path.code)
+            })
+            .flat_map(|field| field.get(path.code).unwrap())
+            .map(|subfield| subfield.value())
+            .collect()
     }
 
     /// Returns `true` if no fields contains invalid subfield values.
@@ -738,6 +774,27 @@ impl StringRecord {
             Err(e) => Err(e),
         }
     }
+
+    /// Creates a new `StringRecord` from a bytes vector.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, StringRecord};
+    /// use std::error::Error;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let result = StringRecord::from_bytes("003@ \x1f0123456789X\x1e");
+    ///     assert!(result.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes<T: Into<Vec<u8>>>(data: T) -> Result<StringRecord> {
+        let record = ByteRecord::from_bytes(data.into())?;
+        Ok(StringRecord::from_byte_record(record)?)
+    }
 }
 
 /// An error that can occur when parsing PICA+ records.
@@ -758,7 +815,7 @@ impl fmt::Display for ParsePicaError {
 pub(crate) type ParseResult<'a, O> = StdResult<(&'a [u8], O), Err<()>>;
 
 /// Parses a PICA+ subfield code.
-fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
+pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
     map(satisfy(|c| c.is_ascii_alphanumeric()), char::from)(i)
 }
 
@@ -779,7 +836,7 @@ fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
 }
 
 /// Parses a PICA+ field occurrence.
-fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
+pub(crate) fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
     map(
         preceded(
             tag(b"/"),
@@ -790,7 +847,7 @@ fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
 }
 
 /// Parses a PICA+ Field tag.
-fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
+pub(crate) fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
     map(
         recognize(tuple((
             one_of("012"),

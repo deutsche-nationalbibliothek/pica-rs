@@ -69,15 +69,31 @@ impl ReaderBuilder {
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader =
     ///         ReaderBuilder::new().from_path("tests/data/12283643X.dat")?;
+    ///     let record = reader.records().next().unwrap();
+    ///     assert!(record.is_ok());
     ///
+    ///     let mut reader =
+    ///         ReaderBuilder::new().from_path("tests/data/119232022.dat.gz")?;
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_path<P: AsRef<Path>>(&self, path: P) -> Result<Reader<File>> {
-        Ok(Reader::new(self, File::open(path)?))
+    pub fn from_path<P: AsRef<Path>>(
+        &self,
+        path: P,
+    ) -> Result<Reader<Box<dyn Read>>> {
+        let filename = path.as_ref();
+
+        let reader: Box<dyn Read> =
+            if filename.extension() == Some(OsStr::new("gz")) {
+                Box::new(GzDecoder::new(File::open(filename)?))
+            } else {
+                Box::new(File::open(filename)?)
+            };
+
+        Ok(self.from_reader(reader))
     }
 
     /// Builds a new `Reader` with the current configuration, that reads from
@@ -277,7 +293,7 @@ impl<R: Read> Reader<R> {
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader =
     ///         ReaderBuilder::new().from_path("tests/data/dump.dat")?;
-    ///     assert_eq!(reader.records().count(), 2);
+    ///     assert_eq!(reader.records().count(), 3);
     ///
     ///     Ok(())
     /// }
@@ -298,7 +314,7 @@ impl<R: Read> Reader<R> {
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader =
     ///         ReaderBuilder::new().from_path("tests/data/dump.dat")?;
-    ///     assert_eq!(reader.byte_records().count(), 2);
+    ///     assert_eq!(reader.byte_records().count(), 3);
     ///
     ///     Ok(())
     /// }
@@ -364,7 +380,7 @@ impl<'r, R: Read> Iterator for ByteRecordsIter<'r, R> {
                         // by the line number.
                         Error::InvalidRecord(ParsePicaError {
                             message: format!(
-                                "Invalid byte record on line {}.",
+                                "Invalid record on line {}.",
                                 self.line
                             ),
                             data: e.data,
@@ -379,7 +395,6 @@ impl<'r, R: Read> Iterator for ByteRecordsIter<'r, R> {
 pub struct StringRecordsIter<'r, R: 'r> {
     iter: ByteRecordsIter<'r, R>,
     skip_invalid: bool,
-    // line: usize,
 }
 
 impl<'r, R: Read> StringRecordsIter<'r, R> {
@@ -387,11 +402,7 @@ impl<'r, R: Read> StringRecordsIter<'r, R> {
         let skip_invalid = reader.skip_invalid;
         let iter = ByteRecordsIter::new(reader);
 
-        Self {
-            iter,
-            skip_invalid,
-            // line: 0,
-        }
+        Self { iter, skip_invalid }
     }
 }
 

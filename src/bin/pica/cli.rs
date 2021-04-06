@@ -20,7 +20,8 @@ pub type CliArgs = clap::ArgMatches;
 pub enum CliError {
     Io(io::Error),
     Pica(pica::Error),
-    // Other(String),
+    Csv(csv::Error),
+    Other(String),
 }
 
 impl From<io::Error> for CliError {
@@ -35,12 +36,19 @@ impl From<pica::Error> for CliError {
     }
 }
 
+impl From<csv::Error> for CliError {
+    fn from(err: csv::Error) -> CliError {
+        CliError::Csv(err)
+    }
+}
+
 impl fmt::Display for CliError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             CliError::Io(ref e) => e.fmt(f),
             CliError::Pica(ref e) => e.fmt(f),
-            // CliError::Other(ref s) => f.write_str(&**s),
+            CliError::Csv(ref e) => e.fmt(f),
+            CliError::Other(ref s) => f.write_str(&**s),
         }
     }
 }

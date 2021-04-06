@@ -1,4 +1,4 @@
-use crate::ParsePicaError;
+use crate::{ParsePathError, ParsePicaError};
 use std::error;
 use std::fmt::{self, Display, Formatter};
 use std::io;
@@ -13,6 +13,7 @@ pub enum Error {
     InvalidOccurrence(String),
     InvalidRecord(ParsePicaError),
     InvalidSubfield(String),
+    InvalidPath(ParsePathError),
     Utf8Error(std::str::Utf8Error),
     Io(io::Error),
 }
@@ -26,6 +27,7 @@ impl Display for Error {
             Error::InvalidOccurrence(ref m) => f.write_str(m),
             Error::InvalidRecord(ref e) => e.fmt(f),
             Error::InvalidSubfield(ref m) => f.write_str(m),
+            Error::InvalidPath(ref e) => e.fmt(f),
             Error::Io(ref e) => e.fmt(f),
             Error::Utf8Error(ref e) => e.fmt(f),
         }
@@ -41,6 +43,12 @@ impl From<io::Error> for Error {
 impl From<ParsePicaError> for Error {
     fn from(err: ParsePicaError) -> Self {
         Self::InvalidRecord(err)
+    }
+}
+
+impl From<ParsePathError> for Error {
+    fn from(err: ParsePathError) -> Self {
+        Self::InvalidPath(err)
     }
 }
 
