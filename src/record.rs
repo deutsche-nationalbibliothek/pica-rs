@@ -36,7 +36,7 @@ use crate::error::{Error, Result};
 use crate::{Path, Writer};
 
 lazy_static! {
-    static ref FIELD_TAG_RE: Regex =
+    pub(crate) static ref FIELD_TAG_RE: Regex =
         Regex::new("^[0-2][0-9]{2}[A-Z@]$").unwrap();
 }
 

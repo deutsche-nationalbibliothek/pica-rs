@@ -1,7 +1,8 @@
 use crate::record::{
     parse_field_occurrence, parse_field_tag, parse_subfield_code, ParseResult,
+    FIELD_TAG_RE,
 };
-use crate::Occurrence;
+use crate::{Error, Occurrence, Result};
 use std::str::FromStr;
 
 use nom::branch::alt;
@@ -25,9 +26,9 @@ impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
         match other {
             OccurrenceMatcher::Any => true,
             OccurrenceMatcher::None => self.is_none(),
-            OccurrenceMatcher::Occurrence(o1) => {
-                if let Some(o2) = self {
-                    o1 == o2
+            OccurrenceMatcher::Occurrence(lhs) => {
+                if let Some(rhs) = self {
+                    lhs == rhs
                 } else {
                     false
                 }
@@ -55,16 +56,45 @@ impl fmt::Display for ParsePathError {
 }
 
 impl Path {
-    pub fn new<T: Into<BString>>(
-        tag: T,
+    /// Creates a new path
+    ///
+    /// ```rust
+    /// use pica::{OccurrenceMatcher, Path};
+    ///
+    /// assert!(Path::new("003@", OccurrenceMatcher::None, '0').is_ok());
+    /// assert!(Path::new("012A", OccurrenceMatcher::Any, '0').is_ok());
+    /// assert!(Path::new("012!", OccurrenceMatcher::Any, '0').is_err());
+    /// assert!(Path::new("012A", OccurrenceMatcher::Any, '!').is_err());
+    /// ```
+    pub fn new<S>(
+        tag: S,
         occurrence: OccurrenceMatcher,
         code: char,
-    ) -> Path {
-        Self {
-            tag: tag.into(),
+    ) -> Result<Path>
+    where
+        S: Into<BString>,
+    {
+        let tag = tag.into();
+
+        if !FIELD_TAG_RE.is_match(tag.as_slice()) {
+            return Err(Error::InvalidField(format!(
+                "Invalid field tag '{}' in path expression.",
+                tag
+            )));
+        }
+
+        if !code.is_ascii_alphanumeric() {
+            return Err(Error::InvalidSubfield(format!(
+                "Invalid subfield code '{}' in path expression.",
+                code
+            )));
+        }
+
+        Ok(Path {
+            tag,
             occurrence,
             code,
-        }
+        })
     }
 
     /// Creates a new `Path` from a byte vector.
@@ -77,7 +107,7 @@ impl Path {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let path = Path::from_bytes("003@.0")?;
-    ///     assert_eq!(path, Path::new("003@", OccurrenceMatcher::None, '0'));
+    ///     assert_eq!(path, Path::new("003@", OccurrenceMatcher::None, '0')?);
     ///
     ///     let path = Path::from_bytes("012A/00.0")?;
     ///     assert_eq!(
@@ -86,16 +116,16 @@ impl Path {
     ///             "012A",
     ///             OccurrenceMatcher::Occurrence(Occurrence::new("00")?),
     ///             '0'
-    ///         )
+    ///         )?
     ///     );
     ///
     ///     let path = Path::from_bytes("012A/*.0")?;
-    ///     assert_eq!(path, Path::new("012A", OccurrenceMatcher::Any, '0'));
+    ///     assert_eq!(path, Path::new("012A", OccurrenceMatcher::Any, '0')?);
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_bytes<T>(data: T) -> Result<Path, ParsePathError>
+    pub fn from_bytes<T>(data: T) -> std::result::Result<Path, ParsePathError>
     where
         T: Into<Vec<u8>>,
     {
@@ -127,7 +157,7 @@ impl FromStr for Path {
     ///     Ok(())
     /// }
     /// ```
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         Ok(Self::from_bytes(s)?)
     }
 }
@@ -143,7 +173,11 @@ fn parse_path(i: &[u8]) -> ParseResult<Path> {
             )),
             multispace0,
         )),
-        |(tag, occurrence, code)| Path::new(tag, occurrence, code),
+        |(tag, occurrence, code)| Path {
+            tag,
+            occurrence,
+            code,
+        },
     )(i)
 }
 
@@ -168,6 +202,7 @@ mod tests {
                 OccurrenceMatcher::Occurrence(Occurrence::new("00").unwrap()),
                 'a'
             )
+            .unwrap()
         );
     }
 
