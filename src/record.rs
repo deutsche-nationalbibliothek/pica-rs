@@ -1,6 +1,4 @@
-//! This module provides all data types related to a PICA+ record.
-
-use crate::record::{owned, parse_record};
+use crate::parser::parse_record;
 use crate::select::{Outcome, Selector};
 use crate::Path;
 
@@ -10,6 +8,7 @@ use std::ops::Deref;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Subfield {
+    #[serde(rename(serialize = "name"))]
     pub(crate) code: char,
     pub(crate) value: BString,
 }
@@ -51,6 +50,7 @@ impl Deref for Occurrence {
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Field {
+    #[serde(rename(serialize = "name"))]
     pub(crate) tag: BString,
     pub(crate) occurrence: Occurrence,
     pub(crate) subfields: Vec<Subfield>,
@@ -127,10 +127,6 @@ impl Record {
             .map(|s| s.pretty())
             .collect::<Vec<_>>()
             .join("\n")
-    }
-
-    pub fn into_owned(self) -> owned::Record {
-        owned::Record::from(self)
     }
 
     pub fn select(&self, selector: &Selector) -> Outcome {

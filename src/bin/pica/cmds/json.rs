@@ -35,7 +35,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         let line = result?;
 
         if let Ok(record) = Record::from_bytes(&line) {
-            let j = serde_json::to_string(&record.into_owned()).unwrap();
+            let j = serde_json::to_string(&record).unwrap();
             if count > 0 {
                 writer.write_all(b",")?;
             }

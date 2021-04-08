@@ -1,6 +1,7 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::{io::BufReadExt, BString};
+use bstr::io::BufReadExt;
+use bstr::BString;
 use clap::Arg;
 use pica::{Path, Record};
 use std::collections::HashMap;

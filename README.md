@@ -35,7 +35,6 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --b
 * [filter](#filter) — filter records by query expressions
 * [frequency](#frequency) — compute a frequency table of a subfield
 * invalid — filter out invalid records
-* [json](#json) — serialize pica records to JSON
 * [partition](#partition) — partition a list of records based on subfield values
 * [print](#print) — print records in human readable format
 * [sample](#sample) — selects a random permutation of records

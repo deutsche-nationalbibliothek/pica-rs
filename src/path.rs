@@ -17,7 +17,7 @@ use nom::character::complete::{char, multispace0};
 use nom::combinator::cut;
 use nom::sequence::{preceded, terminated, tuple};
 
-use crate::record::{
+use crate::parser::{
     parse_field_occurrence, parse_field_tag, parse_subfield_code, ParseResult,
 };
 use crate::Occurrence;

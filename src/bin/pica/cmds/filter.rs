@@ -2,8 +2,7 @@ use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Filter;
-use pica::Record;
+use pica::{Filter, Record};
 
 pub fn cli() -> App {
     App::new("filter")

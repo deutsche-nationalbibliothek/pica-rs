@@ -1,4 +1,5 @@
-use std::{convert::From, fmt, io};
+use std::convert::From;
+use std::{fmt, io};
 
 pub type App = clap::App<'static>;
 pub type CliArgs = clap::ArgMatches;
