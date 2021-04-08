@@ -11,7 +11,7 @@ impl<'a> From<&borrowed::Subfield> for owned::Subfield {
     }
 }
 
-impl<'a> From<&borrowed::Field<'a>> for owned::Field {
+impl From<&borrowed::Field> for owned::Field {
     fn from(field: &borrowed::Field) -> Self {
         owned::Field {
             tag: String::from_utf8(field.tag.to_vec()).unwrap(),
@@ -25,7 +25,7 @@ impl<'a> From<&borrowed::Field<'a>> for owned::Field {
     }
 }
 
-impl<'a> From<borrowed::Record<'a>> for owned::Record {
+impl From<borrowed::Record> for owned::Record {
     fn from(record: borrowed::Record) -> Self {
         Self {
             fields: record.iter().map(owned::Field::from).collect(),

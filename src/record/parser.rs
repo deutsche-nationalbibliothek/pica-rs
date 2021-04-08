@@ -1,6 +1,6 @@
 //! This module provides functions to parse PICA+ records.
 
-use bstr::{BStr, BString, ByteSlice};
+use bstr::BString;
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
@@ -56,14 +56,14 @@ pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
 }
 
 /// Parses a field tag.
-pub fn parse_field_tag(i: &[u8]) -> ParseResult<&BStr> {
+pub fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
     map(
         recognize(tuple((
             one_of("012"),
             count(one_of("0123456789"), 2),
             one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
         ))),
-        |value: &[u8]| value.as_bstr(),
+        BString::from,
     )(i)
 }
 

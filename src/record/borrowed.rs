@@ -4,7 +4,7 @@ use crate::record::{owned, parse_record};
 use crate::select::{Outcome, Selector};
 use crate::Path;
 
-use bstr::{BStr, BString};
+use bstr::BString;
 use serde::Serialize;
 use std::ops::Deref;
 
@@ -50,13 +50,13 @@ impl Deref for Occurrence {
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Field<'a> {
-    pub(crate) tag: &'a BStr,
+pub struct Field {
+    pub(crate) tag: BString,
     pub(crate) occurrence: Occurrence,
     pub(crate) subfields: Vec<Subfield>,
 }
 
-impl<'a> Field<'a> {
+impl Field {
     /// Returns the field as an human readable string.
     pub fn pretty(&self) -> String {
         let mut pretty_str = String::from_utf8(self.tag.to_vec()).unwrap();
@@ -82,7 +82,7 @@ impl<'a> Field<'a> {
     }
 }
 
-impl<'a> Deref for Field<'a> {
+impl Deref for Field {
     type Target = Vec<Subfield>;
 
     /// Dereferences the value
@@ -92,14 +92,14 @@ impl<'a> Deref for Field<'a> {
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Record<'a> {
-    pub(crate) fields: Vec<Field<'a>>,
+pub struct Record {
+    pub(crate) fields: Vec<Field>,
 }
 
-impl<'a> Record<'a> {
+impl Record {
     /// Parses a record from a byte slice.
     #[allow(clippy::result_unit_err)]
-    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ()> {
+    pub fn from_bytes(data: &[u8]) -> Result<Self, ()> {
         parse_record(data).map(|(_, record)| record).map_err(|_| ())
     }
 
@@ -182,8 +182,8 @@ impl<'a> Record<'a> {
     }
 }
 
-impl<'a> Deref for Record<'a> {
-    type Target = Vec<Field<'a>>;
+impl Deref for Record {
+    type Target = Vec<Field>;
 
     /// Dereferences the value
     fn deref(&self) -> &Self::Target {

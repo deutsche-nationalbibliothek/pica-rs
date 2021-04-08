@@ -22,19 +22,19 @@ use crate::record::{
 };
 use crate::Occurrence;
 
-use bstr::BStr;
+use bstr::BString;
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Path<'a> {
-    pub(crate) tag: &'a BStr,
+pub struct Path {
+    pub(crate) tag: BString,
     pub(crate) occurrence: Occurrence,
     pub(crate) code: char,
 }
 
-impl<'a> Path<'a> {
+impl Path {
     /// Parse a path from a byte slice.
     #[allow(clippy::result_unit_err)]
-    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ()> {
+    pub fn from_bytes(data: &[u8]) -> Result<Self, ()> {
         parse_path(data).map(|(_, path)| path).map_err(|_| ())
     }
 }

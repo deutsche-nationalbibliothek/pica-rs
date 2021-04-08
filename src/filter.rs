@@ -148,13 +148,13 @@ impl<'a> Filter {
         match self {
             Filter::Field(tag, occurrence, filter) => {
                 record.iter().any(|field| {
-                    field.tag == tag
+                    &field.tag == tag
                         && *occurrence == field.occurrence
                         && filter.matches(field)
                 })
             }
             Filter::Exists(tag, occurrence) => record.iter().any(|field| {
-                field.tag == tag && *occurrence == field.occurrence
+                &field.tag == tag && *occurrence == field.occurrence
             }),
             Filter::Boolean(lhs, op, rhs) => match op {
                 BooleanOp::And => lhs.matches(record) && rhs.matches(record),
