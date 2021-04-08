@@ -13,6 +13,8 @@ pub use record::{
 pub use writer::{Writer, WriterBuilder};
 
 mod error;
+mod filter;
+mod parser;
 mod path;
 mod reader;
 mod record;

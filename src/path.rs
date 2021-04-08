@@ -1,7 +1,7 @@
-use crate::record::{
+use crate::parser::{
     parse_field_occurrence, parse_field_tag, parse_subfield_code, ParseResult,
-    FIELD_TAG_RE,
 };
+use crate::record::FIELD_TAG_RE;
 use crate::{Error, Occurrence, Result};
 use std::str::FromStr;
 
@@ -181,7 +181,9 @@ fn parse_path(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
-fn parse_occurrence_matcher(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
+pub(crate) fn parse_occurrence_matcher(
+    i: &[u8],
+) -> ParseResult<OccurrenceMatcher> {
     alt((
         map(tag(b"/*"), |_| OccurrenceMatcher::Any),
         map(parse_field_occurrence, |x| OccurrenceMatcher::Occurrence(x)),

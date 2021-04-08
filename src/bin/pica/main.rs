@@ -4,8 +4,7 @@ extern crate clap;
 mod cli;
 mod commands;
 
-use std::io;
-use std::process;
+use std::{io, process};
 
 use cli::{build_cli, CliError};
 

@@ -1,8 +1,7 @@
 use crate::cli::{App, CliArgs, CliResult};
 use clap::Arg;
-use clap_generate::{
-    generate, generators::Bash, generators::Fish, generators::Zsh,
-};
+use clap_generate::generate;
+use clap_generate::generators::{Bash, Fish, Zsh};
 use std::fs::File;
 use std::io::{self, Write};
 
