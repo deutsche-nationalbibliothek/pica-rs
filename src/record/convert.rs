@@ -17,6 +17,7 @@ impl<'a> From<&borrowed::Field<'a>> for owned::Field {
             tag: String::from_utf8(field.tag.to_vec()).unwrap(),
             occurrence: field
                 .occurrence
+                .as_ref()
                 .map(|o| String::from_utf8(o.to_vec()).unwrap())
                 .map(owned::Occurrence),
             subfields: field.iter().map(owned::Subfield::from).collect(),

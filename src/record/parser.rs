@@ -49,7 +49,7 @@ pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
                 tag(b"/"),
                 cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
             ),
-            |value: &[u8]| Occurrence(Some(value.as_bstr())),
+            |value: &[u8]| Occurrence(Some(BString::from(value))),
         ),
         success(Occurrence(None)),
     ))(i)

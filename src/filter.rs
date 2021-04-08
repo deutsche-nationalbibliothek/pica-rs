@@ -26,13 +26,13 @@ pub enum OccurrenceMatcher {
     None,
 }
 
-impl<'a> PartialEq<Occurrence<'a>> for OccurrenceMatcher {
-    fn eq(&self, other: &Occurrence<'a>) -> bool {
+impl PartialEq<Occurrence> for OccurrenceMatcher {
+    fn eq(&self, other: &Occurrence) -> bool {
         match self {
             OccurrenceMatcher::Ignore => true,
             OccurrenceMatcher::None => other.is_none(),
             OccurrenceMatcher::Value(lhs) => {
-                if let Some(rhs) = other.0 {
+                if let Some(ref rhs) = other.0 {
                     lhs == rhs
                 } else {
                     false

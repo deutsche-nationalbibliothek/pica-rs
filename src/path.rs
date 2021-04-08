@@ -27,7 +27,7 @@ use bstr::BStr;
 #[derive(Debug, PartialEq, Clone)]
 pub struct Path<'a> {
     pub(crate) tag: &'a BStr,
-    pub(crate) occurrence: Occurrence<'a>,
+    pub(crate) occurrence: Occurrence,
     pub(crate) code: char,
 }
 
