@@ -4,6 +4,7 @@ pub use self::record::{Field, Occurrence, Record, Subfield};
 pub use self::select::{Outcome, Selector, Selectors};
 
 mod filter;
+mod parser;
 mod path;
 mod record;
 mod select;

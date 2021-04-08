@@ -7,8 +7,7 @@ mod cli;
 mod cmds;
 mod util;
 
-use std::io;
-use std::process;
+use std::{io, process};
 use util::CliError;
 
 fn main() {
@@ -23,7 +22,7 @@ fn main() {
         "filter" => cmds::filter::run(args),
         "frequency" => cmds::frequency::run(args),
         "invalid" => cmds::invalid::run(args),
-        "json" => cmds::json::run(args),
+        // "json" => cmds::json::run(args),
         "partition" => cmds::partition::run(args),
         "print" => cmds::print::run(args),
         "sample" => cmds::sample::run(args),

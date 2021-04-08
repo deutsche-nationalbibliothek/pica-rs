@@ -1,28 +1,27 @@
-//! This module provides all data types related to a PICA+ record.
-
-use crate::record::{owned, parse_record};
+use crate::parser::parse_record;
 use crate::select::{Outcome, Selector};
 use crate::Path;
 
-use bstr::{BStr, BString, ByteSlice};
+use bstr::BString;
 use serde::Serialize;
 use std::ops::Deref;
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Subfield<'a> {
+pub struct Subfield {
+    #[serde(rename(serialize = "name"))]
     pub(crate) code: char,
-    pub(crate) value: &'a BStr,
+    pub(crate) value: BString,
 }
 
-impl<'a> Subfield<'a> {
+impl Subfield {
     /// Returns the subfield code.
     pub fn code(&self) -> char {
         self.code
     }
 
     /// Returns the subfield value.
-    pub fn value(&self) -> &'a BStr {
-        self.value
+    pub fn value(&self) -> &BString {
+        &self.value
     }
 
     /// Returns the subfield as an human readable string.
@@ -37,11 +36,11 @@ impl<'a> Subfield<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize, Copy)]
-pub struct Occurrence<'a>(pub(crate) Option<&'a BStr>);
+#[derive(Debug, PartialEq, Clone, Serialize)]
+pub struct Occurrence(pub(crate) Option<BString>);
 
-impl<'a> Deref for Occurrence<'a> {
-    type Target = Option<&'a BStr>;
+impl Deref for Occurrence {
+    type Target = Option<BString>;
 
     /// Dereferences the value
     fn deref(&self) -> &Self::Target {
@@ -50,18 +49,19 @@ impl<'a> Deref for Occurrence<'a> {
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Field<'a> {
-    pub(crate) tag: &'a BStr,
-    pub(crate) occurrence: Occurrence<'a>,
-    pub(crate) subfields: Vec<Subfield<'a>>,
+pub struct Field {
+    #[serde(rename(serialize = "name"))]
+    pub(crate) tag: BString,
+    pub(crate) occurrence: Occurrence,
+    pub(crate) subfields: Vec<Subfield>,
 }
 
-impl<'a> Field<'a> {
+impl Field {
     /// Returns the field as an human readable string.
     pub fn pretty(&self) -> String {
         let mut pretty_str = String::from_utf8(self.tag.to_vec()).unwrap();
 
-        if let Some(occurrence) = *self.occurrence {
+        if let Some(occurrence) = &*self.occurrence {
             pretty_str.push('/');
             pretty_str
                 .push_str(&String::from_utf8(occurrence.to_vec()).unwrap())
@@ -82,8 +82,8 @@ impl<'a> Field<'a> {
     }
 }
 
-impl<'a> Deref for Field<'a> {
-    type Target = Vec<Subfield<'a>>;
+impl Deref for Field {
+    type Target = Vec<Subfield>;
 
     /// Dereferences the value
     fn deref(&self) -> &Self::Target {
@@ -92,14 +92,14 @@ impl<'a> Deref for Field<'a> {
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Record<'a> {
-    pub(crate) fields: Vec<Field<'a>>,
+pub struct Record {
+    pub(crate) fields: Vec<Field>,
 }
 
-impl<'a> Record<'a> {
+impl Record {
     /// Parses a record from a byte slice.
     #[allow(clippy::result_unit_err)]
-    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ()> {
+    pub fn from_bytes(data: &[u8]) -> Result<Self, ()> {
         parse_record(data).map(|(_, record)| record).map_err(|_| ())
     }
 
@@ -129,10 +129,6 @@ impl<'a> Record<'a> {
             .join("\n")
     }
 
-    pub fn into_owned(self) -> owned::Record {
-        owned::Record::from(self)
-    }
-
     pub fn select(&self, selector: &Selector) -> Outcome {
         let result = self
             .iter()
@@ -154,8 +150,8 @@ impl<'a> Record<'a> {
                         subfields
                             .iter()
                             .filter(|subfield| subfield.code == *code)
-                            .map(|subfield| vec![subfield.value()])
-                            .collect::<Vec<Vec<&BStr>>>()
+                            .map(|subfield| vec![subfield.value().to_owned()])
+                            .collect::<Vec<Vec<BString>>>()
                     })
                     .map(|x| {
                         if x.is_empty() {
@@ -169,10 +165,10 @@ impl<'a> Record<'a> {
             .fold(Outcome::default(), |acc, x| acc + x);
 
         if result.is_empty() {
-            let mut values: Vec<&'a BStr> =
+            let mut values: Vec<BString> =
                 Vec::with_capacity(selector.subfields.len());
             for _ in 0..selector.subfields.len() {
-                values.push(b"".as_bstr());
+                values.push(BString::from(""));
             }
 
             Outcome::from_values(values)
@@ -182,8 +178,8 @@ impl<'a> Record<'a> {
     }
 }
 
-impl<'a> Deref for Record<'a> {
-    type Target = Vec<Field<'a>>;
+impl Deref for Record {
+    type Target = Vec<Field>;
 
     /// Dereferences the value
     fn deref(&self) -> &Self::Target {

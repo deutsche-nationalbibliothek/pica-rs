@@ -1,9 +1,8 @@
 use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
-use clap_generate::{
-    generate, generators::Bash, generators::Fish, generators::Zsh,
-};
+use clap_generate::generate;
+use clap_generate::generators::{Bash, Fish, Zsh};
 
 pub fn cli() -> App {
     App::new("completion")

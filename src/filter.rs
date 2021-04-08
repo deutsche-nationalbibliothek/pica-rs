@@ -26,13 +26,13 @@ pub enum OccurrenceMatcher {
     None,
 }
 
-impl<'a> PartialEq<Occurrence<'a>> for OccurrenceMatcher {
-    fn eq(&self, other: &Occurrence<'a>) -> bool {
+impl PartialEq<Occurrence> for OccurrenceMatcher {
+    fn eq(&self, other: &Occurrence) -> bool {
         match self {
             OccurrenceMatcher::Ignore => true,
             OccurrenceMatcher::None => other.is_none(),
             OccurrenceMatcher::Value(lhs) => {
-                if let Some(rhs) = other.0 {
+                if let Some(ref rhs) = other.0 {
                     lhs == rhs
                 } else {
                     false
@@ -73,7 +73,7 @@ impl SubfieldFilter {
         match self {
             SubfieldFilter::Comparison(code, op, values) => match op {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
-                    subfield.code == *code && subfield.value() == values[0]
+                    subfield.code == *code && subfield.value() == &values[0]
                 }),
                 ComparisonOp::StrictEq => {
                     let subfields = field
@@ -84,7 +84,7 @@ impl SubfieldFilter {
                     !subfields.is_empty()
                         && subfields
                             .iter()
-                            .all(|subfield| subfield.value() == values[0])
+                            .all(|subfield| subfield.value() == &values[0])
                 }
                 ComparisonOp::Ne => {
                     let subfields = field
@@ -95,7 +95,7 @@ impl SubfieldFilter {
                     subfields.is_empty()
                         || subfields
                             .iter()
-                            .all(|subfield| subfield.value() != values[0])
+                            .all(|subfield| subfield.value() != &values[0])
                 }
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
                     subfield.code == *code
@@ -148,13 +148,13 @@ impl<'a> Filter {
         match self {
             Filter::Field(tag, occurrence, filter) => {
                 record.iter().any(|field| {
-                    field.tag == tag
+                    &field.tag == tag
                         && *occurrence == field.occurrence
                         && filter.matches(field)
                 })
             }
             Filter::Exists(tag, occurrence) => record.iter().any(|field| {
-                field.tag == tag && *occurrence == field.occurrence
+                &field.tag == tag && *occurrence == field.occurrence
             }),
             Filter::Boolean(lhs, op, rhs) => match op {
                 BooleanOp::And => lhs.matches(record) && rhs.matches(record),

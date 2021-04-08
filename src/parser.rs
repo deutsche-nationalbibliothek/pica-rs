@@ -1,6 +1,6 @@
 //! This module provides functions to parse PICA+ records.
 
-use bstr::{BStr, ByteSlice};
+use bstr::BString;
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
@@ -26,8 +26,8 @@ pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
 }
 
 /// Parses a subfield value.
-pub(crate) fn parse_subfield_value(i: &[u8]) -> ParseResult<&BStr> {
-    recognize(many0(is_not("\x1E\x1F")))(i).map(|(i, o)| (i, o.as_bstr()))
+pub(crate) fn parse_subfield_value(i: &[u8]) -> ParseResult<BString> {
+    recognize(many0(is_not("\x1E\x1F")))(i).map(|(i, o)| (i, BString::from(o)))
 }
 
 /// Parses a subfield.
@@ -49,21 +49,21 @@ pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
                 tag(b"/"),
                 cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
             ),
-            |value: &[u8]| Occurrence(Some(value.as_bstr())),
+            |value: &[u8]| Occurrence(Some(BString::from(value))),
         ),
         success(Occurrence(None)),
     ))(i)
 }
 
 /// Parses a field tag.
-pub fn parse_field_tag(i: &[u8]) -> ParseResult<&BStr> {
+pub fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
     map(
         recognize(tuple((
             one_of("012"),
             count(one_of("0123456789"), 2),
             one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
         ))),
-        |value: &[u8]| value.as_bstr(),
+        BString::from,
     )(i)
 }
 
