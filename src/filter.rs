@@ -73,7 +73,7 @@ impl SubfieldFilter {
         match self {
             SubfieldFilter::Comparison(code, op, values) => match op {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
-                    subfield.code == *code && subfield.value() == values[0]
+                    subfield.code == *code && subfield.value() == &values[0]
                 }),
                 ComparisonOp::StrictEq => {
                     let subfields = field
@@ -84,7 +84,7 @@ impl SubfieldFilter {
                     !subfields.is_empty()
                         && subfields
                             .iter()
-                            .all(|subfield| subfield.value() == values[0])
+                            .all(|subfield| subfield.value() == &values[0])
                 }
                 ComparisonOp::Ne => {
                     let subfields = field
@@ -95,7 +95,7 @@ impl SubfieldFilter {
                     subfields.is_empty()
                         || subfields
                             .iter()
-                            .all(|subfield| subfield.value() != values[0])
+                            .all(|subfield| subfield.value() != &values[0])
                 }
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
                     subfield.code == *code

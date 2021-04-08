@@ -2,7 +2,7 @@ use std::convert::From;
 
 use crate::record::{borrowed, owned};
 
-impl<'a> From<&borrowed::Subfield<'a>> for owned::Subfield {
+impl<'a> From<&borrowed::Subfield> for owned::Subfield {
     fn from(subfield: &borrowed::Subfield) -> Self {
         owned::Subfield {
             code: subfield.code,

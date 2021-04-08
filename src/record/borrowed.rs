@@ -4,25 +4,25 @@ use crate::record::{owned, parse_record};
 use crate::select::{Outcome, Selector};
 use crate::Path;
 
-use bstr::{BStr, BString, ByteSlice};
+use bstr::{BStr, BString};
 use serde::Serialize;
 use std::ops::Deref;
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Subfield<'a> {
+pub struct Subfield {
     pub(crate) code: char,
-    pub(crate) value: &'a BStr,
+    pub(crate) value: BString,
 }
 
-impl<'a> Subfield<'a> {
+impl Subfield {
     /// Returns the subfield code.
     pub fn code(&self) -> char {
         self.code
     }
 
     /// Returns the subfield value.
-    pub fn value(&self) -> &'a BStr {
-        self.value
+    pub fn value(&self) -> &BString {
+        &self.value
     }
 
     /// Returns the subfield as an human readable string.
@@ -53,7 +53,7 @@ impl<'a> Deref for Occurrence<'a> {
 pub struct Field<'a> {
     pub(crate) tag: &'a BStr,
     pub(crate) occurrence: Occurrence<'a>,
-    pub(crate) subfields: Vec<Subfield<'a>>,
+    pub(crate) subfields: Vec<Subfield>,
 }
 
 impl<'a> Field<'a> {
@@ -83,7 +83,7 @@ impl<'a> Field<'a> {
 }
 
 impl<'a> Deref for Field<'a> {
-    type Target = Vec<Subfield<'a>>;
+    type Target = Vec<Subfield>;
 
     /// Dereferences the value
     fn deref(&self) -> &Self::Target {
@@ -154,8 +154,8 @@ impl<'a> Record<'a> {
                         subfields
                             .iter()
                             .filter(|subfield| subfield.code == *code)
-                            .map(|subfield| vec![subfield.value()])
-                            .collect::<Vec<Vec<&BStr>>>()
+                            .map(|subfield| vec![subfield.value().to_owned()])
+                            .collect::<Vec<Vec<BString>>>()
                     })
                     .map(|x| {
                         if x.is_empty() {
@@ -169,10 +169,10 @@ impl<'a> Record<'a> {
             .fold(Outcome::default(), |acc, x| acc + x);
 
         if result.is_empty() {
-            let mut values: Vec<&'a BStr> =
+            let mut values: Vec<BString> =
                 Vec::with_capacity(selector.subfields.len());
             for _ in 0..selector.subfields.len() {
-                values.push(b"".as_bstr());
+                values.push(BString::from(""));
             }
 
             Outcome::from_values(values)

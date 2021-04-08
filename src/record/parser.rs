@@ -1,6 +1,6 @@
 //! This module provides functions to parse PICA+ records.
 
-use bstr::{BStr, ByteSlice};
+use bstr::{BStr, BString, ByteSlice};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
@@ -26,8 +26,8 @@ pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
 }
 
 /// Parses a subfield value.
-pub(crate) fn parse_subfield_value(i: &[u8]) -> ParseResult<&BStr> {
-    recognize(many0(is_not("\x1E\x1F")))(i).map(|(i, o)| (i, o.as_bstr()))
+pub(crate) fn parse_subfield_value(i: &[u8]) -> ParseResult<BString> {
+    recognize(many0(is_not("\x1E\x1F")))(i).map(|(i, o)| (i, BString::from(o)))
 }
 
 /// Parses a subfield.

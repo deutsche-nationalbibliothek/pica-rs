@@ -10,7 +10,7 @@ use nom::multi::separated_list1;
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
-use bstr::{BStr, ByteSlice};
+use bstr::BString;
 use std::default::Default;
 use std::ops::{Add, Deref, Mul};
 
@@ -23,33 +23,37 @@ pub struct Selector {
 }
 
 #[derive(Debug)]
-pub struct Outcome<'a>(pub(crate) Vec<Vec<&'a BStr>>);
+pub struct Outcome(pub(crate) Vec<Vec<BString>>);
 
-impl<'a> Outcome<'a> {
-    pub fn from_values(values: Vec<&'a BStr>) -> Self {
+impl Outcome {
+    pub fn from_values(values: Vec<BString>) -> Self {
         Self(vec![values])
     }
 
     pub fn one() -> Self {
-        Self(vec![[b"".as_bstr()].to_vec()])
+        Self(vec![[BString::from("")].to_vec()])
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 }
 
-impl<'a> Default for Outcome<'a> {
-    fn default() -> Self {
-        Self(vec![])
+impl Default for Outcome {
+    fn default() -> Outcome {
+        Outcome(Vec::<Vec<BString>>::new())
     }
 }
 
-impl<'a> Deref for Outcome<'a> {
-    type Target = Vec<Vec<&'a BStr>>;
+impl Deref for Outcome {
+    type Target = Vec<Vec<BString>>;
 
-    fn deref(&self) -> &Vec<Vec<&'a BStr>> {
+    fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Mul for Outcome<'a> {
+impl Mul for Outcome {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self {
@@ -61,13 +65,13 @@ impl<'a> Mul for Outcome<'a> {
             return self;
         }
 
-        let mut result: Vec<Vec<&'a BStr>> = Vec::new();
+        let mut result: Vec<Vec<BString>> = Vec::new();
 
         for row_lhs in &self.0 {
             for row in &rhs.0 {
                 let mut new_row = row_lhs.clone();
                 for col in row {
-                    new_row.push(col);
+                    new_row.push(col.to_owned());
                 }
                 result.push(new_row.clone());
             }
@@ -77,11 +81,11 @@ impl<'a> Mul for Outcome<'a> {
     }
 }
 
-impl<'a> Add for Outcome<'a> {
+impl Add for Outcome {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let mut result: Vec<Vec<&'a BStr>> = Vec::new();
+        let mut result: Vec<Vec<BString>> = Vec::new();
 
         for row in &self.0 {
             result.push(row.clone())
