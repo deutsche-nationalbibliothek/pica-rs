@@ -112,6 +112,36 @@ impl Subfield {
     pub fn value(&self) -> &BString {
         &self.value
     }
+
+    /// Returns `true` if the subfield value is valid UTF-8 byte sequence.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Error, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let subfield = Subfield::new('0', "123456789X")?;
+    ///     assert_eq!(subfield.validate().is_ok(), true);
+    ///
+    ///     let subfield = Subfield::new('0', vec![0, 159])?;
+    ///     assert_eq!(subfield.validate().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn validate(&self) -> Result<()> {
+        if self.value.is_ascii() {
+            return Ok(());
+        }
+
+        if let Err(e) = std::str::from_utf8(&self.value) {
+            return Err(Error::Utf8Error(e));
+        }
+
+        Ok(())
+    }
 }
 
 impl fmt::Display for Subfield {
@@ -351,6 +381,41 @@ impl Field {
             None
         }
     }
+
+    /// Returns `true` if and only if all subfield values are valid UTF-8.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Error, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field =
+    ///         Field::new("003@", None, vec![Subfield::new('0', "123456789X")?])?;
+    ///     assert_eq!(field.validate().is_ok(), true);
+    ///
+    ///     let field = Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![
+    ///             Subfield::new('0', "234567890X")?,
+    ///             Subfield::new('1', vec![0, 159])?,
+    ///             Subfield::new('2', "123456789X")?,
+    ///         ],
+    ///     )?;
+    ///     assert_eq!(field.validate().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn validate(&self) -> Result<()> {
+        for subfield in &self.subfields {
+            subfield.validate()?;
+        }
+
+        Ok(())
+    }
 }
 
 impl fmt::Display for Field {
@@ -480,6 +545,44 @@ impl ByteRecord {
         })
     }
 
+    /// Returns `true` if no fields contains invalid subfield values.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, Error, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record = ByteRecord::new(vec![Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![Subfield::new('0', "123456789X")?],
+    ///     )?]);
+    ///     assert_eq!(record.validate().is_ok(), true);
+    ///
+    ///     let record = ByteRecord::new(vec![Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![
+    ///             Subfield::new('0', "234567890X")?,
+    ///             Subfield::new('1', vec![0, 159])?,
+    ///             Subfield::new('2', "123456789X")?,
+    ///         ],
+    ///     )?]);
+    ///     assert_eq!(record.validate().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn validate(&self) -> Result<()> {
+        for field in &self.fields {
+            field.validate()?;
+        }
+
+        Ok(())
+    }
+
     /// Returns all subfield values of a given path.
     pub fn path(&self, path: &Path) -> Vec<&BString> {
         self.fields
@@ -492,15 +595,6 @@ impl ByteRecord {
             .flat_map(|field| field.get(path.code).unwrap())
             .map(|subfield| subfield.value())
             .collect()
-    }
-
-    /// Returns the record as an human readable string.
-    pub fn pretty(&self) -> String {
-        self.fields
-            .iter()
-            .map(|f| format!("{}", f))
-            .collect::<Vec<_>>()
-            .join("\n")
     }
 
     pub fn select(&self, selector: &Selector) -> Outcome {
@@ -588,5 +682,92 @@ impl Deref for ByteRecord {
     /// Dereferences the value
     fn deref(&self) -> &Self::Target {
         &self.fields
+    }
+}
+
+/// A PICA+ record, that guarantees valid UTF-8 data.
+#[derive(Debug, PartialEq)]
+pub struct StringRecord(ByteRecord);
+
+impl Deref for StringRecord {
+    type Target = ByteRecord;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl StringRecord {
+    /// Creates a new `StringRecord` from a `ByteRecord`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, StringRecord};
+    /// use std::error::Error;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let record =
+    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
+    ///     assert!(StringRecord::from_byte_record(record).is_ok());
+    ///
+    ///     let record =
+    ///         ByteRecord::from_bytes(b"003@ \x1ffoo\xffbar\x1e".to_vec())?;
+    ///     assert!(StringRecord::from_byte_record(record).is_err());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_byte_record(record: ByteRecord) -> Result<StringRecord> {
+        match record.validate() {
+            Ok(()) => Ok(StringRecord(record)),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Creates a new `StringRecord` from a bytes vector.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, StringRecord};
+    /// use std::error::Error;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let result = StringRecord::from_bytes("003@ \x1f0123456789X\x1e");
+    ///     assert!(result.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes<T: Into<Vec<u8>>>(data: T) -> Result<StringRecord> {
+        let record = ByteRecord::from_bytes(data.into())?;
+        StringRecord::from_byte_record(record)
+    }
+}
+
+impl fmt::Display for StringRecord {
+    /// Format the subfield in a human-readable format.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Error, StringRecord};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record = StringRecord::from_bytes(
+    ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
+    ///     )?;
+    ///     assert_eq!(format!("{}", record), "003@ $0 123456789X\n012A/01 $a 123");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
+        write!(f, "{}", self.0)
     }
 }
