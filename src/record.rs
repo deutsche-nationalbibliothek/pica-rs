@@ -1,12 +1,13 @@
 use crate::error::{Error, Result};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::Path;
+use crate::{Path, Writer};
 
 use bstr::BString;
 use regex::bytes::Regex;
 use serde::Serialize;
 use std::fmt;
+use std::io::{self, Write};
 use std::ops::Deref;
 use std::result::Result as StdResult;
 
@@ -140,6 +141,39 @@ impl Subfield {
             return Err(Error::Utf8Error(e));
         }
 
+        Ok(())
+    }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Subfield, WriterBuilder};
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// # use std::fs::read_to_string;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
+    ///
+    ///     let subfield = Subfield::new('0', "123456789X")?;
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
+    ///     subfield.write(&mut writer)?;
+    ///     writer.flush()?;
+    ///
+    ///     # let result = read_to_string(path)?;
+    ///     # assert_eq!(result, String::from("\x1f0123456789X"));
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn write<W: io::Write>(
+        &self,
+        writer: &mut Writer<W>,
+    ) -> crate::error::Result<()> {
+        write!(writer, "\x1f{}{}", self.code, self.value)?;
         Ok(())
     }
 }
@@ -416,6 +450,54 @@ impl Field {
 
         Ok(())
     }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield, WriterBuilder, Occurrence};
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// # use std::fs::read_to_string;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
+    ///
+    ///     let subfield = Subfield::new('0', "123456789X")?;
+    ///     let occurrence = Occurrence::new("001")?;
+    ///     let field = Field::new("012A", Some(occurrence), vec![subfield])?;
+    ///     
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
+    ///     field.write(&mut writer)?;
+    ///     writer.flush()?;
+    ///
+    ///     # let result = read_to_string(path)?;
+    ///     # assert_eq!(result, String::from("012A/001 \x1f0123456789X\x1e"));
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn write<W: io::Write>(
+        &self,
+        writer: &mut Writer<W>,
+    ) -> crate::error::Result<()> {
+        writer.write_all(self.tag.as_slice())?;
+
+        if let Some(ref occurrence) = self.occurrence {
+            write!(writer, "/{}", occurrence.0)?;
+        }
+
+        writer.write_all(&[b' '])?;
+
+        for subfield in &self.subfields {
+            subfield.write(writer)?;
+        }
+
+        writer.write_all(&[b'\x1e'])?;
+        Ok(())
+    }
 }
 
 impl fmt::Display for Field {
@@ -580,6 +662,52 @@ impl ByteRecord {
             field.validate()?;
         }
 
+        Ok(())
+    }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield, WriterBuilder, Occurrence, ByteRecord};
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// # use std::fs::read_to_string;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
+    ///
+    ///     let record = ByteRecord::new(vec![
+    ///         Field::new("012A", Some(Occurrence::new("001")?), vec![
+    ///             Subfield::new('0', "123456789X")?,
+    ///         ])?,
+    ///         Field::new("012A", Some(Occurrence::new("002")?), vec![
+    ///             Subfield::new('0', "123456789X")?,
+    ///         ])?,
+    ///     ]);
+    ///
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
+    ///     record.write(&mut writer)?;
+    ///     writer.flush()?;
+    ///
+    ///     # let result = read_to_string(path)?;
+    ///     # assert_eq!(result, String::from(
+    ///     #     "012A/001 \x1f0123456789X\x1e012A/002 \x1f0123456789X\x1e\n"));
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn write<W>(&self, writer: &mut Writer<W>) -> crate::error::Result<()>
+    where
+        W: io::Write,
+    {
+        for field in &self.fields {
+            field.write(writer)?;
+        }
+
+        writer.write_all(b"\n")?;
         Ok(())
     }
 

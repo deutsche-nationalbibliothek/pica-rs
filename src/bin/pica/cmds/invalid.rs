@@ -1,8 +1,8 @@
-use crate::cmds::Config;
-use crate::util::{App, CliArgs, CliResult};
-use bstr::io::BufReadExt;
+use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::ByteRecord;
+use pica::{Error, ParsePicaError, ReaderBuilder};
+use std::fs::File;
+use std::io::{self, BufWriter, Write};
 
 pub fn cli() -> App {
     App::new("invalid")
@@ -18,16 +18,24 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
-    let mut writer = ctx.writer(args.value_of("output"))?;
-    let reader = ctx.reader(args.value_of("filename"))?;
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(false)
+        .from_path_or_stdin(args.value_of("filename"))?;
 
-    for result in reader.byte_lines() {
-        let line = result?;
+    let writer: Box<dyn Write> = match args.value_of("output") {
+        Some(filename) => Box::new(File::create(filename)?),
+        None => Box::new(io::stdout()),
+    };
 
-        if ByteRecord::from_bytes(line.clone()).is_err() {
-            writer.write_all(&line)?;
-            writer.write_all(b"\n")?;
+    let mut writer = BufWriter::new(writer);
+
+    for result in reader.records() {
+        match result {
+            Err(Error::InvalidRecord(ParsePicaError { data, .. })) => {
+                writer.write_all(&data)?;
+            }
+            Err(e) => return Err(CliError::from(e)),
+            _ => continue,
         }
     }
 

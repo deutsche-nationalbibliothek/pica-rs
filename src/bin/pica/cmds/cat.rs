@@ -1,8 +1,7 @@
-use crate::cmds::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
+use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
-use pica::ByteRecord;
+use pica::{ReaderBuilder, Writer, WriterBuilder};
+use std::io::Write;
 
 pub fn cli() -> App {
     App::new("cat")
@@ -24,25 +23,18 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let config = Config::new();
-    let mut writer = config.writer(args.value_of("output"))?;
     let skip_invalid = args.is_present("skip-invalid");
 
+    let mut writer: Writer<Box<dyn Write>> =
+        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
+
     for filename in args.values_of("filenames").unwrap() {
-        let reader = config.reader(Some(filename))?;
+        let mut reader = ReaderBuilder::new()
+            .skip_invalid(skip_invalid)
+            .from_path(filename)?;
 
-        for result in reader.byte_lines() {
-            let line = result?;
-
-            if ByteRecord::from_bytes(line.clone()).is_ok() {
-                writer.write_all(&line)?;
-                writer.write_all(b"\n")?;
-            } else if !skip_invalid {
-                return Err(CliError::Other(format!(
-                    "could not read record: {}",
-                    String::from_utf8(line).unwrap()
-                )));
-            }
+        for result in reader.byte_records() {
+            writer.write_byte_record(&result?)?;
         }
     }
 
