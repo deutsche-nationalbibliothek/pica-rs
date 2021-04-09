@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::fs::create_dir;
 use std::io::Write;
 use std::path::Path;
+use std::str::FromStr;
 
 pub fn cli() -> App {
     App::new("partition")
@@ -42,7 +43,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
     let filename_template = args.value_of("template").unwrap_or("{}.dat");
     let skip_invalid = args.is_present("skip-invalid");
-    let path_str = args.value_of("path").unwrap();
     let reader = ctx.reader(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
@@ -52,7 +52,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     let mut writers: HashMap<Vec<u8>, Box<dyn Write + 'static>> =
         HashMap::new();
-    let path = pica::Path::from_bytes(path_str.as_bytes()).unwrap();
+    let path = pica::Path::from_str(args.value_of("path").unwrap())?;
 
     for result in reader.byte_lines() {
         let line = result?;

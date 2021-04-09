@@ -1,6 +1,6 @@
 //! Filter Expressions
 
-use crate::{ByteRecord, Field, Occurrence, Subfield};
+use crate::{ByteRecord, Field, Occurrence, Result, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag, take_while_m_n};
@@ -16,24 +16,52 @@ use nom::multi::{count, fold_many0, many0, many_m_n, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
+use bstr::BString;
 use regex::Regex;
 use std::cmp::PartialEq;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum OccurrenceMatcher {
-    Value(String),
-    Ignore,
+    Occurrence(Occurrence),
     None,
+    Any,
 }
 
-impl PartialEq<Option<Occurrence>> for OccurrenceMatcher {
-    fn eq(&self, other: &Option<Occurrence>) -> bool {
-        match self {
-            OccurrenceMatcher::Ignore => true,
-            OccurrenceMatcher::None => other.is_none(),
-            OccurrenceMatcher::Value(lhs) => {
-                if let Some(ref rhs) = other {
-                    lhs == &rhs.0
+impl OccurrenceMatcher {
+    /// Creates a `OccurrenceMatcher`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Occurrence, OccurrenceMatcher};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let matcher = OccurrenceMatcher::new("001")?;
+    ///     assert_eq!(
+    ///         matcher,
+    ///         OccurrenceMatcher::Occurrence(Occurrence::new("001")?)
+    ///     );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn new<T>(value: T) -> Result<OccurrenceMatcher>
+    where
+        T: Into<BString>,
+    {
+        Ok(OccurrenceMatcher::Occurrence(Occurrence::new(value)?))
+    }
+}
+
+impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
+    fn eq(&self, other: &OccurrenceMatcher) -> bool {
+        match other {
+            OccurrenceMatcher::Any => true,
+            OccurrenceMatcher::None => self.is_none(),
+            OccurrenceMatcher::Occurrence(lhs) => {
+                if let Some(rhs) = self {
+                    lhs == rhs
                 } else {
                     false
                 }
@@ -149,12 +177,12 @@ impl<'a> Filter {
             Filter::Field(tag, occurrence, filter) => {
                 record.iter().any(|field| {
                     &field.tag == tag
-                        && *occurrence == field.occurrence
+                        && field.occurrence == *occurrence
                         && filter.matches(field)
                 })
             }
             Filter::Exists(tag, occurrence) => record.iter().any(|field| {
-                &field.tag == tag && *occurrence == field.occurrence
+                &field.tag == tag && field.occurrence == *occurrence
             }),
             Filter::Boolean(lhs, op, rhs) => match op {
                 BooleanOp::And => lhs.matches(record) && rhs.matches(record),
@@ -293,9 +321,13 @@ pub(crate) fn parse_occurrence_matcher(
             cut(alt((
                 map(
                     recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
-                    |value| OccurrenceMatcher::Value(String::from(value)),
+                    |value| {
+                        OccurrenceMatcher::Occurrence(
+                            Occurrence::from_unchecked(value),
+                        )
+                    },
                 ),
-                map(char('*'), |_| OccurrenceMatcher::Ignore),
+                map(char('*'), |_| OccurrenceMatcher::Any),
             ))),
         ),
         success(OccurrenceMatcher::None),
@@ -522,7 +554,7 @@ fn parse_filter(i: &str) -> IResult<&str, Filter> {
 pub struct ParseFilterError;
 
 impl Filter {
-    pub fn decode(s: &str) -> Result<Self, ParseFilterError> {
+    pub fn decode(s: &str) -> std::result::Result<Self, ParseFilterError> {
         match all_consuming(parse_filter)(s).finish() {
             Ok((_, filter)) => Ok(filter),
             _ => Err(ParseFilterError),
@@ -668,7 +700,7 @@ mod tests {
     fn test_parse_field_complex() {
         let field_expr = Filter::Field(
             "012A".to_string(),
-            OccurrenceMatcher::Value("000".to_string()),
+            OccurrenceMatcher::new("000").unwrap(),
             SubfieldFilter::Boolean(
                 Box::new(SubfieldFilter::Exists('0')),
                 BooleanOp::Or,
@@ -690,7 +722,7 @@ mod tests {
     fn test_parse_field_exists() {
         let field_expr = Filter::Exists(
             "012A".to_string(),
-            OccurrenceMatcher::Value("00".to_string()),
+            OccurrenceMatcher::new("00").unwrap(),
         );
         assert_eq!(parse_field_exists("012A/00?"), Ok(("", field_expr)));
 

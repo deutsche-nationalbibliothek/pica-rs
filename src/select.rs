@@ -208,7 +208,7 @@ mod tests {
                 "",
                 Selector::new(
                     "044H".to_string(),
-                    OccurrenceMatcher::Ignore,
+                    OccurrenceMatcher::Any,
                     None,
                     vec!['9', 'E', 'H']
                 )
@@ -221,7 +221,7 @@ mod tests {
                 "",
                 Selector::new(
                     "044H".to_string(),
-                    OccurrenceMatcher::Ignore,
+                    OccurrenceMatcher::Any,
                     Some(SubfieldFilter::Comparison(
                         'E',
                         ComparisonOp::Eq,
@@ -238,7 +238,7 @@ mod tests {
                 "",
                 Selector::new(
                     "012A".to_string(),
-                    OccurrenceMatcher::Ignore,
+                    OccurrenceMatcher::Any,
                     None,
                     vec!['a']
                 )
@@ -251,7 +251,7 @@ mod tests {
                 "",
                 Selector::new(
                     "012A".to_string(),
-                    OccurrenceMatcher::Value("01".to_string()),
+                    OccurrenceMatcher::new("01").unwrap(),
                     None,
                     vec!['a']
                 )

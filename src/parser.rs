@@ -1,13 +1,13 @@
 //! This module provides functions to parse PICA+ records.
 
-use crate::{Field, Occurrence, Subfield};
+use crate::{Field, Occurrence, OccurrenceMatcher, Path, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{char, one_of, satisfy};
+use nom::character::complete::{char, multispace0, one_of, satisfy};
 use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
 use nom::multi::{count, many0, many1, many_m_n};
-use nom::sequence::{pair, preceded, terminated, tuple};
+use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::Err;
 
 use bstr::BString;
@@ -28,11 +28,21 @@ pub struct ParsePicaError {
     pub data: Vec<u8>,
 }
 
+#[derive(Debug)]
+pub struct ParsePathError(pub(crate) String);
+
 impl std::error::Error for ParsePicaError {}
+impl std::error::Error for ParsePathError {}
 
 impl fmt::Display for ParsePicaError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(&self.message)
+    }
+}
+
+impl fmt::Display for ParsePathError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0)
     }
 }
 
@@ -102,4 +112,76 @@ pub fn parse_field(i: &[u8]) -> ParseResult<Field> {
 /// Parses a record.
 pub fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
     all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
+}
+
+/// Parses a occurrence matcher.
+pub(crate) fn parse_occurrence_matcher(
+    i: &[u8],
+) -> ParseResult<OccurrenceMatcher> {
+    alt((
+        map(tag(b"/*"), |_| OccurrenceMatcher::Any),
+        map(parse_field_occurrence, OccurrenceMatcher::Occurrence),
+        success(OccurrenceMatcher::None),
+    ))(i)
+}
+
+pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
+    map(
+        all_consuming(delimited(
+            multispace0,
+            tuple((
+                parse_field_tag,
+                parse_occurrence_matcher,
+                preceded(char('.'), parse_subfield_code),
+            )),
+            multispace0,
+        )),
+        |(tag, occurrence, code)| Path {
+            tag,
+            occurrence,
+            code,
+        },
+    )(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_occurrence_matcher() {
+        assert_eq!(
+            parse_occurrence_matcher(b"/00").unwrap().1,
+            OccurrenceMatcher::new("00").unwrap()
+        );
+        assert_eq!(
+            parse_occurrence_matcher(b"/001").unwrap().1,
+            OccurrenceMatcher::new("001").unwrap()
+        );
+        assert_eq!(
+            parse_occurrence_matcher(b"/*").unwrap().1,
+            OccurrenceMatcher::Any,
+        );
+        assert_eq!(
+            parse_occurrence_matcher(b"").unwrap().1,
+            OccurrenceMatcher::None,
+        );
+    }
+
+    #[test]
+    fn test_parse_path() {
+        assert_eq!(
+            parse_path(b"003@.0").unwrap().1,
+            Path::new("003@", OccurrenceMatcher::None, '0').unwrap()
+        );
+        assert_eq!(
+            parse_path(b"012A/01.0").unwrap().1,
+            Path::new("012A", OccurrenceMatcher::new("01").unwrap(), '0')
+                .unwrap()
+        );
+        assert_eq!(
+            parse_path(b"012A/*.0").unwrap().1,
+            Path::new("012A", OccurrenceMatcher::Any, '0').unwrap()
+        );
+    }
 }
