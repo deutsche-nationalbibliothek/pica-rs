@@ -1,3 +1,5 @@
+use crate::parser::ParsePicaError;
+
 use std::error;
 use std::fmt::{self, Display, Formatter};
 
@@ -10,6 +12,7 @@ pub enum Error {
     InvalidSubfield(String),
     InvalidOccurrence(String),
     InvalidField(String),
+    InvalidRecord(ParsePicaError),
     Utf8Error(std::str::Utf8Error),
 }
 
@@ -21,8 +24,15 @@ impl Display for Error {
             Error::InvalidSubfield(ref m) => f.write_str(m),
             Error::InvalidOccurrence(ref m) => f.write_str(m),
             Error::InvalidField(ref m) => f.write_str(m),
+            Error::InvalidRecord(ref e) => e.fmt(f),
             Error::Utf8Error(ref e) => e.fmt(f),
         }
+    }
+}
+
+impl From<ParsePicaError> for Error {
+    fn from(err: ParsePicaError) -> Self {
+        Self::InvalidRecord(err)
     }
 }
 

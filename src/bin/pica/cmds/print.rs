@@ -33,7 +33,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         let line = result?;
 
         if let Ok(record) = ByteRecord::from_bytes(line.clone()) {
-            writer.write_all(record.pretty().as_bytes())?;
+            writer.write_all(format!("{}", record).as_bytes())?;
             writer.write_all(b"\n\n")?;
         } else if !skip_invalid {
             return Err(CliError::Other(format!(

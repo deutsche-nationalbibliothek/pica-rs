@@ -1,7 +1,7 @@
 extern crate pica;
 
 use bstr::io::BufReadExt;
-use pica::ByteRecord;
+use pica::StringRecord;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
@@ -18,8 +18,8 @@ fn main() {
     for result in reader.byte_lines() {
         let line = result.unwrap();
 
-        match ByteRecord::from_bytes(line) {
-            Ok(record) => println!("{}", record.pretty()),
+        match StringRecord::from_bytes(line) {
+            Ok(record) => println!("{}", record),
             Err(_) => eprintln!("invalid record!"),
         }
     }
