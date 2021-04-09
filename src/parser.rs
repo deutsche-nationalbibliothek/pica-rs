@@ -5,7 +5,7 @@ use crate::{Field, Occurrence, OccurrenceMatcher, Path, Subfield};
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0, one_of, satisfy};
-use nom::combinator::{all_consuming, cut, map, opt, peek, recognize, success};
+use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
 use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::Err;
