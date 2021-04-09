@@ -3,7 +3,7 @@ name = "pica"
 version = "0.2.0"
 authors = ["Nico Wagner <nwagner84@protonmail.com>"]
 edition = "2018"
-license = "AGPL-3.0-only"
+license = "MIT OR Unlicense"
 default-run = "pica"
 
 [dependencies]
