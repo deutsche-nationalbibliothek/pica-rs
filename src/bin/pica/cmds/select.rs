@@ -2,7 +2,7 @@ use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::{Outcome, Record, Selectors};
+use pica::{ByteRecord, Outcome, Selectors};
 
 pub fn cli() -> App {
     App::new("select")
@@ -56,7 +56,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for result in reader.byte_lines() {
         let line = result?;
 
-        if let Ok(record) = Record::from_bytes(&line) {
+        if let Ok(record) = ByteRecord::from_bytes(line.clone()) {
             let outcome = selectors
                 .iter()
                 .map(|selector| record.select(&selector))

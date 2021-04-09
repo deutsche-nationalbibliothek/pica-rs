@@ -1,6 +1,6 @@
 //! Filter Expressions
 
-use crate::{Field, Occurrence, Record, Subfield};
+use crate::{ByteRecord, Field, Occurrence, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag, take_while_m_n};
@@ -26,14 +26,14 @@ pub enum OccurrenceMatcher {
     None,
 }
 
-impl PartialEq<Occurrence> for OccurrenceMatcher {
-    fn eq(&self, other: &Occurrence) -> bool {
+impl PartialEq<Option<Occurrence>> for OccurrenceMatcher {
+    fn eq(&self, other: &Option<Occurrence>) -> bool {
         match self {
             OccurrenceMatcher::Ignore => true,
             OccurrenceMatcher::None => other.is_none(),
             OccurrenceMatcher::Value(lhs) => {
-                if let Some(ref rhs) = other.0 {
-                    lhs == rhs
+                if let Some(ref rhs) = other {
+                    lhs == &rhs.0
                 } else {
                     false
                 }
@@ -144,7 +144,7 @@ pub enum Filter {
 }
 
 impl<'a> Filter {
-    pub fn matches(&self, record: &Record) -> bool {
+    pub fn matches(&self, record: &ByteRecord) -> bool {
         match self {
             Filter::Field(tag, occurrence, filter) => {
                 record.iter().any(|field| {

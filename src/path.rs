@@ -13,8 +13,9 @@
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
 
+use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
-use nom::combinator::cut;
+use nom::combinator::{cut, map, success};
 use nom::sequence::{preceded, terminated, tuple};
 
 use crate::parser::{
@@ -27,7 +28,7 @@ use bstr::BString;
 #[derive(Debug, PartialEq, Clone)]
 pub struct Path {
     pub(crate) tag: BString,
-    pub(crate) occurrence: Occurrence,
+    pub(crate) occurrence: Option<Occurrence>,
     pub(crate) code: char,
 }
 
@@ -42,7 +43,7 @@ impl Path {
 pub fn parse_path(i: &[u8]) -> ParseResult<Path> {
     let (i, (tag, occurrence, code)) = tuple((
         preceded(multispace0, parse_field_tag),
-        parse_field_occurrence,
+        alt((map(parse_field_occurrence, Some), success(None))),
         preceded(char('.'), cut(terminated(parse_subfield_code, multispace0))),
     ))(i)?;
 

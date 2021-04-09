@@ -2,7 +2,7 @@ use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::ByteRecord;
 
 use std::fs::create_dir;
 use std::path::Path;
@@ -67,7 +67,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for result in reader.byte_lines() {
         let line = result?;
 
-        if Record::from_bytes(&line).is_ok() {
+        if ByteRecord::from_bytes(line.clone()).is_ok() {
             if count % chunk_size == 0 {
                 writer.flush()?;
 

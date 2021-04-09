@@ -2,7 +2,7 @@ use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::ByteRecord;
 
 pub fn cli() -> App {
     App::new("slice")
@@ -64,7 +64,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for (i, result) in reader.byte_lines().enumerate() {
         let line = result?;
 
-        if let Ok(_record) = Record::from_bytes(&line) {
+        if let Ok(_record) = ByteRecord::from_bytes(line.clone()) {
             if range.contains(&i) {
                 writer.write_all(&line)?;
                 writer.write_all(b"\n")?;
@@ -74,10 +74,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
                 break;
             }
         } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+            return Err(CliError::Other("could not read record".to_string()));
         } else if length.is_some() {
             range.end += 1;
         }

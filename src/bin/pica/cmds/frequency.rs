@@ -3,7 +3,7 @@ use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use bstr::BString;
 use clap::Arg;
-use pica::{Path, Record};
+use pica::{ByteRecord, Path};
 use std::collections::HashMap;
 
 pub fn cli() -> App {
@@ -49,9 +49,9 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for result in reader.byte_lines() {
         let line = result?;
 
-        if let Ok(record) = Record::from_bytes(&line) {
+        if let Ok(record) = ByteRecord::from_bytes(line.clone()) {
             for value in record.path(&path) {
-                *ftable.entry(value).or_insert(0) += 1;
+                *ftable.entry(value.clone()).or_insert(0) += 1;
             }
         } else if !skip_invalid {
             return Err(CliError::Other(format!(
