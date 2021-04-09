@@ -1,4 +1,4 @@
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::BString;
 use clap::Arg;
 use pica::{Path, ReaderBuilder};
@@ -21,8 +21,7 @@ pub fn cli() -> App {
                 .short('l')
                 .long("--limit")
                 .value_name("n")
-                .about("Limit the result to the <n> most common items.")
-                .default_value("0"),
+                .about("Limit the result to the <n> most common items."),
         )
         .arg(
             Arg::new("output")
@@ -43,7 +42,14 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let limit: u64 = args.value_of("limit").unwrap().parse().unwrap();
+    let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
+        Ok(limit) => limit,
+        Err(_) => {
+            return Err(CliError::Other(
+                "Invalid limit value, expected unsigned value.".to_string(),
+            ));
+        }
+    };
 
     let mut writer =
         csv::WriterBuilder::new().from_writer(writer(args.value_of("output"))?);
@@ -66,8 +72,8 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let mut ftable_sorted: Vec<(&BString, &u64)> = ftable.iter().collect();
     ftable_sorted.sort_by(|a, b| b.1.cmp(a.1));
 
-    for (value, frequency) in ftable_sorted {
-        if *frequency < limit {
+    for (i, (value, frequency)) in ftable_sorted.iter().enumerate() {
+        if limit > 0 && i >= limit {
             break;
         }
         writer.write_record(&[value, &BString::from(frequency.to_string())])?;
