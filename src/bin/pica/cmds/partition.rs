@@ -73,5 +73,9 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     }
 
+    for (_, mut writer) in writers {
+        writer.flush()?;
+    }
+
     Ok(())
 }
