@@ -2,7 +2,7 @@ use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::ByteRecord;
 use rand::{thread_rng, Rng};
 
 pub fn cli() -> App {
@@ -48,7 +48,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for (i, result) in reader.byte_lines().enumerate() {
         let line = result?;
 
-        if Record::from_bytes(&line).is_ok() {
+        if ByteRecord::from_bytes(line.clone()).is_ok() {
             if i < n {
                 reservoir.push(line);
             } else {

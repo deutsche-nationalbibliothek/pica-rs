@@ -3,7 +3,7 @@ use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use bstr::ByteSlice;
 use clap::Arg;
-use pica::{self, Record};
+use pica::{self, ByteRecord};
 
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -57,7 +57,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for result in reader.byte_lines() {
         let line = result?;
 
-        if let Ok(record) = Record::from_bytes(&line) {
+        if let Ok(record) = ByteRecord::from_bytes(line.clone()) {
             for value in record.path(&path) {
                 let mut entry = writers.entry(value.as_bytes().to_vec());
                 let writer = match entry {

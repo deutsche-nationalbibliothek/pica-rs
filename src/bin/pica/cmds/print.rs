@@ -2,7 +2,7 @@ use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::ByteRecord;
 
 pub fn cli() -> App {
     App::new("print")
@@ -32,7 +32,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     for result in reader.byte_lines() {
         let line = result?;
 
-        if let Ok(record) = Record::from_bytes(&line) {
+        if let Ok(record) = ByteRecord::from_bytes(line.clone()) {
             writer.write_all(record.pretty().as_bytes())?;
             writer.write_all(b"\n\n")?;
         } else if !skip_invalid {

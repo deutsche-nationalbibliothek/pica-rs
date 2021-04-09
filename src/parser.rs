@@ -1,6 +1,6 @@
 //! This module provides functions to parse PICA+ records.
 
-use bstr::BString;
+use crate::{Field, Occurrence, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
@@ -10,7 +10,8 @@ use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Err;
 
-use crate::{Field, Occurrence, Record, Subfield};
+use bstr::BString;
+use std::fmt;
 
 const NL: char = '\x0A';
 const US: char = '\x1F';
@@ -19,6 +20,21 @@ const SP: char = '\x20';
 
 /// Parser result.
 pub type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
+
+/// An error that can occur when parsing PICA+ records.
+#[derive(Debug, PartialEq)]
+pub struct ParsePicaError {
+    pub message: String,
+    pub data: Vec<u8>,
+}
+
+impl std::error::Error for ParsePicaError {}
+
+impl fmt::Display for ParsePicaError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.message)
+    }
+}
 
 /// Parses a subfield code.
 pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
@@ -37,22 +53,19 @@ pub(crate) fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
             char(US),
             cut(pair(parse_subfield_code, parse_subfield_value)),
         ),
-        |(code, value)| Subfield { code, value },
+        |(code, value)| Subfield::from_unchecked(code, value),
     )(i)
 }
 
 /// Parses a field occurrence.
 pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
-    alt((
-        map(
-            preceded(
-                tag(b"/"),
-                cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
-            ),
-            |value: &[u8]| Occurrence(Some(BString::from(value))),
+    map(
+        preceded(
+            tag(b"/"),
+            cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
         ),
-        success(Occurrence(None)),
-    ))(i)
+        Occurrence::from_unchecked,
+    )(i)
 }
 
 /// Parses a field tag.
@@ -73,7 +86,7 @@ pub fn parse_field(i: &[u8]) -> ParseResult<Field> {
         terminated(
             tuple((
                 parse_field_tag,
-                parse_field_occurrence,
+                alt((map(parse_field_occurrence, Some), success(None))),
                 preceded(char(SP), many0(parse_subfield)),
             )),
             char(RS),
@@ -87,9 +100,6 @@ pub fn parse_field(i: &[u8]) -> ParseResult<Field> {
 }
 
 /// Parses a record.
-pub fn parse_record(i: &[u8]) -> ParseResult<Record> {
-    map(
-        all_consuming(terminated(many1(parse_field), opt(char(NL)))),
-        |fields| Record { fields },
-    )(i)
+pub fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
+    all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
 }
