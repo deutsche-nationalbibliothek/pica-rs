@@ -73,7 +73,7 @@ jobs:
         run: |
           staging="pica-${{ needs.create_release.outputs.version }}-${{ matrix.target }}"
           mkdir "$staging"
-          cp LICENSE README.md "$staging/"
+          cp README.md "$staging/"
 
           mkdir "$staging"/complete
           target/release/pica completion fish -o "$staging"/complete/pica.fish
