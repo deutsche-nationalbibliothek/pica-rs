@@ -433,6 +433,27 @@ fn frequency_command() {
     assert!(result.status.success());
     assert_eq!(String::from_utf8(result.stdout).unwrap(), "Tp1,2\nTs1,1\n");
 
+    // threshold
+    let result = CliRunner::new().invoke(
+        "frequency",
+        &["-s", "-t", "2", "002@.0", "tests/data/dump.dat"],
+    );
+    assert!(result.status.success());
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), "Tp1,2\n");
+
+    let result = CliRunner::new().invoke(
+        "frequency",
+        &["-s", "-t", "100", "002@.0", "tests/data/dump.dat"],
+    );
+    assert!(result.status.success());
+    assert!(String::from_utf8(result.stdout).unwrap().is_empty());
+
+    let result = CliRunner::new().invoke(
+        "frequency",
+        &["-s", "-t", "abc", "002@.0", "tests/data/dump.dat"],
+    );
+    assert_eq!(result.status.success(), false);
+
     // output
     let tempdir = TempDir::new().unwrap();
     let filename = tempdir.path().join("frequency.csv");

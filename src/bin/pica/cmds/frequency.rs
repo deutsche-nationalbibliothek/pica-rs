@@ -24,6 +24,13 @@ pub fn cli() -> App {
                 .about("Limit the result to the <n> most common items."),
         )
         .arg(
+            Arg::new("threshold")
+                .short('t')
+                .long("--threshold")
+                .value_name("t")
+                .about("Ignore rows with a frequency ≤ <t>."),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -46,10 +53,21 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         Ok(limit) => limit,
         Err(_) => {
             return Err(CliError::Other(
-                "Invalid limit value, expected unsigned value.".to_string(),
+                "Invalid limit value, expected unsigned integer.".to_string(),
             ));
         }
     };
+
+    let threshold =
+        match args.value_of("threshold").unwrap_or("0").parse::<u64>() {
+            Ok(threshold) => threshold,
+            Err(_) => {
+                return Err(CliError::Other(
+                    "Invalid threshold value, expected unsigned integer."
+                        .to_string(),
+                ));
+            }
+        };
 
     let mut writer =
         csv::WriterBuilder::new().from_writer(writer(args.value_of("output"))?);
@@ -76,6 +94,11 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         if limit > 0 && i >= limit {
             break;
         }
+
+        if **frequency < threshold {
+            break;
+        }
+
         writer.write_record(&[value, &BString::from(frequency.to_string())])?;
     }
 
