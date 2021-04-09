@@ -13,46 +13,123 @@
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
 
-use nom::branch::alt;
-use nom::character::complete::{char, multispace0};
-use nom::combinator::{cut, map, success};
-use nom::sequence::{preceded, terminated, tuple};
-
-use crate::parser::{
-    parse_field_occurrence, parse_field_tag, parse_subfield_code, ParseResult,
-};
-use crate::Occurrence;
+use crate::parser::{parse_path, ParsePathError};
+use crate::record::FIELD_TAG_RE;
+use crate::{Error, OccurrenceMatcher, Result};
 
 use bstr::BString;
+use std::str::FromStr;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub struct Path {
     pub(crate) tag: BString,
-    pub(crate) occurrence: Option<Occurrence>,
+    pub(crate) occurrence: OccurrenceMatcher,
     pub(crate) code: char,
 }
 
 impl Path {
-    /// Parse a path from a byte slice.
-    #[allow(clippy::result_unit_err)]
-    pub fn from_bytes(data: &[u8]) -> Result<Self, ()> {
-        parse_path(data).map(|(_, path)| path).map_err(|_| ())
-    }
-}
+    /// Creates a new path
+    ///
+    /// ```rust
+    /// use pica::{OccurrenceMatcher, Path};
+    ///
+    /// assert!(Path::new("003@", OccurrenceMatcher::None, '0').is_ok());
+    /// assert!(Path::new("012A", OccurrenceMatcher::Any, '0').is_ok());
+    /// assert!(Path::new("012!", OccurrenceMatcher::Any, '0').is_err());
+    /// assert!(Path::new("012A", OccurrenceMatcher::Any, '!').is_err());
+    /// ```
+    pub fn new<S>(
+        tag: S,
+        occurrence: OccurrenceMatcher,
+        code: char,
+    ) -> Result<Path>
+    where
+        S: Into<BString>,
+    {
+        let tag = tag.into();
 
-pub fn parse_path(i: &[u8]) -> ParseResult<Path> {
-    let (i, (tag, occurrence, code)) = tuple((
-        preceded(multispace0, parse_field_tag),
-        alt((map(parse_field_occurrence, Some), success(None))),
-        preceded(char('.'), cut(terminated(parse_subfield_code, multispace0))),
-    ))(i)?;
+        if !FIELD_TAG_RE.is_match(tag.as_slice()) {
+            return Err(Error::InvalidField(format!(
+                "Invalid field tag '{}' in path expression.",
+                tag
+            )));
+        }
 
-    Ok((
-        i,
-        Path {
+        if !code.is_ascii_alphanumeric() {
+            return Err(Error::InvalidSubfield(format!(
+                "Invalid subfield code '{}' in path expression.",
+                code
+            )));
+        }
+
+        Ok(Path {
             tag,
             occurrence,
             code,
-        },
-    ))
+        })
+    }
+
+    /// Creates a new `Path` from a byte vector.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Occurrence, OccurrenceMatcher, Path};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let path = Path::from_bytes("003@.0")?;
+    ///     assert_eq!(path, Path::new("003@", OccurrenceMatcher::None, '0')?);
+    ///
+    ///     let path = Path::from_bytes("012A/00.0")?;
+    ///     assert_eq!(
+    ///         path,
+    ///         Path::new(
+    ///             "012A",
+    ///             OccurrenceMatcher::Occurrence(Occurrence::new("00")?),
+    ///             '0'
+    ///         )?
+    ///     );
+    ///
+    ///     let path = Path::from_bytes("012A/*.0")?;
+    ///     assert_eq!(path, Path::new("012A", OccurrenceMatcher::Any, '0')?);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes<T>(data: T) -> std::result::Result<Path, ParsePathError>
+    where
+        T: Into<Vec<u8>>,
+    {
+        match parse_path(&data.into()) {
+            Err(_) => {
+                Err(ParsePathError(String::from("Invalid path expression")))
+            }
+            Ok((_, path)) => Ok(path),
+        }
+    }
+}
+
+impl FromStr for Path {
+    type Err = crate::error::Error;
+
+    /// Parse a `Path` from a string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::Path;
+    /// use std::str::FromStr;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let path = Path::from_str("003@.0");
+    ///     assert!(path.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(Self::from_bytes(s)?)
+    }
 }

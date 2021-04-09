@@ -5,6 +5,7 @@ use bstr::BString;
 use clap::Arg;
 use pica::{ByteRecord, Path};
 use std::collections::HashMap;
+use std::str::FromStr;
 
 pub fn cli() -> App {
     App::new("frequency")
@@ -38,13 +39,12 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     let ctx = Config::new();
     let skip_invalid = args.is_present("skip-invalid");
     let limit: u64 = args.value_of("limit").unwrap().parse().unwrap();
-    let path_str = args.value_of("path").unwrap();
     let reader = ctx.reader(args.value_of("filename"))?;
     let writer = ctx.writer(args.value_of("output"))?;
     let mut writer = csv::Writer::from_writer(writer);
 
     let mut ftable: HashMap<BString, u64> = HashMap::new();
-    let path = Path::from_bytes(path_str.as_bytes()).unwrap();
+    let path = Path::from_str(args.value_of("path").unwrap())?;
 
     for result in reader.byte_lines() {
         let line = result?;

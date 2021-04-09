@@ -40,6 +40,10 @@ fn main() {
             process::exit(0);
         }
 
+        Err(CliError::Pica(err)) => {
+            eprintln!("Pica Error: {}", err);
+            process::exit(1);
+        }
         Err(CliError::Io(err)) => {
             eprintln!("IO Error: {}", err);
             process::exit(1);
