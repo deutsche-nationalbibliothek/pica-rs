@@ -412,19 +412,19 @@ fn frequency_command() {
     assert_eq!(result.status.success(), false);
 
     // limit
-    // let result = CliRunner::new().invoke(
-    //     "frequency",
-    //     &["-s", "--limit", "1", "002@.0", "tests/data/dump.dat"],
-    // );
-    // assert!(result.status.success());
-    // assert_eq!(String::from_utf8(result.stdout).unwrap(), "Tp1,2\n");
+    let result = CliRunner::new().invoke(
+        "frequency",
+        &["-s", "--limit", "1", "002@.0", "tests/data/dump.dat"],
+    );
+    assert!(result.status.success());
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), "Tp1,2\n");
 
-    // let result = CliRunner::new().invoke(
-    //     "frequency",
-    //     &["-s", "-l", "100", "002@.0", "tests/data/dump.dat"],
-    // );
-    // assert!(result.status.success());
-    // assert_eq!(String::from_utf8(result.stdout).unwrap(), "Tp1,2\nTs1,1\n");
+    let result = CliRunner::new().invoke(
+        "frequency",
+        &["-s", "-l", "100", "002@.0", "tests/data/dump.dat"],
+    );
+    assert!(result.status.success());
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), "Tp1,2\nTs1,1\n");
 
     let result = CliRunner::new().invoke(
         "frequency",
