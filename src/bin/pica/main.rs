@@ -22,7 +22,7 @@ fn main() {
         "filter" => cmds::filter::run(args),
         "frequency" => cmds::frequency::run(args),
         "invalid" => cmds::invalid::run(args),
-        // "json" => cmds::json::run(args),
+        "json" => cmds::json::run(args),
         "partition" => cmds::partition::run(args),
         "print" => cmds::print::run(args),
         "sample" => cmds::sample::run(args),
