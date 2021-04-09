@@ -18,7 +18,7 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let mut reader = ReaderBuildero::new()
+    let mut reader = ReaderBuilder::new()
         .skip_invalid(false)
         .from_path_or_stdin(args.value_of("filename"))?;
 
