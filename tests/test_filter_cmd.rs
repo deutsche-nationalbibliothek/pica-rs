@@ -2,11 +2,11 @@ mod common;
 
 use common::CliRunner;
 
-static SAMPLE1: &'static str = include_str!("data/1.dat");
-static SAMPLE2: &'static str = include_str!("data/2.dat");
-static SAMPLE3: &'static str = include_str!("data/3.dat");
-static SAMPLE4: &'static str = include_str!("data/4.dat");
-static SAMPLE5: &'static str = include_str!("data/5.dat");
+static SAMPLE1: &str = include_str!("data/1.dat");
+static SAMPLE2: &str = include_str!("data/2.dat");
+static SAMPLE3: &str = include_str!("data/3.dat");
+static SAMPLE4: &str = include_str!("data/4.dat");
+static SAMPLE5: &str = include_str!("data/5.dat");
 
 #[test]
 fn test_eq_filter() {

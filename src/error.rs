@@ -1,7 +1,7 @@
 use crate::parser::{ParsePathError, ParsePicaError};
 
-use std::error;
 use std::fmt::{self, Display, Formatter};
+use std::{error, io};
 
 /// A type alias for `Result<T, pica::Error>`.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -15,6 +15,7 @@ pub enum Error {
     InvalidRecord(ParsePicaError),
     InvalidPath(ParsePathError),
     Utf8Error(std::str::Utf8Error),
+    Io(io::Error),
 }
 
 impl error::Error for Error {}
@@ -28,7 +29,14 @@ impl Display for Error {
             Error::InvalidRecord(ref e) => e.fmt(f),
             Error::InvalidPath(ref e) => e.fmt(f),
             Error::Utf8Error(ref e) => e.fmt(f),
+            Error::Io(ref e) => e.fmt(f),
         }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Self::Io(err)
     }
 }
 

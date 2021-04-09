@@ -1,9 +1,8 @@
-use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::ByteRecord;
+use pica::{ByteRecord, ReaderBuilder, Writer, WriterBuilder};
 use rand::{thread_rng, Rng};
+use std::io::Write;
 
 pub fn cli() -> App {
     App::new("sample")
@@ -26,10 +25,12 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let config = Config::new();
-    let mut writer = config.writer(args.value_of("output"))?;
-    let reader = config.reader(args.value_of("filename"))?;
-    let skip_invalid = args.is_present("skip-invalid");
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .from_path_or_stdin(args.value_of("filename"))?;
+
+    let mut writer: Writer<Box<dyn Write>> =
+        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
     let sample_size = args.value_of("sample-size").unwrap();
     let n = match sample_size.parse::<usize>() {
@@ -42,32 +43,24 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         Ok(v) => v,
     };
 
-    let mut reservoir: Vec<Vec<u8>> = Vec::with_capacity(n);
+    let mut reservoir: Vec<ByteRecord> = Vec::with_capacity(n);
     let mut rng = thread_rng();
 
-    for (i, result) in reader.byte_lines().enumerate() {
-        let line = result?;
+    for (i, result) in reader.byte_records().enumerate() {
+        let record = result?;
 
-        if ByteRecord::from_bytes(line.clone()).is_ok() {
-            if i < n {
-                reservoir.push(line);
-            } else {
-                let j = rng.gen_range(0..i);
-                if j < n {
-                    reservoir[j] = line;
-                }
+        if i < n {
+            reservoir.push(record);
+        } else {
+            let j = rng.gen_range(0..i);
+            if j < n {
+                reservoir[j] = record;
             }
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
         }
     }
 
-    for line in reservoir {
-        writer.write_all(&line)?;
-        writer.write_all(b"\n")?;
+    for record in &reservoir {
+        writer.write_byte_record(record)?;
     }
 
     writer.flush()?;

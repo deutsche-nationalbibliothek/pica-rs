@@ -1,10 +1,10 @@
-use crate::cmds::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
+use crate::util::{App, CliArgs, CliResult};
 use bstr::BString;
 use clap::Arg;
-use pica::{ByteRecord, Path};
+use pica::{Path, ReaderBuilder};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{self, Write};
 use std::str::FromStr;
 
 pub fn cli() -> App {
@@ -35,29 +35,31 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
+fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
+    Ok(match filename {
+        Some(filename) => Box::new(File::create(filename)?),
+        None => Box::new(io::stdout()),
+    })
+}
+
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
-    let skip_invalid = args.is_present("skip-invalid");
     let limit: u64 = args.value_of("limit").unwrap().parse().unwrap();
-    let reader = ctx.reader(args.value_of("filename"))?;
-    let writer = ctx.writer(args.value_of("output"))?;
-    let mut writer = csv::Writer::from_writer(writer);
+
+    let mut writer =
+        csv::WriterBuilder::new().from_writer(writer(args.value_of("output"))?);
+
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut ftable: HashMap<BString, u64> = HashMap::new();
     let path = Path::from_str(args.value_of("path").unwrap())?;
 
-    for result in reader.byte_lines() {
-        let line = result?;
+    for result in reader.records() {
+        let record = result?;
 
-        if let Ok(record) = ByteRecord::from_bytes(line.clone()) {
-            for value in record.path(&path) {
-                *ftable.entry(value.clone()).or_insert(0) += 1;
-            }
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+        for value in record.path(&path) {
+            *ftable.entry(value.to_owned()).or_insert(0) += 1;
         }
     }
 
