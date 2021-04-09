@@ -32,4 +32,6 @@ path = "src/bin/pica/main.rs"
 name = "pica"
 
 [profile.release]
+codegen-units = 1
+panic = "abort"
 lto = true
