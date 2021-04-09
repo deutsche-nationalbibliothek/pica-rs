@@ -3,9 +3,9 @@ use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
 use crate::{Path, Writer};
 
-use bstr::BString;
+use bstr::{BString, ByteSlice};
 use regex::bytes::Regex;
-use serde::Serialize;
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::fmt;
 use std::io::{self, Write};
 use std::ops::Deref;
@@ -17,9 +17,8 @@ lazy_static! {
 }
 
 /// A PICA+ subfield, that may contian invalid UTF-8 data.
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq)]
 pub struct Subfield {
-    #[serde(rename(serialize = "name"))]
     pub(crate) code: char,
     pub(crate) value: BString,
 }
@@ -199,8 +198,27 @@ impl fmt::Display for Subfield {
     }
 }
 
+impl Serialize for Subfield {
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Subfield", 2)?;
+        state.serialize_field("name", &self.code)?;
+        // SAFETY: It's save because `Serialize` is only implemented for
+        // `StringRecord` and not for `ByteRecord`.
+        unsafe {
+            state.serialize_field("value", &self.value.to_str_unchecked())?;
+        }
+        state.end()
+    }
+}
+
 /// A PICA+ occurrence.
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Occurrence(pub(crate) BString);
 
 impl Deref for Occurrence {
@@ -274,9 +292,8 @@ impl Occurrence {
 }
 
 /// A PICA+ field, that may contian invalid UTF-8 data.
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq)]
 pub struct Field {
-    #[serde(rename(serialize = "name"))]
     pub(crate) tag: BString,
     pub(crate) occurrence: Option<Occurrence>,
     pub(crate) subfields: Vec<Subfield>,
@@ -554,8 +571,32 @@ impl Deref for Field {
     }
 }
 
+impl Serialize for Field {
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Field", 3)?;
+        // SAFETY: It's save because `Serialize` is only implemented for
+        // `StringRecord` and not for `ByteRecord`.
+        unsafe {
+            state.serialize_field("name", &self.tag.to_str_unchecked())?;
+            state.serialize_field(
+                "occurrence",
+                &self.occurrence().map(|o| o.to_str_unchecked()),
+            )?;
+        }
+
+        state.serialize_field("subfields", &self.subfields)?;
+        state.end()
+    }
+}
+
 /// A PICA+ record, that may contian invalid UTF-8 data.
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq)]
 pub struct ByteRecord {
     pub(crate) raw_data: Option<Vec<u8>>,
     pub(crate) fields: Vec<Field>,
@@ -897,5 +938,19 @@ impl fmt::Display for StringRecord {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
         write!(f, "{}", self.0)
+    }
+}
+
+impl Serialize for StringRecord {
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Record", 1)?;
+        state.serialize_field("fields", &self.fields)?;
+        state.end()
     }
 }

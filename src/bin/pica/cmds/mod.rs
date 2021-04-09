@@ -4,7 +4,7 @@ pub mod completion;
 pub mod filter;
 pub mod frequency;
 pub mod invalid;
-// pub mod json;
+pub mod json;
 pub mod partition;
 pub mod print;
 pub mod sample;
@@ -22,7 +22,7 @@ pub fn subcmds() -> Vec<App> {
         filter::cli(),
         frequency::cli(),
         invalid::cli(),
-        // json::cli(),
+        json::cli(),
         partition::cli(),
         print::cli(),
         sample::cli(),
