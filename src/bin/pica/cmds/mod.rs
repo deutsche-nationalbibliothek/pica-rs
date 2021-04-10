@@ -1,5 +1,4 @@
 pub mod cat;
-mod common;
 pub mod completion;
 pub mod filter;
 pub mod frequency;
@@ -13,7 +12,6 @@ pub mod slice;
 pub mod split;
 
 use crate::util::App;
-pub(crate) use common::Config;
 
 pub fn subcmds() -> Vec<App> {
     vec![

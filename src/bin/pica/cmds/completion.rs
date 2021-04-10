@@ -1,8 +1,9 @@
-use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
 use clap_generate::generate;
 use clap_generate::generators::{Bash, Fish, Zsh};
+use std::fs::File;
+use std::io::{self, Write};
 
 pub fn cli() -> App {
     App::new("completion")
@@ -22,8 +23,10 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {
-    let config = Config::new();
-    let mut writer = config.writer(args.value_of("output"))?;
+    let mut writer: Box<dyn Write> = match args.value_of("output") {
+        Some(filename) => Box::new(File::create(filename)?),
+        None => Box::new(io::stdout()),
+    };
 
     match args.value_of("shell").unwrap() {
         "bash" => generate::<Bash, _>(cli, "pica", &mut writer),
