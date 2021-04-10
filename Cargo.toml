@@ -1,6 +1,6 @@
 [package]
 name = "pica"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Nico Wagner <nwagner84@protonmail.com>"]
 edition = "2018"
 license = "MIT OR Unlicense"
@@ -12,7 +12,7 @@ clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
 csv = "1.1"
 flate2 = "1.0"
-lazy_static = "1.4.0"
+lazy_static = "1.4"
 nom = "6.1"
 rand = "0.8"
 regex = "1.4"
