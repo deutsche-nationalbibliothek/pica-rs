@@ -26,7 +26,7 @@ language with the `cargo` package manager.
 To install the latest stable release:
 
 ```bash
-$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --branch main
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --branch v0.3.0
 ```
 
 ## Commands
