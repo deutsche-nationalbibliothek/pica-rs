@@ -39,7 +39,11 @@ fn main() {
         {
             process::exit(0);
         }
-
+        Err(CliError::Pica(pica::Error::Io(ref err)))
+            if err.kind() == io::ErrorKind::BrokenPipe =>
+        {
+            process::exit(0);
+        }
         Err(CliError::Pica(err)) => {
             eprintln!("Pica Error: {}", err);
             process::exit(1);
