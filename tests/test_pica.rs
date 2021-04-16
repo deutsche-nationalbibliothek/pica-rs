@@ -679,6 +679,7 @@ fn select_command() {
         String::from_utf8(result.stdout).unwrap(),
         "123456789X,Tp1\n"
     );
+
     let result = CliRunner::new().invoke(
         "select",
         &[
@@ -733,6 +734,23 @@ fn select_command() {
     let result = CliRunner::new()
         .invoke("select", &["003@.0", "tests/data/invalid.dat"]);
     assert!(!result.status.success());
+
+    // header
+    let result = CliRunner::new().invoke(
+        "select",
+        &[
+            "--skip-invalid",
+            "--header",
+            "idn,bbg",
+            "003@.0,002@.0",
+            "tests/data/1.dat",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        "idn,bbg\n123456789X,Tp1\n"
+    );
 }
 
 #[test]
