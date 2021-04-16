@@ -17,6 +17,12 @@ pub fn cli() -> App {
                 .about("skip invalid records"),
         )
         .arg(
+            Arg::new("reverse")
+                .short('r')
+                .long("reverse")
+                .about("Sort results in reverse order."),
+        )
+        .arg(
             Arg::new("limit")
                 .short('l')
                 .long("--limit")
@@ -88,7 +94,11 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     }
 
     let mut ftable_sorted: Vec<(&BString, &u64)> = ftable.iter().collect();
-    ftable_sorted.sort_by(|a, b| b.1.cmp(a.1));
+    if args.is_present("reverse") {
+        ftable_sorted.sort_by(|a, b| a.1.cmp(b.1));
+    } else {
+        ftable_sorted.sort_by(|a, b| b.1.cmp(a.1));
+    }
 
     for (i, (value, frequency)) in ftable_sorted.iter().enumerate() {
         if limit > 0 && i >= limit {

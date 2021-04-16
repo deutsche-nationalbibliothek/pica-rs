@@ -563,6 +563,19 @@ fn frequency_command() {
     );
     assert_eq!(result.status.success(), false);
 
+    // reverse
+    let result = CliRunner::new().invoke(
+        "frequency",
+        &["-s", "--reverse", "002@.0", "tests/data/dump.dat"],
+    );
+    assert!(result.status.success());
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), "Ts1,1\nTp1,2\n");
+
+    let result = CliRunner::new()
+        .invoke("frequency", &["-s", "-r", "002@.0", "tests/data/dump.dat"]);
+    assert!(result.status.success());
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), "Ts1,1\nTp1,2\n");
+
     // output
     let tempdir = TempDir::new().unwrap();
     let filename = tempdir.path().join("frequency.csv");
