@@ -13,6 +13,7 @@ use std::path::Path;
 pub struct ReaderBuilder {
     skip_invalid: bool,
     buffer_size: usize,
+    limit: usize,
 }
 
 impl Default for ReaderBuilder {
@@ -20,6 +21,7 @@ impl Default for ReaderBuilder {
         ReaderBuilder {
             buffer_size: 65_536,
             skip_invalid: true,
+            limit: 0,
         }
     }
 }
@@ -235,6 +237,36 @@ impl ReaderBuilder {
         self.buffer_size = buffer_size;
         self
     }
+
+    /// Change the limit of records to read.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use pica::ReaderBuilder;
+    /// use std::error::Error;
+    /// use std::io::Cursor;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let cursor =
+    ///         Cursor::new(b"003@ \x1f0123456789\x1e\n003@ \x1f0123456789\x1e\n");
+    ///
+    ///     let mut reader = ReaderBuilder::new().limit(1).from_reader(cursor);
+    ///     let mut records = reader.records();
+    ///
+    ///     let record = records.next().unwrap();
+    ///     assert!(record.is_ok());
+    ///
+    ///     assert!(records.next().is_none());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn limit(mut self, buffer_size: usize) -> Self {
+        self.limit = buffer_size;
+        self
+    }
 }
 
 /// A reader to read PICA+ records.
@@ -243,6 +275,7 @@ pub struct Reader<R> {
     reader: BufReader<R>,
     skip_invalid: bool,
     buffer_size: usize,
+    limit: usize,
 }
 
 impl<R: Read> Reader<R> {
@@ -279,6 +312,7 @@ impl<R: Read> Reader<R> {
             reader: BufReader::with_capacity(builder.buffer_size, reader),
             skip_invalid: builder.skip_invalid,
             buffer_size: builder.buffer_size,
+            limit: builder.limit,
         }
     }
 
@@ -360,6 +394,10 @@ impl<'r, R: Read> Iterator for ByteRecordsIter<'r, R> {
     type Item = Result<ByteRecord>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.reader.limit > 0 && self.line >= self.reader.limit {
+            return None;
+        }
+
         let mut buffer: Vec<u8> = Vec::with_capacity(self.reader.buffer_size);
 
         match self.reader.read_until(b'\n', &mut buffer) {
