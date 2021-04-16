@@ -699,7 +699,6 @@ fn partition_command() {
 fn print_command() {
     let result = CliRunner::new().invoke("print", &["tests/data/1.dat"]);
     assert!(result.status.success());
-
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
         "003@ $0 123456789X\n002@ $0 Tp1\n012A/00 $a 1 $a 2 $b 1\n\n"
@@ -719,6 +718,41 @@ fn print_command() {
 
     assert!(result.status.success());
     assert_eq!(String::from_utf8(result.stdout).unwrap(), "");
+
+    // limit
+    let result = CliRunner::new()
+        .invoke("print", &["--limit", "2", "tests/data/all.dat.gz"]);
+    assert_eq!(result.status.success(), true);
+
+    let mut output = String::new();
+    output.push_str(
+        "003@ $0 123456789X\n002@ $0 Tp1\n012A/00 $a 1 $a 2 $b 1\n\n",
+    );
+    output.push_str(
+        "003@ $0 234567891X\n002@ $0 Tp2\n012A/00 $a 1 $a 2 $b 1\n\n",
+    );
+
+    assert_eq!(String::from_utf8(result.stdout).unwrap(), output);
+
+    let result =
+        CliRunner::new().invoke("print", &["--limit", "0", "tests/data/1.dat"]);
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        "003@ $0 123456789X\n002@ $0 Tp1\n012A/00 $a 1 $a 2 $b 1\n\n"
+    );
+
+    let result = CliRunner::new()
+        .invoke("print", &["--limit", "99", "tests/data/1.dat"]);
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        "003@ $0 123456789X\n002@ $0 Tp1\n012A/00 $a 1 $a 2 $b 1\n\n"
+    );
+
+    let result = CliRunner::new()
+        .invoke("print", &["--limit", "abc", "tests/data/1.dat"]);
+    assert_eq!(result.status.success(), false);
 }
 
 #[test]

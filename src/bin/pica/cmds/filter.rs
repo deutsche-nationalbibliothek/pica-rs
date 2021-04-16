@@ -52,6 +52,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(args.is_present("skip-invalid"))
+        .limit(limit)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Writer<Box<dyn Write>> =
@@ -68,11 +69,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     };
 
-    for (i, result) in reader.byte_records().enumerate() {
-        if limit > 0 && i >= limit {
-            break;
-        }
-
+    for result in reader.byte_records() {
         let record = result?;
         let mut is_match = filter.matches(&record);
 
