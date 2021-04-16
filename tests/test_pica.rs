@@ -414,6 +414,85 @@ fn filter_command() {
 
     assert!(result.status.success());
     assert_eq!(String::from_utf8(result.stdout).unwrap(), SAMPLE1);
+
+    // limit
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "--limit",
+            "1",
+            "002@.0 =^ 'T'",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert!(result.status.success());
+
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}", SAMPLE1)
+    );
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "--limit",
+            "2",
+            "002@.0 =^ 'T'",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert!(result.status.success());
+
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}{}", SAMPLE1, SAMPLE2)
+    );
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "--limit",
+            "999",
+            "002@.0 =^ 'T'",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}{}{}", SAMPLE1, SAMPLE2, SAMPLE3)
+    );
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "--limit",
+            "0",
+            "002@.0 =^ 'T'",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}{}{}", SAMPLE1, SAMPLE2, SAMPLE3)
+    );
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "--limit",
+            "abc",
+            "002@.0 =^ 'T'",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert_eq!(result.status.success(), false);
 }
 
 #[test]

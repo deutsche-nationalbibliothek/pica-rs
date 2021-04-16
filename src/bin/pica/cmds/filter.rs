@@ -19,6 +19,13 @@ pub fn cli() -> App {
                 .about("Filter only records that did not match."),
         )
         .arg(
+            Arg::new("limit")
+                .short('l')
+                .long("--limit")
+                .value_name("n")
+                .about("Limit the result to first <n> records."),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -34,6 +41,15 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
+    let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
+        Ok(limit) => limit,
+        Err(_) => {
+            return Err(CliError::Other(
+                "Invalid limit value, expected unsigned integer.".to_string(),
+            ));
+        }
+    };
+
     let mut reader = ReaderBuilder::new()
         .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
@@ -52,7 +68,11 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     };
 
-    for result in reader.byte_records() {
+    for (i, result) in reader.byte_records().enumerate() {
+        if limit > 0 && i >= limit {
+            break;
+        }
+
         let record = result?;
         let mut is_match = filter.matches(&record);
 
