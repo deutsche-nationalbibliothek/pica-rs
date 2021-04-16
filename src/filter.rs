@@ -381,6 +381,7 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
             ws(parse_subfield_code),
+            opt(ws(tag("not"))),
             map(tag("in"), |_| ComparisonOp::In),
             delimited(
                 ws(char('[')),
@@ -388,7 +389,14 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
                 ws(char(']')),
             ),
         )),
-        |(name, op, values)| SubfieldFilter::Comparison(name, op, values),
+        |(name, negate, op, values)| {
+            let filter = SubfieldFilter::Comparison(name, op, values);
+            if negate.is_some() {
+                SubfieldFilter::Not(Box::new(filter))
+            } else {
+                filter
+            }
+        },
     )(i)
 }
 

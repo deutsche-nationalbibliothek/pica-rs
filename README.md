@@ -64,10 +64,10 @@ evaluated lazy from left to right.
 
 Simple subfield filter consists of the subfield code (single alpha-numerical
 character, ex `0`) a comparison operator (equal `==`, strict equal `===`, not
-equal `!=` not equal, starts with prefix `=^`, ends with suffix `=$` or regex
-`=~`) and a value enclosed in single quotes.. These simple subfield expressions
-can be grouped in parentheses and combined with boolean connectives (ex. `(0 ==
-'abc' || 0 == 'def')`).
+equal `!=` not equal, starts with prefix `=^`, ends with suffix `=$`, regex
+`=~`, `in` and `not in`) and a value enclosed in single quotes. These simple
+subfield expressions can be grouped in parentheses and combined with boolean
+connectives (ex. `(0 == 'abc' || 0 == 'def')`).
 
 There is also a special existence operator to check if a given field
 (`012A/00?`) or a subfield (`002@.0?` or `002@{0?}`) exists.
@@ -80,6 +80,7 @@ $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
 $ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
 $ pica filter -s "041A/*.9 in ['123', '456']" DUMP.dat
 $ pica filter -s "0100.a in ['ger', 'eng']" DUMP.dat
+$ pica filter -s "0100.a not in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
