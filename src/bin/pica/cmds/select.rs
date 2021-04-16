@@ -20,6 +20,13 @@ pub fn cli() -> App {
                 .about("use tabs as field delimiter"),
         )
         .arg(
+            Arg::new("header")
+                .short('H')
+                .long("--header")
+                .value_name("header")
+                .about("Comma-separated list of column names."),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -56,6 +63,10 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             )))
         }
     };
+
+    if let Some(header) = args.value_of("header") {
+        writer.write_record(header.split(',').map(|s| s.trim()))?;
+    }
 
     for result in reader.records() {
         let record = result?;
