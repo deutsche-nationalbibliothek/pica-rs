@@ -165,6 +165,7 @@ fn filter_command() {
         format!("{}{}{}", SAMPLE1, SAMPLE2, SAMPLE3)
     );
 
+    // in operator
     let result = CliRunner::new().invoke(
         "filter",
         &[
@@ -191,6 +192,35 @@ fn filter_command() {
     assert_eq!(
         String::from_utf8(result.stdout).unwrap(),
         format!("{}{}", SAMPLE1, SAMPLE3)
+    );
+
+    // not in operator
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "002@.0  not  in ['Tp1', 'Tp3']",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}", SAMPLE2)
+    );
+
+    let result = CliRunner::new().invoke(
+        "filter",
+        &[
+            "--skip-invalid",
+            "002@{0 not  in ['Tp1', 'Tp3']}",
+            "tests/data/all.dat.gz",
+        ],
+    );
+    assert!(result.status.success());
+    assert_eq!(
+        String::from_utf8(result.stdout).unwrap(),
+        format!("{}", SAMPLE2)
     );
 
     let result = CliRunner::new().invoke(
