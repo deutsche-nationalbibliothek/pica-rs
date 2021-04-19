@@ -433,6 +433,79 @@ impl Field {
         }
     }
 
+    /// Returns the first subfield value
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field = Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![
+    ///             Subfield::new('a', "abc")?,
+    ///             Subfield::new('a', "def")?,
+    ///             Subfield::new('a', "hij")?,
+    ///         ],
+    ///     )?;
+    ///
+    ///     assert_eq!(field.first('a').unwrap(), "abc");
+    ///     assert_eq!(field.first('1'), None);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn first(&self, code: char) -> Option<&BString> {
+        self.iter()
+            .filter(|x| x.code == code)
+            .map(|x| &x.value)
+            .next()
+    }
+
+    /// Returns the all subfield value for the subfield code
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let field = Field::new(
+    ///         "003@",
+    ///         None,
+    ///         vec![
+    ///             Subfield::new('a', "abc")?,
+    ///             Subfield::new('a', "def")?,
+    ///             Subfield::new('a', "hij")?,
+    ///         ],
+    ///     )?;
+    ///
+    ///     assert_eq!(field.all('a').unwrap(), vec!["abc", "def", "hij"]);
+    ///     assert_eq!(field.all('b'), None);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn all(&self, code: char) -> Option<Vec<&BString>> {
+        let result = self
+            .iter()
+            .filter(|x| x.code == code)
+            .map(|x| &x.value)
+            .collect::<Vec<&BString>>();
+
+        if !result.is_empty() {
+            Some(result)
+        } else {
+            None
+        }
+    }
+
     /// Returns `true` if and only if all subfield values are valid UTF-8.
     ///
     /// # Example
@@ -750,6 +823,70 @@ impl ByteRecord {
 
         writer.write_all(b"\n")?;
         Ok(())
+    }
+
+    /// Returns the first field matching the given tag
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+    ///     assert_eq!(
+    ///         record.first("003@"),
+    ///         Some(&Field::new(
+    ///             "003@",
+    ///             None,
+    ///             vec![Subfield::new('0', "123456789X")?]
+    ///         )?)
+    ///     );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn first(&self, tag: &str) -> Option<&Field> {
+        self.iter().find(|field| field.tag == tag)
+    }
+
+    /// Returns all fields matching the given tag
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, Field, Subfield};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let record =
+    ///         ByteRecord::from_bytes("012A \x1fa123\x1e012A \x1fa456\x1e")?;
+    ///
+    ///     assert_eq!(
+    ///         record.all("012A"),
+    ///         Some(vec![
+    ///             &Field::new("012A", None, vec![Subfield::new('a', "123")?])?,
+    ///             &Field::new("012A", None, vec![Subfield::new('a', "456")?])?,
+    ///         ])
+    ///     );
+    ///
+    ///     assert_eq!(record.all("012B"), None);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn all(&self, tag: &str) -> Option<Vec<&Field>> {
+        let result = self
+            .iter()
+            .filter(|field| field.tag == tag)
+            .collect::<Vec<&Field>>();
+
+        if !result.is_empty() {
+            Some(result)
+        } else {
+            None
+        }
     }
 
     /// Returns all subfield values of a given path.
