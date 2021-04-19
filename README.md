@@ -3,7 +3,8 @@
 [![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/workflows/CI/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions?query=workflow%3ACI+branch%3Amain)
 [![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/)
 [![Coverage Status](https://coveralls.io/repos/github/deutsche-nationalbibliothek/pica-rs/badge.svg?branch=main)](https://coveralls.io/github/deutsche-nationalbibliothek/pica-rs?branch=main)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 ## About
 
@@ -25,7 +26,7 @@ language with the `cargo` package manager.
 To install the latest stable release:
 
 ```bash
-$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --branch main
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.3.0
 ```
 
 ## Commands
@@ -35,7 +36,6 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --b
 * [filter](#filter) — filter records by query expressions
 * [frequency](#frequency) — compute a frequency table of a subfield
 * invalid — filter out invalid records
-* [json](#json) — serialize pica records to JSON
 * [partition](#partition) — partition a list of records based on subfield values
 * [print](#print) — print records in human readable format
 * [sample](#sample) — selects a random permutation of records
@@ -63,11 +63,11 @@ the boolean connectives AND (`&&`) and OR (`||`). Boolean expressions are
 evaluated lazy from left to right.
 
 Simple subfield filter consists of the subfield code (single alpha-numerical
-character, ex `0`) a comparison operator (equal `==`, not equal `!=` not equal,
-starts with prefix `=^`, ends with suffix `=$` or regex `=~`) and a value
-enclosed in single quotes.. These simple subfield expressions can be grouped in
-parentheses and combined with boolean connectives (ex. `(0 == 'abc' || 0 ==
-'def')`).
+character, ex `0`) a comparison operator (equal `==`, strict equal `===`, not
+equal `!=` not equal, starts with prefix `=^`, ends with suffix `=$`, regex
+`=~`, `in` and `not in`) and a value enclosed in single quotes. These simple
+subfield expressions can be grouped in parentheses and combined with boolean
+connectives (ex. `(0 == 'abc' || 0 == 'def')`).
 
 There is also a special existence operator to check if a given field
 (`012A/00?`) or a subfield (`002@.0?` or `002@{0?}`) exists.
@@ -80,10 +80,12 @@ $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
 $ pica filter -s "010@{a == 'ger' || a == 'eng'} DUMP.dat
 $ pica filter -s "041A/*.9 in ['123', '456']" DUMP.dat
 $ pica filter -s "0100.a in ['ger', 'eng']" DUMP.dat
+$ pica filter -s "0100.a not in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
 $ pica filter -s "012AB/00?" DUMP.dat
+$ pica filter -s "010@.a === 'ger' DUMP.dat
 ```
 
 ### Frequency

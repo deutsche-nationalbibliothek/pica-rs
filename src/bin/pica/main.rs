@@ -7,8 +7,7 @@ mod cli;
 mod cmds;
 mod util;
 
-use std::io;
-use std::process;
+use std::{io, process};
 use util::CliError;
 
 fn main() {
@@ -40,7 +39,15 @@ fn main() {
         {
             process::exit(0);
         }
-
+        Err(CliError::Pica(pica::Error::Io(ref err)))
+            if err.kind() == io::ErrorKind::BrokenPipe =>
+        {
+            process::exit(0);
+        }
+        Err(CliError::Pica(err)) => {
+            eprintln!("Pica Error: {}", err);
+            process::exit(1);
+        }
         Err(CliError::Io(err)) => {
             eprintln!("IO Error: {}", err);
             process::exit(1);

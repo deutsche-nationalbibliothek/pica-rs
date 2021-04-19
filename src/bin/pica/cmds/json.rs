@@ -1,8 +1,7 @@
-use crate::cmds::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
+use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
-use pica::Record;
+use pica::{ReaderBuilder, Writer, WriterBuilder};
+use std::io::Write;
 
 pub fn cli() -> App {
     App::new("json")
@@ -24,28 +23,23 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
-    let mut writer = ctx.writer(args.value_of("output"))?;
-    let reader = ctx.reader(args.value_of("filename"))?;
-    let skip_invalid = args.is_present("skip-invalid");
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .from_path_or_stdin(args.value_of("filename"))?;
+
+    let mut writer: Writer<Box<dyn Write>> =
+        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
     writer.write_all(b"[")?;
 
-    for (count, result) in reader.byte_lines().enumerate() {
-        let line = result?;
+    for (count, result) in reader.records().enumerate() {
+        let record = result?;
 
-        if let Ok(record) = Record::from_bytes(&line) {
-            let j = serde_json::to_string(&record.into_owned()).unwrap();
-            if count > 0 {
-                writer.write_all(b",")?;
-            }
-            writer.write_all(j.as_bytes())?;
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+        let j = serde_json::to_string(&record).unwrap();
+        if count > 0 {
+            writer.write_all(b",")?;
         }
+        writer.write_all(j.as_bytes())?;
     }
 
     writer.write_all(b"]")?;

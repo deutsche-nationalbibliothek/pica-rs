@@ -1,9 +1,7 @@
-use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Filter;
-use pica::Record;
+use pica::{Filter, ReaderBuilder, Writer, WriterBuilder};
+use std::io::Write;
 
 pub fn cli() -> App {
     App::new("filter")
@@ -21,6 +19,13 @@ pub fn cli() -> App {
                 .about("Filter only records that did not match."),
         )
         .arg(
+            Arg::new("limit")
+                .short('l')
+                .long("--limit")
+                .value_name("n")
+                .about("Limit the result to first <n> records."),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -36,10 +41,22 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let config = Config::new();
-    let mut writer = config.writer(args.value_of("output"))?;
-    let reader = config.reader(args.value_of("filename"))?;
-    let skip_invalid = args.is_present("skip-invalid");
+    let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
+        Ok(limit) => limit,
+        Err(_) => {
+            return Err(CliError::Other(
+                "Invalid limit value, expected unsigned integer.".to_string(),
+            ));
+        }
+    };
+
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .limit(limit)
+        .from_path_or_stdin(args.value_of("filename"))?;
+
+    let mut writer: Writer<Box<dyn Write>> =
+        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
     let filter_str = args.value_of("filter").unwrap();
     let filter = match Filter::decode(filter_str) {
@@ -52,21 +69,16 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     };
 
-    let invert_match = !args.is_present("invert-match");
+    for result in reader.byte_records() {
+        let record = result?;
+        let mut is_match = filter.matches(&record);
 
-    for result in reader.byte_lines() {
-        let line = result?;
+        if args.is_present("invert-match") {
+            is_match = !is_match;
+        }
 
-        if let Ok(record) = Record::from_bytes(&line) {
-            if filter.matches(&record) == invert_match {
-                writer.write_all(&line)?;
-                writer.write_all(b"\n")?;
-            }
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+        if is_match {
+            writer.write_byte_record(&record)?;
         }
     }
 

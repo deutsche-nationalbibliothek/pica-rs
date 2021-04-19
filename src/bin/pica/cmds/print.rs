@@ -1,8 +1,7 @@
-use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::{ReaderBuilder, Writer, WriterBuilder};
+use std::io::Write;
 
 pub fn cli() -> App {
     App::new("print")
@@ -12,6 +11,13 @@ pub fn cli() -> App {
                 .short('s')
                 .long("skip-invalid")
                 .about("skip invalid records"),
+        )
+        .arg(
+            Arg::new("limit")
+                .short('l')
+                .long("--limit")
+                .value_name("n")
+                .about("Limit the result to first <n> records."),
         )
         .arg(
             Arg::new("output")
@@ -24,23 +30,25 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
-    let mut writer = ctx.writer(args.value_of("output"))?;
-    let reader = ctx.reader(args.value_of("filename"))?;
-    let skip_invalid = args.is_present("skip-invalid");
-
-    for result in reader.byte_lines() {
-        let line = result?;
-
-        if let Ok(record) = Record::from_bytes(&line) {
-            writer.write_all(record.pretty().as_bytes())?;
-            writer.write_all(b"\n\n")?;
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+    let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
+        Ok(limit) => limit,
+        Err(_) => {
+            return Err(CliError::Other(
+                "Invalid limit value, expected unsigned integer.".to_string(),
+            ));
         }
+    };
+
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .limit(limit)
+        .from_path_or_stdin(args.value_of("filename"))?;
+
+    let mut writer: Writer<Box<dyn Write>> =
+        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
+
+    for result in reader.records() {
+        writer.write_all(&format!("{}\n\n", result?).as_bytes())?;
     }
 
     writer.flush()?;

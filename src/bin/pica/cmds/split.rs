@@ -1,8 +1,6 @@
-use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::{ReaderBuilder, WriterBuilder};
 
 use std::fs::create_dir;
 use std::path::Path;
@@ -35,8 +33,10 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
-    let skip_invalid = args.is_present("skip-invalid");
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .from_path_or_stdin(args.value_of("filename"))?;
+
     let filename_template = args.value_of("template").unwrap_or("{}.dat");
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
@@ -55,42 +55,30 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     }
 
     let mut chunks: u32 = 0;
-    let mut count: u32 = 0;
 
-    let reader = ctx.reader(args.value_of("filename"))?;
-    let mut writer = ctx.writer(
+    let mut writer = WriterBuilder::new().from_path(
         outdir
             .join(filename_template.replace("{}", &chunks.to_string()))
-            .to_str(),
+            .to_str()
+            .unwrap(),
     )?;
 
-    for result in reader.byte_lines() {
-        let line = result?;
+    for (count, result) in reader.byte_records().enumerate() {
+        let record = result?;
 
-        if Record::from_bytes(&line).is_ok() {
-            if count % chunk_size == 0 {
-                writer.flush()?;
+        if count > 0 && count as u32 % chunk_size == 0 {
+            writer.flush()?;
+            chunks += 1;
 
-                writer = ctx.writer(
-                    outdir
-                        .join(
-                            filename_template
-                                .replace("{}", &chunks.to_string()),
-                        )
-                        .to_str(),
-                )?;
-                chunks += 1;
-            }
-
-            writer.write_all(&line)?;
-            writer.write_all(b"\n")?;
-            count += 1;
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+            writer = WriterBuilder::new().from_path(
+                outdir
+                    .join(filename_template.replace("{}", &chunks.to_string()))
+                    .to_str()
+                    .unwrap(),
+            )?;
         }
+
+        writer.write_byte_record(&record)?;
     }
 
     writer.flush()?;

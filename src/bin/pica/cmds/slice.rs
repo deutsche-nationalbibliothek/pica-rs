@@ -1,8 +1,7 @@
-use crate::cmds::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
 use clap::Arg;
-use pica::Record;
+use pica::{ReaderBuilder, Writer, WriterBuilder};
+use std::io::Write;
 
 pub fn cli() -> App {
     App::new("slice")
@@ -43,11 +42,14 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let config = Config::new();
-    let mut writer = config.writer(args.value_of("output"))?;
-    let reader = config.reader(args.value_of("filename"))?;
-    let skip_invalid = args.is_present("skip-invalid");
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(false)
+        .from_path_or_stdin(args.value_of("filename"))?;
 
+    let mut writer: Writer<Box<dyn Write>> =
+        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
+
+    let skip_invalid = args.is_present("skip-invalid");
     let start = args.value_of("start").unwrap().parse::<usize>().unwrap();
     let end = args.value_of("end");
     let length = args.value_of("length");
@@ -61,25 +63,23 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         start..::std::usize::MAX
     };
 
-    for (i, result) in reader.byte_lines().enumerate() {
-        let line = result?;
-
-        if let Ok(_record) = Record::from_bytes(&line) {
-            if range.contains(&i) {
-                writer.write_all(&line)?;
-                writer.write_all(b"\n")?;
-            } else if i < range.start {
-                continue;
-            } else {
-                break;
+    for (i, result) in reader.byte_records().enumerate() {
+        match result {
+            Ok(record) => {
+                if range.contains(&i) {
+                    writer.write_byte_record(&record)?;
+                } else if i < range.start {
+                    continue;
+                } else {
+                    break;
+                }
             }
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
-        } else if length.is_some() {
-            range.end += 1;
+            Err(e) if !skip_invalid => return Err(CliError::from(e)),
+            _ => {
+                if length.is_some() && range.end < std::usize::MAX {
+                    range.end += 1;
+                }
+            }
         }
     }
 

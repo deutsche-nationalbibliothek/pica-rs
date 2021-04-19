@@ -1,15 +1,12 @@
-use crate::cmds::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::io::BufReadExt;
+use crate::util::{App, CliArgs, CliResult};
 use bstr::ByteSlice;
 use clap::Arg;
-use pica::{self, Record};
-
+use pica::{self, ReaderBuilder, Writer, WriterBuilder};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::fs::create_dir;
-use std::io::Write;
+use std::fs::{create_dir, File};
 use std::path::Path;
+use std::str::FromStr;
 
 pub fn cli() -> App {
     App::new("partition")
@@ -39,50 +36,45 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let ctx = Config::new();
     let filename_template = args.value_of("template").unwrap_or("{}.dat");
-    let skip_invalid = args.is_present("skip-invalid");
-    let path_str = args.value_of("path").unwrap();
-    let reader = ctx.reader(args.value_of("filename"))?;
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .from_path_or_stdin(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
     if !outdir.exists() {
         create_dir(outdir)?;
     }
 
-    let mut writers: HashMap<Vec<u8>, Box<dyn Write + 'static>> =
-        HashMap::new();
-    let path = pica::Path::from_bytes(path_str.as_bytes()).unwrap();
+    let mut writers: HashMap<Vec<u8>, Writer<File>> = HashMap::new();
+    let path = pica::Path::from_str(args.value_of("path").unwrap())?;
 
-    for result in reader.byte_lines() {
-        let line = result?;
+    for result in reader.byte_records() {
+        let record = result?;
 
-        if let Ok(record) = Record::from_bytes(&line) {
-            for value in record.path(&path) {
-                let mut entry = writers.entry(value.as_bytes().to_vec());
-                let writer = match entry {
-                    Entry::Vacant(vacant) => {
-                        let value = String::from_utf8(value.to_vec()).unwrap();
-                        let writer = ctx.writer(
-                            outdir
-                                .join(filename_template.replace("{}", &value))
-                                .to_str(),
-                        )?;
+        for value in record.path(&path) {
+            let mut entry = writers.entry(value.as_bytes().to_vec());
+            let writer = match entry {
+                Entry::Vacant(vacant) => {
+                    let value = String::from_utf8(value.to_vec()).unwrap();
+                    let writer = WriterBuilder::new().from_path(
+                        outdir
+                            .join(filename_template.replace("{}", &value))
+                            .to_str()
+                            .unwrap(),
+                    )?;
 
-                        vacant.insert(writer)
-                    }
-                    Entry::Occupied(ref mut occupied) => occupied.get_mut(),
-                };
+                    vacant.insert(writer)
+                }
+                Entry::Occupied(ref mut occupied) => occupied.get_mut(),
+            };
 
-                writer.write_all(&line)?;
-                writer.write_all(b"\n")?;
-            }
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+            writer.write_byte_record(&record)?;
         }
+    }
+
+    for (_, mut writer) in writers {
+        writer.flush()?;
     }
 
     Ok(())
