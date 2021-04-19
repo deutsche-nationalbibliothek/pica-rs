@@ -1,7 +1,9 @@
-use pica::{Field, Record};
+use pica::{Field, StringRecord};
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
 use std::ops::Deref;
+
+use bstr::ByteSlice;
 
 use crate::concept::{Concept, StrLiteral};
 use crate::corporate_body::CorporateBody;
@@ -10,17 +12,17 @@ use crate::geoplace::GeoPlace;
 use crate::ns::skos;
 use crate::person::Person;
 
-pub struct Work<'a>(pub(crate) Record<'a>);
+pub struct Work(pub(crate) StringRecord);
 
-impl<'a> Deref for Work<'a> {
-    type Target = Record<'a>;
+impl Deref for Work {
+    type Target = StringRecord;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Work<'a> {
+impl Work {
     pub fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
@@ -56,7 +58,7 @@ impl<'a> Work<'a> {
 
     pub fn get_prefix(&self) -> Option<StrLiteral> {
         for tag in &["028R", "065R", "029R", "030R"] {
-            for field in self.all(tag) {
+            for field in self.all(tag).unwrap_or_default() {
                 let relation_exists = field.iter().any(|subfield| {
                     subfield.code() == '4'
                         && (subfield.value() == "aut1"
@@ -84,11 +86,11 @@ impl<'a> Work<'a> {
     }
 }
 
-impl<'a> Concept for Work<'a> {
+impl Concept for Work {
     fn skosify<G: MutableGraph>(&self, graph: &mut G) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
-        let subj = gnd.get(&idn).unwrap();
+        let subj = gnd.get(idn.to_str().unwrap()).unwrap();
         let prefix = self.get_prefix();
 
         // skos:Concept
@@ -110,7 +112,7 @@ impl<'a> Concept for Work<'a> {
         }
 
         // skos:altLabel
-        for field in self.all("022@") {
+        for field in self.all("022@").unwrap_or_default() {
             if let Some(label) = Self::get_label(field) {
                 if let Some(ref prefix) = prefix {
                     let label = StrLiteral::new_lang(

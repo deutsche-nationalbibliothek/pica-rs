@@ -1,29 +1,37 @@
-use pica::{Field, Record};
+use pica::{Field, StringRecord};
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
 use std::ops::Deref;
 
+use bstr::ByteSlice;
+
 use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
 
-pub struct TopicalTerm<'a>(pub(crate) Record<'a>);
+pub struct TopicalTerm(pub(crate) StringRecord);
 
-impl<'a> Deref for TopicalTerm<'a> {
-    type Target = Record<'a>;
+impl Deref for TopicalTerm {
+    type Target = StringRecord;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> TopicalTerm<'a> {
+impl TopicalTerm {
     pub fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
-        if field.exists('a') {
+        if field.contains_code('a') {
             push_value!(label, field.first('a'));
-            push_list!(label, field.all('g'), ", ", " (", ")");
-            push_list!(label, field.all('x'), " / ", " / ");
+            push_list!(
+                label,
+                field.all('g').unwrap_or_default(),
+                ", ",
+                " (",
+                ")"
+            );
+            push_list!(label, field.all('x').unwrap_or_default(), " / ", " / ");
         }
 
         if !label.is_empty() {
@@ -35,24 +43,24 @@ impl<'a> TopicalTerm<'a> {
     }
 }
 
-impl<'a> Concept for TopicalTerm<'a> {
+impl Concept for TopicalTerm {
     fn skosify<G: MutableGraph>(&self, graph: &mut G) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
-        let subj = gnd.get(&idn).unwrap();
+        let subj = gnd.get(idn.to_str().unwrap()).unwrap();
 
         // skos:Concept
         graph.insert(&subj, &rdf::type_, &skos::Concept).unwrap();
 
         // skos:prefLabel
-        for field in self.all("041A") {
+        for field in self.all("041A").unwrap_or_default() {
             if let Some(label) = Self::get_label(field) {
                 graph.insert(&subj, &skos::prefLabel, &label).unwrap();
             }
         }
 
         // skos:altLabel
-        for field in self.all("041@") {
+        for field in self.all("041@").unwrap_or_default() {
             if let Some(label) = Self::get_label(field) {
                 graph.insert(&subj, &skos::altLabel, &label).unwrap();
             }
@@ -63,12 +71,13 @@ impl<'a> Concept for TopicalTerm<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sophia::graph::{inmem::FastGraph, Graph};
+    use sophia::graph::inmem::FastGraph;
+    use sophia::graph::Graph;
 
     #[test]
     fn test_1004916019() {
         let record_str = include_str!("../../../tests/data/1004916019.dat");
-        let record = Record::from_bytes(record_str.as_bytes()).unwrap();
+        let record = StringRecord::from_bytes(record_str.as_bytes()).unwrap();
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
 
         let mut graph = FastGraph::new();

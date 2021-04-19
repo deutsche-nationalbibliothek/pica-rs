@@ -18,16 +18,13 @@ mod topical_term;
 mod utils;
 mod work;
 
-use bstr::io::BufReadExt;
-use flate2::read::GzDecoder;
-use pica::{Filter, Record};
-use std::ffi::OsStr;
+use pica::{Filter, ReaderBuilder};
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read, Write};
-use std::path::Path;
+use std::io::{self, Write};
 
 use sophia::graph::inmem::LightGraph;
-use sophia::serializer::{nt::NtSerializer, *};
+use sophia::serializer::nt::NtSerializer;
+use sophia::serializer::*;
 
 use concept::Concept;
 use corporate_body::CorporateBody;
@@ -40,7 +37,17 @@ use work::Work;
 
 fn main() -> CliResult<()> {
     let args = cli::build_cli().get_matches();
-    let skip_invalid = args.is_present("skip-invalid");
+
+    let mut writer: Box<dyn Write> = match args.value_of("output") {
+        Some(filename) => Box::new(File::create(filename)?),
+        None => Box::new(io::stdout()),
+    };
+
+    let mut g = LightGraph::new();
+
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(args.is_present("skip-invalid"))
+        .from_path_or_stdin(args.value_of("filename"))?;
 
     let filter = match args.value_of("filter") {
         None => Filter::True,
@@ -55,53 +62,23 @@ fn main() -> CliResult<()> {
         },
     };
 
-    let reader: Box<dyn BufRead> = match args.value_of("filename") {
-        None => Box::new(BufReader::new(io::stdin())),
-        Some(filename) => {
-            let path = Path::new(filename);
+    for result in reader.records() {
+        let record = result?;
 
-            let reader: Box<dyn Read> =
-                if path.extension() == Some(OsStr::new("gz")) {
-                    Box::new(GzDecoder::new(File::open(path)?))
-                } else {
-                    Box::new(File::open(path)?)
-                };
-
-            Box::new(BufReader::new(reader))
+        if !filter.matches(&record) {
+            continue;
         }
-    };
 
-    let mut writer: Box<dyn Write> = match args.value_of("output") {
-        Some(filename) => Box::new(File::create(filename)?),
-        None => Box::new(io::stdout()),
-    };
+        let bbg = record.first("002@").unwrap().first('0').unwrap();
 
-    let mut g = LightGraph::new();
-
-    for result in reader.byte_lines() {
-        let line = result?;
-
-        if let Ok(record) = Record::from_bytes(&line) {
-            if !filter.matches(&record) {
-                continue;
-            }
-
-            let bbg = record.first("002@").unwrap().first('0').unwrap();
-
-            match &bbg[..2] {
-                "Tb" => CorporateBody(record).skosify(&mut g),
-                "Tf" => Event(record).skosify(&mut g),
-                "Tg" => GeoPlace(record).skosify(&mut g),
-                "Tp" => Person(record).skosify(&mut g),
-                "Ts" => TopicalTerm(record).skosify(&mut g),
-                "Tu" => Work(record).skosify(&mut g),
-                _ => unimplemented!(),
-            }
-        } else if !skip_invalid {
-            return Err(CliError::Other(format!(
-                "could not read record: {}",
-                String::from_utf8(line).unwrap()
-            )));
+        match &bbg[..2] {
+            b"Tb" => CorporateBody(record).skosify(&mut g),
+            b"Tf" => Event(record).skosify(&mut g),
+            b"Tg" => GeoPlace(record).skosify(&mut g),
+            b"Tp" => Person(record).skosify(&mut g),
+            b"Ts" => TopicalTerm(record).skosify(&mut g),
+            b"Tu" => Work(record).skosify(&mut g),
+            _ => unimplemented!(),
         }
     }
 

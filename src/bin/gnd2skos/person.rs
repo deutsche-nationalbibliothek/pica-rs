@@ -1,32 +1,33 @@
-use pica::{Field, Record};
+use pica::{Field, StringRecord};
 use regex::Regex;
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
 
+use bstr::ByteSlice;
 use std::ops::Deref;
 
 use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
 
-pub struct Person<'a>(pub(crate) Record<'a>);
+pub struct Person(pub(crate) StringRecord);
 
-impl<'a> Deref for Person<'a> {
-    type Target = Record<'a>;
+impl Deref for Person {
+    type Target = StringRecord;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Person<'a> {
+impl Person {
     pub fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
-        if field.exists('a') {
+        if field.contains_code('a') {
             push_value!(label, field.first('a'));
             push_value!(label, field.first('d'), ", ");
             push_value!(label, field.first('c'), " ");
-        } else if field.exists('P') {
+        } else if field.contains_code('P') {
             push_value!(label, field.first('P'));
 
             let numeration = field.first('n');
@@ -89,12 +90,12 @@ impl<'a> Person<'a> {
     }
 }
 
-impl<'a> Concept for Person<'a> {
+impl Concept for Person {
     fn skosify<G: MutableGraph>(&self, graph: &mut G) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let re = Regex::new(r"([^,]+),\s([^,]+)$").unwrap();
-        let subj = gnd.get(&idn).unwrap();
+        let subj = gnd.get(idn.to_str().unwrap()).unwrap();
 
         // skos:Concept
         graph.insert(&subj, &rdf::type_, &skos::Concept).unwrap();
@@ -115,7 +116,7 @@ impl<'a> Concept for Person<'a> {
         }
 
         // skos:altLabel
-        for field in self.all("028@") {
+        for field in self.all("028@").unwrap_or_default() {
             if let Some(label) = Self::get_label(field) {
                 graph.insert(&subj, &skos::altLabel, &label).unwrap();
             }
