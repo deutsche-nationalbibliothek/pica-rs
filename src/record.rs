@@ -85,13 +85,13 @@ impl Subfield {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let subfield = Subfield::new('0', "12283643X")?;
-    ///     assert_eq!(subfield.code(), &'0');
+    ///     assert_eq!(subfield.code(), '0');
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn code(&self) -> &char {
-        &self.code
+    pub fn code(&self) -> char {
+        self.code
     }
 
     /// Get a reference to the subfield's value.

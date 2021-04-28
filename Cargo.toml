@@ -18,6 +18,8 @@ rand = "0.8"
 regex = "1.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+sophia = "0.6.2"
+sophia_api = "0.6.2"
 
 [dev-dependencies]
 tempfile = "3.2"
@@ -29,6 +31,10 @@ name = "pica"
 [[bin]]
 path = "src/bin/pica/main.rs"
 name = "pica"
+
+[[bin]]
+path = "src/bin/gnd2skos/main.rs"
+name = "gnd2skos"
 
 [profile.release]
 codegen-units = 1
