@@ -67,28 +67,3 @@ impl Concept for TopicalTerm {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use sophia::graph::inmem::FastGraph;
-    use sophia::graph::Graph;
-
-    #[test]
-    fn test_1004916019() {
-        let record_str = include_str!("../../../tests/data/1004916019.dat");
-        let record = StringRecord::from_bytes(record_str.as_bytes()).unwrap();
-        let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
-
-        let mut graph = FastGraph::new();
-
-        TopicalTerm(record).skosify(&mut graph);
-        assert!(graph
-            .contains(
-                &gnd.get("1004916019").unwrap(),
-                &skos::prefLabel,
-                &StrLiteral::new_lang("Plymouth (Marke)", "de").unwrap()
-            )
-            .unwrap());
-    }
-}
