@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-// use tempfile::{Builder, TempDir};
+
+pub static SAMPLE1: &str = include_str!("../../data/1004916019.dat");
+pub static SAMPLE2: &str = include_str!("../../data/119232022.dat");
 
 pub type MatchResult = Result<(), String>;
 
@@ -32,6 +34,11 @@ impl<'a> CommandBuilder<'a> {
     }
 
     pub fn arg<S: ToString>(&mut self, arg: S) -> &mut Self {
+        self.args.push(arg.to_string());
+        self
+    }
+
+    pub fn args<S: ToString>(&mut self, arg: S) -> &mut Self {
         let arg = arg.to_string();
         let args: Vec<String> = arg.split(' ').map(|x| x.to_string()).collect();
 
@@ -50,6 +57,11 @@ impl<'a> CommandBuilder<'a> {
             Some(ref mut stdout) => stdout.push_str(expected),
         }
 
+        self
+    }
+
+    pub fn with_stdout_empty(&mut self) -> &mut Self {
+        self.expect_stdout = Some("".to_string());
         self
     }
 

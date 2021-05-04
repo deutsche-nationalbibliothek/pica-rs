@@ -1,7 +1,6 @@
-use crate::support::{CommandBuilder, MatchResult};
-
-static SAMPLE1: &str = include_str!("../data/1004916019.dat");
-static SAMPLE2: &str = include_str!("../data/119232022.dat");
+use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
+use std::fs::read_to_string;
+use tempfile::Builder;
 
 #[test]
 fn cat_no_file() -> MatchResult {
@@ -73,5 +72,21 @@ fn cat_skip_invalid() -> MatchResult {
         .with_stdout(SAMPLE2)
         .run()?;
 
+    Ok(())
+}
+
+#[test]
+fn cat_write_output() -> MatchResult {
+    let tempdir = Builder::new().prefix("pica-cat").tempdir().unwrap();
+    let filename = tempdir.path().join("sample.dat");
+
+    CommandBuilder::new("cat")
+        .arg("--skip-invalid")
+        .args(format!("--output {}", filename.to_str().unwrap()))
+        .arg("tests/data/119232022.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    assert_eq!(read_to_string(filename).unwrap(), SAMPLE2);
     Ok(())
 }
