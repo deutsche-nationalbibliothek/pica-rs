@@ -5,7 +5,7 @@ use tempfile::Builder;
 #[test]
 fn json_single_record() -> MatchResult {
     let mut expected = read_to_string("tests/data/1004916019.json").unwrap();
-    expected.pop(); // remove new line character
+    expected.trim_end(); // remove new line character
 
     CommandBuilder::new("json")
         .arg("tests/data/1004916019.dat")
@@ -27,7 +27,7 @@ fn json_write_output() -> MatchResult {
         .run()?;
 
     let mut expected = read_to_string("tests/data/1004916019.json").unwrap();
-    expected.pop(); // remove new line character
+    expected.trim_end(); // remove new line character
 
     assert_eq!(expected, read_to_string(filename).unwrap());
 
