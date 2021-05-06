@@ -3,6 +3,7 @@ use std::process::{Command, Output};
 
 pub static SAMPLE1: &str = include_str!("../../data/1004916019.dat");
 pub static SAMPLE2: &str = include_str!("../../data/119232022.dat");
+pub static INVALID: &str = include_str!("../../data/invalid.dat");
 
 pub type MatchResult = Result<(), String>;
 
