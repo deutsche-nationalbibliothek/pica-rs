@@ -4,12 +4,11 @@ use tempfile::Builder;
 
 #[test]
 fn json_single_record() -> MatchResult {
-    let mut expected = read_to_string("tests/data/1004916019.json").unwrap();
-    expected.trim_end(); // remove new line character
+    let expected = read_to_string("tests/data/1004916019.json").unwrap();
 
     CommandBuilder::new("json")
         .arg("tests/data/1004916019.dat")
-        .with_stdout(&expected)
+        .with_stdout(expected.trim_end())
         .run()?;
 
     Ok(())
@@ -26,10 +25,8 @@ fn json_write_output() -> MatchResult {
         .with_stdout_empty()
         .run()?;
 
-    let mut expected = read_to_string("tests/data/1004916019.json").unwrap();
-    expected.trim_end(); // remove new line character
-
-    assert_eq!(expected, read_to_string(filename).unwrap());
+    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    assert_eq!(expected.trim_end(), read_to_string(filename).unwrap());
 
     Ok(())
 }
