@@ -57,11 +57,6 @@ fn print_gzip_file() -> MatchResult {
 #[test]
 fn print_write_output() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-    let exptected = if cfg!(windows) {
-        exptected.replace("\n", "\r\n")
-    } else {
-        exptected
-    };
 
     let tempdir = Builder::new().prefix("pica-print").tempdir().unwrap();
     let filename = tempdir.path().join("sample.txt");
