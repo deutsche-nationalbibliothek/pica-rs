@@ -68,12 +68,6 @@ fn split_template() -> MatchResult {
 #[test]
 fn split_invalid_chunk_size() -> MatchResult {
     CommandBuilder::new("split")
-        .arg("abc")
-        .arg("tests/data/dump.dat.gz")
-        .with_status(101)
-        .run()?;
-
-    CommandBuilder::new("split")
         .arg("0")
         .arg("tests/data/dump.dat.gz")
         .with_stderr("error: chunk size < 1\n")
