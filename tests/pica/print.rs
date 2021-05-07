@@ -56,8 +56,6 @@ fn print_gzip_file() -> MatchResult {
 
 #[test]
 fn print_write_output() -> MatchResult {
-    let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-
     let tempdir = Builder::new().prefix("pica-print").tempdir().unwrap();
     let filename = tempdir.path().join("sample.txt");
 
@@ -67,7 +65,14 @@ fn print_write_output() -> MatchResult {
         .with_stdout_empty()
         .run()?;
 
-    assert_eq!(exptected, read_to_string(filename).unwrap());
+    let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let actual = read_to_string(filename).unwrap();
+
+    println!("windows ? = {:?}", cfg!(windows));
+    println!("expected = {:?}", exptected);
+    println!("actual = {:?}", actual);
+
+    assert_eq!(actual, exptected);
 
     Ok(())
 }
