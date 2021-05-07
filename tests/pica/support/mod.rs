@@ -16,6 +16,7 @@ pub struct CommandBuilder<'a> {
 
     expect_exit_code: Option<i32>,
     expect_stdout: Option<String>,
+    expect_stdout_one_of: Option<Vec<String>>,
     expect_stderr: Option<String>,
 }
 
@@ -30,6 +31,7 @@ impl<'a> CommandBuilder<'a> {
             args: Vec::new(),
             expect_exit_code: Some(0),
             expect_stdout: None,
+            expect_stdout_one_of: None,
             expect_stderr: None,
         }
     }
@@ -61,6 +63,12 @@ impl<'a> CommandBuilder<'a> {
         self
     }
 
+    pub fn with_stdout_one_of(&mut self, expected: Vec<&str>) -> &mut Self {
+        self.expect_stdout_one_of =
+            Some(expected.iter().map(|x| x.to_string()).collect());
+        self
+    }
+
     pub fn with_stdout_empty(&mut self) -> &mut Self {
         self.expect_stdout = Some("".to_string());
         self
@@ -88,12 +96,21 @@ impl<'a> CommandBuilder<'a> {
     }
 
     fn match_stdout(&self, output: &Output) -> MatchResult {
-        if let Some(expected) = &self.expect_stdout {
-            let actual = String::from_utf8(output.stdout.clone()).unwrap();
+        let actual = String::from_utf8(output.stdout.clone()).unwrap();
 
+        if let Some(expected) = &self.expect_stdout {
             if actual != *expected {
                 return Err(format!(
                     "expected stdout '{}', got '{}'",
+                    expected, actual
+                ));
+            }
+        }
+
+        if let Some(expected) = &self.expect_stdout_one_of {
+            if !expected.iter().any(|x| *x == actual) {
+                return Err(format!(
+                    "expected stdout one of '{:?}', got '{}'",
                     expected, actual
                 ));
             }
@@ -123,14 +140,16 @@ impl<'a> CommandBuilder<'a> {
             .and(self.match_stderr(output))
     }
 
-    pub fn run(&mut self) -> MatchResult {
-        let output = Command::new(&self.pica_bin)
+    pub fn output(&self) -> std::io::Result<Output> {
+        Command::new(&self.pica_bin)
             .current_dir(self.root_dir)
             .arg(&self.command)
             .args(&self.args)
-            .output();
+            .output()
+    }
 
-        match output {
+    pub fn run(&mut self) -> MatchResult {
+        match self.output() {
             Ok(output) => self.match_output(&output),
             Err(_) => Err("could not run command".to_string()),
         }
