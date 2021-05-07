@@ -71,7 +71,7 @@ impl ReaderBuilder {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader =
-    ///         ReaderBuilder::new().from_path("tests/data/12283643X.dat")?;
+    ///         ReaderBuilder::new().from_path("tests/data/119232022.dat")?;
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
@@ -326,9 +326,10 @@ impl<R: Read> Reader<R> {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let mut reader =
-    ///         ReaderBuilder::new().from_path("tests/data/dump.dat")?;
-    ///     assert_eq!(reader.records().count(), 3);
+    ///     let mut reader = ReaderBuilder::new()
+    ///         .skip_invalid(true)
+    ///         .from_path("tests/data/dump.dat.gz")?;
+    ///     assert_eq!(reader.records().count(), 2);
     ///
     ///     Ok(())
     /// }
@@ -347,9 +348,10 @@ impl<R: Read> Reader<R> {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let mut reader =
-    ///         ReaderBuilder::new().from_path("tests/data/dump.dat")?;
-    ///     assert_eq!(reader.byte_records().count(), 3);
+    ///     let mut reader = ReaderBuilder::new()
+    ///         .skip_invalid(true)
+    ///         .from_path("tests/data/dump.dat.gz")?;
+    ///     assert_eq!(reader.byte_records().count(), 2);
     ///
     ///     Ok(())
     /// }
