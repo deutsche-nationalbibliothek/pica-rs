@@ -6,7 +6,7 @@ use tempfile::Builder;
 fn print_single_record() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
     let exptected = if cfg!(windows) {
-        exptected.replace("\n", "\r\n")
+        exptected.replace("\r", "")
     } else {
         exptected
     };
@@ -23,7 +23,7 @@ fn print_single_record() -> MatchResult {
 fn print_multiple_records() -> MatchResult {
     let exptected = read_to_string("tests/data/dump.txt").unwrap();
     let exptected = if cfg!(windows) {
-        exptected.replace("\n", "\r\n")
+        exptected.replace("\r", "")
     } else {
         exptected
     };
@@ -41,7 +41,7 @@ fn print_multiple_records() -> MatchResult {
 fn print_gzip_file() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
     let exptected = if cfg!(windows) {
-        exptected.replace("\n", "\r\n")
+        exptected.replace("\r", "")
     } else {
         exptected
     };
@@ -68,9 +68,11 @@ fn print_write_output() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
     let actual = read_to_string(filename).unwrap();
 
-    println!("windows ? = {:?}", cfg!(windows));
-    println!("expected = {:?}", exptected);
-    println!("actual = {:?}", actual);
+    let exptected = if cfg!(windows) {
+        exptected.replace("\r", "")
+    } else {
+        exptected
+    };
 
     assert_eq!(actual, exptected);
 
