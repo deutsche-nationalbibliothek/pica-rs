@@ -5,7 +5,7 @@ use tempfile::Builder;
 #[test]
 fn print_single_record() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-    let exptected = if cfg!(target_os = "windows") {
+    let exptected = if cfg!(windows) {
         exptected.replace("\n", "\r\n")
     } else {
         exptected
@@ -22,7 +22,7 @@ fn print_single_record() -> MatchResult {
 #[test]
 fn print_multiple_records() -> MatchResult {
     let exptected = read_to_string("tests/data/dump.txt").unwrap();
-    let exptected = if cfg!(target_os = "windows") {
+    let exptected = if cfg!(windows) {
         exptected.replace("\n", "\r\n")
     } else {
         exptected
@@ -40,7 +40,7 @@ fn print_multiple_records() -> MatchResult {
 #[test]
 fn print_gzip_file() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-    let exptected = if cfg!(target_os = "windows") {
+    let exptected = if cfg!(windows) {
         exptected.replace("\n", "\r\n")
     } else {
         exptected
@@ -57,7 +57,7 @@ fn print_gzip_file() -> MatchResult {
 #[test]
 fn print_write_output() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-    let exptected = if cfg!(target_os = "windows") {
+    let exptected = if cfg!(windows) {
         exptected.replace("\n", "\r\n")
     } else {
         exptected
