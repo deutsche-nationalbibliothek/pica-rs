@@ -1,6 +1,6 @@
 use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
-// use std::fs::read_to_string;
-// use tempfile::Builder;
+use std::fs::read_to_string;
+use tempfile::Builder;
 
 #[test]
 fn slice_default() -> MatchResult {
@@ -11,6 +11,23 @@ fn slice_default() -> MatchResult {
         .with_stdout(SAMPLE2)
         .run()?;
 
+    Ok(())
+}
+
+#[test]
+fn slice_write_output() -> MatchResult {
+    let tempdir = Builder::new().prefix("pica-slice").tempdir().unwrap();
+    let filename = tempdir.path().join("sample.dat");
+
+    CommandBuilder::new("slice")
+        .arg("--skip-invalid")
+        .args("--start 1")
+        .args(format!("--output {}", filename.to_str().unwrap()))
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    assert_eq!(read_to_string(filename).unwrap(), SAMPLE2);
     Ok(())
 }
 
