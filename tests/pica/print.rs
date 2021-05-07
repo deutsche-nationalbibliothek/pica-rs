@@ -5,6 +5,11 @@ use tempfile::Builder;
 #[test]
 fn print_single_record() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let exptected = if cfg!(target_os = "windows") {
+        exptected.replace("\n", "\r\n")
+    } else {
+        exptected
+    };
 
     CommandBuilder::new("print")
         .arg("tests/data/1004916019.dat")
@@ -17,6 +22,11 @@ fn print_single_record() -> MatchResult {
 #[test]
 fn print_multiple_records() -> MatchResult {
     let exptected = read_to_string("tests/data/dump.txt").unwrap();
+    let exptected = if cfg!(target_os = "windows") {
+        exptected.replace("\n", "\r\n")
+    } else {
+        exptected
+    };
 
     CommandBuilder::new("print")
         .arg("--skip-invalid")
@@ -30,6 +40,11 @@ fn print_multiple_records() -> MatchResult {
 #[test]
 fn print_gzip_file() -> MatchResult {
     let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let exptected = if cfg!(target_os = "windows") {
+        exptected.replace("\n", "\r\n")
+    } else {
+        exptected
+    };
 
     CommandBuilder::new("print")
         .arg("tests/data/1004916019.dat.gz")
@@ -41,6 +56,13 @@ fn print_gzip_file() -> MatchResult {
 
 #[test]
 fn print_write_output() -> MatchResult {
+    let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let exptected = if cfg!(target_os = "windows") {
+        exptected.replace("\n", "\r\n")
+    } else {
+        exptected
+    };
+
     let tempdir = Builder::new().prefix("pica-print").tempdir().unwrap();
     let filename = tempdir.path().join("sample.txt");
 
@@ -50,10 +72,7 @@ fn print_write_output() -> MatchResult {
         .with_stdout_empty()
         .run()?;
 
-    assert_eq!(
-        read_to_string("tests/data/1004916019.txt").unwrap(),
-        read_to_string(filename).unwrap()
-    );
+    assert_eq!(exptected, read_to_string(filename).unwrap());
 
     Ok(())
 }
