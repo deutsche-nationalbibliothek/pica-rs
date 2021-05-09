@@ -270,10 +270,20 @@ fn filter_not() -> MatchResult {
 #[test]
 fn filter_invalid_filter() -> MatchResult {
     CommandBuilder::new("filter")
+        .arg("--skip-invalid")
         .arg("003@.0 == ''123456789X'")
         .arg("tests/data/dump.dat.gz")
         .with_stdout_empty()
-        .with_stderr("error: invalid filter: 003@.0 == ''123456789X'\n")
+        .with_stderr("error: invalid filter: \"003@.0 == ''123456789X'\"\n")
+        .with_status(1)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("002@.0 =~ '^O(?!lfo)")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .with_stderr("error: invalid filter: \"002@.0 =~ '^O(?!lfo)\"\n")
         .with_status(1)
         .run()?;
 
