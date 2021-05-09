@@ -66,9 +66,23 @@ fn partition_no_path() -> MatchResult {
 }
 
 #[test]
-fn partition_invalid_path() -> MatchResult {
+fn partition_invalid_path1() -> MatchResult {
     CommandBuilder::new("partition")
         .arg("00!@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stderr("Pica Error: Invalid path expression\n")
+        .with_status(1)
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
+fn partition_invalid_path2() -> MatchResult {
+    CommandBuilder::new("partition")
+        .arg("--skip-invalid")
+        .args("--outdir /root/foo")
+        .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
         .with_status(1)
         .run()?;
