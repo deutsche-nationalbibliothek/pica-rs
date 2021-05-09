@@ -44,11 +44,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         create_dir(outdir)?;
     }
 
-    let chunk_size = args
-        .value_of("size")
-        .unwrap_or("500")
-        .parse::<u32>()
-        .unwrap();
+    let chunk_size = args.value_of("size").unwrap_or("500");
+    let chunk_size = match chunk_size.parse::<u32>() {
+        Ok(size) => size,
+        Err(_) => {
+            return Err(CliError::Other("invalid chunk size".to_string()))
+        }
+    };
 
     if chunk_size == 0 {
         return Err(CliError::Other("chunk size < 1".to_string()));
