@@ -59,6 +59,19 @@ fn slice_start_option() -> MatchResult {
 }
 
 #[test]
+fn slice_invalid_start_option() -> MatchResult {
+    CommandBuilder::new("slice")
+        .arg("--skip-invalid")
+        .args("--start abc")
+        .arg("tests/data/dump.dat.gz")
+        .with_stderr("error: invalid start option\n")
+        .with_status(1)
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn slice_end_option() -> MatchResult {
     CommandBuilder::new("slice")
         .arg("--skip-invalid")
@@ -89,6 +102,18 @@ fn slice_end_option() -> MatchResult {
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE1)
         .with_stdout(SAMPLE2)
+        .run()?;
+
+    Ok(())
+}
+#[test]
+fn slice_invalid_end_option() -> MatchResult {
+    CommandBuilder::new("slice")
+        .arg("--skip-invalid")
+        .args("--end abc")
+        .arg("tests/data/dump.dat.gz")
+        .with_stderr("error: invalid end option\n")
+        .with_status(1)
         .run()?;
 
     Ok(())
@@ -130,6 +155,18 @@ fn slice_length_option() -> MatchResult {
     Ok(())
 }
 
+#[test]
+fn slice_invalid_length_option() -> MatchResult {
+    CommandBuilder::new("slice")
+        .arg("--skip-invalid")
+        .args("--length abc")
+        .arg("tests/data/dump.dat.gz")
+        .with_stderr("error: invalid length option\n")
+        .with_status(1)
+        .run()?;
+
+    Ok(())
+}
 #[test]
 fn slice_invalid_file() -> MatchResult {
     CommandBuilder::new("slice")
