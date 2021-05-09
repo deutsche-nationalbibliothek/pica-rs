@@ -63,7 +63,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
-                "invalid filter: {}",
+                "invalid filter: \"{}\"",
                 filter_str
             )))
         }

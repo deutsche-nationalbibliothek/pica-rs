@@ -134,6 +134,8 @@ impl SubfieldFilter {
                         && subfield.value.ends_with(&values[0].as_bytes())
                 }),
                 ComparisonOp::Re => {
+                    // SAFETY: It's safe to call `unwrap()` because the parser
+                    // verified that the regular expression is `ok`.
                     let re = Regex::new(&values[0]).unwrap();
                     field.iter().any(|subfield| {
                         let value =
