@@ -50,14 +50,37 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
     let skip_invalid = args.is_present("skip-invalid");
-    let start = args.value_of("start").unwrap().parse::<usize>().unwrap();
+
+    // SAFETY: It's safe to call `unwrap()` because start has a default value.
+    let start = match args.value_of("start").unwrap().parse::<usize>() {
+        Ok(start) => start,
+        Err(_) => {
+            return Err(CliError::Other("invalid start option".to_string()))
+        }
+    };
+
     let end = args.value_of("end");
     let length = args.value_of("length");
 
     let mut range = if let Some(end) = end {
-        start..end.parse::<usize>().unwrap()
+        let end = match end.parse::<usize>() {
+            Ok(end) => end,
+            Err(_) => {
+                return Err(CliError::Other("invalid end option".to_string()))
+            }
+        };
+
+        start..end
     } else if let Some(length) = length {
-        let length = length.parse::<usize>().unwrap();
+        let length = match length.parse::<usize>() {
+            Ok(end) => end,
+            Err(_) => {
+                return Err(CliError::Other(
+                    "invalid length option".to_string(),
+                ))
+            }
+        };
+
         start..start + length
     } else {
         start..::std::usize::MAX
