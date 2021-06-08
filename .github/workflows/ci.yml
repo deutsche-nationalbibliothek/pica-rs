@@ -18,6 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
       - run: |
           rustup update stable && rustup default stable
           cargo check
@@ -49,6 +58,15 @@ jobs:
     continue-on-error: ${{ matrix.can-fail }}
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
       - run: |
           rustup update --no-self-update ${{ matrix.rust }}
           rustup default ${{ matrix.rust }}
@@ -61,6 +79,15 @@ jobs:
     needs: [check]
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
@@ -90,6 +117,15 @@ jobs:
     needs: [check, test]
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
       - run: |
           rustup update stable && rustup default stable
           rustup component add rustfmt
@@ -101,6 +137,15 @@ jobs:
     needs: [check, test]
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
       - run: |
           rustup update stable && rustup default stable
           rustup component add clippy
