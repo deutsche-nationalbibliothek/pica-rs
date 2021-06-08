@@ -6,7 +6,7 @@ mod invalid;
 mod json;
 mod partition;
 mod print;
-// mod sample;
+mod sample;
 mod select;
 // mod slice;
 // mod split;
