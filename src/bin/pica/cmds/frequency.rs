@@ -37,6 +37,13 @@ pub fn cli() -> App {
                 .about("Ignore rows with a frequency ≤ <t>."),
         )
         .arg(
+            Arg::new("header")
+                .short('H')
+                .long("--header")
+                .value_name("header")
+                .about("Comma-separated list of column names."),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -91,6 +98,10 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         for value in record.path(&path) {
             *ftable.entry(value.to_owned()).or_insert(0) += 1;
         }
+    }
+
+    if let Some(header) = args.value_of("header") {
+        writer.write_record(header.split(',').map(|s| s.trim()))?;
     }
 
     let mut ftable_sorted: Vec<(&BString, &u64)> = ftable.iter().collect();
