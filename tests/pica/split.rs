@@ -15,7 +15,7 @@ fn split_default() -> MatchResult {
         .run()?;
 
     let expected = [
-        // ("0.dat", SAMPLE1),
+        // ("0.dat", SAMPLE1), (see https://git.io/JZmHJ)
         ("1.dat", SAMPLE2),
         ("2.dat", SAMPLE3),
         ("3.dat", SAMPLE4),
