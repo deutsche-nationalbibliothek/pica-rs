@@ -24,7 +24,7 @@ fn split_default() -> MatchResult {
         ("6.dat", SAMPLE7),
     ];
 
-    for (filename, sample) in expected {
+    for (filename, sample) in expected.iter() {
         assert_eq!(read_to_string(filename).unwrap(), sample);
         remove_file(filename).unwrap();
     }
@@ -55,7 +55,7 @@ fn split_outdir() -> MatchResult {
         ("6.dat", SAMPLE7),
     ];
 
-    for (filename, sample) in expected {
+    for (filename, sample) in expected.iter() {
         assert_eq!(read_to_string(outdir.join(filename)).unwrap(), sample);
         remove_file(outdir.join(filename)).unwrap();
     }
@@ -87,7 +87,7 @@ fn split_template() -> MatchResult {
         ("CHUNK_6.dat", SAMPLE7),
     ];
 
-    for (filename, sample) in expected {
+    for (filename, sample) in expected.iter() {
         assert_eq!(read_to_string(outdir.join(filename)).unwrap(), sample);
         remove_file(outdir.join(filename)).unwrap();
     }
