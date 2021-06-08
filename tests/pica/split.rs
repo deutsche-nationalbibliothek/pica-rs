@@ -25,7 +25,7 @@ fn split_default() -> MatchResult {
     ];
 
     for (filename, sample) in expected.iter() {
-        assert_eq!(read_to_string(filename).unwrap(), sample);
+        assert_eq!(read_to_string(filename).unwrap(), *sample);
         remove_file(filename).unwrap();
     }
 
@@ -56,7 +56,7 @@ fn split_outdir() -> MatchResult {
     ];
 
     for (filename, sample) in expected.iter() {
-        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), sample);
+        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
         remove_file(outdir.join(filename)).unwrap();
     }
 
@@ -88,7 +88,7 @@ fn split_template() -> MatchResult {
     ];
 
     for (filename, sample) in expected.iter() {
-        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), sample);
+        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
         remove_file(outdir.join(filename)).unwrap();
     }
 
