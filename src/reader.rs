@@ -329,7 +329,7 @@ impl<R: Read> Reader<R> {
     ///     let mut reader = ReaderBuilder::new()
     ///         .skip_invalid(true)
     ///         .from_path("tests/data/dump.dat.gz")?;
-    ///     assert_eq!(reader.records().count(), 2);
+    ///     assert_eq!(reader.records().count(), 7);
     ///
     ///     Ok(())
     /// }
@@ -351,7 +351,7 @@ impl<R: Read> Reader<R> {
     ///     let mut reader = ReaderBuilder::new()
     ///         .skip_invalid(true)
     ///         .from_path("tests/data/dump.dat.gz")?;
-    ///     assert_eq!(reader.byte_records().count(), 2);
+    ///     assert_eq!(reader.byte_records().count(), 7);
     ///
     ///     Ok(())
     /// }
