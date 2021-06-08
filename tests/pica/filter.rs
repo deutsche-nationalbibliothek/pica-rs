@@ -1,7 +1,4 @@
-use crate::support::{
-    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
-    SAMPLE6, SAMPLE7,
-};
+use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE7};
 use std::fs::read_to_string;
 use tempfile::Builder;
 
