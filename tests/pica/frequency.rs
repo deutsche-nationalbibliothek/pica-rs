@@ -49,11 +49,51 @@ fn frequency_limit() -> MatchResult {
 fn frequency_threshold() -> MatchResult {
     CommandBuilder::new("frequency")
         .arg("--skip-invalid")
-        .args("--threshold 2")
+        .args("--threshold 1")
         .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
         .with_stdout("Tb1,4\n")
         .with_stdout("Tp1,2\n")
+        .run()?;
+
+    CommandBuilder::new("frequency")
+        .arg("--skip-invalid")
+        .args("--threshold 2")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("Tb1,4\n")
+        .run()?;
+
+    CommandBuilder::new("frequency")
+        .arg("--skip-invalid")
+        .args("--threshold 3")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("Tb1,4\n")
+        .run()?;
+
+    CommandBuilder::new("frequency")
+        .arg("--skip-invalid")
+        .args("--threshold 999")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
+fn frequency_invalid_threshold() -> MatchResult {
+    CommandBuilder::new("frequency")
+        .arg("--skip-invalid")
+        .args("--threshold abc")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stderr(
+            "error: Invalid threshold value, expected unsigned integer.\n",
+        )
+        .with_status(1)
         .run()?;
 
     Ok(())

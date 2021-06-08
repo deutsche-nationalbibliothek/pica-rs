@@ -116,7 +116,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             break;
         }
 
-        if **frequency < threshold {
+        if **frequency <= threshold {
             break;
         }
 
