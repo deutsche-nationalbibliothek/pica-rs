@@ -1,4 +1,7 @@
-use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
+use crate::support::{
+    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
+    SAMPLE6, SAMPLE7,
+};
 use std::fs::{read_to_string, remove_file};
 use tempfile::Builder;
 
@@ -13,8 +16,21 @@ fn partition_by_bbg() -> MatchResult {
     assert_eq!(read_to_string("Ts1.dat").unwrap(), SAMPLE1);
     remove_file("Ts1.dat").unwrap();
 
-    assert_eq!(read_to_string("Tp1.dat").unwrap(), SAMPLE2);
+    let mut exprected = String::new();
+    exprected.push_str(SAMPLE2);
+    exprected.push_str(SAMPLE7);
+
+    assert_eq!(read_to_string("Tp1.dat").unwrap(), exprected);
     remove_file("Tp1.dat").unwrap();
+
+    let mut exprected = String::new();
+    exprected.push_str(SAMPLE3);
+    exprected.push_str(SAMPLE4);
+    exprected.push_str(SAMPLE5);
+    exprected.push_str(SAMPLE6);
+
+    assert_eq!(read_to_string("Tb1.dat").unwrap(), exprected);
+    remove_file("Tb1.dat").unwrap();
 
     Ok(())
 }
@@ -32,7 +48,20 @@ fn partition_output_dir1() -> MatchResult {
         .run()?;
 
     assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
-    assert_eq!(read_to_string(outdir.join("Tp1.dat")).unwrap(), SAMPLE2);
+
+    let mut exprected = String::new();
+    exprected.push_str(SAMPLE2);
+    exprected.push_str(SAMPLE7);
+
+    assert_eq!(read_to_string(outdir.join("Tp1.dat")).unwrap(), exprected);
+
+    let mut exprected = String::new();
+    exprected.push_str(SAMPLE3);
+    exprected.push_str(SAMPLE4);
+    exprected.push_str(SAMPLE5);
+    exprected.push_str(SAMPLE6);
+
+    assert_eq!(read_to_string(outdir.join("Tb1.dat")).unwrap(), exprected);
 
     Ok(())
 }
@@ -50,7 +79,20 @@ fn partition_output_dir2() -> MatchResult {
         .run()?;
 
     assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
-    assert_eq!(read_to_string(outdir.join("Tp1.dat")).unwrap(), SAMPLE2);
+
+    let mut exprected = String::new();
+    exprected.push_str(SAMPLE2);
+    exprected.push_str(SAMPLE7);
+
+    assert_eq!(read_to_string(outdir.join("Tp1.dat")).unwrap(), exprected);
+
+    let mut exprected = String::new();
+    exprected.push_str(SAMPLE3);
+    exprected.push_str(SAMPLE4);
+    exprected.push_str(SAMPLE5);
+    exprected.push_str(SAMPLE6);
+
+    assert_eq!(read_to_string(outdir.join("Tb1.dat")).unwrap(), exprected);
 
     Ok(())
 }

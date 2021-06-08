@@ -4,7 +4,7 @@ mod filter;
 // mod frequency;
 mod invalid;
 mod json;
-// mod partition;
+mod partition;
 mod print;
 // mod sample;
 mod select;
