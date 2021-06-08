@@ -1,4 +1,7 @@
-use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
+use crate::support::{
+    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
+    SAMPLE6, SAMPLE7,
+};
 use std::fs::read_to_string;
 use tempfile::Builder;
 
@@ -9,6 +12,11 @@ fn slice_default() -> MatchResult {
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE1)
         .with_stdout(SAMPLE2)
+        .with_stdout(SAMPLE3)
+        .with_stdout(SAMPLE4)
+        .with_stdout(SAMPLE5)
+        .with_stdout(SAMPLE6)
+        .with_stdout(SAMPLE7)
         .run()?;
 
     Ok(())
@@ -27,7 +35,15 @@ fn slice_write_output() -> MatchResult {
         .with_stdout_empty()
         .run()?;
 
-    assert_eq!(read_to_string(filename).unwrap(), SAMPLE2);
+    let mut expected = String::new();
+    expected.push_str(SAMPLE2);
+    expected.push_str(SAMPLE3);
+    expected.push_str(SAMPLE4);
+    expected.push_str(SAMPLE5);
+    expected.push_str(SAMPLE6);
+    expected.push_str(SAMPLE7);
+
+    assert_eq!(read_to_string(filename).unwrap(), expected);
     Ok(())
 }
 
@@ -39,6 +55,11 @@ fn slice_start_option() -> MatchResult {
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE1)
         .with_stdout(SAMPLE2)
+        .with_stdout(SAMPLE3)
+        .with_stdout(SAMPLE4)
+        .with_stdout(SAMPLE5)
+        .with_stdout(SAMPLE6)
+        .with_stdout(SAMPLE7)
         .run()?;
 
     CommandBuilder::new("slice")
@@ -46,6 +67,11 @@ fn slice_start_option() -> MatchResult {
         .args("--start 1")
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE2)
+        .with_stdout(SAMPLE3)
+        .with_stdout(SAMPLE4)
+        .with_stdout(SAMPLE5)
+        .with_stdout(SAMPLE6)
+        .with_stdout(SAMPLE7)
         .run()?;
 
     CommandBuilder::new("slice")
@@ -102,10 +128,16 @@ fn slice_end_option() -> MatchResult {
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE1)
         .with_stdout(SAMPLE2)
+        .with_stdout(SAMPLE3)
+        .with_stdout(SAMPLE4)
+        .with_stdout(SAMPLE5)
+        .with_stdout(SAMPLE6)
+        .with_stdout(SAMPLE7)
         .run()?;
 
     Ok(())
 }
+
 #[test]
 fn slice_invalid_end_option() -> MatchResult {
     CommandBuilder::new("slice")
@@ -142,6 +174,11 @@ fn slice_length_option() -> MatchResult {
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE1)
         .with_stdout(SAMPLE2)
+        .with_stdout(SAMPLE3)
+        .with_stdout(SAMPLE4)
+        .with_stdout(SAMPLE5)
+        .with_stdout(SAMPLE6)
+        .with_stdout(SAMPLE7)
         .run()?;
 
     CommandBuilder::new("slice")
@@ -167,6 +204,7 @@ fn slice_invalid_length_option() -> MatchResult {
 
     Ok(())
 }
+
 #[test]
 fn slice_invalid_file() -> MatchResult {
     CommandBuilder::new("slice")

@@ -8,7 +8,13 @@ fn select_one_column() -> MatchResult {
         .arg("--skip-invalid")
         .arg("003@.0")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout("1004916019\n119232022\n")
+        .with_stdout("1004916019\n")
+        .with_stdout("119232022\n")
+        .with_stdout("000008672\n")
+        .with_stdout("000016586\n")
+        .with_stdout("000016756\n")
+        .with_stdout("000009229\n")
+        .with_stdout("121169502\n")
         .run()?;
 
     Ok(())
@@ -20,7 +26,13 @@ fn select_two_columns() -> MatchResult {
         .arg("--skip-invalid")
         .arg("003@.0, 002@.0")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout("1004916019,Ts1\n119232022,Tp1\n")
+        .with_stdout("1004916019,Ts1\n")
+        .with_stdout("119232022,Tp1\n")
+        .with_stdout("000008672,Tb1\n")
+        .with_stdout("000016586,Tb1\n")
+        .with_stdout("000016756,Tb1\n")
+        .with_stdout("000009229,Tb1\n")
+        .with_stdout("121169502,Tp1\n")
         .run()?;
 
     Ok(())
@@ -81,7 +93,14 @@ fn select_header() -> MatchResult {
         .args("--header idn,bbg")
         .arg("003@.0, 002@.0")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout("idn,bbg\n1004916019,Ts1\n119232022,Tp1\n")
+        .with_stdout("idn,bbg\n")
+        .with_stdout("1004916019,Ts1\n")
+        .with_stdout("119232022,Tp1\n")
+        .with_stdout("000008672,Tb1\n")
+        .with_stdout("000016586,Tb1\n")
+        .with_stdout("000016756,Tb1\n")
+        .with_stdout("000009229,Tb1\n")
+        .with_stdout("121169502,Tp1\n")
         .run()?;
 
     Ok(())
@@ -92,9 +111,17 @@ fn select_tab_separated() -> MatchResult {
     CommandBuilder::new("select")
         .arg("--skip-invalid")
         .arg("--tsv")
+        .args("--header idn,bbg")
         .arg("003@.0, 002@.0")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout("1004916019\tTs1\n119232022\tTp1\n")
+        .with_stdout("idn\tbbg\n")
+        .with_stdout("1004916019\tTs1\n")
+        .with_stdout("119232022\tTp1\n")
+        .with_stdout("000008672\tTb1\n")
+        .with_stdout("000016586\tTb1\n")
+        .with_stdout("000016756\tTb1\n")
+        .with_stdout("000009229\tTb1\n")
+        .with_stdout("121169502\tTp1\n")
         .run()?;
 
     Ok(())
@@ -115,8 +142,16 @@ fn select_write_output() -> MatchResult {
 
     assert_eq!(
         read_to_string(filename).unwrap(),
-        "1004916019,Ts1\n119232022,Tp1\n"
+        "1004916019,Ts1
+119232022,Tp1
+000008672,Tb1
+000016586,Tb1
+000016756,Tb1
+000009229,Tb1
+121169502,Tp1
+"
     );
+
     Ok(())
 }
 

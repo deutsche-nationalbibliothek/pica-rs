@@ -77,3 +77,178 @@
 065R $9 040743357 $7 Tgz $V gik $A gnd $0 4074335-4 $a London $4 orts
 070A/03 $0 (DE-588)119232022
 
+001@ $0 -
+001A $0 9002:18-04-89
+001B $0 9999:27-09-17 $t 00:43:48.000
+001D $0 9999:23-04-10
+001U $0 utf8
+001X $0 0
+002@ $0 Tb1
+003@ $0 000008672
+003U $a http://d-nb.info/gnd/867-9 $z http://d-nb.info/gnd/7538748-7
+004B $a kiz
+007K $a gnd $0 867-9
+007N $a gnd $0 7538748-7
+007N $a gnd $0 1085295990
+007N $a swd $0 7538748-7 $v zg
+007N $a gkd $0 867-9 $v zg
+008A $a f $a s
+008B $a z $a v
+029@ $a Vacuum Society $g USA
+029@ $a AVS $4 abku
+029@ $a Committee on Vacuum Techniques
+029@ $a CVT $4 abku
+029A $a American Vacuum Society
+029R $9 984002073 $7 Tb1 $A gnd $0 10168051-X $a AVS, the Science and Technology Society $4 nach
+041R $9 040622665 $7 Ts1 $A gnd $0 4062266-6 $a Vakuum $4 them
+041R $9 04066581X $7 Ts1 $V saz $A gnd $0 4066581-1 $a Wissenschaftliche Gesellschaft $4 obin
+042A $a 6.5 $a 9.3c $a 21.5 $a 31.1b $a 31.9a
+042B $a XD-US
+042B $a XD-US
+047A/03 $e DE-1
+047A/03 $r DE-1
+047C $S gkd $i a $a American Vacuum Society $0 867-9
+047C $S swd $i k $a American Vacuum Society $0 7538748-7
+050C $a MMi
+050E $a GKD
+050H $a 1953 gegr. wiss. Ges., die sich mit Problemen des Vakuums und vor allem seiner Anwendung in der Technik beschäftigt
+065R $9 040787044 $7 Tgz $V gik $A gnd $0 4078704-7 $a USA $4 geow
+
+001@ $0 -
+001A $0 9002:18-04-89
+001B $0 1240:19-04-17 $t 14:37:25.000
+001D $0 9999:23-04-10
+001U $0 utf8
+001X $0 0
+002@ $0 Tb1
+003@ $0 000016586
+003U $a http://d-nb.info/gnd/1658-5 $z http://d-nb.info/gnd/4318278-1
+004B $a kiz
+007K $a gnd $0 1658-5
+007N $a gnd $0 4318278-1
+007N $a swd $0 4318278-1 $v zg
+007N $a gkd $0 16291087-3
+007N $a gkd $0 1658-5 $v zg
+008A $a f $a s
+008B $a z $a v
+029@ $a Univ. of Minnesota, Minneapolis
+029@ $a Universidad de Minnesota
+029@ $a U of M
+029@ $a UM $4 abku
+029A $a University of Minnesota
+042A $a 6.6
+042B $a XD-US
+047A/03 $e DE-1
+047A/03 $r DE-1
+047C $S gkd $i a $a University of Minnesota <Minneapolis, Minn.> $0 1658-5
+047C $S swd $i c $a Minneapolis <Minn.> / University of Minnesota $0 4318278-1
+050E $a Homepage $b Stand: 19.04.2017 $u http://www.umn.edu
+060R $a 1851 $4 datb
+065R $9 040394972 $7 Tg1 $V gik $A gnd $0 4039497-9 $a Minneapolis, Minn. $4 orta
+070A/03 $S IDS $0 320104243
+
+001@ $0 -
+001A $0 9002:18-04-89
+001B $0 1601:26-11-19 $t 10:50:14.000
+001D $0 9999:23-04-10
+001U $0 utf8
+001X $0 0
+002@ $0 Tb1
+003@ $0 000016756
+003U $a http://d-nb.info/gnd/1675-5 $z http://d-nb.info/gnd/1088210104 $z http://d-nb.info/gnd/7542287-6 $z http://d-nb.info/gnd/1086256751
+004B $a kiz
+007K $a gnd $0 1675-5
+007N $a gnd $0 1086256751
+007N $a gnd $0 7542287-6
+007N $a swd $0 7542287-6 $v zg
+007N $a gnd $0 1088210104
+007N $a gkd $0 1675-5 $v zg
+008A $a f $a s
+008B $a v $a z
+010E $b ger
+029@ $a Institut International de Philosophie
+029@ $a Internationales Institut für Philosophie
+029@ $a Instituto Internacional de Filosofia
+029@ $a Institute of Philosophy $g International Institute of Philosophie
+029@ $a Institut für Philosophie
+029@ $a IIP $4 abku
+029A $a International Institute of Philosophy
+029R $9 000261246 $7 Tb1 $V kiz $A gnd $0 26124-5 $a Institut International de Collaboration Philosophique $g Paris $4 vorg
+041R $9 041900944 $7 Ts1 $A gnd $0 4190094-7 $a Wissenschaftliche Einrichtung $4 obin
+042A $a 6.5 $a 4.1
+042B $a XP
+047A/03 $e DE-1
+047A/03 $r DE-1
+047C $S gkd $i a $a International Institute of Philosophy $0 1675-5
+047C $S swd $i c $a Paris / Internationales Institut für Philosophie $0 7542287-6
+050E $a Yearb. 1995
+060R $a 1937 $4 datb
+065R $9 040181456 $7 Tgz $V gik $A gnd $0 4018145-5 $a Frankreich $4 geow
+065R $9 040446603 $7 Tgz $V gik $A gnd $0 4044660-8 $a Paris $4 orta
+070A/03 $S IDS $0 000000307
+
+001@ $0 -
+001A $0 9002:18-04-89
+001B $0 9999:05-06-20 $t 05:40:04.000
+001D $0 9999:23-04-10
+001U $0 utf8
+001X $0 0
+002@ $0 Tb1
+003@ $0 000009229
+003U $a http://d-nb.info/gnd/922-2 $z http://d-nb.info/gnd/4499175-7 $z http://d-nb.info/gnd/1090453043
+004B $a kiz
+007K $a gnd $0 922-2
+007N $a gnd $0 1090453043
+007N $a gnd $0 4499175-7
+007N $a swd $0 4499175-7 $v zg
+007N $a gkd $0 922-2 $v zg
+008A $a f $a s
+008B $a z $a v $a w $a e
+010E $b ger $e rda
+029@ $a Cancer Society $g USA
+029@ $a ACS $4 abku
+029A $a American Cancer Society
+029R $9 005078091 $7 Tb1 $V kiz $A gnd $0 507809-X $a American Society for the Control of Cancer $4 vorg
+042A $a 27.4
+042B $a XD-US
+047A/03 $e DE-1
+047A/03 $r DE-1
+047C $S gkd $i a $a American Cancer Society $0 922-2
+047C $S swd $i k $a American Cancer Society $0 4499175-7
+050E $a GKD
+050E $a Homepage $b Stand: 08.10.2018 $u https://www.cancer.org
+060R $a 1945 $4 datb
+065R $9 040787044 $7 Tgz $V gik $A gnd $0 4078704-7 $a USA $4 geow
+070A/03 $0 (DE-588)922-2
+
+001@ $0 -
+001A $0 0386:17-06-99
+001B $0 9999:17-10-16 $t 17:00:44.000
+001D $0 9999:06-04-08
+001U $0 utf8
+001X $0 0
+002@ $0 Tp1
+003@ $0 121169502
+003U $a http://d-nb.info/gnd/121169502 $z http://d-nb.info/gnd/183361946
+004B $a piz
+007K $a gnd $0 121169502
+007N $a gnd $0 183361946
+007N $a pnd $0 183361946 $v zg
+007N $a pnd $0 121169502 $v zg
+007N $a swd $0 4549141-0 $v zg
+008A $a s $a f
+008B $a v $a w
+028@ $d Heike $a Klußmann
+028A $d Heike $a Klussmann
+041R $a Installationskünstlerin $4 berc
+041R $a Photographin $4 beru
+042A $a 13.7p $a 13.5p
+042B $a XA-DE
+047A/03 $e DE-386
+047A/03 $r DE-576
+047C $S pnd $i a $a Klussmann, Heike $0 121169502
+047C $S pnd $i a $a Klussmann, Heike $0 183361946
+050C $a NDSBIO
+050E $a Internet
+060R $a 1968 $4 datl
+

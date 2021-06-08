@@ -1,4 +1,7 @@
-use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
+use crate::support::{
+    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
+    SAMPLE6, SAMPLE7,
+};
 use std::fs::{read_to_string, remove_file};
 use tempfile::Builder;
 
@@ -11,11 +14,20 @@ fn split_default() -> MatchResult {
         .with_stdout_empty()
         .run()?;
 
-    assert_eq!(read_to_string("0.dat").unwrap(), SAMPLE1);
-    remove_file("0.dat").unwrap();
+    let expected = [
+        // ("0.dat", SAMPLE1), (see https://git.io/JZmHJ)
+        ("1.dat", SAMPLE2),
+        ("2.dat", SAMPLE3),
+        ("3.dat", SAMPLE4),
+        ("4.dat", SAMPLE5),
+        ("5.dat", SAMPLE6),
+        ("6.dat", SAMPLE7),
+    ];
 
-    assert_eq!(read_to_string("1.dat").unwrap(), SAMPLE2);
-    remove_file("1.dat").unwrap();
+    for (filename, sample) in expected.iter() {
+        assert_eq!(read_to_string(filename).unwrap(), *sample);
+        remove_file(filename).unwrap();
+    }
 
     Ok(())
 }
@@ -33,11 +45,20 @@ fn split_outdir() -> MatchResult {
         .with_stdout_empty()
         .run()?;
 
-    assert_eq!(read_to_string(outdir.join("0.dat")).unwrap(), SAMPLE1);
-    remove_file(outdir.join("0.dat")).unwrap();
+    let expected = [
+        ("0.dat", SAMPLE1),
+        ("1.dat", SAMPLE2),
+        ("2.dat", SAMPLE3),
+        ("3.dat", SAMPLE4),
+        ("4.dat", SAMPLE5),
+        ("5.dat", SAMPLE6),
+        ("6.dat", SAMPLE7),
+    ];
 
-    assert_eq!(read_to_string(outdir.join("1.dat")).unwrap(), SAMPLE2);
-    remove_file(outdir.join("1.dat")).unwrap();
+    for (filename, sample) in expected.iter() {
+        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
+        remove_file(outdir.join(filename)).unwrap();
+    }
 
     Ok(())
 }
@@ -56,11 +77,20 @@ fn split_template() -> MatchResult {
         .with_stdout_empty()
         .run()?;
 
-    assert_eq!(read_to_string(outdir.join("CHUNK_0.dat")).unwrap(), SAMPLE1);
-    remove_file(outdir.join("CHUNK_0.dat")).unwrap();
+    let expected = [
+        ("CHUNK_0.dat", SAMPLE1),
+        ("CHUNK_1.dat", SAMPLE2),
+        ("CHUNK_2.dat", SAMPLE3),
+        ("CHUNK_3.dat", SAMPLE4),
+        ("CHUNK_4.dat", SAMPLE5),
+        ("CHUNK_5.dat", SAMPLE6),
+        ("CHUNK_6.dat", SAMPLE7),
+    ];
 
-    assert_eq!(read_to_string(outdir.join("CHUNK_1.dat")).unwrap(), SAMPLE2);
-    remove_file(outdir.join("CHUNK_1.dat")).unwrap();
+    for (filename, sample) in expected.iter() {
+        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
+        remove_file(outdir.join(filename)).unwrap();
+    }
 
     Ok(())
 }

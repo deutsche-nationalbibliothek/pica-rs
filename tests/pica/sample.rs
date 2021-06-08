@@ -1,4 +1,7 @@
-use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
+use crate::support::{
+    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
+    SAMPLE6, SAMPLE7,
+};
 use std::fs::read_to_string;
 use tempfile::Builder;
 
@@ -19,7 +22,12 @@ fn sample_multiple_records() -> MatchResult {
         .arg("--skip-invalid")
         .arg("1")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_one_of([SAMPLE1, SAMPLE2].to_vec())
+        .with_stdout_one_of(
+            [
+                SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5, SAMPLE6, SAMPLE7,
+            ]
+            .to_vec(),
+        )
         .run()?;
 
     Ok(())
@@ -31,7 +39,12 @@ fn sample_size_le_len() -> MatchResult {
         .arg("--skip-invalid")
         .arg("1")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_one_of([SAMPLE1, SAMPLE2].to_vec())
+        .with_stdout_one_of(
+            [
+                SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5, SAMPLE6, SAMPLE7,
+            ]
+            .to_vec(),
+        )
         .run()?;
 
     Ok(())
@@ -43,13 +56,7 @@ fn sample_size_eq_len() -> MatchResult {
         .arg("--skip-invalid")
         .arg("2")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_one_of(
-            [
-                format!("{}{}", SAMPLE1, SAMPLE2).as_str(),
-                format!("{}{}", SAMPLE2, SAMPLE1).as_str(),
-            ]
-            .to_vec(),
-        )
+        .with_stdout_lines(2)
         .run()?;
 
     Ok(())
@@ -59,15 +66,9 @@ fn sample_size_eq_len() -> MatchResult {
 fn sample_size_gt_len() -> MatchResult {
     CommandBuilder::new("sample")
         .arg("--skip-invalid")
-        .arg("3")
+        .arg("8")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_one_of(
-            [
-                format!("{}{}", SAMPLE1, SAMPLE2).as_str(),
-                format!("{}{}", SAMPLE2, SAMPLE1).as_str(),
-            ]
-            .to_vec(),
-        )
+        .with_stdout_lines(7)
         .run()?;
 
     Ok(())

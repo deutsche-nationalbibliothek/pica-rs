@@ -1,4 +1,4 @@
-use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
+use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE7};
 use std::fs::read_to_string;
 use tempfile::Builder;
 
@@ -350,9 +350,11 @@ fn filter_invert_match() -> MatchResult {
     CommandBuilder::new("filter")
         .arg("--skip-invalid")
         .arg("--invert-match")
-        .arg("003@.0 == '119232022'")
+        .arg("003@.0 =^ '0000'")
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE1)
+        .with_stdout(SAMPLE2)
+        .with_stdout(SAMPLE7)
         .run()?;
 
     Ok(())

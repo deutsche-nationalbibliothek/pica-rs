@@ -3,6 +3,11 @@ use std::process::{Command, Output};
 
 pub static SAMPLE1: &str = include_str!("../../data/1004916019.dat");
 pub static SAMPLE2: &str = include_str!("../../data/119232022.dat");
+pub static SAMPLE3: &str = include_str!("../../data/000008672.dat");
+pub static SAMPLE4: &str = include_str!("../../data/000016586.dat");
+pub static SAMPLE5: &str = include_str!("../../data/000016756.dat");
+pub static SAMPLE6: &str = include_str!("../../data/000009229.dat");
+pub static SAMPLE7: &str = include_str!("../../data/121169502.dat");
 pub static INVALID: &str = include_str!("../../data/invalid.dat");
 
 pub type MatchResult = Result<(), String>;
@@ -17,6 +22,7 @@ pub struct CommandBuilder<'a> {
     expect_exit_code: Option<i32>,
     expect_stdout: Option<String>,
     expect_stdout_one_of: Option<Vec<String>>,
+    expect_stdout_lines: Option<usize>,
     expect_stderr: Option<String>,
 }
 
@@ -32,6 +38,7 @@ impl<'a> CommandBuilder<'a> {
             expect_exit_code: Some(0),
             expect_stdout: None,
             expect_stdout_one_of: None,
+            expect_stdout_lines: None,
             expect_stderr: None,
         }
     }
@@ -74,6 +81,11 @@ impl<'a> CommandBuilder<'a> {
         self
     }
 
+    pub fn with_stdout_lines(&mut self, expected: usize) -> &mut Self {
+        self.expect_stdout_lines = Some(expected);
+        self
+    }
+
     pub fn with_stderr(&mut self, expected: &str) -> &mut Self {
         match self.expect_stderr {
             None => self.expect_stderr = Some(expected.to_string()),
@@ -97,6 +109,16 @@ impl<'a> CommandBuilder<'a> {
 
     fn match_stdout(&self, output: &Output) -> MatchResult {
         let actual = String::from_utf8(output.stdout.clone()).unwrap();
+
+        if let Some(expected) = &self.expect_stdout_lines {
+            let actual_lines = actual.lines().count();
+            if actual_lines != *expected {
+                return Err(format!(
+                    "expected {} lines, got {}",
+                    expected, actual
+                ));
+            }
+        }
 
         if let Some(expected) = &self.expect_stdout {
             if actual != *expected {
