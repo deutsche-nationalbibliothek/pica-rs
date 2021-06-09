@@ -15,7 +15,7 @@ fn split_default() -> MatchResult {
         .run()?;
 
     let expected = [
-        // ("0.dat", SAMPLE1), (see https://git.io/JZmHJ)
+        ("0.dat", SAMPLE1),
         ("1.dat", SAMPLE2),
         ("2.dat", SAMPLE3),
         ("3.dat", SAMPLE4),
@@ -116,8 +116,12 @@ fn split_invalid_chunk_size() -> MatchResult {
 
 #[test]
 fn split_invalid_file() -> MatchResult {
+    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    let outdir = tempdir.path();
+
     CommandBuilder::new("split")
         .arg("100")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
         .arg("tests/data/invalid.dat")
         .with_stderr("Pica Error: Invalid record on line 1.\n")
         .with_status(1)
