@@ -443,3 +443,16 @@ fn filter_limit() -> MatchResult {
 
     Ok(())
 }
+
+#[test]
+fn filter_expression_file() -> MatchResult {
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .args("--file tests/data/filter.txt")
+        .arg("True")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    Ok(())
+}

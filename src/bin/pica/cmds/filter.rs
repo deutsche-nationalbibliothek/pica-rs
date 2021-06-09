@@ -1,6 +1,7 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
 use pica::{Filter, PicaWriter, ReaderBuilder, WriterBuilder};
+use std::fs::read_to_string;
 
 pub fn cli() -> App {
     App::new("filter")
@@ -10,6 +11,14 @@ pub fn cli() -> App {
                 .short('s')
                 .long("skip-invalid")
                 .about("skip invalid records"),
+        )
+        .arg(
+            Arg::new("expr-file")
+                .short('f')
+                .long("file")
+                .value_name("file")
+                .about("Take filter expressions from file.")
+                .takes_value(true),
         )
         .arg(
             Arg::new("invert-match")
@@ -64,8 +73,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         .gzip(args.is_present("gzip"))
         .from_path_or_stdout(args.value_of("output"))?;
 
-    let filter_str = args.value_of("filter").unwrap();
-    let filter = match Filter::decode(filter_str) {
+    let filter_str = if let Some(filename) = args.value_of("expr-file") {
+        read_to_string(filename).unwrap()
+    } else {
+        args.value_of("filter").unwrap().to_owned()
+    };
+
+    let filter = match Filter::decode(&filter_str) {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
