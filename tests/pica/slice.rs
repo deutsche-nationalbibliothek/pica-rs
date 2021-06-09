@@ -2,7 +2,9 @@ use crate::support::{
     CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
     SAMPLE6, SAMPLE7,
 };
-use std::fs::read_to_string;
+use flate2::read::GzDecoder;
+use std::fs::{read_to_string, File};
+use std::io::Read;
 use tempfile::Builder;
 
 #[test]
@@ -23,7 +25,7 @@ fn slice_default() -> MatchResult {
 }
 
 #[test]
-fn slice_write_output() -> MatchResult {
+fn slice_write_plain_output() -> MatchResult {
     let tempdir = Builder::new().prefix("pica-slice").tempdir().unwrap();
     let filename = tempdir.path().join("sample.dat");
 
@@ -44,6 +46,48 @@ fn slice_write_output() -> MatchResult {
     expected.push_str(SAMPLE7);
 
     assert_eq!(read_to_string(filename).unwrap(), expected);
+    Ok(())
+}
+
+#[test]
+fn slice_write_gzip_output() -> MatchResult {
+    // file extension
+    let tempdir = Builder::new().prefix("pica-slice").tempdir().unwrap();
+    let filename = tempdir.path().join("sample.dat.gz");
+
+    CommandBuilder::new("slice")
+        .arg("--skip-invalid")
+        .args("--end 1")
+        .args(format!("--output {}", filename.to_str().unwrap()))
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
+
+    // gzip-flag
+    let tempdir = Builder::new().prefix("pica-slice").tempdir().unwrap();
+    let filename = tempdir.path().join("sample.dat");
+
+    CommandBuilder::new("slice")
+        .arg("--skip-invalid")
+        .args("--end 1")
+        .arg("--gzip")
+        .args(format!("--output {}", filename.to_str().unwrap()))
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
+
     Ok(())
 }
 

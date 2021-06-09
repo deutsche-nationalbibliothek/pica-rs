@@ -15,6 +15,12 @@ pub fn cli() -> App {
                 .about("skip invalid records"),
         )
         .arg(
+            Arg::new("gzip")
+                .short('g')
+                .long("gzip")
+                .about("compress output with gzip"),
+        )
+        .arg(
             Arg::new("outdir")
                 .short('o')
                 .long("--outdir")
@@ -25,8 +31,7 @@ pub fn cli() -> App {
             Arg::new("template")
                 .short('t')
                 .long("--template")
-                .value_name("template")
-                .default_value("{}.dat"),
+                .value_name("template"),
         )
         .arg(Arg::new("size").required(true))
         .arg(Arg::new("filename"))
@@ -37,7 +42,13 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
 
-    let filename_template = args.value_of("template").unwrap_or("{}.dat");
+    let filename_template = if args.is_present("template") {
+        args.value_of("template").unwrap()
+    } else if args.is_present("gzip") {
+        "{}.dat.gz"
+    } else {
+        "{}.dat"
+    };
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
     if !outdir.exists() {
@@ -58,31 +69,38 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     let mut chunks: u32 = 0;
 
-    let mut writer = WriterBuilder::new().from_path(
-        outdir
-            .join(filename_template.replace("{}", &chunks.to_string()))
-            .to_str()
-            .unwrap(),
-    )?;
+    let mut writer = WriterBuilder::new()
+        .gzip(args.is_present("gzip"))
+        .from_path(
+            outdir
+                .join(filename_template.replace("{}", &chunks.to_string()))
+                .to_str()
+                .unwrap(),
+        )?;
 
     for (count, result) in reader.byte_records().enumerate() {
         let record = result?;
 
         if count > 0 && count as u32 % chunk_size == 0 {
-            writer.flush()?;
+            writer.finish()?;
             chunks += 1;
 
-            writer = WriterBuilder::new().from_path(
-                outdir
-                    .join(filename_template.replace("{}", &chunks.to_string()))
-                    .to_str()
-                    .unwrap(),
-            )?;
+            writer = WriterBuilder::new()
+                .gzip(args.is_present("gzip"))
+                .from_path(
+                    outdir
+                        .join(
+                            filename_template
+                                .replace("{}", &chunks.to_string()),
+                        )
+                        .to_str()
+                        .unwrap(),
+                )?;
         }
 
         writer.write_byte_record(&record)?;
     }
 
-    writer.flush()?;
+    writer.finish()?;
     Ok(())
 }

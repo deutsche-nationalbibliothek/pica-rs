@@ -1,7 +1,6 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::{ReaderBuilder, Writer, WriterBuilder};
-use std::io::Write;
+use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 
 pub fn cli() -> App {
     App::new("slice")
@@ -32,6 +31,12 @@ pub fn cli() -> App {
                 .takes_value(true),
         )
         .arg(
+            Arg::new("gzip")
+                .short('g')
+                .long("gzip")
+                .about("compress output with gzip"),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -46,8 +51,9 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         .skip_invalid(false)
         .from_path_or_stdin(args.value_of("filename"))?;
 
-    let mut writer: Writer<Box<dyn Write>> =
-        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
+    let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+        .gzip(args.is_present("gzip"))
+        .from_path_or_stdout(args.value_of("output"))?;
 
     let skip_invalid = args.is_present("skip-invalid");
 
@@ -106,6 +112,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     }
 
-    writer.flush()?;
+    writer.finish()?;
     Ok(())
 }

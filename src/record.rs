@@ -1,13 +1,13 @@
 use crate::error::{Error, Result};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::{Path, Writer};
+use crate::Path;
 
 use bstr::{BString, ByteSlice};
 use regex::bytes::Regex;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::fmt;
-use std::io::{self, Write};
+use std::io::Write;
 use std::ops::Deref;
 use std::result::Result as StdResult;
 
@@ -148,7 +148,7 @@ impl Subfield {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Subfield, WriterBuilder};
+    /// use pica::{PicaWriter, Subfield, WriterBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     /// # use std::fs::read_to_string;
@@ -161,16 +161,16 @@ impl Subfield {
     ///     let subfield = Subfield::new('0', "123456789X")?;
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
     ///     subfield.write(&mut writer)?;
-    ///     writer.flush()?;
+    ///     writer.finish()?;
     ///
     ///     # let result = read_to_string(path)?;
     ///     # assert_eq!(result, String::from("\x1f0123456789X"));
     ///     Ok(())
     /// }
     /// ```
-    pub fn write<W: io::Write>(
+    pub fn write(
         &self,
-        writer: &mut Writer<W>,
+        writer: &mut dyn std::io::Write,
     ) -> crate::error::Result<()> {
         write!(writer, "\x1f{}{}", self.code, self.value)?;
         Ok(())
@@ -562,17 +562,14 @@ impl Field {
     ///     
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
     ///     field.write(&mut writer)?;
-    ///     writer.flush()?;
+    ///     writer.finish()?;
     ///
     ///     # let result = read_to_string(path)?;
     ///     # assert_eq!(result, String::from("012A/001 \x1f0123456789X\x1e"));
     ///     Ok(())
     /// }
     /// ```
-    pub fn write<W: io::Write>(
-        &self,
-        writer: &mut Writer<W>,
-    ) -> crate::error::Result<()> {
+    pub fn write(&self, writer: &mut dyn Write) -> crate::error::Result<()> {
         writer.write_all(self.tag.as_slice())?;
 
         if let Some(ref occurrence) = self.occurrence {
@@ -805,7 +802,7 @@ impl ByteRecord {
     ///
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
     ///     record.write(&mut writer)?;
-    ///     writer.flush()?;
+    ///     writer.finish()?;
     ///
     ///     # let result = read_to_string(path)?;
     ///     # assert_eq!(result, String::from(
@@ -813,10 +810,7 @@ impl ByteRecord {
     ///     Ok(())
     /// }
     /// ```
-    pub fn write<W>(&self, writer: &mut Writer<W>) -> crate::error::Result<()>
-    where
-        W: io::Write,
-    {
+    pub fn write(&self, writer: &mut dyn Write) -> crate::error::Result<()> {
         for field in &self.fields {
             field.write(writer)?;
         }

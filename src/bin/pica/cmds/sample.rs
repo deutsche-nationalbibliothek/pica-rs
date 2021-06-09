@@ -1,8 +1,7 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::{ByteRecord, ReaderBuilder, Writer, WriterBuilder};
+use pica::{ByteRecord, PicaWriter, ReaderBuilder, WriterBuilder};
 use rand::{thread_rng, Rng};
-use std::io::Write;
 
 pub fn cli() -> App {
     App::new("sample")
@@ -12,6 +11,12 @@ pub fn cli() -> App {
                 .short('s')
                 .long("skip-invalid")
                 .about("skip invalid records"),
+        )
+        .arg(
+            Arg::new("gzip")
+                .short('g')
+                .long("gzip")
+                .about("compress output with gzip"),
         )
         .arg(
             Arg::new("output")
@@ -29,8 +34,9 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
 
-    let mut writer: Writer<Box<dyn Write>> =
-        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
+    let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+        .gzip(args.is_present("gzip"))
+        .from_path_or_stdout(args.value_of("output"))?;
 
     let sample_size = args.value_of("sample-size").unwrap();
     let n = match sample_size.parse::<usize>() {
@@ -63,6 +69,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         writer.write_byte_record(record)?;
     }
 
-    writer.flush()?;
+    writer.finish()?;
     Ok(())
 }
