@@ -1,10 +1,10 @@
 use crate::util::{App, CliArgs, CliResult};
 use bstr::ByteSlice;
 use clap::Arg;
-use pica::{self, ReaderBuilder, Writer, WriterBuilder};
+use pica::{self, PicaWriter, ReaderBuilder, WriterBuilder};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::fs::{create_dir, File};
+use std::fs::create_dir;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -18,6 +18,12 @@ pub fn cli() -> App {
                 .about("skip invalid records"),
         )
         .arg(
+            Arg::new("gzip")
+                .short('g')
+                .long("gzip")
+                .about("compress output with gzip"),
+        )
+        .arg(
             Arg::new("outdir")
                 .short('o')
                 .long("--outdir")
@@ -28,15 +34,22 @@ pub fn cli() -> App {
             Arg::new("template")
                 .short('t')
                 .long("--template")
-                .value_name("template")
-                .default_value("{}.dat"),
+                .value_name("template"),
         )
         .arg(Arg::new("path").required(true))
         .arg(Arg::new("filename"))
 }
 
 pub fn run(args: &CliArgs) -> CliResult<()> {
-    let filename_template = args.value_of("template").unwrap_or("{}.dat");
+    let filename_template = if args.is_present("template") {
+        args.value_of("template").unwrap()
+    } else if args.is_present("gzip") {
+        "{}.dat.gz"
+    } else {
+        "{}.dat"
+    };
+
+    // let filename_template = args.value_of("template").unwrap_or("{}.dat");
     let mut reader = ReaderBuilder::new()
         .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
@@ -46,7 +59,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         create_dir(outdir)?;
     }
 
-    let mut writers: HashMap<Vec<u8>, Writer<File>> = HashMap::new();
+    let mut writers: HashMap<Vec<u8>, Box<dyn PicaWriter>> = HashMap::new();
     let path = pica::Path::from_str(args.value_of("path").unwrap())?;
 
     for result in reader.byte_records() {
@@ -57,12 +70,14 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             let writer = match entry {
                 Entry::Vacant(vacant) => {
                     let value = String::from_utf8(value.to_vec()).unwrap();
-                    let writer = WriterBuilder::new().from_path(
-                        outdir
-                            .join(filename_template.replace("{}", &value))
-                            .to_str()
-                            .unwrap(),
-                    )?;
+                    let writer = WriterBuilder::new()
+                        .gzip(args.is_present("gzip"))
+                        .from_path(
+                            outdir
+                                .join(filename_template.replace("{}", &value))
+                                .to_str()
+                                .unwrap(),
+                        )?;
 
                     vacant.insert(writer)
                 }
@@ -74,7 +89,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     }
 
     for (_, mut writer) in writers {
-        writer.flush()?;
+        writer.finish()?;
     }
 
     Ok(())

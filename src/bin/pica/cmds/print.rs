@@ -1,6 +1,6 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::{ReaderBuilder, Writer, WriterBuilder};
+use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use std::io::Write;
 
 pub fn cli() -> App {
@@ -44,7 +44,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         .limit(limit)
         .from_path_or_stdin(args.value_of("filename"))?;
 
-    let mut writer: Writer<Box<dyn Write>> =
+    let mut writer: Box<dyn PicaWriter> =
         WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
     for result in reader.records() {

@@ -2,7 +2,10 @@ use crate::support::{
     CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
     SAMPLE6, SAMPLE7,
 };
-use std::fs::{read_to_string, remove_file};
+use std::fs::{read_to_string, remove_file, File};
+use std::io::Read;
+
+use flate2::read::GzDecoder;
 use tempfile::Builder;
 
 #[test]
@@ -90,6 +93,73 @@ fn split_template() -> MatchResult {
     for (filename, sample) in expected.iter() {
         assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
         remove_file(outdir.join(filename)).unwrap();
+    }
+
+    Ok(())
+}
+
+#[test]
+fn split_gzip() -> MatchResult {
+    // filename extension
+    let tempdir = Builder::new().prefix("pica-split-gzip").tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("split")
+        .arg("--skip-invalid")
+        .arg("1")
+        .args("--template CHUNK_{}.dat.gz")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    let expected = [
+        ("CHUNK_0.dat.gz", SAMPLE1),
+        ("CHUNK_1.dat.gz", SAMPLE2),
+        ("CHUNK_2.dat.gz", SAMPLE3),
+        ("CHUNK_3.dat.gz", SAMPLE4),
+        ("CHUNK_4.dat.gz", SAMPLE5),
+        ("CHUNK_5.dat.gz", SAMPLE6),
+        ("CHUNK_6.dat.gz", SAMPLE7),
+    ];
+
+    for (filename, sample) in expected.iter() {
+        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut s = String::new();
+        gz.read_to_string(&mut s).unwrap();
+
+        assert_eq!(*sample, s);
+    }
+
+    // gzip flag
+    let tempdir = Builder::new().prefix("pica-split-gzip").tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("split")
+        .arg("--skip-invalid")
+        .arg("--gzip")
+        .arg("1")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    let expected = [
+        ("0.dat.gz", SAMPLE1),
+        ("1.dat.gz", SAMPLE2),
+        ("2.dat.gz", SAMPLE3),
+        ("3.dat.gz", SAMPLE4),
+        ("4.dat.gz", SAMPLE5),
+        ("5.dat.gz", SAMPLE6),
+        ("6.dat.gz", SAMPLE7),
+    ];
+
+    for (filename, sample) in expected.iter() {
+        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut s = String::new();
+        gz.read_to_string(&mut s).unwrap();
+
+        assert_eq!(*sample, s);
     }
 
     Ok(())

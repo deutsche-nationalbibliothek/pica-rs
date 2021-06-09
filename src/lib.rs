@@ -8,7 +8,7 @@ pub use self::path::Path;
 pub use self::reader::{Reader, ReaderBuilder};
 pub use self::record::{ByteRecord, Field, Occurrence, StringRecord, Subfield};
 pub use self::select::{Outcome, Selector, Selectors};
-pub use self::writer::{Writer, WriterBuilder};
+pub use self::writer::{GzipWriter, PicaWriter, PlainWriter, WriterBuilder};
 
 mod error;
 mod filter;

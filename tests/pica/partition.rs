@@ -2,7 +2,9 @@ use crate::support::{
     CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
     SAMPLE6, SAMPLE7,
 };
-use std::fs::{read_to_string, remove_file};
+use flate2::read::GzDecoder;
+use std::fs::{read_to_string, remove_file, File};
+use std::io::Read;
 use tempfile::Builder;
 
 #[test]
@@ -93,6 +95,75 @@ fn partition_output_dir2() -> MatchResult {
     exprected.push_str(SAMPLE6);
 
     assert_eq!(read_to_string(outdir.join("Tb1.dat")).unwrap(), exprected);
+
+    Ok(())
+}
+
+#[test]
+fn partition_gzip_output() -> MatchResult {
+    // filename extension
+    let tempdir = Builder::new()
+        .prefix("pica-partition-gzip")
+        .tempdir()
+        .unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .arg("--skip-invalid")
+        .args("--template {}.dat.gz")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
+
+    // gzip flag
+    let tempdir = Builder::new()
+        .prefix("pica-partition-gzip")
+        .tempdir()
+        .unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .arg("--skip-invalid")
+        .arg("--gzip")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
+
+    // gzip flag #2
+    let tempdir = Builder::new()
+        .prefix("pica-partition-gzip")
+        .tempdir()
+        .unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .arg("--skip-invalid")
+        .arg("--gzip")
+        .args("--template {}.dat")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat")).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
 
     Ok(())
 }

@@ -1,7 +1,6 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
-use pica::{Filter, ReaderBuilder, Writer, WriterBuilder};
-use std::io::Write;
+use pica::{Filter, PicaWriter, ReaderBuilder, WriterBuilder};
 
 pub fn cli() -> App {
     App::new("filter")
@@ -24,6 +23,12 @@ pub fn cli() -> App {
                 .long("--limit")
                 .value_name("n")
                 .about("Limit the result to first <n> records."),
+        )
+        .arg(
+            Arg::new("gzip")
+                .short('g')
+                .long("gzip")
+                .about("compress output with gzip"),
         )
         .arg(
             Arg::new("output")
@@ -55,8 +60,9 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         .limit(limit)
         .from_path_or_stdin(args.value_of("filename"))?;
 
-    let mut writer: Writer<Box<dyn Write>> =
-        WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
+    let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+        .gzip(args.is_present("gzip"))
+        .from_path_or_stdout(args.value_of("output"))?;
 
     let filter_str = args.value_of("filter").unwrap();
     let filter = match Filter::decode(filter_str) {
@@ -82,6 +88,6 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         }
     }
 
-    writer.flush()?;
+    writer.finish()?;
     Ok(())
 }
