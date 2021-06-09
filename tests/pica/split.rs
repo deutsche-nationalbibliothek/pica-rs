@@ -6,6 +6,33 @@ use std::fs::{read_to_string, remove_file};
 use tempfile::Builder;
 
 #[test]
+fn split_default() -> MatchResult {
+    CommandBuilder::new("split")
+        .arg("-s")
+        .arg("1")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    let expected = [
+        // ("0.dat", SAMPLE1), (see https://git.io/JZmHJ)
+        ("1.dat", SAMPLE2),
+        ("2.dat", SAMPLE3),
+        ("3.dat", SAMPLE4),
+        ("4.dat", SAMPLE5),
+        ("5.dat", SAMPLE6),
+        ("6.dat", SAMPLE7),
+    ];
+
+    for (filename, sample) in expected.iter() {
+        assert_eq!(read_to_string(filename).unwrap(), *sample);
+        remove_file(filename).unwrap();
+    }
+
+    Ok(())
+}
+
+#[test]
 fn split_outdir() -> MatchResult {
     let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
     let outdir = tempdir.path();
