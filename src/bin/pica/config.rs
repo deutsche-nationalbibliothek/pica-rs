@@ -11,9 +11,8 @@ impl Config {
         let mut config = config::Config::default();
 
         if let Some(filename) = filename {
-            let result = config.merge(config::File::with_name(filename));
-            if result.is_err() {
-                return Err(CliError::Config(result.unwrap_err().to_string()));
+            if let Err(err) = config.merge(config::File::with_name(filename)) {
+                return Err(CliError::Config(err.to_string()));
             }
         } else if let Some(proj_dirs) =
             ProjectDirs::from("de.dnb", "Deutsche Nationalbibliothek", "pica")
@@ -24,10 +23,8 @@ impl Config {
                     user_config.to_str().unwrap(),
                 ));
 
-                if result.is_err() {
-                    return Err(CliError::Config(
-                        result.unwrap_err().to_string(),
-                    ));
+                if let Err(err) = result {
+                    return Err(CliError::Config(err.to_string()));
                 }
             }
         }
