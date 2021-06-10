@@ -100,6 +100,52 @@ fn partition_output_dir2() -> MatchResult {
 }
 
 #[test]
+fn partition_template() -> MatchResult {
+    // cli option
+    let tempdir = Builder::new()
+        .prefix("pica-partition-gzip")
+        .tempdir()
+        .unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .arg("--skip-invalid")
+        .args("--template FOO_{}.dat")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    assert_eq!(read_to_string(outdir.join("FOO_Ts1.dat")).unwrap(), SAMPLE1);
+
+    // config
+    let tempdir = Builder::new()
+        .prefix("pica-partition-gzip")
+        .tempdir()
+        .unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .with_config(
+            r#"[partition]
+template = "CHUNK_{}.dat"
+"#,
+        )
+        .arg("--skip-invalid")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    assert_eq!(
+        read_to_string(outdir.join("CHUNK_Ts1.dat")).unwrap(),
+        SAMPLE1
+    );
+
+    Ok(())
+}
+
+#[test]
 fn partition_gzip_output() -> MatchResult {
     // filename extension
     let tempdir = Builder::new()
@@ -204,13 +250,88 @@ fn partition_invalid_path2() -> MatchResult {
 }
 
 #[test]
-fn partition_invalid_file() -> MatchResult {
+fn partition_skip_invalid() -> MatchResult {
     CommandBuilder::new("partition")
         .arg("002@.0")
         .arg("tests/data/invalid.dat")
         .with_stderr("Pica Error: Invalid record on line 1.\n")
         .with_status(1)
         .run()?;
+
+    // command section
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .with_config(
+            r#"[partition]
+skip-invalid = true
+"#,
+        )
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
+
+    // global section
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .with_config(
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
+
+    // command section overwrites global section
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .with_config(
+            r#"[global]
+skip-invalid = false
+
+[partition]
+skip-invalid = true
+"#,
+        )
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
+
+    // cli flag overwrites config
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("partition")
+        .with_config(
+            r#"[global]
+skip-invalid = false
+
+[partition]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .run()?;
+
+    assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
 
     Ok(())
 }

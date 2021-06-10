@@ -1,4 +1,5 @@
 use crate::util::{App, CliArgs, CliResult};
+use crate::Config;
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 
@@ -27,11 +28,21 @@ pub fn cli() -> App {
         .arg(Arg::new("filenames").multiple(true).required(true))
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
-    let skip_invalid = args.is_present("skip-invalid");
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => config
+            .get_bool("cat", "skip-invalid", true)
+            .unwrap_or_default(),
+        _ => true,
+    };
+
+    let gzip_compress = match args.is_present("gzip") {
+        false => config.get_bool("cat", "gzip", false).unwrap_or_default(),
+        _ => true,
+    };
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
-        .gzip(args.is_present("gzip"))
+        .gzip(gzip_compress)
         .from_path_or_stdout(args.value_of("output"))?;
 
     for filename in args.values_of("filenames").unwrap() {

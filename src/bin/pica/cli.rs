@@ -1,4 +1,4 @@
-use clap::{App, AppSettings};
+use clap::{App, AppSettings, Arg};
 
 pub fn build_cli() -> App<'static> {
     App::new("pica")
@@ -6,5 +6,12 @@ pub fn build_cli() -> App<'static> {
         .setting(AppSettings::SubcommandRequired)
         .version(crate_version!())
         .author(crate_authors!())
+        .arg(
+            Arg::new("config")
+                .short('c')
+                .long("config")
+                .takes_value(true)
+                .value_name("filename"),
+        )
         .subcommands(crate::cmds::subcmds())
 }

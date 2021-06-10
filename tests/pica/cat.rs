@@ -74,6 +74,60 @@ fn cat_skip_invalid() -> MatchResult {
         .with_stdout(SAMPLE2)
         .run()?;
 
+    CommandBuilder::new("cat")
+        .with_config(
+            r#"[cat]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/invalid.dat")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE1)
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("cat")
+        .with_config(
+            r#"[cat]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/invalid.dat")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE1)
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("cat")
+        .with_config(
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/invalid.dat")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE1)
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("cat")
+        .with_config(
+            r#"[global]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/invalid.dat")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE1)
+        .with_stdout(SAMPLE2)
+        .run()?;
+
     Ok(())
 }
 

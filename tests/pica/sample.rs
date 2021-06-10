@@ -163,12 +163,70 @@ fn sample_invalid_sample_size() -> MatchResult {
 }
 
 #[test]
-fn sample_invalid_file() -> MatchResult {
+fn sample_skip_invalid() -> MatchResult {
     CommandBuilder::new("sample")
         .arg("100")
         .arg("tests/data/invalid.dat")
         .with_stderr("Pica Error: Invalid record on line 1.\n")
         .with_status(1)
+        .run()?;
+
+    CommandBuilder::new("sample")
+        .arg("--skip-invalid")
+        .arg("100")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("sample")
+        .with_config(
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("100")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("sample")
+        .with_config(
+            r#"[sample]
+skip-invalid = true
+"#,
+        )
+        .arg("100")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("sample")
+        .with_config(
+            r#"[global]
+skip-invalid = false
+
+[sample]
+skip-invalid = true
+"#,
+        )
+        .arg("100")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("sample")
+        .with_config(
+            r#"[global]
+skip-invalid = false
+
+[sample]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("100")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
         .run()?;
 
     Ok(())
