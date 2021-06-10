@@ -7,6 +7,14 @@ pub struct Config {
 }
 
 impl Config {
+    /// Create a new `Config`
+    ///
+    /// # Rules
+    ///
+    /// - if a filename is provided, the settings are taken from this file
+    /// - if no filename is provided and a file is found in the application
+    ///   directory, the settings are taken from this file
+    /// - otherwise, an empty, default configuration is returned
     pub fn new(filename: Option<&str>) -> CliResult<Config> {
         let mut config = config::Config::default();
 
