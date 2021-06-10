@@ -48,7 +48,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         WriterBuilder::new().from_path_or_stdout(args.value_of("output"))?;
 
     for result in reader.records() {
-        writer.write_all(&format!("{}\n\n", result?).as_bytes())?;
+        writer.write_all(format!("{}\n\n", result?).as_bytes())?;
     }
 
     writer.flush()?;

@@ -127,11 +127,11 @@ impl SubfieldFilter {
                 }
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
                     subfield.code == *code
-                        && subfield.value.starts_with(&values[0].as_bytes())
+                        && subfield.value.starts_with(values[0].as_bytes())
                 }),
                 ComparisonOp::EndsWith => field.iter().any(|subfield| {
                     subfield.code == *code
-                        && subfield.value.ends_with(&values[0].as_bytes())
+                        && subfield.value.ends_with(values[0].as_bytes())
                 }),
                 ComparisonOp::Re => {
                     // SAFETY: It's safe to call `unwrap()` because the parser
