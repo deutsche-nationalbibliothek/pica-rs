@@ -54,7 +54,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         .from_writer(writer(args.value_of("output"))?);
 
     let selectors_str = args.value_of("selectors").unwrap();
-    let selectors = match Selectors::decode(&selectors_str) {
+    let selectors = match Selectors::decode(selectors_str) {
         Ok(val) => val,
         _ => {
             return Err(CliError::Other(format!(
@@ -72,7 +72,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         let record = result?;
         let outcome = selectors
             .iter()
-            .map(|selector| record.select(&selector))
+            .map(|selector| record.select(selector))
             .fold(Outcome::default(), |acc, x| acc * x);
 
         for row in outcome.iter() {
