@@ -327,6 +327,52 @@ fn filter_skip_invalid() -> MatchResult {
         .with_stdout(SAMPLE2)
         .run()?;
 
+    CommandBuilder::new("filter")
+        .with_config(
+            r#"[filter]
+skip-invalid = true
+"#,
+        )
+        .arg("003@.0 == '119232022'")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .with_config(
+            r#"[filter]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("003@.0 == '119232022'")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .with_config(
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("003@.0 == '119232022'")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .with_config(
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("003@.0 == '119232022'")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
     Ok(())
 }
 

@@ -1,4 +1,5 @@
 use crate::util::{App, CliArgs, CliResult};
+use crate::Config;
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use std::io::Write;
@@ -22,9 +23,16 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => config
+            .get_bool("json", "skip-invalid", true)
+            .unwrap_or_default(),
+        _ => true,
+    };
+
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(args.is_present("skip-invalid"))
+        .skip_invalid(skip_invalid)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> =
