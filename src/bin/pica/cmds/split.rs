@@ -61,7 +61,7 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let filename_template = if args.is_present("template") {
         args.value_of("template").unwrap()
-    } else if config_template_filename.is_empty() {
+    } else if !config_template_filename.is_empty() {
         &config_template_filename
     } else if args.is_present("gzip") {
         "{}.dat.gz"
