@@ -1,6 +1,15 @@
+use crate::config::Config;
 use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct CatConfig {
+    pub skip_invalid: Option<bool>,
+    pub gzip: Option<bool>,
+}
 
 pub fn cli() -> App {
     App::new("cat")
@@ -15,7 +24,8 @@ pub fn cli() -> App {
             Arg::new("gzip")
                 .short('g')
                 .long("gzip")
-                .about("compress output with gzip"),
+                .about("compress output with gzip")
+                .requires("output"),
         )
         .arg(
             Arg::new("output")
@@ -27,11 +37,33 @@ pub fn cli() -> App {
         .arg(Arg::new("filenames").multiple(true).required(true))
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
-    let skip_invalid = args.is_present("skip-invalid");
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => {
+            if let Some(ref cat_config) = config.cat {
+                cat_config.skip_invalid.unwrap_or_default()
+            } else if let Some(ref global_config) = config.global {
+                global_config.skip_invalid.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
+    let gzip_compression = match args.is_present("gzip") {
+        false => {
+            if let Some(ref cat_config) = config.cat {
+                cat_config.gzip.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
-        .gzip(args.is_present("gzip"))
+        .gzip(gzip_compression)
         .from_path_or_stdout(args.value_of("output"))?;
 
     for filename in args.values_of("filenames").unwrap() {

@@ -2,22 +2,27 @@
 extern crate clap;
 extern crate csv;
 extern crate regex;
+extern crate serde;
 
 mod cli;
 mod cmds;
+mod config;
 mod util;
 
+use config::Config;
 use std::{io, process};
-use util::CliError;
+use util::{CliError, CliResult};
 
-fn main() {
+fn run() -> CliResult<()> {
     let mut app = cli::build_cli();
     let m = app.clone().get_matches();
     let name = m.subcommand_name().unwrap();
     let args = m.subcommand_matches(name).unwrap();
 
-    let result = match name {
-        "cat" => cmds::cat::run(args),
+    let config = Config::from_path_or_default(m.value_of("config"))?;
+
+    match name {
+        "cat" => cmds::cat::run(args, &config),
         "completion" => cmds::completion::run(args, &mut app),
         "filter" => cmds::filter::run(args),
         "frequency" => cmds::frequency::run(args),
@@ -30,9 +35,11 @@ fn main() {
         "slice" => cmds::slice::run(args),
         "split" => cmds::split::run(args),
         _ => unreachable!(),
-    };
+    }
+}
 
-    match result {
+fn main() {
+    match run() {
         Ok(()) => process::exit(0),
         Err(CliError::Io(ref err))
             if err.kind() == io::ErrorKind::BrokenPipe =>
