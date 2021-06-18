@@ -1,5 +1,4 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
-use crate::Config;
 use clap::Arg;
 use pica::{Filter, PicaWriter, ReaderBuilder, WriterBuilder};
 use std::fs::read_to_string;
@@ -55,19 +54,7 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("filter", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
-
-    let gzip_compress = match args.is_present("gzip") {
-        false => config.get_bool("filter", "gzip", false).unwrap_or_default(),
-        _ => true,
-    };
-
+pub fn run(args: &CliArgs) -> CliResult<()> {
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
         Err(_) => {
@@ -78,12 +65,12 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
+        .skip_invalid(args.is_present("skip-invalid"))
         .limit(limit)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
-        .gzip(gzip_compress)
+        .gzip(args.is_present("gzip"))
         .from_path_or_stdout(args.value_of("output"))?;
 
     let filter_str = if let Some(filename) = args.value_of("expr-file") {

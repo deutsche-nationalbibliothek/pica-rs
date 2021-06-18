@@ -10,7 +10,6 @@ pub enum CliError {
     Io(io::Error),
     Csv(csv::Error),
     Pica(pica::Error),
-    Config(String),
     Other(String),
 }
 
@@ -20,7 +19,6 @@ impl fmt::Display for CliError {
             CliError::Csv(ref e) => e.fmt(f),
             CliError::Io(ref e) => e.fmt(f),
             CliError::Pica(ref e) => e.fmt(f),
-            CliError::Config(ref s) => f.write_str(&**s),
             CliError::Other(ref s) => f.write_str(&**s),
         }
     }

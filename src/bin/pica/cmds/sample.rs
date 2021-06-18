@@ -1,5 +1,4 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
-use crate::Config;
 use clap::Arg;
 use pica::{ByteRecord, PicaWriter, ReaderBuilder, WriterBuilder};
 use rand::{thread_rng, Rng};
@@ -30,25 +29,13 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("sample", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
-
-    let gzip_compress = match args.is_present("gzip") {
-        false => config.get_bool("sample", "gzip", false).unwrap_or_default(),
-        _ => true,
-    };
-
+pub fn run(args: &CliArgs) -> CliResult<()> {
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
+        .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
-        .gzip(gzip_compress)
+        .gzip(args.is_present("gzip"))
         .from_path_or_stdout(args.value_of("output"))?;
 
     let sample_size = args.value_of("sample-size").unwrap();

@@ -1,8 +1,5 @@
-use std::fs::File;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-use tempfile::{Builder, TempDir};
 
 pub static SAMPLE1: &str = include_str!("../../data/1004916019.dat");
 pub static SAMPLE2: &str = include_str!("../../data/119232022.dat");
@@ -20,9 +17,7 @@ pub struct CommandBuilder<'a> {
     command: String,
     pica_bin: PathBuf,
     root_dir: &'a Path,
-    pica_args: Vec<String>,
     args: Vec<String>,
-    tempdir: TempDir,
 
     expect_exit_code: Option<i32>,
     expect_stdout: Option<String>,
@@ -34,14 +29,11 @@ pub struct CommandBuilder<'a> {
 impl<'a> CommandBuilder<'a> {
     pub fn new<S: ToString>(command: S) -> Self {
         let root_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-        let tempdir = Builder::new().tempdir().unwrap();
 
         CommandBuilder {
             command: command.to_string(),
             pica_bin: root_dir.join("target/debug/pica"),
             root_dir,
-            tempdir,
-            pica_args: Vec::new(),
             args: Vec::new(),
             expect_exit_code: Some(0),
             expect_stdout: None,
@@ -61,20 +53,6 @@ impl<'a> CommandBuilder<'a> {
         let args: Vec<String> = arg.split(' ').map(|x| x.to_string()).collect();
 
         self.args.extend(args);
-        self
-    }
-
-    pub fn with_config(&mut self, content: &str) -> &mut Self {
-        let filename = self.tempdir.path().join("Pica.toml");
-        let filename_str = filename.to_owned();
-
-        let mut config = File::create(filename).expect("create config file");
-        config.write(content.as_bytes()).expect("write config");
-        config.flush().expect("flush config");
-
-        self.pica_args.push("--config".to_string());
-        self.pica_args
-            .push(filename_str.to_str().unwrap().to_string());
         self
     }
 
@@ -187,7 +165,6 @@ impl<'a> CommandBuilder<'a> {
     pub fn output(&self) -> std::io::Result<Output> {
         Command::new(&self.pica_bin)
             .current_dir(self.root_dir)
-            .args(&self.pica_args)
             .arg(&self.command)
             .args(&self.args)
             .output()

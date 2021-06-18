@@ -1,5 +1,4 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
-use crate::Config;
 use clap::Arg;
 use pica::{ReaderBuilder, WriterBuilder};
 
@@ -38,31 +37,13 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("split", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
-
-    let gzip_compress = match args.is_present("gzip") {
-        false => config.get_bool("split", "gzip", false).unwrap_or_default(),
-        _ => true,
-    };
-
+pub fn run(args: &CliArgs) -> CliResult<()> {
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
+        .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
-
-    let config_template_filename = config
-        .get_string("split", "template", false)
-        .unwrap_or_default();
 
     let filename_template = if args.is_present("template") {
         args.value_of("template").unwrap()
-    } else if !config_template_filename.is_empty() {
-        &config_template_filename
     } else if args.is_present("gzip") {
         "{}.dat.gz"
     } else {
@@ -88,12 +69,14 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let mut chunks: u32 = 0;
 
-    let mut writer = WriterBuilder::new().gzip(gzip_compress).from_path(
-        outdir
-            .join(filename_template.replace("{}", &chunks.to_string()))
-            .to_str()
-            .unwrap(),
-    )?;
+    let mut writer = WriterBuilder::new()
+        .gzip(args.is_present("gzip"))
+        .from_path(
+            outdir
+                .join(filename_template.replace("{}", &chunks.to_string()))
+                .to_str()
+                .unwrap(),
+        )?;
 
     for (count, result) in reader.byte_records().enumerate() {
         let record = result?;
@@ -102,12 +85,17 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             writer.finish()?;
             chunks += 1;
 
-            writer = WriterBuilder::new().gzip(gzip_compress).from_path(
-                outdir
-                    .join(filename_template.replace("{}", &chunks.to_string()))
-                    .to_str()
-                    .unwrap(),
-            )?;
+            writer = WriterBuilder::new()
+                .gzip(args.is_present("gzip"))
+                .from_path(
+                    outdir
+                        .join(
+                            filename_template
+                                .replace("{}", &chunks.to_string()),
+                        )
+                        .to_str()
+                        .unwrap(),
+                )?;
         }
 
         writer.write_byte_record(&record)?;

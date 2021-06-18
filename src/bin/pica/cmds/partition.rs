@@ -1,5 +1,4 @@
 use crate::util::{App, CliArgs, CliResult};
-use crate::Config;
 use bstr::ByteSlice;
 use clap::Arg;
 use pica::{self, PicaWriter, ReaderBuilder, WriterBuilder};
@@ -41,30 +40,18 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("partition", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
-
-    let config_template_filename = config
-        .get_string("partition", "template", false)
-        .unwrap_or_default();
-
+pub fn run(args: &CliArgs) -> CliResult<()> {
     let filename_template = if args.is_present("template") {
         args.value_of("template").unwrap()
-    } else if !config_template_filename.is_empty() {
-        &config_template_filename
     } else if args.is_present("gzip") {
         "{}.dat.gz"
     } else {
         "{}.dat"
     };
 
+    // let filename_template = args.value_of("template").unwrap_or("{}.dat");
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
+        .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());

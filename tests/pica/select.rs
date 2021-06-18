@@ -124,47 +124,6 @@ fn select_tab_separated() -> MatchResult {
         .with_stdout("121169502\tTp1\n")
         .run()?;
 
-    CommandBuilder::new("select")
-        .with_config(
-            r#"[select]
-tsv = true
-"#,
-        )
-        .arg("--skip-invalid")
-        .args("--header idn,bbg")
-        .arg("003@.0, 002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout("idn\tbbg\n")
-        .with_stdout("1004916019\tTs1\n")
-        .with_stdout("119232022\tTp1\n")
-        .with_stdout("000008672\tTb1\n")
-        .with_stdout("000016586\tTb1\n")
-        .with_stdout("000016756\tTb1\n")
-        .with_stdout("000009229\tTb1\n")
-        .with_stdout("121169502\tTp1\n")
-        .run()?;
-
-    CommandBuilder::new("select")
-        .with_config(
-            r#"[select]
-tsv = false
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("--tsv")
-        .args("--header idn,bbg")
-        .arg("003@.0, 002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout("idn\tbbg\n")
-        .with_stdout("1004916019\tTs1\n")
-        .with_stdout("119232022\tTp1\n")
-        .with_stdout("000008672\tTb1\n")
-        .with_stdout("000016586\tTb1\n")
-        .with_stdout("000016756\tTb1\n")
-        .with_stdout("000009229\tTb1\n")
-        .with_stdout("121169502\tTp1\n")
-        .run()?;
-
     Ok(())
 }
 
@@ -197,70 +156,12 @@ fn select_write_output() -> MatchResult {
 }
 
 #[test]
-fn select_skip_invalid() -> MatchResult {
+fn select_invalid_file() -> MatchResult {
     CommandBuilder::new("select")
         .arg("003@.0")
         .arg("tests/data/invalid.dat")
         .with_stderr("Pica Error: Invalid record on line 1.\n")
         .with_status(1)
-        .run()?;
-
-    CommandBuilder::new("select")
-        .arg("--skip-invalid")
-        .arg("003@.0")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("select")
-        .with_config(
-            r#"[select]
-skip-invalid = true
-"#,
-        )
-        .arg("003@.0")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("select")
-        .with_config(
-            r#"[global]
-skip-invalid = true
-"#,
-        )
-        .arg("003@.0")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("select")
-        .with_config(
-            r#"[global]
-skip-invalid = false
-
-[select]
-skip-invalid = true
-"#,
-        )
-        .arg("003@.0")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("select")
-        .with_config(
-            r#"[global]
-skip-invalid = false
-
-[select]
-skip-invalid = false
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("003@.0")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
         .run()?;
 
     Ok(())

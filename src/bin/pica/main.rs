@@ -1,15 +1,12 @@
 #[macro_use]
 extern crate clap;
 extern crate csv;
-extern crate directories;
 extern crate regex;
 
 mod cli;
 mod cmds;
-mod config;
 mod util;
 
-use crate::config::Config;
 use std::{io, process};
 use util::CliError;
 
@@ -19,27 +16,19 @@ fn main() {
     let name = m.subcommand_name().unwrap();
     let args = m.subcommand_matches(name).unwrap();
 
-    let config = match Config::new(m.value_of("config")) {
-        Err(err) => {
-            eprintln!("config: {}", err);
-            process::exit(1);
-        }
-        Ok(config) => config,
-    };
-
     let result = match name {
-        "cat" => cmds::cat::run(args, &config),
+        "cat" => cmds::cat::run(args),
         "completion" => cmds::completion::run(args, &mut app),
-        "filter" => cmds::filter::run(args, &config),
-        "frequency" => cmds::frequency::run(args, &config),
+        "filter" => cmds::filter::run(args),
+        "frequency" => cmds::frequency::run(args),
         "invalid" => cmds::invalid::run(args),
-        "json" => cmds::json::run(args, &config),
-        "partition" => cmds::partition::run(args, &config),
-        "print" => cmds::print::run(args, &config),
-        "sample" => cmds::sample::run(args, &config),
-        "select" => cmds::select::run(args, &config),
-        "slice" => cmds::slice::run(args, &config),
-        "split" => cmds::split::run(args, &config),
+        "json" => cmds::json::run(args),
+        "partition" => cmds::partition::run(args),
+        "print" => cmds::print::run(args),
+        "sample" => cmds::sample::run(args),
+        "select" => cmds::select::run(args),
+        "slice" => cmds::slice::run(args),
+        "split" => cmds::split::run(args),
         _ => unreachable!(),
     };
 
@@ -65,10 +54,6 @@ fn main() {
         }
         Err(CliError::Csv(err)) => {
             eprintln!("CSV Error: {}", err);
-            process::exit(1);
-        }
-        Err(CliError::Config(err)) => {
-            eprintln!("config: {}", err);
             process::exit(1);
         }
         Err(CliError::Other(err)) => {

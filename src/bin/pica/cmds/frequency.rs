@@ -1,5 +1,4 @@
 use crate::util::{App, CliArgs, CliError, CliResult};
-use crate::Config;
 use bstr::BString;
 use clap::Arg;
 use pica::{Path, ReaderBuilder};
@@ -62,14 +61,7 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
     })
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("frequency", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
-
+pub fn run(args: &CliArgs) -> CliResult<()> {
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
         Err(_) => {
@@ -94,7 +86,7 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         csv::WriterBuilder::new().from_writer(writer(args.value_of("output"))?);
 
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
+        .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut ftable: HashMap<BString, u64> = HashMap::new();
