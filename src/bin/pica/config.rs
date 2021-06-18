@@ -16,6 +16,7 @@ pub struct Config {
     pub global: Option<GlobalConfig>,
     pub cat: Option<crate::cmds::cat::CatConfig>,
     pub filter: Option<crate::cmds::filter::FilterConfig>,
+    pub frequency: Option<crate::cmds::frequency::FrequencyConfig>,
 }
 
 impl Config {

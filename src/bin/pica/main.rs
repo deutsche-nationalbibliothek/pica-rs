@@ -25,7 +25,7 @@ fn run() -> CliResult<()> {
         "cat" => cmds::cat::run(args, &config),
         "completion" => cmds::completion::run(args, &mut app),
         "filter" => cmds::filter::run(args, &config),
-        "frequency" => cmds::frequency::run(args),
+        "frequency" => cmds::frequency::run(args, &config),
         "invalid" => cmds::invalid::run(args),
         "json" => cmds::json::run(args),
         "partition" => cmds::partition::run(args),

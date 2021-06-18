@@ -1,11 +1,19 @@
+use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::BString;
 use clap::Arg;
 use pica::{Path, ReaderBuilder};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, Write};
 use std::str::FromStr;
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct FrequencyConfig {
+    pub skip_invalid: Option<bool>,
+}
 
 pub fn cli() -> App {
     App::new("frequency")
@@ -61,7 +69,20 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
     })
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => {
+            if let Some(ref freq_config) = config.frequency {
+                freq_config.skip_invalid.unwrap_or_default()
+            } else if let Some(ref global_config) = config.global {
+                global_config.skip_invalid.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
         Err(_) => {
@@ -86,7 +107,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
         csv::WriterBuilder::new().from_writer(writer(args.value_of("output"))?);
 
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(args.is_present("skip-invalid"))
+        .skip_invalid(skip_invalid)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut ftable: HashMap<BString, u64> = HashMap::new();

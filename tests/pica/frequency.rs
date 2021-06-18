@@ -146,6 +146,79 @@ fn frequency_write_output() -> MatchResult {
 }
 
 #[test]
+fn frequency_skip_invalid() -> MatchResult {
+    CommandBuilder::new("frequency")
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("Tb1,4\n")
+        .with_stdout("Tp1,2\n")
+        .with_stdout("Ts1,1\n")
+        .run()?;
+
+    CommandBuilder::new("frequency")
+        .with_config(
+            r#"[frequency]
+skip-invalid = true
+"#,
+        )
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("Tb1,4\n")
+        .with_stdout("Tp1,2\n")
+        .with_stdout("Ts1,1\n")
+        .run()?;
+
+    CommandBuilder::new("frequency")
+        .with_config(
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("Tb1,4\n")
+        .with_stdout("Tp1,2\n")
+        .with_stdout("Ts1,1\n")
+        .run()?;
+
+    CommandBuilder::new("frequency")
+        .with_config(
+            r#"[global]
+skip-invalid = false
+
+[frequency]
+skip-invalid = true
+"#,
+        )
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("Tb1,4\n")
+        .with_stdout("Tp1,2\n")
+        .with_stdout("Ts1,1\n")
+        .run()?;
+
+    CommandBuilder::new("frequency")
+        .with_config(
+            r#"[global]
+skip-invalid = false
+
+[frequency]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("Tb1,4\n")
+        .with_stdout("Tp1,2\n")
+        .with_stdout("Ts1,1\n")
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn frequency_invalid_file() -> MatchResult {
     CommandBuilder::new("frequency")
         .arg("002@.0")
