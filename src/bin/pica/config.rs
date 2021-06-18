@@ -15,6 +15,7 @@ pub struct Config {
     pub path: Option<PathBuf>,
     pub global: Option<GlobalConfig>,
     pub cat: Option<crate::cmds::cat::CatConfig>,
+    pub filter: Option<crate::cmds::filter::FilterConfig>,
 }
 
 impl Config {
