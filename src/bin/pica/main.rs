@@ -27,7 +27,7 @@ fn run() -> CliResult<()> {
         "filter" => cmds::filter::run(args, &config),
         "frequency" => cmds::frequency::run(args, &config),
         "invalid" => cmds::invalid::run(args),
-        "json" => cmds::json::run(args),
+        "json" => cmds::json::run(args, &config),
         "partition" => cmds::partition::run(args),
         "print" => cmds::print::run(args),
         "sample" => cmds::sample::run(args),
