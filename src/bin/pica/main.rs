@@ -31,7 +31,7 @@ fn run() -> CliResult<()> {
         "partition" => cmds::partition::run(args, &config),
         "print" => cmds::print::run(args, &config),
         "sample" => cmds::sample::run(args, &config),
-        "select" => cmds::select::run(args),
+        "select" => cmds::select::run(args, &config),
         "slice" => cmds::slice::run(args),
         "split" => cmds::split::run(args),
         _ => unreachable!(),

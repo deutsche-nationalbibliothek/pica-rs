@@ -21,6 +21,7 @@ pub struct Config {
     pub partition: Option<crate::cmds::partition::PartitionConfig>,
     pub print: Option<crate::cmds::print::PrintConfig>,
     pub sample: Option<crate::cmds::sample::SampleConfig>,
+    pub select: Option<crate::cmds::select::SelectConfig>,
 }
 
 impl Config {

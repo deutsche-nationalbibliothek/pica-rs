@@ -1,8 +1,17 @@
+use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
 use pica::{Outcome, ReaderBuilder, Selectors};
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, Write};
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct SelectConfig {
+    pub skip_invalid: Option<bool>,
+    pub gzip: Option<bool>,
+}
 
 pub fn cli() -> App {
     App::new("select")
@@ -44,9 +53,22 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
     })
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => {
+            if let Some(ref config) = config.select {
+                config.skip_invalid.unwrap_or_default()
+            } else if let Some(ref config) = config.global {
+                config.skip_invalid.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(args.is_present("skip-invalid"))
+        .skip_invalid(skip_invalid)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer = csv::WriterBuilder::new()

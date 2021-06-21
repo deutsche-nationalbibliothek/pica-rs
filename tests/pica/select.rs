@@ -156,6 +156,73 @@ fn select_write_output() -> MatchResult {
 }
 
 #[test]
+fn select_skip_invalid() -> MatchResult {
+    CommandBuilder::new("select")
+        .arg("--skip-invalid")
+        .arg("003@.0")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("select")
+        .with_config(
+            r#"
+[global]
+skip-invalid = true
+"#,
+        )
+        .arg("003@.0")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("select")
+        .with_config(
+            r#"
+[select]
+skip-invalid = true
+"#,
+        )
+        .arg("003@.0")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("select")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[select]
+skip-invalid = true
+"#,
+        )
+        .arg("003@.0")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("select")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[select]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("003@.0")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn select_invalid_file() -> MatchResult {
     CommandBuilder::new("select")
         .arg("003@.0")
