@@ -18,6 +18,7 @@ pub struct Config {
     pub filter: Option<crate::cmds::filter::FilterConfig>,
     pub frequency: Option<crate::cmds::frequency::FrequencyConfig>,
     pub json: Option<crate::cmds::json::JsonConfig>,
+    pub partition: Option<crate::cmds::partition::PartitionConfig>,
 }
 
 impl Config {

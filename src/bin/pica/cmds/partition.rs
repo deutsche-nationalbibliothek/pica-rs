@@ -1,12 +1,22 @@
+use crate::config::Config;
 use crate::util::{App, CliArgs, CliResult};
 use bstr::ByteSlice;
 use clap::Arg;
 use pica::{self, PicaWriter, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::create_dir;
 use std::path::Path;
 use std::str::FromStr;
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct PartitionConfig {
+    pub skip_invalid: Option<bool>,
+    pub gzip: Option<bool>,
+    pub template: Option<String>,
+}
 
 pub fn cli() -> App {
     App::new("partition")
@@ -40,18 +50,53 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => {
+            if let Some(ref partition_config) = config.partition {
+                partition_config.skip_invalid.unwrap_or_default()
+            } else if let Some(ref global_config) = config.global {
+                global_config.skip_invalid.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
+    let gzip_compression = match args.is_present("gzip") {
+        false => {
+            if let Some(ref partition_config) = config.partition {
+                partition_config.gzip.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
+    let config_template = if let Some(ref partition_config) = config.partition {
+        partition_config
+            .template
+            .as_ref()
+            .map(|x| x.to_owned())
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+
     let filename_template = if args.is_present("template") {
         args.value_of("template").unwrap()
-    } else if args.is_present("gzip") {
+    } else if !config_template.is_empty() {
+        &config_template
+    } else if gzip_compression {
         "{}.dat.gz"
     } else {
         "{}.dat"
     };
 
-    // let filename_template = args.value_of("template").unwrap_or("{}.dat");
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(args.is_present("skip-invalid"))
+        .skip_invalid(skip_invalid)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
@@ -70,9 +115,8 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             let writer = match entry {
                 Entry::Vacant(vacant) => {
                     let value = String::from_utf8(value.to_vec()).unwrap();
-                    let writer = WriterBuilder::new()
-                        .gzip(args.is_present("gzip"))
-                        .from_path(
+                    let writer =
+                        WriterBuilder::new().gzip(gzip_compression).from_path(
                             outdir
                                 .join(filename_template.replace("{}", &value))
                                 .to_str()
