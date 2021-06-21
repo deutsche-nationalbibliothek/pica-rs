@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::util::{App, CliArgs, CliResult};
+use crate::{gzip_flag, skip_invalid_flag, template_opt};
 use bstr::ByteSlice;
 use clap::Arg;
 use pica::{self, PicaWriter, ReaderBuilder, WriterBuilder};
@@ -51,49 +52,18 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => {
-            if let Some(ref partition_config) = config.partition {
-                partition_config.skip_invalid.unwrap_or_default()
-            } else if let Some(ref global_config) = config.global {
-                global_config.skip_invalid.unwrap_or_default()
-            } else {
-                false
-            }
+    let skip_invalid =
+        skip_invalid_flag!(args, config.partition, config.global);
+    let gzip_compression = gzip_flag!(args, config.partition);
+    let filename_template = template_opt!(
+        args,
+        config.partition,
+        if gzip_compression {
+            "{}.dat.gz"
+        } else {
+            "{}.dat"
         }
-        _ => true,
-    };
-
-    let gzip_compression = match args.is_present("gzip") {
-        false => {
-            if let Some(ref partition_config) = config.partition {
-                partition_config.gzip.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
-
-    let config_template = if let Some(ref partition_config) = config.partition {
-        partition_config
-            .template
-            .as_ref()
-            .map(|x| x.to_owned())
-            .unwrap_or_default()
-    } else {
-        String::new()
-    };
-
-    let filename_template = if args.is_present("template") {
-        args.value_of("template").unwrap()
-    } else if !config_template.is_empty() {
-        &config_template
-    } else if gzip_compression {
-        "{}.dat.gz"
-    } else {
-        "{}.dat"
-    };
+    );
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)

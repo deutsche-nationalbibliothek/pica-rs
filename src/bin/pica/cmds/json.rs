@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::skip_invalid_flag;
 use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
@@ -31,18 +32,7 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => {
-            if let Some(ref json_config) = config.json {
-                json_config.skip_invalid.unwrap_or_default()
-            } else if let Some(ref global_config) = config.global {
-                global_config.skip_invalid.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
+    let skip_invalid = skip_invalid_flag!(args, config.json, config.global);
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)

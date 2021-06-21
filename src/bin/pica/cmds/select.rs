@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::skip_invalid_flag;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
 use pica::{Outcome, ReaderBuilder, Selectors};
@@ -10,7 +11,6 @@ use std::io::{self, Write};
 #[serde(rename_all = "kebab-case")]
 pub struct SelectConfig {
     pub skip_invalid: Option<bool>,
-    pub gzip: Option<bool>,
 }
 
 pub fn cli() -> App {
@@ -54,18 +54,7 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => {
-            if let Some(ref config) = config.select {
-                config.skip_invalid.unwrap_or_default()
-            } else if let Some(ref config) = config.global {
-                config.skip_invalid.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
+    let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)

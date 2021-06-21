@@ -7,6 +7,7 @@ extern crate serde;
 mod cli;
 mod cmds;
 mod config;
+mod macros;
 mod util;
 
 use config::Config;

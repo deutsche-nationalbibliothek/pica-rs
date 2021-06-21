@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{Filter, PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
@@ -64,29 +65,8 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => {
-            if let Some(ref filter_config) = config.filter {
-                filter_config.skip_invalid.unwrap_or_default()
-            } else if let Some(ref global_config) = config.global {
-                global_config.skip_invalid.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
-
-    let gzip_compression = match args.is_present("gzip") {
-        false => {
-            if let Some(ref filter_config) = config.filter {
-                filter_config.gzip.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
+    let skip_invalid = skip_invalid_flag!(args, config.filter, config.global);
+    let gzip_compression = gzip_flag!(args, config.filter);
 
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,

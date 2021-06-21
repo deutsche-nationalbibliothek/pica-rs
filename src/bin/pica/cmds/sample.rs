@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{ByteRecord, PicaWriter, ReaderBuilder, WriterBuilder};
 use rand::{thread_rng, Rng};
@@ -39,29 +40,8 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => {
-            if let Some(ref config) = config.sample {
-                config.skip_invalid.unwrap_or_default()
-            } else if let Some(ref config) = config.global {
-                config.skip_invalid.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
-
-    let gzip_compression = match args.is_present("gzip") {
-        false => {
-            if let Some(ref config) = config.sample {
-                config.gzip.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
+    let skip_invalid = skip_invalid_flag!(args, config.sample, config.global);
+    let gzip_compression = gzip_flag!(args, config.sample);
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)

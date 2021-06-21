@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::skip_invalid_flag;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use bstr::BString;
 use clap::Arg;
@@ -70,18 +71,8 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => {
-            if let Some(ref freq_config) = config.frequency {
-                freq_config.skip_invalid.unwrap_or_default()
-            } else if let Some(ref global_config) = config.global {
-                global_config.skip_invalid.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
+    let skip_invalid =
+        skip_invalid_flag!(args, config.frequency, config.global);
 
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,

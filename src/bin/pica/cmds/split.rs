@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::{gzip_flag, skip_invalid_flag, template_opt};
 use clap::Arg;
 use pica::{ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
@@ -47,49 +48,17 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => {
-            if let Some(ref config) = config.split {
-                config.skip_invalid.unwrap_or_default()
-            } else if let Some(ref config) = config.global {
-                config.skip_invalid.unwrap_or_default()
-            } else {
-                false
-            }
+    let skip_invalid = skip_invalid_flag!(args, config.split, config.global);
+    let gzip_compression = gzip_flag!(args, config.split);
+    let filename_template = template_opt!(
+        args,
+        config.split,
+        if gzip_compression {
+            "{}.dat.gz"
+        } else {
+            "{}.dat"
         }
-        _ => true,
-    };
-
-    let gzip_compression = match args.is_present("gzip") {
-        false => {
-            if let Some(ref config) = config.split {
-                config.gzip.unwrap_or_default()
-            } else {
-                false
-            }
-        }
-        _ => true,
-    };
-
-    let config_template = if let Some(ref config) = config.split {
-        config
-            .template
-            .as_ref()
-            .map(|x| x.to_owned())
-            .unwrap_or_default()
-    } else {
-        String::new()
-    };
-
-    let filename_template = if args.is_present("template") {
-        args.value_of("template").unwrap()
-    } else if !config_template.is_empty() {
-        &config_template
-    } else if gzip_compression {
-        "{}.dat.gz"
-    } else {
-        "{}.dat"
-    };
+    );
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
