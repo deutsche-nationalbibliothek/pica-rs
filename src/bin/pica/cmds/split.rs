@@ -1,9 +1,18 @@
+use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
 use pica::{ReaderBuilder, WriterBuilder};
-
+use serde::{Deserialize, Serialize};
 use std::fs::create_dir;
 use std::path::Path;
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct SplitConfig {
+    pub skip_invalid: Option<bool>,
+    pub gzip: Option<bool>,
+    pub template: Option<String>,
+}
 
 pub fn cli() -> App {
     App::new("split")
@@ -37,18 +46,54 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(args.is_present("skip-invalid"))
-        .from_path_or_stdin(args.value_of("filename"))?;
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => {
+            if let Some(ref config) = config.split {
+                config.skip_invalid.unwrap_or_default()
+            } else if let Some(ref config) = config.global {
+                config.skip_invalid.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
+    let gzip_compression = match args.is_present("gzip") {
+        false => {
+            if let Some(ref config) = config.split {
+                config.gzip.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
+    let config_template = if let Some(ref config) = config.split {
+        config
+            .template
+            .as_ref()
+            .map(|x| x.to_owned())
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
 
     let filename_template = if args.is_present("template") {
         args.value_of("template").unwrap()
-    } else if args.is_present("gzip") {
+    } else if !config_template.is_empty() {
+        &config_template
+    } else if gzip_compression {
         "{}.dat.gz"
     } else {
         "{}.dat"
     };
+
+    let mut reader = ReaderBuilder::new()
+        .skip_invalid(skip_invalid)
+        .from_path_or_stdin(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
     if !outdir.exists() {
@@ -69,14 +114,12 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
 
     let mut chunks: u32 = 0;
 
-    let mut writer = WriterBuilder::new()
-        .gzip(args.is_present("gzip"))
-        .from_path(
-            outdir
-                .join(filename_template.replace("{}", &chunks.to_string()))
-                .to_str()
-                .unwrap(),
-        )?;
+    let mut writer = WriterBuilder::new().gzip(gzip_compression).from_path(
+        outdir
+            .join(filename_template.replace("{}", &chunks.to_string()))
+            .to_str()
+            .unwrap(),
+    )?;
 
     for (count, result) in reader.byte_records().enumerate() {
         let record = result?;
@@ -85,17 +128,12 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
             writer.finish()?;
             chunks += 1;
 
-            writer = WriterBuilder::new()
-                .gzip(args.is_present("gzip"))
-                .from_path(
-                    outdir
-                        .join(
-                            filename_template
-                                .replace("{}", &chunks.to_string()),
-                        )
-                        .to_str()
-                        .unwrap(),
-                )?;
+            writer = WriterBuilder::new().gzip(gzip_compression).from_path(
+                outdir
+                    .join(filename_template.replace("{}", &chunks.to_string()))
+                    .to_str()
+                    .unwrap(),
+            )?;
         }
 
         writer.write_byte_record(&record)?;

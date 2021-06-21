@@ -23,6 +23,7 @@ pub struct Config {
     pub sample: Option<crate::cmds::sample::SampleConfig>,
     pub select: Option<crate::cmds::select::SelectConfig>,
     pub slice: Option<crate::cmds::slice::SliceConfig>,
+    pub split: Option<crate::cmds::split::SplitConfig>,
 }
 
 impl Config {

@@ -33,7 +33,7 @@ fn run() -> CliResult<()> {
         "sample" => cmds::sample::run(args, &config),
         "select" => cmds::select::run(args, &config),
         "slice" => cmds::slice::run(args, &config),
-        "split" => cmds::split::run(args),
+        "split" => cmds::split::run(args, &config),
         _ => unreachable!(),
     }
 }
