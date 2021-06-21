@@ -1,7 +1,15 @@
+use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
 use std::io::Write;
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct PrintConfig {
+    pub skip_invalid: Option<bool>,
+}
 
 pub fn cli() -> App {
     App::new("print")
@@ -29,7 +37,20 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
+pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+    let skip_invalid = match args.is_present("skip-invalid") {
+        false => {
+            if let Some(ref config) = config.print {
+                config.skip_invalid.unwrap_or_default()
+            } else if let Some(ref config) = config.global {
+                config.skip_invalid.unwrap_or_default()
+            } else {
+                false
+            }
+        }
+        _ => true,
+    };
+
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
         Err(_) => {
@@ -40,7 +61,7 @@ pub fn run(args: &CliArgs) -> CliResult<()> {
     };
 
     let mut reader = ReaderBuilder::new()
-        .skip_invalid(args.is_present("skip-invalid"))
+        .skip_invalid(skip_invalid)
         .limit(limit)
         .from_path_or_stdin(args.value_of("filename"))?;
 

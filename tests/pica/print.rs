@@ -80,6 +80,68 @@ fn print_write_output() -> MatchResult {
 }
 
 #[test]
+fn print_skip_invalid() -> MatchResult {
+    CommandBuilder::new("print")
+        .arg("--skip-invalid")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("print")
+        .with_config(
+            r#"
+[global]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("print")
+        .with_config(
+            r#"
+[print]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("print")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[print]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("print")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[print]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn print_invalid_file() -> MatchResult {
     CommandBuilder::new("print")
         .arg("tests/data/invalid.dat")

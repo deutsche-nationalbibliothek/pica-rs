@@ -29,7 +29,7 @@ fn run() -> CliResult<()> {
         "invalid" => cmds::invalid::run(args),
         "json" => cmds::json::run(args, &config),
         "partition" => cmds::partition::run(args, &config),
-        "print" => cmds::print::run(args),
+        "print" => cmds::print::run(args, &config),
         "sample" => cmds::sample::run(args),
         "select" => cmds::select::run(args),
         "slice" => cmds::slice::run(args),
