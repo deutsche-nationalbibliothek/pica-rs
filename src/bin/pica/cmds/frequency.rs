@@ -1,12 +1,20 @@
+use crate::config::Config;
+use crate::skip_invalid_flag;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use crate::Config;
 use bstr::BString;
 use clap::Arg;
 use pica::{Path, ReaderBuilder};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, Write};
 use std::str::FromStr;
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct FrequencyConfig {
+    pub skip_invalid: Option<bool>,
+}
 
 pub fn cli() -> App {
     App::new("frequency")
@@ -63,12 +71,8 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("frequency", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
+    let skip_invalid =
+        skip_invalid_flag!(args, config.frequency, config.global);
 
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,

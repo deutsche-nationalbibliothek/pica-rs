@@ -1,13 +1,23 @@
+use crate::config::Config;
 use crate::util::{App, CliArgs, CliResult};
-use crate::Config;
+use crate::{gzip_flag, skip_invalid_flag, template_opt};
 use bstr::ByteSlice;
 use clap::Arg;
 use pica::{self, PicaWriter, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs::create_dir;
 use std::path::Path;
 use std::str::FromStr;
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct PartitionConfig {
+    pub skip_invalid: Option<bool>,
+    pub gzip: Option<bool>,
+    pub template: Option<String>,
+}
 
 pub fn cli() -> App {
     App::new("partition")
@@ -42,26 +52,18 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("partition", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
-
-    let config_template_filename = config
-        .get_string("partition", "template", false)
-        .unwrap_or_default();
-
-    let filename_template = if args.is_present("template") {
-        args.value_of("template").unwrap()
-    } else if !config_template_filename.is_empty() {
-        &config_template_filename
-    } else if args.is_present("gzip") {
-        "{}.dat.gz"
-    } else {
-        "{}.dat"
-    };
+    let skip_invalid =
+        skip_invalid_flag!(args, config.partition, config.global);
+    let gzip_compression = gzip_flag!(args, config.partition);
+    let filename_template = template_opt!(
+        args,
+        config.partition,
+        if gzip_compression {
+            "{}.dat.gz"
+        } else {
+            "{}.dat"
+        }
+    );
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
@@ -83,9 +85,8 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             let writer = match entry {
                 Entry::Vacant(vacant) => {
                     let value = String::from_utf8(value.to_vec()).unwrap();
-                    let writer = WriterBuilder::new()
-                        .gzip(args.is_present("gzip"))
-                        .from_path(
+                    let writer =
+                        WriterBuilder::new().gzip(gzip_compression).from_path(
                             outdir
                                 .join(filename_template.replace("{}", &value))
                                 .to_str()

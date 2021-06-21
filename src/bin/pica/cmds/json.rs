@@ -1,8 +1,16 @@
+use crate::config::Config;
+use crate::skip_invalid_flag;
 use crate::util::{App, CliArgs, CliResult};
-use crate::Config;
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
 use std::io::Write;
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct JsonConfig {
+    pub skip_invalid: Option<bool>,
+}
 
 pub fn cli() -> App {
     App::new("json")
@@ -24,12 +32,7 @@ pub fn cli() -> App {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("json", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
+    let skip_invalid = skip_invalid_flag!(args, config.json, config.global);
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)

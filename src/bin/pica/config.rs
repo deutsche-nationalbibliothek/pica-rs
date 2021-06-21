@@ -1,70 +1,71 @@
-use crate::util::{CliError, CliResult};
 use directories::ProjectDirs;
+use serde::{Deserialize, Serialize};
+use std::fs::{create_dir_all, read_to_string};
+use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct GlobalConfig {
+    pub skip_invalid: Option<bool>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
-    config: config::Config,
+    #[serde(skip)]
+    pub path: Option<PathBuf>,
+    pub global: Option<GlobalConfig>,
+    pub cat: Option<crate::cmds::cat::CatConfig>,
+    pub filter: Option<crate::cmds::filter::FilterConfig>,
+    pub frequency: Option<crate::cmds::frequency::FrequencyConfig>,
+    pub json: Option<crate::cmds::json::JsonConfig>,
+    pub partition: Option<crate::cmds::partition::PartitionConfig>,
+    pub print: Option<crate::cmds::print::PrintConfig>,
+    pub sample: Option<crate::cmds::sample::SampleConfig>,
+    pub select: Option<crate::cmds::select::SelectConfig>,
+    pub slice: Option<crate::cmds::slice::SliceConfig>,
+    pub split: Option<crate::cmds::split::SplitConfig>,
 }
 
 impl Config {
-    /// Create a new `Config`
-    ///
-    /// # Rules
-    ///
-    /// - if a filename is provided, the settings are taken from this file
-    /// - if no filename is provided and a file is found in the application
-    ///   directory, the settings are taken from this file
-    /// - otherwise, an empty, default configuration is returned
-    pub fn new(filename: Option<&str>) -> CliResult<Config> {
-        let mut config = config::Config::default();
+    pub fn new() -> Result<Self, std::io::Error> {
+        let mut config = Config::default();
 
-        if let Some(filename) = filename {
-            if let Err(err) = config.merge(config::File::with_name(filename)) {
-                return Err(CliError::Config(err.to_string()));
-            }
-        } else if let Some(proj_dirs) =
-            ProjectDirs::from("de.dnb", "Deutsche Nationalbibliothek", "pica")
+        if let Some(project_dirs) =
+            ProjectDirs::from("de.dnb", "DNB", "pica-rs")
         {
-            let user_config = proj_dirs.config_dir().join("Pica.toml");
-            if user_config.is_file() {
-                let result = config.merge(config::File::with_name(
-                    user_config.to_str().unwrap(),
-                ));
-
-                if let Err(err) = result {
-                    return Err(CliError::Config(err.to_string()));
-                }
+            let config_dir = project_dirs.config_dir();
+            if !config_dir.exists() {
+                create_dir_all(config_dir)?;
             }
+
+            let config_file = config_dir.join("Pica.toml");
+            if config_file.exists() {
+                return Self::from_path(config_file);
+            }
+
+            config.path = Some(config_file);
         }
 
-        Ok(Self { config })
+        Ok(config)
     }
 
-    pub fn get_bool(
-        &self,
-        section: &str,
-        key: &str,
-        global: bool,
-    ) -> Result<bool, config::ConfigError> {
-        let mut retval = self.config.get_bool(&format!("{}.{}", section, key));
-        if global && retval.is_err() {
-            retval = self.config.get_bool(&format!("global.{}", key));
-        }
+    pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Self, std::io::Error> {
+        let path = PathBuf::from(path.as_ref());
+        let content = read_to_string(&path)?;
 
-        retval
+        // FIXME: handle unwrap()
+        let mut config: Config = toml::from_str(&content).unwrap();
+        config.path = Some(path);
+
+        Ok(config)
     }
 
-    pub fn get_string(
-        &self,
-        section: &str,
-        key: &str,
-        global: bool,
-    ) -> Result<String, config::ConfigError> {
-        let mut retval = self.config.get_str(&format!("{}.{}", section, key));
-        if global && retval.is_err() {
-            retval = self.config.get_str(&format!("global.{}", key));
+    pub fn from_path_or_default<P: AsRef<Path>>(
+        path: Option<P>,
+    ) -> Result<Self, std::io::Error> {
+        match path {
+            Some(path) => Self::from_path(path),
+            None => Self::new(),
         }
-
-        retval
     }
 }

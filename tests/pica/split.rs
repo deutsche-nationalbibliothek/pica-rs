@@ -68,6 +68,7 @@ fn split_outdir() -> MatchResult {
 
 #[test]
 fn split_template() -> MatchResult {
+    // cli option
     let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
     let outdir = tempdir.path();
 
@@ -101,8 +102,9 @@ fn split_template() -> MatchResult {
 
     CommandBuilder::new("split")
         .with_config(
-            r#"[split]
-template = "TEST_{}.dat"
+            r#"
+[split]
+template = "CHUNK_{}.dat"
 "#,
         )
         .arg("--skip-invalid")
@@ -113,13 +115,13 @@ template = "TEST_{}.dat"
         .run()?;
 
     let expected = [
-        ("TEST_0.dat", SAMPLE1),
-        ("TEST_1.dat", SAMPLE2),
-        ("TEST_2.dat", SAMPLE3),
-        ("TEST_3.dat", SAMPLE4),
-        ("TEST_4.dat", SAMPLE5),
-        ("TEST_5.dat", SAMPLE6),
-        ("TEST_6.dat", SAMPLE7),
+        ("CHUNK_0.dat", SAMPLE1),
+        ("CHUNK_1.dat", SAMPLE2),
+        ("CHUNK_2.dat", SAMPLE3),
+        ("CHUNK_3.dat", SAMPLE4),
+        ("CHUNK_4.dat", SAMPLE5),
+        ("CHUNK_5.dat", SAMPLE6),
+        ("CHUNK_6.dat", SAMPLE7),
     ];
 
     for (filename, sample) in expected.iter() {
@@ -200,7 +202,8 @@ fn split_gzip() -> MatchResult {
 
     CommandBuilder::new("split")
         .with_config(
-            r#"[split]
+            r#"
+[split]
 gzip = true
 "#,
         )
@@ -212,13 +215,13 @@ gzip = true
         .run()?;
 
     let expected = [
-        ("0.dat", SAMPLE1),
-        ("1.dat", SAMPLE2),
-        ("2.dat", SAMPLE3),
-        ("3.dat", SAMPLE4),
-        ("4.dat", SAMPLE5),
-        ("5.dat", SAMPLE6),
-        ("6.dat", SAMPLE7),
+        ("0.dat.gz", SAMPLE1),
+        ("1.dat.gz", SAMPLE2),
+        ("2.dat.gz", SAMPLE3),
+        ("3.dat.gz", SAMPLE4),
+        ("4.dat.gz", SAMPLE5),
+        ("5.dat.gz", SAMPLE6),
+        ("6.dat.gz", SAMPLE7),
     ];
 
     for (filename, sample) in expected.iter() {
@@ -257,90 +260,93 @@ fn split_skip_invalid() -> MatchResult {
     let outdir = tempdir.path();
 
     CommandBuilder::new("split")
+        .arg("--skip-invalid")
+        .arg("100")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("tests/data/invalid.dat")
+        .run()?;
+
+    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("split")
+        .with_config(
+            r#"
+[global]
+skip-invalid = true
+"#,
+        )
+        .arg("100")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("tests/data/invalid.dat")
+        .run()?;
+
+    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("split")
+        .with_config(
+            r#"
+[split]
+skip-invalid = true
+"#,
+        )
+        .arg("100")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("tests/data/invalid.dat")
+        .run()?;
+
+    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("split")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[split]
+skip-invalid = true
+"#,
+        )
+        .arg("100")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("tests/data/invalid.dat")
+        .run()?;
+
+    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("split")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[split]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("100")
+        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("tests/data/invalid.dat")
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
+fn split_invalid_file() -> MatchResult {
+    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    CommandBuilder::new("split")
         .arg("100")
         .args(format!("--outdir {}", outdir.to_str().unwrap()))
         .arg("tests/data/invalid.dat")
         .with_stderr("Pica Error: Invalid record on line 1.\n")
         .with_status(1)
-        .run()?;
-
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("split")
-        .arg("100")
-        .arg("--skip-invalid")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    // config
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("split")
-        .with_config(
-            r#"[global]
-skip-invalid = true
-"#,
-        )
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("split")
-        .with_config(
-            r#"[split]
-skip-invalid = true
-"#,
-        )
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("split")
-        .with_config(
-            r#"[global]
-skip-invalid = false
-
-[split]
-skip-invalid = true
-"#,
-        )
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("split")
-        .with_config(
-            r#"[global]
-skip-invalid = false
-
-[split]
-skip-invalid = false
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
         .run()?;
 
     Ok(())

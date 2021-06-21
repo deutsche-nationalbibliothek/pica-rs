@@ -34,14 +34,15 @@ fn json_write_output() -> MatchResult {
 #[test]
 fn json_skip_invalid() -> MatchResult {
     CommandBuilder::new("json")
+        .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
+        .with_stdout("[]")
         .run()?;
 
     CommandBuilder::new("json")
         .with_config(
-            r#"[json]
+            r#"
+[global]
 skip-invalid = true
 "#,
         )
@@ -51,7 +52,8 @@ skip-invalid = true
 
     CommandBuilder::new("json")
         .with_config(
-            r#"[global]
+            r#"
+[json]
 skip-invalid = true
 "#,
         )
@@ -61,7 +63,8 @@ skip-invalid = true
 
     CommandBuilder::new("json")
         .with_config(
-            r#"[global]
+            r#"
+[global]
 skip-invalid = false
 
 [json]
@@ -74,13 +77,28 @@ skip-invalid = true
 
     CommandBuilder::new("json")
         .with_config(
-            r#"[json]
+            r#"
+[global]
+skip-invalid = false
+
+[json]
 skip-invalid = false
 "#,
         )
         .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
         .with_stdout("[]")
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
+fn json_invalid_file() -> MatchResult {
+    CommandBuilder::new("json")
+        .arg("tests/data/invalid.dat")
+        .with_stderr("Pica Error: Invalid record on line 1.\n")
+        .with_status(1)
         .run()?;
 
     Ok(())

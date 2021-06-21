@@ -94,33 +94,11 @@ fn slice_write_gzip_output() -> MatchResult {
 
     CommandBuilder::new("slice")
         .with_config(
-            r#"[slice]
+            r#"
+[slice]
 gzip = true
 "#,
         )
-        .arg("--skip-invalid")
-        .args("--end 1")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
-
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-
-    assert_eq!(SAMPLE1, s);
-
-    let tempdir = Builder::new().prefix("pica-slice").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("slice")
-        .with_config(
-            r#"[slice]
-gzip = false
-"#,
-        )
-        .arg("--gzip")
         .arg("--skip-invalid")
         .args("--end 1")
         .args(format!("--output {}", filename.to_str().unwrap()))
@@ -298,53 +276,51 @@ fn slice_invalid_length_option() -> MatchResult {
 #[test]
 fn slice_skip_invalid() -> MatchResult {
     CommandBuilder::new("slice")
+        .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
+        .with_stdout_empty()
         .run()?;
 
     CommandBuilder::new("slice")
         .with_config(
-            r#"[global]
+            r#"
+[global]
 skip-invalid = true
 "#,
         )
-        .args("--start 1")
-        .args("--length 1")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout(SAMPLE2)
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
         .run()?;
 
     CommandBuilder::new("slice")
         .with_config(
-            r#"[slice]
+            r#"
+[slice]
 skip-invalid = true
 "#,
         )
-        .args("--start 1")
-        .args("--length 1")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout(SAMPLE2)
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
         .run()?;
 
     CommandBuilder::new("slice")
         .with_config(
-            r#"[global]
+            r#"
+[global]
 skip-invalid = false
 
 [slice]
 skip-invalid = true
 "#,
         )
-        .args("--start 1")
-        .args("--length 1")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout(SAMPLE2)
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
         .run()?;
 
     CommandBuilder::new("slice")
         .with_config(
-            r#"[global]
+            r#"
+[global]
 skip-invalid = false
 
 [slice]
@@ -352,10 +328,19 @@ skip-invalid = false
 "#,
         )
         .arg("--skip-invalid")
-        .args("--start 1")
-        .args("--length 1")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout(SAMPLE2)
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
+fn slice_invalid_file() -> MatchResult {
+    CommandBuilder::new("slice")
+        .arg("tests/data/invalid.dat")
+        .with_stderr("Pica Error: Invalid record on line 1.\n")
+        .with_status(1)
         .run()?;
 
     Ok(())

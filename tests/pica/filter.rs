@@ -340,19 +340,21 @@ skip-invalid = true
 
     CommandBuilder::new("filter")
         .with_config(
-            r#"[filter]
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("003@.0 == '119232022'")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .with_config(
+            r#"[global]
 skip-invalid = false
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("003@.0 == '119232022'")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout(SAMPLE2)
-        .run()?;
 
-    CommandBuilder::new("filter")
-        .with_config(
-            r#"[global]
+[filter]
 skip-invalid = true
 "#,
         )
@@ -364,7 +366,10 @@ skip-invalid = true
     CommandBuilder::new("filter")
         .with_config(
             r#"[global]
-skip-invalid = true
+skip-invalid = false
+
+[filter]
+skip-invalid = false
 "#,
         )
         .arg("--skip-invalid")
@@ -419,6 +424,53 @@ fn filter_write_gzip_output() -> MatchResult {
 
     CommandBuilder::new("filter")
         .arg("--skip-invalid")
+        .arg("--gzip")
+        .args(format!("--output {}", filename.to_str().unwrap()))
+        .arg("003@.0 == '1004916019'")
+        .arg("tests/data/1004916019.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
+
+    // config
+    let tempdir = Builder::new().prefix("pica-filter-gzip").tempdir().unwrap();
+    let filename = tempdir.path().join("sample.dat");
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .with_config(
+            r#"[filter]
+gzip = true
+"#,
+        )
+        .args(format!("--output {}", filename.to_str().unwrap()))
+        .arg("003@.0 == '1004916019'")
+        .arg("tests/data/1004916019.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
+
+    // cli flag overwrites config
+    let tempdir = Builder::new().prefix("pica-filter-gzip").tempdir().unwrap();
+    let filename = tempdir.path().join("sample.dat");
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .with_config(
+            r#"[filter]
+gzip = false
+"#,
+        )
         .arg("--gzip")
         .args(format!("--output {}", filename.to_str().unwrap()))
         .arg("003@.0 == '1004916019'")

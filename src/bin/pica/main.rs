@@ -1,33 +1,28 @@
 #[macro_use]
 extern crate clap;
 extern crate csv;
-extern crate directories;
 extern crate regex;
+extern crate serde;
 
 mod cli;
 mod cmds;
 mod config;
+mod macros;
 mod util;
 
-use crate::config::Config;
+use config::Config;
 use std::{io, process};
-use util::CliError;
+use util::{CliError, CliResult};
 
-fn main() {
+fn run() -> CliResult<()> {
     let mut app = cli::build_cli();
     let m = app.clone().get_matches();
     let name = m.subcommand_name().unwrap();
     let args = m.subcommand_matches(name).unwrap();
 
-    let config = match Config::new(m.value_of("config")) {
-        Err(err) => {
-            eprintln!("config: {}", err);
-            process::exit(1);
-        }
-        Ok(config) => config,
-    };
+    let config = Config::from_path_or_default(m.value_of("config"))?;
 
-    let result = match name {
+    match name {
         "cat" => cmds::cat::run(args, &config),
         "completion" => cmds::completion::run(args, &mut app),
         "filter" => cmds::filter::run(args, &config),
@@ -41,9 +36,11 @@ fn main() {
         "slice" => cmds::slice::run(args, &config),
         "split" => cmds::split::run(args, &config),
         _ => unreachable!(),
-    };
+    }
+}
 
-    match result {
+fn main() {
+    match run() {
         Ok(()) => process::exit(0),
         Err(CliError::Io(ref err))
             if err.kind() == io::ErrorKind::BrokenPipe =>
@@ -65,10 +62,6 @@ fn main() {
         }
         Err(CliError::Csv(err)) => {
             eprintln!("CSV Error: {}", err);
-            process::exit(1);
-        }
-        Err(CliError::Config(err)) => {
-            eprintln!("config: {}", err);
             process::exit(1);
         }
         Err(CliError::Other(err)) => {

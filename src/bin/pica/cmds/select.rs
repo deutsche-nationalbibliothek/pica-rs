@@ -1,9 +1,17 @@
+use crate::config::Config;
+use crate::skip_invalid_flag;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use crate::Config;
 use clap::Arg;
 use pica::{Outcome, ReaderBuilder, Selectors};
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, Write};
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct SelectConfig {
+    pub skip_invalid: Option<bool>,
+}
 
 pub fn cli() -> App {
     App::new("select")
@@ -46,24 +54,14 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = match args.is_present("skip-invalid") {
-        false => config
-            .get_bool("select", "skip-invalid", true)
-            .unwrap_or_default(),
-        _ => true,
-    };
-
-    let tab_separated = match args.is_present("tsv") {
-        false => config.get_bool("select", "tsv", false).unwrap_or_default(),
-        _ => true,
-    };
+    let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer = csv::WriterBuilder::new()
-        .delimiter(if tab_separated { b'\t' } else { b',' })
+        .delimiter(if args.is_present("tsv") { b'\t' } else { b',' })
         .from_writer(writer(args.value_of("output"))?);
 
     let selectors_str = args.value_of("selectors").unwrap();
