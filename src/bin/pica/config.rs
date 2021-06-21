@@ -22,6 +22,7 @@ pub struct Config {
     pub print: Option<crate::cmds::print::PrintConfig>,
     pub sample: Option<crate::cmds::sample::SampleConfig>,
     pub select: Option<crate::cmds::select::SelectConfig>,
+    pub slice: Option<crate::cmds::slice::SliceConfig>,
 }
 
 impl Config {

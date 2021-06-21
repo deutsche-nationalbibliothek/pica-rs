@@ -88,6 +88,30 @@ fn slice_write_gzip_output() -> MatchResult {
 
     assert_eq!(SAMPLE1, s);
 
+    // config
+    let tempdir = Builder::new().prefix("pica-slice").tempdir().unwrap();
+    let filename = tempdir.path().join("sample.dat");
+
+    CommandBuilder::new("slice")
+        .with_config(
+            r#"
+[slice]
+gzip = true
+"#,
+        )
+        .arg("--skip-invalid")
+        .args("--end 1")
+        .args(format!("--output {}", filename.to_str().unwrap()))
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout_empty()
+        .run()?;
+
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut s = String::new();
+    gz.read_to_string(&mut s).unwrap();
+
+    assert_eq!(SAMPLE1, s);
+
     Ok(())
 }
 
@@ -244,6 +268,68 @@ fn slice_invalid_length_option() -> MatchResult {
         .arg("tests/data/dump.dat.gz")
         .with_stderr("error: invalid length option\n")
         .with_status(1)
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
+fn slice_skip_invalid() -> MatchResult {
+    CommandBuilder::new("slice")
+        .arg("--skip-invalid")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("slice")
+        .with_config(
+            r#"
+[global]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("slice")
+        .with_config(
+            r#"
+[slice]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("slice")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[slice]
+skip-invalid = true
+"#,
+        )
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("slice")
+        .with_config(
+            r#"
+[global]
+skip-invalid = false
+
+[slice]
+skip-invalid = false
+"#,
+        )
+        .arg("--skip-invalid")
+        .arg("tests/data/invalid.dat")
+        .with_stdout_empty()
         .run()?;
 
     Ok(())
