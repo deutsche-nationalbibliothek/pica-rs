@@ -20,6 +20,7 @@ pub struct Config {
     pub json: Option<crate::cmds::json::JsonConfig>,
     pub partition: Option<crate::cmds::partition::PartitionConfig>,
     pub print: Option<crate::cmds::print::PrintConfig>,
+    pub sample: Option<crate::cmds::sample::SampleConfig>,
 }
 
 impl Config {
