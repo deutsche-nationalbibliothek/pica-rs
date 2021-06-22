@@ -243,3 +243,7 @@ outdir
 - [PICA::Record](https://github.com/gbv/PICA-Record) -  Perl module to handle PICA+ records (deprecated).
 - [luapica](http://jakobvoss.de/luapica/) - Handle PICA+ data in Lua.
 - [picaplus](https://github.com/FID-Judaica/picaplus)  tooling for working with pica+
+
+## License
+
+This project is dual-licensed under [MIT](LICENSE) or the [UNLICENSE](UNLICENSE).
