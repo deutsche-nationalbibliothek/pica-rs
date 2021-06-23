@@ -26,7 +26,8 @@ jobs:
           crate: cargo-outdated
           version: latest
       - run: |
-          cargo outdated --exit-code 1
+          cargo outdated
+          exit 0
 
   coverage:
     runs-on: ubuntu-latest
