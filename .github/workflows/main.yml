@@ -17,17 +17,16 @@ jobs:
           cargo generate-lockfile
           cargo audit
 
-  outdated:
+  upgrades:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/install@v0.1
         with:
-          crate: cargo-outdated
+          crate: cargo-upgrades
           version: latest
       - run: |
-          cargo outdated
-          exit 0
+          cargo upgrades
 
   coverage:
     runs-on: ubuntu-latest
