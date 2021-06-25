@@ -27,7 +27,7 @@ fn split_default() -> MatchResult {
         ("6.dat", SAMPLE7),
     ];
 
-    for (filename, sample) in expected.iter() {
+    for (filename, sample) in expected {
         assert_eq!(read_to_string(filename).unwrap(), *sample);
         remove_file(filename).unwrap();
     }
@@ -58,7 +58,7 @@ fn split_outdir() -> MatchResult {
         ("6.dat", SAMPLE7),
     ];
 
-    for (filename, sample) in expected.iter() {
+    for (filename, sample) in expected {
         assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
         remove_file(outdir.join(filename)).unwrap();
     }
@@ -91,7 +91,7 @@ fn split_template() -> MatchResult {
         ("CHUNK_6.dat", SAMPLE7),
     ];
 
-    for (filename, sample) in expected.iter() {
+    for (filename, sample) in expected {
         assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
         remove_file(outdir.join(filename)).unwrap();
     }
@@ -124,7 +124,7 @@ template = "CHUNK_{}.dat"
         ("CHUNK_6.dat", SAMPLE7),
     ];
 
-    for (filename, sample) in expected.iter() {
+    for (filename, sample) in expected {
         assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
         remove_file(outdir.join(filename)).unwrap();
     }
@@ -157,7 +157,7 @@ fn split_gzip() -> MatchResult {
         ("CHUNK_6.dat.gz", SAMPLE7),
     ];
 
-    for (filename, sample) in expected.iter() {
+    for (filename, sample) in expected {
         let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
         let mut s = String::new();
         gz.read_to_string(&mut s).unwrap();
@@ -188,7 +188,7 @@ fn split_gzip() -> MatchResult {
         ("6.dat.gz", SAMPLE7),
     ];
 
-    for (filename, sample) in expected.iter() {
+    for (filename, sample) in expected {
         let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
         let mut s = String::new();
         gz.read_to_string(&mut s).unwrap();
@@ -224,7 +224,7 @@ gzip = true
         ("6.dat.gz", SAMPLE7),
     ];
 
-    for (filename, sample) in expected.iter() {
+    for (filename, sample) in expected {
         let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
         let mut s = String::new();
         gz.read_to_string(&mut s).unwrap();
