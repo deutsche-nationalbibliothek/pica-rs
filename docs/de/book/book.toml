@@ -1,6 +1,0 @@
-[book]
-authors = ["Nico Wagner"]
-language = "en"
-multilingual = false
-src = "src"
-title = "pica-rs"

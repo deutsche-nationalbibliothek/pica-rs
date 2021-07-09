@@ -170,5 +170,5 @@ jobs:
         with:
           mdbook-version: 'latest'
       - run: |
-          mdbook build docs/de/book && mdbook test docs/de/book
+          mdbook build docs/book && mdbook test docs/book
 
