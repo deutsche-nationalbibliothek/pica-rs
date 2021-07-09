@@ -1,8 +1,8 @@
 //! Pica+ Path
 //!
 //! A path is a query syntax to address values within a pica+ record. The path
-//! consists of a [`Field`] tag and a [`Subfield`] name. A [`Field`] occurrence
-//! or an index is optional
+//! consists of a [`crate::Field`] tag and a [`crate::Subfield`] name. A
+//! [`crate::Field`] occurrence or an index is optional
 //!
 //! # Grammar
 //!
