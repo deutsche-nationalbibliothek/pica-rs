@@ -8,7 +8,7 @@ use tempfile::Builder;
 fn filter_equal() -> MatchResult {
     CommandBuilder::new("filter")
         .arg("--skip-invalid")
-        .arg("003@.0 == '1004916019'")
+        .arg("  003@.0 == '1004916019' ")
         .arg("tests/data/dump.dat.gz")
         .with_stdout(SAMPLE1)
         .run()?;
