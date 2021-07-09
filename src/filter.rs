@@ -559,7 +559,7 @@ fn parse_filter_expr(i: &str) -> IResult<&str, Filter> {
 }
 
 fn parse_filter(i: &str) -> IResult<&str, Filter> {
-    parse_filter_expr(i)
+    ws(parse_filter_expr)(i)
 }
 
 #[derive(Debug, PartialEq)]
