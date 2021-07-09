@@ -59,15 +59,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: 'latest'
       - name: build
         run: |
           rustup update && rustup default stable
-          cargo doc --all --no-deps
-          echo '<meta http-equiv="refresh" content="0; url=pica/index.html"><a href="pica/index.html">Redirect</a>' >> target/doc/index.html
+          mkdir -p target/docs
+          cargo doc --all --no-deps --target-dir target/docs/api
+          mdbook build docs/book --dest-dir ../../target/docs/book
+
+          echo '<meta http-equiv="refresh" content="0; url=api/pica/index.html"><a href="api/pica/index.html">Redirect</a>' >> target/docs/api/index.html
+          echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
       - name: deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: target/doc
+          publish_dir: target/docs
           keep_files: false
           force_orphan: true

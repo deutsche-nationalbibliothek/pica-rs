@@ -1,0 +1,5 @@
+[book]
+authors = ["Nico Wagner"]
+src = "src/de"
+title = "pica-rs Dokumentation"
+
