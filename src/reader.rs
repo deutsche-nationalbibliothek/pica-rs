@@ -279,7 +279,7 @@ pub struct Reader<R> {
 }
 
 impl<R: Read> Reader<R> {
-    /// Create a new writer
+    /// Create a new reader
     ///
     /// # Example
     ///
