@@ -270,6 +270,39 @@ fn filter_not() -> MatchResult {
 }
 
 #[test]
+fn filter_multiple_subfields() -> MatchResult {
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("060R.[ ab ]?")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("060R.[ab] == '1852'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("060R.[b] == '1852'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("060R.[a] == '1852'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn filter_invalid_filter() -> MatchResult {
     CommandBuilder::new("filter")
         .arg("--skip-invalid")

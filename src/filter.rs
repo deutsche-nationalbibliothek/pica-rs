@@ -12,7 +12,7 @@ use nom::combinator::{
     verify,
 };
 use nom::error::{FromExternalError, ParseError};
-use nom::multi::{count, fold_many0, many0, many_m_n, separated_list1};
+use nom::multi::{count, fold_many0, many0, many1, many_m_n, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
@@ -89,24 +89,25 @@ pub enum ComparisonOp {
 
 #[derive(Debug, PartialEq)]
 pub enum SubfieldFilter {
-    Comparison(char, ComparisonOp, Vec<String>),
+    Comparison(Vec<char>, ComparisonOp, Vec<String>),
     Boolean(Box<SubfieldFilter>, BooleanOp, Box<SubfieldFilter>),
     Grouped(Box<SubfieldFilter>),
-    Exists(char),
+    Exists(Vec<char>),
     Not(Box<SubfieldFilter>),
 }
 
 impl SubfieldFilter {
     pub fn matches(&self, field: &Field) -> bool {
         match self {
-            SubfieldFilter::Comparison(code, op, values) => match op {
+            SubfieldFilter::Comparison(codes, op, values) => match op {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
-                    subfield.code == *code && subfield.value() == &values[0]
+                    codes.contains(&subfield.code)
+                        && subfield.value() == &values[0]
                 }),
                 ComparisonOp::StrictEq => {
                     let subfields = field
                         .iter()
-                        .filter(|subfield| subfield.code == *code)
+                        .filter(|subfield| codes.contains(&subfield.code))
                         .collect::<Vec<&Subfield>>();
 
                     !subfields.is_empty()
@@ -117,7 +118,7 @@ impl SubfieldFilter {
                 ComparisonOp::Ne => {
                     let subfields = field
                         .iter()
-                        .filter(|subfield| subfield.code == *code)
+                        .filter(|subfield| codes.contains(&subfield.code))
                         .collect::<Vec<&Subfield>>();
 
                     subfields.is_empty()
@@ -126,11 +127,11 @@ impl SubfieldFilter {
                             .all(|subfield| subfield.value() != &values[0])
                 }
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
-                    subfield.code == *code
+                    codes.contains(&subfield.code)
                         && subfield.value.starts_with(values[0].as_bytes())
                 }),
                 ComparisonOp::EndsWith => field.iter().any(|subfield| {
-                    subfield.code == *code
+                    codes.contains(&subfield.code)
                         && subfield.value.ends_with(values[0].as_bytes())
                 }),
                 ComparisonOp::Re => {
@@ -140,11 +141,11 @@ impl SubfieldFilter {
                     field.iter().any(|subfield| {
                         let value =
                             String::from_utf8(subfield.value.to_vec()).unwrap();
-                        subfield.code == *code && re.is_match(&value)
+                        codes.contains(&subfield.code) && re.is_match(&value)
                     })
                 }
                 ComparisonOp::In => field.iter().any(|subfield| {
-                    subfield.code == *code
+                    codes.contains(&subfield.code)
                         && values.contains(
                             &String::from_utf8(subfield.value.to_vec())
                                 .unwrap(),
@@ -157,8 +158,8 @@ impl SubfieldFilter {
             },
             SubfieldFilter::Grouped(filter) => filter.matches(field),
             SubfieldFilter::Not(filter) => !filter.matches(field),
-            SubfieldFilter::Exists(code) => {
-                field.iter().any(|subfield| subfield.code == *code)
+            SubfieldFilter::Exists(codes) => {
+                field.iter().any(|subfield| codes.contains(&subfield.code))
             }
         }
     }
@@ -316,6 +317,14 @@ pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
     satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
+/// Parses multiple subfield codes.
+pub(crate) fn parse_subfield_codes(i: &str) -> IResult<&str, Vec<char>> {
+    alt((
+        map(parse_subfield_code, |x| vec![x]),
+        delimited(ws(char('[')), many1(ws(parse_subfield_code)), ws(char(']'))),
+    ))(i)
+}
+
 pub(crate) fn parse_occurrence_matcher(
     i: &str,
 ) -> IResult<&str, OccurrenceMatcher> {
@@ -361,11 +370,11 @@ fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
 fn parse_subfield_regex(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_codes),
             map(ws(tag("=~")), |_| ComparisonOp::Re),
             verify(ws(parse_string), |s| Regex::new(s).is_ok()),
         )),
-        |(name, op, regex)| SubfieldFilter::Comparison(name, op, vec![regex]),
+        |(names, op, regex)| SubfieldFilter::Comparison(names, op, vec![regex]),
     )(i)
 }
 
@@ -373,18 +382,18 @@ fn parse_subfield_regex(i: &str) -> IResult<&str, SubfieldFilter> {
 fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_codes),
             ws(parse_comparison_op),
             ws(parse_string),
         )),
-        |(name, op, value)| SubfieldFilter::Comparison(name, op, vec![value]),
+        |(names, op, value)| SubfieldFilter::Comparison(names, op, vec![value]),
     )(i)
 }
 
 fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_codes),
             opt(ws(tag("not"))),
             map(tag("in"), |_| ComparisonOp::In),
             delimited(
@@ -393,8 +402,8 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
                 ws(char(']')),
             ),
         )),
-        |(name, negate, op, values)| {
-            let filter = SubfieldFilter::Comparison(name, op, values);
+        |(names, negate, op, values)| {
+            let filter = SubfieldFilter::Comparison(names, op, values);
             if negate.is_some() {
                 SubfieldFilter::Not(Box::new(filter))
             } else {
@@ -406,8 +415,8 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
 
 /// Parses a subfield exists expression.
 fn parse_subfield_exists(i: &str) -> IResult<&str, SubfieldFilter> {
-    map(terminated(parse_subfield_code, char('?')), |name| {
-        SubfieldFilter::Exists(name)
+    map(terminated(parse_subfield_codes, char('?')), |names| {
+        SubfieldFilter::Exists(names)
     })(i)
 }
 
@@ -599,7 +608,7 @@ mod tests {
     #[test]
     fn test_parse_subfield_comparison() {
         let filter = SubfieldFilter::Comparison(
-            '0',
+            vec!['0'],
             ComparisonOp::Eq,
             vec!["123456789X".to_string()],
         );
@@ -616,7 +625,7 @@ mod tests {
             Ok((
                 "",
                 SubfieldFilter::Comparison(
-                    '0',
+                    vec!['0'],
                     ComparisonOp::Re,
                     vec!["^Tp[123]$".to_string()],
                 )
@@ -629,7 +638,7 @@ mod tests {
     #[test]
     fn test_parse_subfield_in_op() {
         let filter = SubfieldFilter::Comparison(
-            '0',
+            vec!['0'],
             ComparisonOp::In,
             vec![
                 "123456789X".to_string(),
@@ -649,7 +658,7 @@ mod tests {
     fn test_parse_subfield_exists() {
         assert_eq!(
             parse_subfield_exists("0?"),
-            Ok(("", SubfieldFilter::Exists('0')))
+            Ok(("", SubfieldFilter::Exists(vec!['0'])))
         );
     }
 
@@ -660,7 +669,7 @@ mod tests {
             Ok((
                 "",
                 SubfieldFilter::Grouped(Box::new(SubfieldFilter::Grouped(
-                    Box::new(SubfieldFilter::Exists('0'))
+                    Box::new(SubfieldFilter::Exists(vec!['0']))
                 ),))
             ))
         );
@@ -674,7 +683,7 @@ mod tests {
                 "",
                 SubfieldFilter::Not(Box::new(SubfieldFilter::Grouped(
                     Box::new(SubfieldFilter::Not(Box::new(
-                        SubfieldFilter::Exists('a')
+                        SubfieldFilter::Exists(vec!['a'])
                     )))
                 )))
             ))
@@ -688,9 +697,9 @@ mod tests {
             Ok((
                 "",
                 SubfieldFilter::Boolean(
-                    Box::new(SubfieldFilter::Exists('0')),
+                    Box::new(SubfieldFilter::Exists(vec!['0'])),
                     BooleanOp::And,
-                    Box::new(SubfieldFilter::Exists('a'))
+                    Box::new(SubfieldFilter::Exists(vec!['a']))
                 )
             ))
         );
@@ -700,9 +709,9 @@ mod tests {
             Ok((
                 "",
                 SubfieldFilter::Boolean(
-                    Box::new(SubfieldFilter::Exists('0')),
+                    Box::new(SubfieldFilter::Exists(vec!['0'])),
                     BooleanOp::Or,
-                    Box::new(SubfieldFilter::Exists('a'))
+                    Box::new(SubfieldFilter::Exists(vec!['a']))
                 )
             ))
         );
@@ -714,10 +723,10 @@ mod tests {
             "012A".to_string(),
             OccurrenceMatcher::new("000").unwrap(),
             SubfieldFilter::Boolean(
-                Box::new(SubfieldFilter::Exists('0')),
+                Box::new(SubfieldFilter::Exists(vec!['0'])),
                 BooleanOp::Or,
                 Box::new(SubfieldFilter::Comparison(
-                    'a',
+                    vec!['a'],
                     ComparisonOp::Eq,
                     vec!["abc".to_string()],
                 )),
@@ -749,7 +758,7 @@ mod tests {
             "003@".to_string(),
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
-                '0',
+                vec!['0'],
                 ComparisonOp::Eq,
                 vec!["abc".to_string()],
             ),
@@ -764,7 +773,7 @@ mod tests {
             "003@".to_string(),
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
-                '0',
+                vec!['0'],
                 ComparisonOp::Eq,
                 vec!["abc".to_string()],
             ),
@@ -783,7 +792,7 @@ mod tests {
                 "003@".to_string(),
                 OccurrenceMatcher::None,
                 SubfieldFilter::Comparison(
-                    '0',
+                    vec!['0'],
                     ComparisonOp::Eq,
                     vec!["abc".to_string()],
                 ),
@@ -793,9 +802,9 @@ mod tests {
                 "012A".to_string(),
                 OccurrenceMatcher::None,
                 SubfieldFilter::Boolean(
-                    Box::new(SubfieldFilter::Exists('a')),
+                    Box::new(SubfieldFilter::Exists(vec!['a'])),
                     BooleanOp::And,
-                    Box::new(SubfieldFilter::Exists('b')),
+                    Box::new(SubfieldFilter::Exists(vec!['b'])),
                 ),
             )),
         );
@@ -812,7 +821,7 @@ mod tests {
             "003@".to_string(),
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
-                '0',
+                vec!['0'],
                 ComparisonOp::Eq,
                 vec!["123456789X".to_string()],
             ),

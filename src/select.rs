@@ -223,7 +223,7 @@ mod tests {
                     "044H".to_string(),
                     OccurrenceMatcher::Any,
                     Some(SubfieldFilter::Comparison(
-                        'E',
+                        vec!['E'],
                         ComparisonOp::Eq,
                         vec!["m".to_string()]
                     )),
