@@ -51,6 +51,14 @@ pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
     map(satisfy(|c| c.is_ascii_alphanumeric()), char::from)(i)
 }
 
+/// Parses multiple subfield codes.
+pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
+    alt((
+        map(parse_subfield_code, |x| vec![x]),
+        delimited(char('['), many1(parse_subfield_code), char(']')),
+    ))(i)
+}
+
 /// Parses a subfield value.
 pub(crate) fn parse_subfield_value(i: &[u8]) -> ParseResult<BString> {
     recognize(many0(is_not("\x1E\x1F")))(i).map(|(i, o)| (i, BString::from(o)))
@@ -132,14 +140,14 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
             tuple((
                 parse_field_tag,
                 parse_occurrence_matcher,
-                preceded(char('.'), parse_subfield_code),
+                preceded(char('.'), parse_subfield_codes),
             )),
             multispace0,
         )),
-        |(tag, occurrence, code)| Path {
+        |(tag, occurrence, codes)| Path {
             tag,
             occurrence,
-            code,
+            codes,
         },
     )(i)
 }
@@ -269,16 +277,20 @@ mod tests {
     fn test_parse_path() {
         assert_eq!(
             parse_path(b"003@.0").unwrap().1,
-            Path::new("003@", OccurrenceMatcher::None, '0').unwrap()
+            Path::new("003@", OccurrenceMatcher::None, vec!['0']).unwrap()
         );
         assert_eq!(
             parse_path(b"012A/01.0").unwrap().1,
-            Path::new("012A", OccurrenceMatcher::new("01").unwrap(), '0')
+            Path::new("012A", OccurrenceMatcher::new("01").unwrap(), vec!['0'])
                 .unwrap()
         );
         assert_eq!(
+            parse_path(b"012A/*.[ab]").unwrap().1,
+            Path::new("012A", OccurrenceMatcher::Any, vec!['a', 'b']).unwrap()
+        );
+        assert_eq!(
             parse_path(b"012A/*.0").unwrap().1,
-            Path::new("012A", OccurrenceMatcher::Any, '0').unwrap()
+            Path::new("012A", OccurrenceMatcher::Any, vec!['0']).unwrap()
         );
     }
 }

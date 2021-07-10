@@ -890,9 +890,13 @@ impl ByteRecord {
             .filter(|field| {
                 field.tag == path.tag
                     && field.occurrence == path.occurrence
-                    && field.contains_code(path.code)
+                    && path.codes.iter().any(|x| field.contains_code(*x))
             })
-            .flat_map(|field| field.get(path.code).unwrap())
+            .flat_map(|field| {
+                path.codes
+                    .iter()
+                    .flat_map(move |code| field.get(*code).unwrap_or_default())
+            })
             .map(|subfield| subfield.value())
             .collect()
     }

@@ -80,7 +80,11 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     for result in reader.byte_records() {
         let record = result?;
 
-        for value in record.path(&path) {
+        let mut values = record.path(&path);
+        values.sort_unstable();
+        values.dedup();
+
+        for value in values {
             let mut entry = writers.entry(value.as_bytes().to_vec());
             let writer = match entry {
                 Entry::Vacant(vacant) => {
