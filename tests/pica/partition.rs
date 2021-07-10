@@ -11,7 +11,7 @@ use tempfile::Builder;
 fn partition_by_bbg() -> MatchResult {
     CommandBuilder::new("partition")
         .arg("--skip-invalid")
-        .arg("002@.0")
+        .arg("002@.[01]")
         .arg("tests/data/dump.dat.gz")
         .run()?;
 

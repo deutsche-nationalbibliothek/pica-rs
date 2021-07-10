@@ -17,6 +17,19 @@ fn frequency_default() -> MatchResult {
 }
 
 #[test]
+fn frequency_multiple_subfields() -> MatchResult {
+    CommandBuilder::new("frequency")
+        .arg("--skip-invalid")
+        .args("--limit 1")
+        .arg("047A/*.[erf]")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("DE-1,8\n")
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn frequency_reverse() -> MatchResult {
     CommandBuilder::new("frequency")
         .arg("--skip-invalid")
