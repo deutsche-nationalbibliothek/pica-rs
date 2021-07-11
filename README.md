@@ -175,16 +175,20 @@ $ pica filter -s "002@.0 =~ '^Tp[1z]'" | pica sample 100 -o samples.dat
 
 This command selects subfields of a record and print them as CSV data. A select
 expression consists of a non-empty list of selectors. A selector references a
-field and a list of subfields. If a selector's field or any subfield is
-repeatable, the rows are "multiplied". For example, if the first selector
-returns one row, the second selector two rows and a third selecor 3 rows, the
-result will contain `1 * 2 * 3 = 6` rows. Non-existing fields or subfields
-results in an empty column.
+field and a list of subfields or an static value enclosed in single quotes. If
+a selector's field or any subfield is repeatable, the rows are
+"multiplied". For example, if the first selector returns one row, the second
+selector two rows and a third selecor 3 rows, the result will contain `1 * 2 *
+3 = 6` rows. Non-existing fields or subfields results in an empty column.
 
 ```bash
 $ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
 123456789X,a,b,c
 123456789X,d,e,f
+
+$ pica select -s "003@.0, 'foo', 'bar'" DUMP.dat.gz
+123456789X,foo,bar
+123456789X,foo,bar
 ```
 
 To filter for fields matching a subfield filter, the first part of a complex

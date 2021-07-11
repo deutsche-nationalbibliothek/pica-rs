@@ -39,6 +39,24 @@ fn select_two_columns() -> MatchResult {
 }
 
 #[test]
+fn select_static_selector() -> MatchResult {
+    CommandBuilder::new("select")
+        .arg("--skip-invalid")
+        .arg("003@.0, 'foo', 002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .with_stdout("1004916019,foo,Ts1\n")
+        .with_stdout("119232022,foo,Tp1\n")
+        .with_stdout("000008672,foo,Tb1\n")
+        .with_stdout("000016586,foo,Tb1\n")
+        .with_stdout("000016756,foo,Tb1\n")
+        .with_stdout("000009229,foo,Tb1\n")
+        .with_stdout("121169502,foo,Tp1\n")
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn select_repeated_field() -> MatchResult {
     CommandBuilder::new("select")
         .arg("--skip-invalid")
