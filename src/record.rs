@@ -902,50 +902,59 @@ impl ByteRecord {
     }
 
     pub fn select(&self, selector: &Selector) -> Outcome {
-        let result = self
-            .iter()
-            .filter(|field| selector.tag == field.tag)
-            .filter(|field| field.occurrence == selector.occurrence)
-            .filter(|field| {
-                if let Some(filter) = &selector.filter {
-                    filter.matches(field)
-                } else {
-                    true
-                }
-            })
-            .map(|field| &field.subfields)
-            .map(|subfields| {
-                selector
-                    .subfields
+        match selector {
+            Selector::Value(value) => {
+                Outcome::from_values(vec![BString::from(value.as_bytes())])
+            }
+            Selector::Field(selector) => {
+                let result = self
                     .iter()
-                    .map(|code| {
-                        subfields
-                            .iter()
-                            .filter(|subfield| subfield.code == *code)
-                            .map(|subfield| vec![subfield.value().to_owned()])
-                            .collect::<Vec<Vec<BString>>>()
-                    })
-                    .map(|x| {
-                        if x.is_empty() {
-                            Outcome::one()
+                    .filter(|field| selector.tag == field.tag)
+                    .filter(|field| field.occurrence == selector.occurrence)
+                    .filter(|field| {
+                        if let Some(filter) = &selector.filter {
+                            filter.matches(field)
                         } else {
-                            Outcome(x)
+                            true
                         }
                     })
-                    .fold(Outcome::default(), |acc, x| acc * x)
-            })
-            .fold(Outcome::default(), |acc, x| acc + x);
+                    .map(|field| &field.subfields)
+                    .map(|subfields| {
+                        selector
+                            .subfields
+                            .iter()
+                            .map(|code| {
+                                subfields
+                                    .iter()
+                                    .filter(|subfield| subfield.code == *code)
+                                    .map(|subfield| {
+                                        vec![subfield.value().to_owned()]
+                                    })
+                                    .collect::<Vec<Vec<BString>>>()
+                            })
+                            .map(|x| {
+                                if x.is_empty() {
+                                    Outcome::one()
+                                } else {
+                                    Outcome(x)
+                                }
+                            })
+                            .fold(Outcome::default(), |acc, x| acc * x)
+                    })
+                    .fold(Outcome::default(), |acc, x| acc + x);
 
-        if result.is_empty() {
-            let mut values: Vec<BString> =
-                Vec::with_capacity(selector.subfields.len());
-            for _ in 0..selector.subfields.len() {
-                values.push(BString::from(""));
+                if result.is_empty() {
+                    let mut values: Vec<BString> =
+                        Vec::with_capacity(selector.subfields.len());
+                    for _ in 0..selector.subfields.len() {
+                        values.push(BString::from(""));
+                    }
+
+                    Outcome::from_values(values)
+                } else {
+                    result
+                }
             }
-
-            Outcome::from_values(values)
-        } else {
-            result
         }
     }
 }
