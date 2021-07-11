@@ -143,9 +143,7 @@ impl Deref for Selectors {
 
 fn parse_selector(i: &str) -> IResult<&str, Selector> {
     alt((
-        map(ws(parse_string), |value| {
-            Selector::Value(String::from(value))
-        }),
+        map(ws(parse_string), Selector::Value),
         map(
             tuple((
                 parse_field_tag,
