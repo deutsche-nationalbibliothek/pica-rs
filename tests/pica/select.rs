@@ -105,6 +105,39 @@ fn select_filter() -> MatchResult {
 }
 
 #[test]
+fn select_occurrence_matcher() -> MatchResult {
+    CommandBuilder::new("select")
+        .arg("--skip-invalid")
+        .arg("047A/*.e")
+        .arg("tests/data/119232022.dat")
+        .with_stdout("DE-386\n")
+        .run()?;
+
+    CommandBuilder::new("select")
+        .arg("--skip-invalid")
+        .arg("047A/03.e")
+        .arg("tests/data/119232022.dat")
+        .with_stdout("DE-386\n")
+        .run()?;
+
+    CommandBuilder::new("select")
+        .arg("--skip-invalid")
+        .arg("047A/01-03.e")
+        .arg("tests/data/119232022.dat")
+        .with_stdout("DE-386\n")
+        .run()?;
+
+    CommandBuilder::new("select")
+        .arg("--skip-invalid")
+        .arg("047A/01-04.e")
+        .arg("tests/data/119232022.dat")
+        .with_stdout("DE-386\n")
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn select_header() -> MatchResult {
     CommandBuilder::new("select")
         .arg("--skip-invalid")
