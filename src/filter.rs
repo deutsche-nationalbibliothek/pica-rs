@@ -13,7 +13,9 @@ use nom::combinator::{
 };
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::{count, fold_many0, many0, many1, many_m_n, separated_list1};
-use nom::sequence::{delimited, pair, preceded, terminated, tuple};
+use nom::sequence::{
+    delimited, pair, preceded, separated_pair, terminated, tuple,
+};
 use nom::{Finish, IResult};
 
 use bstr::BString;
@@ -23,6 +25,7 @@ use std::cmp::PartialEq;
 #[derive(Debug, Clone, PartialEq)]
 pub enum OccurrenceMatcher {
     Occurrence(Occurrence),
+    Range(Occurrence, Occurrence),
     None,
     Any,
 }
@@ -62,6 +65,13 @@ impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
             OccurrenceMatcher::Occurrence(lhs) => {
                 if let Some(rhs) = self {
                     lhs == rhs
+                } else {
+                    false
+                }
+            }
+            OccurrenceMatcher::Range(min, max) => {
+                if let Some(rhs) = self {
+                    (rhs.0 >= min.0) && (rhs.0 <= max.0)
                 } else {
                     false
                 }
@@ -332,6 +342,30 @@ pub(crate) fn parse_occurrence_matcher(
         preceded(
             char('/'),
             cut(alt((
+                map(
+                    verify(
+                        separated_pair(
+                            recognize(many_m_n(
+                                2,
+                                3,
+                                satisfy(|c| c.is_ascii_digit()),
+                            )),
+                            char('-'),
+                            cut(recognize(many_m_n(
+                                2,
+                                3,
+                                satisfy(|c| c.is_ascii_digit()),
+                            ))),
+                        ),
+                        |(min, max)| min < max,
+                    ),
+                    |(min, max)| {
+                        OccurrenceMatcher::Range(
+                            Occurrence::from_unchecked(min),
+                            Occurrence::from_unchecked(max),
+                        )
+                    },
+                ),
                 map(
                     recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
                     |value| {

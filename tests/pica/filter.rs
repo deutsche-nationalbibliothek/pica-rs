@@ -303,6 +303,47 @@ fn filter_multiple_subfields() -> MatchResult {
 }
 
 #[test]
+fn filter_occurrence_matcher() -> MatchResult {
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("047A/*.e == 'DE-386'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("047A/03.e == 'DE-386'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("047A/01-03.e == 'DE-386'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("047A/01-02.e == 'DE-386'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout_empty()
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("047A/02-01.e == 'DE-386'")
+        .arg("tests/data/119232022.dat")
+        .with_stderr("error: invalid filter: \"047A/02-01.e == 'DE-386'\"\n")
+        .with_status(1)
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn filter_invalid_filter() -> MatchResult {
     CommandBuilder::new("filter")
         .arg("--skip-invalid")
