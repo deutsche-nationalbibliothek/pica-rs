@@ -1,7 +1,7 @@
 use crate::filter::{
     parse_field_tag, parse_occurrence_matcher, parse_string,
     parse_subfield_code, parse_subfield_filter, ws, OccurrenceMatcher,
-    SubfieldFilter,
+    SubfieldFilter, Tag,
 };
 
 use nom::branch::alt;
@@ -17,7 +17,7 @@ use std::ops::{Add, Deref, Mul};
 
 #[derive(Debug, PartialEq)]
 pub struct FieldSelector {
-    pub(crate) tag: String,
+    pub(crate) tag: Tag,
     pub(crate) occurrence: OccurrenceMatcher,
     pub(crate) filter: Option<SubfieldFilter>,
     pub(crate) subfields: Vec<char>,
@@ -108,7 +108,7 @@ impl Add for Outcome {
 
 impl FieldSelector {
     pub fn new(
-        tag: String,
+        tag: Tag,
         occurrence: OccurrenceMatcher,
         filter: Option<SubfieldFilter>,
         subfields: Vec<char>,
@@ -152,7 +152,7 @@ fn parse_selector(i: &str) -> IResult<&str, Selector> {
             )),
             |(tag, occurrence, subfield)| {
                 Selector::Field(FieldSelector::new(
-                    String::from(tag),
+                    tag,
                     occurrence,
                     None,
                     vec![subfield],
@@ -174,10 +174,7 @@ fn parse_selector(i: &str) -> IResult<&str, Selector> {
             )),
             |(tag, occurrence, (filter, subfields))| {
                 Selector::Field(FieldSelector::new(
-                    String::from(tag),
-                    occurrence,
-                    filter,
-                    subfields,
+                    tag, occurrence, filter, subfields,
                 ))
             },
         ),
@@ -207,7 +204,7 @@ mod tests {
             Ok((
                 "",
                 Selector::Field(FieldSelector::new(
-                    "003@".to_string(),
+                    Tag::Constant("003@".to_string()),
                     OccurrenceMatcher::None,
                     None,
                     vec!['0']
@@ -220,7 +217,7 @@ mod tests {
             Ok((
                 "",
                 Selector::Field(FieldSelector::new(
-                    "044H".to_string(),
+                    Tag::Constant("044H".to_string()),
                     OccurrenceMatcher::Any,
                     None,
                     vec!['9', 'E', 'H']
@@ -233,7 +230,7 @@ mod tests {
             Ok((
                 "",
                 Selector::Field(FieldSelector::new(
-                    "044H".to_string(),
+                    Tag::Constant("044H".to_string()),
                     OccurrenceMatcher::Any,
                     Some(SubfieldFilter::Comparison(
                         vec!['E'],
@@ -250,7 +247,7 @@ mod tests {
             Ok((
                 "",
                 Selector::Field(FieldSelector::new(
-                    "012A".to_string(),
+                    Tag::Constant("012A".to_string()),
                     OccurrenceMatcher::Any,
                     None,
                     vec!['a']
@@ -263,7 +260,7 @@ mod tests {
             Ok((
                 "",
                 Selector::Field(FieldSelector::new(
-                    "012A".to_string(),
+                    Tag::Constant("012A".to_string()),
                     OccurrenceMatcher::new("01").unwrap(),
                     None,
                     vec!['a']
