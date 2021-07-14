@@ -6,6 +6,7 @@ use crate::Path;
 use bstr::{BString, ByteSlice};
 use regex::bytes::Regex;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
+use std::cmp::PartialEq;
 use std::fmt;
 use std::io::Write;
 use std::ops::Deref;

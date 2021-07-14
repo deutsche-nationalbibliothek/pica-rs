@@ -138,6 +138,19 @@ fn select_occurrence_matcher() -> MatchResult {
 }
 
 #[test]
+fn select_tag_pattern() -> MatchResult {
+    CommandBuilder::new("select")
+        .arg("--skip-invalid")
+        .arg("001[AB].0")
+        .arg("tests/data/119232022.dat")
+        .with_stdout("0386:16-03-95\n")
+        .with_stdout("8999:20-07-20\n")
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn select_header() -> MatchResult {
     CommandBuilder::new("select")
         .arg("--skip-invalid")

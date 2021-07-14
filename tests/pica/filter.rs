@@ -344,6 +344,25 @@ fn filter_occurrence_matcher() -> MatchResult {
 }
 
 #[test]
+fn filter_tag_pattern() -> MatchResult {
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("001[AB].0 == '0386:16-03-95'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    CommandBuilder::new("filter")
+        .arg("--skip-invalid")
+        .arg("001[AB].0 == '8999:20-07-20'")
+        .arg("tests/data/119232022.dat")
+        .with_stdout(SAMPLE2)
+        .run()?;
+
+    Ok(())
+}
+
+#[test]
 fn filter_invalid_filter() -> MatchResult {
     CommandBuilder::new("filter")
         .arg("--skip-invalid")

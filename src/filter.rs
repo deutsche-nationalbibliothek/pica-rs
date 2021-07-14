@@ -23,6 +23,33 @@ use regex::Regex;
 use std::cmp::PartialEq;
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum Tag {
+    Constant(String),
+    Pattern(Vec<char>, Vec<char>, Vec<char>, Vec<char>),
+}
+
+impl PartialEq<Tag> for BString {
+    fn eq(&self, other: &Tag) -> bool {
+        match other {
+            Tag::Constant(tag) => tag == self,
+            Tag::Pattern(p0, p1, p2, p3) => {
+                self.len() == 4
+                    && p0.contains(&(self[0] as char))
+                    && p1.contains(&(self[1] as char))
+                    && p2.contains(&(self[2] as char))
+                    && p3.contains(&(self[3] as char))
+            }
+        }
+    }
+}
+
+impl PartialEq<BString> for Tag {
+    fn eq(&self, other: &BString) -> bool {
+        other == self
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum OccurrenceMatcher {
     Occurrence(Occurrence),
     Range(Occurrence, Occurrence),
@@ -177,9 +204,9 @@ impl SubfieldFilter {
 
 #[derive(Debug, PartialEq)]
 pub enum Filter {
-    Field(String, OccurrenceMatcher, SubfieldFilter),
+    Field(Tag, OccurrenceMatcher, SubfieldFilter),
     Boolean(Box<Filter>, BooleanOp, Box<Filter>),
-    Exists(String, OccurrenceMatcher),
+    Exists(Tag, OccurrenceMatcher),
     Grouped(Box<Filter>),
     Not(Box<Filter>),
     True,
@@ -314,12 +341,54 @@ where
 }
 
 /// Parses a field tag.
-pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, &str> {
-    recognize(tuple((
-        one_of("012"),
-        count(one_of("0123456789"), 2),
-        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-    )))(i)
+pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, Tag> {
+    alt((
+        // CONSTANT
+        map(
+            recognize(tuple((
+                one_of("012"),
+                count(one_of("0123456789"), 2),
+                one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
+            ))),
+            |tag| Tag::Constant(String::from(tag)),
+        ),
+        map(
+            tuple((
+                alt((
+                    map(one_of("012"), |x| vec![x]),
+                    preceded(
+                        char('['),
+                        cut(terminated(many1(one_of("012")), char(']'))),
+                    ),
+                )),
+                alt((
+                    map(one_of("0123456789"), |x| vec![x]),
+                    preceded(
+                        char('['),
+                        cut(terminated(many1(one_of("0123456789")), char(']'))),
+                    ),
+                )),
+                alt((
+                    map(one_of("0123456789"), |x| vec![x]),
+                    preceded(
+                        char('['),
+                        cut(terminated(many1(one_of("0123456789")), char(']'))),
+                    ),
+                )),
+                alt((
+                    map(one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"), |x| vec![x]),
+                    preceded(
+                        char('['),
+                        cut(terminated(
+                            many1(one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@")),
+                            char(']'),
+                        )),
+                    ),
+                )),
+            )),
+            |(p1, p2, p3, p4)| Tag::Pattern(p1, p2, p3, p4),
+        ),
+    ))(i)
 }
 
 /// Parses a subfield code.
@@ -516,7 +585,7 @@ fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
         )),
         |((tag, occurrence), filter)| {
             Filter::Field(
-                String::from(tag),
+                tag,
                 occurrence.unwrap_or(OccurrenceMatcher::None),
                 filter,
             )
@@ -539,7 +608,7 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
         )),
         |((tag, occurrence), filter)| {
             Filter::Field(
-                String::from(tag),
+                tag,
                 occurrence.unwrap_or(OccurrenceMatcher::None),
                 filter,
             )
@@ -554,10 +623,7 @@ fn parse_field_exists(i: &str) -> IResult<&str, Filter> {
             char('?'),
         ),
         |(tag, occurrence)| {
-            Filter::Exists(
-                String::from(tag),
-                occurrence.unwrap_or(OccurrenceMatcher::None),
-            )
+            Filter::Exists(tag, occurrence.unwrap_or(OccurrenceMatcher::None))
         },
     )(i)
 }
@@ -754,7 +820,7 @@ mod tests {
     #[test]
     fn test_parse_field_complex() {
         let field_expr = Filter::Field(
-            "012A".to_string(),
+            Tag::Constant("012A".to_string()),
             OccurrenceMatcher::new("000").unwrap(),
             SubfieldFilter::Boolean(
                 Box::new(SubfieldFilter::Exists(vec!['0'])),
@@ -776,20 +842,22 @@ mod tests {
     #[test]
     fn test_parse_field_exists() {
         let field_expr = Filter::Exists(
-            "012A".to_string(),
+            Tag::Constant("012A".to_string()),
             OccurrenceMatcher::new("00").unwrap(),
         );
         assert_eq!(parse_field_exists("012A/00?"), Ok(("", field_expr)));
 
-        let field_expr =
-            Filter::Exists("012A".to_string(), OccurrenceMatcher::None);
+        let field_expr = Filter::Exists(
+            Tag::Constant("012A".to_string()),
+            OccurrenceMatcher::None,
+        );
         assert_eq!(parse_field_exists("012A?"), Ok(("", field_expr)));
     }
 
     #[test]
     fn test_parse_field_simple() {
         let field_expr = Filter::Field(
-            "003@".to_string(),
+            Tag::Constant("003@".to_string()),
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
                 vec!['0'],
@@ -804,7 +872,7 @@ mod tests {
     #[test]
     fn test_parse_field_group() {
         let field_expr = Filter::Grouped(Box::new(Filter::Field(
-            "003@".to_string(),
+            Tag::Constant("003@".to_string()),
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
                 vec!['0'],
@@ -823,7 +891,7 @@ mod tests {
     fn test_parse_field_boolean_expr() {
         let filter_expr = Filter::Boolean(
             Box::new(Filter::Field(
-                "003@".to_string(),
+                Tag::Constant("003@".to_string()),
                 OccurrenceMatcher::None,
                 SubfieldFilter::Comparison(
                     vec!['0'],
@@ -833,7 +901,7 @@ mod tests {
             )),
             BooleanOp::And,
             Box::new(Filter::Field(
-                "012A".to_string(),
+                Tag::Constant("012A".to_string()),
                 OccurrenceMatcher::None,
                 SubfieldFilter::Boolean(
                     Box::new(SubfieldFilter::Exists(vec!['a'])),
@@ -852,7 +920,7 @@ mod tests {
     #[test]
     fn test_decode() {
         let expected = Filter::Field(
-            "003@".to_string(),
+            Tag::Constant("003@".to_string()),
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
                 vec!['0'],
