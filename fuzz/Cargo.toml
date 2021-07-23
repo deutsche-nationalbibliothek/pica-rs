@@ -1,0 +1,44 @@
+
+[package]
+name = "pica-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.pica]
+path = ".."
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "fuzz_byte_record"
+path = "fuzz_targets/fuzz_byte_record.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_filter"
+path = "fuzz_targets/fuzz_filter.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_selectors"
+path = "fuzz_targets/fuzz_selectors.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_path"
+path = "fuzz_targets/fuzz_path.rs"
+test = false
+doc = false
