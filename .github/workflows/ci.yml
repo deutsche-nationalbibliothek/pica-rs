@@ -82,11 +82,11 @@ jobs:
             max-total-time: 300
             rust: nightly
             can-fail: false
-          - target: fuzz_filter
-            name: fuzz-filter
-            max-total-time: 300
-            rust: nightly
-            can-fail: true
+          # - target: fuzz_filter
+          #   name: fuzz-filter
+          #   max-total-time: 300
+          #   rust: nightly
+          #   can-fail: true
           - target: fuzz_path
             name: fuzz-path
             max-total-time: 300
