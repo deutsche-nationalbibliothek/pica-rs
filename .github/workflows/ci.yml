@@ -90,7 +90,7 @@ jobs:
             max-total-time: 300
             rust: nightly
     runs-on: ubuntu-latest
-    needs: [check]
+    needs: [test]
     env:
       CARGO_INCREMENTAL: 0
     steps:
