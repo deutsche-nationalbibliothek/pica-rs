@@ -81,18 +81,27 @@ jobs:
             name: fuzz-byte-record
             max-total-time: 300
             rust: nightly
-          - target: fuzz_path_record
-            name: fuzz-path-record
+            can-fail: false
+          - target: fuzz_filter
+            name: fuzz-filter
             max-total-time: 300
             rust: nightly
-          - target: fuzz_selectors_record
-            name: fuzz-selectors-record
+            can-fail: true
+          - target: fuzz_path
+            name: fuzz-path
             max-total-time: 300
             rust: nightly
+            can-fail: false
+          - target: fuzz_selectors
+            name: fuzz-selectors
+            max-total-time: 300
+            rust: nightly
+            can-fail: false
     runs-on: ubuntu-latest
     needs: [test]
     env:
       CARGO_INCREMENTAL: 0
+    continue-on-error: ${{ matrix.can-fail }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
