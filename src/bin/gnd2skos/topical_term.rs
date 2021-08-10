@@ -65,5 +65,10 @@ impl Concept for TopicalTerm {
                 graph.insert(&subj, &skos::altLabel, &label).unwrap();
             }
         }
+
+        // skos:broader or skos:related
+        for field in ["022R", "028R", "029R", "030R", "041R", "065R"] {
+            self.add_relations(&subj, self.all(field), graph);
+        }
     }
 }
