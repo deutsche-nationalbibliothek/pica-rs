@@ -28,7 +28,6 @@ pub type StrLiteral = Literal<Box<str>>;
 fn test_skosify() {
     let mut cmd = Command::cargo_bin("gnd2skos").unwrap();
     let assert = cmd.arg("tests/data/119232022.dat").assert();
-
     let output = assert.get_output();
 
     let graph: FastGraph =
@@ -86,5 +85,6 @@ fn test_skosify() {
     let gnd_ns = Namespace::new("http://d-nb.info/gnd/").unwrap();
     let subject = gnd_ns.get("119232022").unwrap();
     let object = gnd_ns.get("118518208").unwrap();
+
     assert!(graph.contains(&subject, &skos::related, &object).unwrap());
 }

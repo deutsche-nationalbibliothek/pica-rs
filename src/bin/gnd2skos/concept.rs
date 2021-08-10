@@ -10,6 +10,7 @@ pub type StrLiteral = Literal<Box<str>>;
 
 pub trait Concept {
     fn skosify<G: MutableGraph>(&self, graph: &mut G);
+
     fn add_relations<G: MutableGraph>(
         &self,
         subj: &SimpleIri,
