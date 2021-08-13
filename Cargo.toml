@@ -24,7 +24,8 @@ sophia_api = "0.7.0"
 toml = "0.5.8"
 
 [dev-dependencies]
-assert_cmd = "2.0.0"
+assert_cmd = "2.0"
+predicates = "2.0"
 tempfile = "3.2"
 
 [lib]
