@@ -155,7 +155,7 @@ fn pica_cat_missing_file() -> TestResult {
 
     assert
         .failure()
-        .stderr("Pica Error: No such file or directory (os error 2)\n")
+        .stderr(predicate::str::starts_with("Pica Error:"))
         .stdout(predicate::str::is_empty())
         .code(1);
     Ok(())
