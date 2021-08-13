@@ -2,6 +2,7 @@ use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs::read_to_string;
 use std::path::Path;
+use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
 
@@ -22,7 +23,7 @@ fn pica_cat_single_file() -> TestResult {
 }
 
 #[test]
-fn pica_cat_multiple_file() -> TestResult {
+fn pica_cat_multiple_files() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("cat")
@@ -42,13 +43,38 @@ fn pica_cat_multiple_file() -> TestResult {
 }
 
 #[test]
-fn pica_cat_gzip_file() -> TestResult {
+fn pica_cat_read_gzip() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("cat")
         .arg("--skip-invalid")
         .arg("tests/data/1004916019.dat.gz")
         .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_cat_write_gzip() -> TestResult {
+    let filename = Builder::new().suffix(".gz").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--gzip")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("cat").arg(filename_str).assert();
 
     let expected =
         predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));

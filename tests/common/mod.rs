@@ -6,7 +6,7 @@ use tempfile::{Builder, TempDir};
 pub type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 pub struct TestContext {
-    tempdir: TempDir,
+    pub tempdir: TempDir,
 }
 
 impl TestContext {
