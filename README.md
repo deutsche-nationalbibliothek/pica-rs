@@ -150,7 +150,7 @@ outdir
 ### Print
 
 The `print` command is used to print records in a human-readable format. The
-format is similar to PICA3.
+format is similar to [PICA Plain](http://format.gbv.de/pica/plain).
 
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
