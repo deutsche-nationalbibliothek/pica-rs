@@ -19,6 +19,10 @@ pub trait Concept {
         graph: &mut G,
         args: &ArgMatches,
     ) {
+        if args.is_present("no-relations") {
+            return;
+        }
+
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
 
         for field in fields.unwrap_or_default() {
@@ -31,8 +35,10 @@ pub trait Concept {
                     .get(field.first('9').unwrap().to_str().unwrap())
                     .unwrap();
 
-                if code.starts_with(b"ob") && !args.is_present("no-broader") {
-                    graph.insert(subj, &skos::broader, &gnd_id).unwrap();
+                if code.starts_with(b"ob") {
+                    if !args.is_present("no-broader") {
+                        graph.insert(subj, &skos::broader, &gnd_id).unwrap();
+                    }
                 } else if !args.is_present("no-related") {
                     graph.insert(subj, &skos::related, &gnd_id).unwrap();
                 }
