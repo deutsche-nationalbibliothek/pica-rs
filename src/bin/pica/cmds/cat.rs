@@ -35,7 +35,7 @@ pub fn cli() -> App {
                 .value_name("file")
                 .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filenames").multiple(true).required(true))
+        .arg(Arg::new("filenames").multiple_values(true).required(true))
 }
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
