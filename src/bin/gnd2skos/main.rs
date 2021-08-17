@@ -72,12 +72,12 @@ fn main() -> CliResult<()> {
         let bbg = record.first("002@").unwrap().first('0').unwrap();
 
         match &bbg[..2] {
-            b"Tb" => CorporateBody(record).skosify(&mut g),
-            b"Tf" => Event(record).skosify(&mut g),
-            b"Tg" => GeoPlace(record).skosify(&mut g),
-            b"Tp" => Person(record).skosify(&mut g),
-            b"Ts" => TopicalTerm(record).skosify(&mut g),
-            b"Tu" => Work(record).skosify(&mut g),
+            b"Tb" => CorporateBody(record).skosify(&mut g, &args),
+            b"Tf" => Event(record).skosify(&mut g, &args),
+            b"Tg" => GeoPlace(record).skosify(&mut g, &args),
+            b"Tp" => Person(record).skosify(&mut g, &args),
+            b"Ts" => TopicalTerm(record).skosify(&mut g, &args),
+            b"Tu" => Work(record).skosify(&mut g, &args),
             _ => unimplemented!(),
         }
     }

@@ -1,9 +1,9 @@
+use bstr::ByteSlice;
+use clap::ArgMatches;
 use pica::{Field, StringRecord};
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
 use std::ops::Deref;
-
-use bstr::ByteSlice;
 
 use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
@@ -44,7 +44,7 @@ impl TopicalTerm {
 }
 
 impl Concept for TopicalTerm {
-    fn skosify<G: MutableGraph>(&self, graph: &mut G) {
+    fn skosify<G: MutableGraph>(&self, graph: &mut G, args: &ArgMatches) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let subj = gnd.get(idn.to_str().unwrap()).unwrap();
@@ -68,7 +68,7 @@ impl Concept for TopicalTerm {
 
         // skos:broader or skos:related
         for field in ["022R", "028R", "029R", "030R", "041R", "065R"] {
-            self.add_relations(&subj, self.all(field), graph);
+            self.add_relations(&subj, self.all(field), graph, args);
         }
     }
 }

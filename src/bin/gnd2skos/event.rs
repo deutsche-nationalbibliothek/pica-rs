@@ -1,3 +1,4 @@
+use clap::ArgMatches;
 use pica::{Field, StringRecord};
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
@@ -70,7 +71,7 @@ impl Event {
 }
 
 impl Concept for Event {
-    fn skosify<G: MutableGraph>(&self, graph: &mut G) {
+    fn skosify<G: MutableGraph>(&self, graph: &mut G, args: &ArgMatches) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let subj = gnd.get(idn.to_str().unwrap()).unwrap();
@@ -92,7 +93,7 @@ impl Concept for Event {
 
         // skos:broader or skos:related
         for field in ["022R", "028R", "029R", "030R", "041R", "065R"] {
-            self.add_relations(&subj, self.all(field), graph);
+            self.add_relations(&subj, self.all(field), graph, args);
         }
     }
 }
