@@ -12,6 +12,22 @@ pub fn build_cli() -> App<'static> {
                 .about("skip invalid records"),
         )
         .arg(
+            Arg::new("no-relations")
+                .long("no-relations")
+                .about("Don't add links between concepts.")
+                .conflicts_with_all(&["no-broader", "no-related"]),
+        )
+        .arg(
+            Arg::new("no-broader")
+                .long("no-broader")
+                .about("Don't add broader links between concepts."),
+        )
+        .arg(
+            Arg::new("no-related")
+                .long("no-related")
+                .about("Don't add related links between concepts."),
+        )
+        .arg(
             Arg::new("filter")
                 .about("A filter expression used for searching.")
                 .takes_value(true)
