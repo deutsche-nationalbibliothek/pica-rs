@@ -8,8 +8,8 @@ default-run = "pica"
 
 [dependencies]
 bstr = "0.2.16"
-clap = "3.0.0-beta.2"
-clap_generate = "3.0.0-beta.2"
+clap = "3.0.0-beta.4"
+clap_generate = "3.0.0-beta.4"
 csv = "1.1"
 directories = "3.0"
 flate2 = "1.0"
