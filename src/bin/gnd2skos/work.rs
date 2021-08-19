@@ -1,5 +1,4 @@
 use bstr::ByteSlice;
-use clap::ArgMatches;
 use pica::{Field, StringRecord};
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
@@ -11,6 +10,7 @@ use crate::event::Event;
 use crate::geoplace::GeoPlace;
 use crate::ns::skos;
 use crate::person::Person;
+use crate::AppContext;
 
 pub struct Work(pub(crate) StringRecord);
 
@@ -87,7 +87,7 @@ impl Work {
 }
 
 impl Concept for Work {
-    fn skosify<G: MutableGraph>(&self, graph: &mut G, args: &ArgMatches) {
+    fn skosify<G: MutableGraph>(&self, graph: &mut G, ctx: &AppContext) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let subj = gnd.get(idn.to_str().unwrap()).unwrap();
@@ -98,22 +98,10 @@ impl Concept for Work {
 
         // skos:prefLabel
         if let Some(label) = Self::get_label(self.first("022A").unwrap()) {
-            if let Some(ref prefix) = prefix {
-                let label = StrLiteral::new_lang(
-                    format!("{} : {}", prefix.txt(), label.txt()),
-                    "de",
-                )
-                .unwrap();
-
-                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
-            } else {
-                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
-            }
-        }
-
-        // skos:altLabel
-        for field in self.all("022@").unwrap_or_default() {
-            if let Some(label) = Self::get_label(field) {
+            if !ctx
+                .label_ignore_list
+                .contains(label.txt().to_string(), idn.to_string())
+            {
                 if let Some(ref prefix) = prefix {
                     let label = StrLiteral::new_lang(
                         format!("{} : {}", prefix.txt(), label.txt()),
@@ -121,16 +109,38 @@ impl Concept for Work {
                     )
                     .unwrap();
 
-                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    graph.insert(&subj, &skos::prefLabel, &label).unwrap();
                 } else {
-                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    graph.insert(&subj, &skos::prefLabel, &label).unwrap();
+                }
+            }
+        }
+
+        // skos:altLabel
+        for field in self.all("022@").unwrap_or_default() {
+            if let Some(label) = Self::get_label(field) {
+                if !ctx
+                    .label_ignore_list
+                    .contains(label.txt().to_string(), idn.to_string())
+                {
+                    if let Some(ref prefix) = prefix {
+                        let label = StrLiteral::new_lang(
+                            format!("{} : {}", prefix.txt(), label.txt()),
+                            "de",
+                        )
+                        .unwrap();
+
+                        graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    } else {
+                        graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    }
                 }
             }
         }
 
         // skos:broader or skos:related
         for field in ["022R", "028R", "029R", "030R", "041R", "065R"] {
-            self.add_relations(&subj, self.all(field), graph, args);
+            self.add_relations(&subj, self.all(field), graph, ctx.args);
         }
     }
 }

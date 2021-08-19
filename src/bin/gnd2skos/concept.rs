@@ -1,4 +1,5 @@
 use crate::ns::skos;
+use crate::AppContext;
 use bstr::ByteSlice;
 use clap::ArgMatches;
 use pica::Field;
@@ -10,7 +11,7 @@ use sophia::term::SimpleIri;
 pub type StrLiteral = Literal<Box<str>>;
 
 pub trait Concept {
-    fn skosify<G: MutableGraph>(&self, graph: &mut G, args: &ArgMatches);
+    fn skosify<G: MutableGraph>(&self, graph: &mut G, ctx: &AppContext);
 
     fn add_relations<G: MutableGraph>(
         &self,

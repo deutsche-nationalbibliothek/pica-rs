@@ -28,6 +28,13 @@ pub fn build_cli() -> App<'static> {
                 .about("Don't add related links between concepts."),
         )
         .arg(
+            Arg::new("label-ignore-list")
+                .about("A list of (idn,label)-pairs to be ignored.")
+                .value_name("filename")
+                .takes_value(true)
+                .long("label-ignore-list"),
+        )
+        .arg(
             Arg::new("filter")
                 .about("A filter expression used for searching.")
                 .takes_value(true)
