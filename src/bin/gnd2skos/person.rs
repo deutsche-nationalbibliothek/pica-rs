@@ -1,5 +1,4 @@
 use bstr::ByteSlice;
-use clap::ArgMatches;
 use pica::{Field, StringRecord};
 use regex::Regex;
 use sophia::graph::MutableGraph;
@@ -8,6 +7,7 @@ use std::ops::Deref;
 
 use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
+use crate::AppContext;
 
 pub struct Person(pub(crate) StringRecord);
 
@@ -91,7 +91,7 @@ impl Person {
 }
 
 impl Concept for Person {
-    fn skosify<G: MutableGraph>(&self, graph: &mut G, args: &ArgMatches) {
+    fn skosify<G: MutableGraph>(&self, graph: &mut G, ctx: &AppContext) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let re = Regex::new(r"([^,]+),\s([^,]+)$").unwrap();
@@ -112,13 +112,23 @@ impl Concept for Person {
                 label
             };
 
-            graph.insert(&subj, &skos::prefLabel, &label).unwrap();
+            if !ctx
+                .label_ignore_list
+                .contains(label.txt().to_string(), idn.to_string())
+            {
+                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
+            }
         }
 
         // skos:altLabel
         for field in self.all("028@").unwrap_or_default() {
             if let Some(label) = Self::get_label(field) {
-                graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                if !ctx
+                    .label_ignore_list
+                    .contains(label.txt().to_string(), idn.to_string())
+                {
+                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                }
             }
         }
 
@@ -137,13 +147,18 @@ impl Concept for Person {
                 )
                 .unwrap();
 
-                graph.insert(&subj, &skos::hiddenLabel, &obj).unwrap();
+                if !ctx
+                    .label_ignore_list
+                    .contains(label.txt().to_string(), idn.to_string())
+                {
+                    graph.insert(&subj, &skos::hiddenLabel, &obj).unwrap();
+                }
             }
         }
 
         // skos:broader or skos:related
         for field in ["022R", "028R", "029R", "030R", "041R", "065R"] {
-            self.add_relations(&subj, self.all(field), graph, args);
+            self.add_relations(&subj, self.all(field), graph, ctx.args);
         }
     }
 }

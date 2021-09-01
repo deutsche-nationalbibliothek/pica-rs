@@ -1,4 +1,3 @@
-use clap::ArgMatches;
 use pica::{Field, StringRecord};
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
@@ -8,6 +7,7 @@ use bstr::ByteSlice;
 
 use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
+use crate::AppContext;
 
 pub struct Event(pub(crate) StringRecord);
 
@@ -71,7 +71,7 @@ impl Event {
 }
 
 impl Concept for Event {
-    fn skosify<G: MutableGraph>(&self, graph: &mut G, args: &ArgMatches) {
+    fn skosify<G: MutableGraph>(&self, graph: &mut G, ctx: &AppContext) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let subj = gnd.get(idn.to_str().unwrap()).unwrap();
@@ -81,19 +81,29 @@ impl Concept for Event {
 
         // skos:prefLabel
         if let Some(label) = Self::get_label(self.first("030A").unwrap()) {
-            graph.insert(&subj, &skos::prefLabel, &label).unwrap();
+            if !ctx
+                .label_ignore_list
+                .contains(label.txt().to_string(), idn.to_string())
+            {
+                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
+            }
         }
 
         // skos:altLabel
         for field in self.all("030@").unwrap_or_default() {
             if let Some(label) = Self::get_label(field) {
-                graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                if !ctx
+                    .label_ignore_list
+                    .contains(label.txt().to_string(), idn.to_string())
+                {
+                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                }
             }
         }
 
         // skos:broader or skos:related
         for field in ["022R", "028R", "029R", "030R", "041R", "065R"] {
-            self.add_relations(&subj, self.all(field), graph, args);
+            self.add_relations(&subj, self.all(field), graph, ctx.args);
         }
     }
 }
