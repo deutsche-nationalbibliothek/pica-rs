@@ -1046,9 +1046,7 @@ fn pica_filter_missing_file() -> TestResult {
         .failure()
         .code(1)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq(
-            "Pica Error: No such file or directory (os error 2)\n",
-        ));
+        .stderr(predicate::str::starts_with("Pica Error: "));
 
     Ok(())
 }
