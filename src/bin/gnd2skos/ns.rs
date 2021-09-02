@@ -4,6 +4,8 @@ pub mod skos {
         Concept,
         prefLabel,
         altLabel,
-        hiddenLabel
+        hiddenLabel,
+        broader,
+        related
     );
 }

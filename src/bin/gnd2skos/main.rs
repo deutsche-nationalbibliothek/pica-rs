@@ -11,6 +11,7 @@ mod event;
 mod geoplace;
 #[macro_use]
 mod macros;
+mod ignore_list;
 mod ns;
 mod person;
 mod topical_term;
@@ -18,25 +19,43 @@ mod topical_term;
 mod utils;
 mod work;
 
+use clap::ArgMatches;
+use ignore_list::IgnoreList;
 use pica::{Filter, ReaderBuilder};
 use std::fs::File;
 use std::io::{self, Write};
 
 use sophia::graph::inmem::LightGraph;
 use sophia::serializer::nt::NtSerializer;
-use sophia::serializer::*;
 
 use concept::Concept;
 use corporate_body::CorporateBody;
 use event::Event;
 use geoplace::GeoPlace;
 use person::Person;
+use sophia_api::serializer::{Stringifier, TripleSerializer};
 use topical_term::TopicalTerm;
 use utils::{CliError, CliResult};
 use work::Work;
 
+#[derive(Debug)]
+pub struct AppContext<'a> {
+    args: &'a ArgMatches,
+    label_ignore_list: &'a IgnoreList,
+}
+
 fn main() -> CliResult<()> {
     let args = cli::build_cli().get_matches();
+
+    let label_ignore_list = match args.value_of("label-ignore-list") {
+        Some(filename) => IgnoreList::from_path(filename)?,
+        None => IgnoreList::default(),
+    };
+
+    let ctx = AppContext {
+        args: &args,
+        label_ignore_list: &label_ignore_list,
+    };
 
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(filename) => Box::new(File::create(filename)?),
@@ -72,12 +91,12 @@ fn main() -> CliResult<()> {
         let bbg = record.first("002@").unwrap().first('0').unwrap();
 
         match &bbg[..2] {
-            b"Tb" => CorporateBody(record).skosify(&mut g),
-            b"Tf" => Event(record).skosify(&mut g),
-            b"Tg" => GeoPlace(record).skosify(&mut g),
-            b"Tp" => Person(record).skosify(&mut g),
-            b"Ts" => TopicalTerm(record).skosify(&mut g),
-            b"Tu" => Work(record).skosify(&mut g),
+            b"Tb" => CorporateBody(record).skosify(&mut g, &ctx),
+            b"Tf" => Event(record).skosify(&mut g, &ctx),
+            b"Tg" => GeoPlace(record).skosify(&mut g, &ctx),
+            b"Tp" => Person(record).skosify(&mut g, &ctx),
+            b"Ts" => TopicalTerm(record).skosify(&mut g, &ctx),
+            b"Tu" => Work(record).skosify(&mut g, &ctx),
             _ => unimplemented!(),
         }
     }
