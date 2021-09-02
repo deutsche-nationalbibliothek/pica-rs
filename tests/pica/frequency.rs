@@ -55,6 +55,23 @@ fn pica_frequency_limit() -> TestResult {
     let expected = predicate::eq("Tb1,4\nTp1,2\n");
     assert.success().stdout(expected);
 
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("frequency")
+        .arg("--skip-invalid")
+        .arg("--limit")
+        .arg("abc")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::eq(
+            "error: Invalid limit value, expected unsigned integer.\n",
+        ));
+
     Ok(())
 }
 
