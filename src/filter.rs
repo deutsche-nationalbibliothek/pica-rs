@@ -350,7 +350,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(
     verify(is_not("\'\\"), |s: &str| !s.is_empty())(i)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone)]
 enum StringFragment<'a> {
     Literal(&'a str),
     EscapedChar(char),
@@ -919,6 +919,16 @@ mod tests {
         );
 
         assert_eq!(parse_field_simple("003@.0 == 'abc'"), Ok(("", field_expr)));
+    }
+
+    #[test]
+    fn test_parse_not_expr() {
+        let field_expr = Filter::Not(Box::new(Filter::Exists(
+            Tag::Constant("003@".to_string()),
+            OccurrenceMatcher::None,
+        )));
+
+        assert_eq!(parse_field_not_expr("!003@?"), Ok(("", field_expr)));
     }
 
     #[test]
