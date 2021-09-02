@@ -1,6 +1,6 @@
 //! Filter Expressions
 
-use crate::{ByteRecord, Field, Occurrence, Result, Subfield};
+use crate::{ByteRecord, Error, Field, Occurrence, Result, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag, take_while_m_n};
@@ -58,7 +58,7 @@ pub enum OccurrenceMatcher {
 }
 
 impl OccurrenceMatcher {
-    /// Creates a `OccurrenceMatcher`
+    /// Creates a `OccurrenceMatcher::Occurrence`
     ///
     /// # Example
     ///
@@ -81,6 +81,44 @@ impl OccurrenceMatcher {
         T: Into<BString>,
     {
         Ok(OccurrenceMatcher::Occurrence(Occurrence::new(value)?))
+    }
+
+    /// Creates a `OccurrenceMatcher::Occurrence`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Occurrence, OccurrenceMatcher};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let matcher = OccurrenceMatcher::range("01", "03")?;
+    ///     assert_eq!(
+    ///         matcher,
+    ///         OccurrenceMatcher::Range(
+    ///             Occurrence::new("01")?,
+    ///             Occurrence::new("03")?
+    ///         )
+    ///     );
+    ///
+    ///     assert!(OccurrenceMatcher::range("01", "01").is_err());
+    ///     assert!(OccurrenceMatcher::range("03", "01").is_err());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn range<T>(min: T, max: T) -> Result<OccurrenceMatcher>
+    where
+        T: Into<BString> + PartialOrd,
+    {
+        if min >= max {
+            return Err(Error::InvalidOccurrence("min >= max".to_string()));
+        }
+
+        Ok(OccurrenceMatcher::Range(
+            Occurrence::new(min)?,
+            Occurrence::new(max)?,
+        ))
     }
 }
 

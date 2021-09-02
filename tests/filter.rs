@@ -20,10 +20,7 @@ fn test_occurrence_matcher() {
     assert_ne!(None, matcher);
 
     // OccurrenceMatcher::Range
-    let min = Occurrence::new("02").unwrap();
-    let max = Occurrence::new("04").unwrap();
-    let matcher = OccurrenceMatcher::Range(min, max);
-
+    let matcher = OccurrenceMatcher::range("02", "04").unwrap();
     assert_ne!(Some(Occurrence::new("01").unwrap()), matcher);
     assert_eq!(Some(Occurrence::new("02").unwrap()), matcher);
     assert_eq!(Some(Occurrence::new("03").unwrap()), matcher);
