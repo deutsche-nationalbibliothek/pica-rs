@@ -96,23 +96,6 @@ impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
     ///     assert!(Some(Occurrence::new("001")?) == OccurrenceMatcher::Any);
     ///     assert!(None == OccurrenceMatcher::Any);
     ///
-    ///     assert!(Some(Occurrence::new("001")?) != OccurrenceMatcher::None);
-    ///     assert!(None == OccurrenceMatcher::None);
-    ///
-    ///     assert!(Some(Occurrence::new("01")?) == OccurrenceMatcher::new("01")?);
-    ///     assert!(Some(Occurrence::new("01")?) != OccurrenceMatcher::new("02")?);
-    ///
-    ///     let matcher = OccurrenceMatcher::Range(
-    ///         Occurrence::new("02")?,
-    ///         Occurrence::new("04")?,
-    ///     );
-    ///
-    ///     assert!(Some(Occurrence::new("01")?) != matcher);
-    ///     assert!(Some(Occurrence::new("02")?) == matcher);
-    ///     assert!(Some(Occurrence::new("03")?) == matcher);
-    ///     assert!(Some(Occurrence::new("04")?) == matcher);
-    ///     assert!(Some(Occurrence::new("05")?) != matcher);
-    ///
     ///     Ok(())
     /// }
     /// ```
@@ -961,5 +944,18 @@ mod tests {
         );
 
         assert_eq!(Filter::decode("003@.0 == '123456789X'").unwrap(), expected);
+    }
+
+    #[test]
+    fn test_tag_partial_eq() {
+        let tag = Tag::Constant("003@".to_string());
+        assert_eq!(tag, BString::from("003@"));
+        assert_eq!(BString::from("003@"), tag);
+
+        let tag = Tag::Pattern(vec!['0'], vec!['1'], vec!['2'], vec!['A', '@']);
+        assert_eq!(tag, BString::from("012A"));
+        assert_eq!(BString::from("012A"), tag);
+        assert_eq!(tag, BString::from("012@"));
+        assert_eq!(BString::from("012@"), tag);
     }
 }

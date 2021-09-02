@@ -23,9 +23,11 @@ fn test_occurrence_matcher() {
     let min = Occurrence::new("02").unwrap();
     let max = Occurrence::new("04").unwrap();
     let matcher = OccurrenceMatcher::Range(min, max);
+
     assert_ne!(Some(Occurrence::new("01").unwrap()), matcher);
     assert_eq!(Some(Occurrence::new("02").unwrap()), matcher);
     assert_eq!(Some(Occurrence::new("03").unwrap()), matcher);
     assert_eq!(Some(Occurrence::new("04").unwrap()), matcher);
     assert_ne!(Some(Occurrence::new("05").unwrap()), matcher);
+    assert_ne!(None, matcher);
 }
