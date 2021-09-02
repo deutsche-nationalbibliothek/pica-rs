@@ -328,7 +328,7 @@ where
 {
     delimited(
         char('\''),
-        fold_many0(parse_fragment, String::new(), |mut string, fragment| {
+        fold_many0(parse_fragment, String::new, |mut string, fragment| {
             match fragment {
                 StringFragment::Literal(s) => string.push_str(s),
                 StringFragment::EscapedChar(c) => string.push(c),
