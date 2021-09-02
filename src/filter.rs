@@ -350,15 +350,14 @@ fn parse_literal<'a, E: ParseError<&'a str>>(
     verify(is_not("\'\\"), |s: &str| !s.is_empty())(i)
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 enum StringFragment<'a> {
     Literal(&'a str),
     EscapedChar(char),
     EscapedWs,
 }
 
-/// Combine parse_literal, parse_escaped_whitespace, and parse_escaped_char
-/// into a StringFragment.
+/// Combine parse_literal, parse_escaped_char into a StringFragment.
 fn parse_fragment<'a, E>(i: &'a str) -> IResult<&'a str, StringFragment<'a>, E>
 where
     E: ParseError<&'a str>
