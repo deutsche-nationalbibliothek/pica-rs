@@ -85,6 +85,37 @@ impl OccurrenceMatcher {
 }
 
 impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
+    /// Equality comparision between `OccurrenceMatcher` and an
+    /// `Option<Occurrence>`
+    ///
+    /// ```rust
+    /// use pica::{Occurrence, OccurrenceMatcher};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     assert!(Some(Occurrence::new("001")?) == OccurrenceMatcher::Any);
+    ///     assert!(None == OccurrenceMatcher::Any);
+    ///
+    ///     assert!(Some(Occurrence::new("001")?) != OccurrenceMatcher::None);
+    ///     assert!(None == OccurrenceMatcher::None);
+    ///
+    ///     assert!(Some(Occurrence::new("01")?) == OccurrenceMatcher::new("01")?);
+    ///     assert!(Some(Occurrence::new("01")?) != OccurrenceMatcher::new("02")?);
+    ///
+    ///     let matcher = OccurrenceMatcher::Range(
+    ///         Occurrence::new("02")?,
+    ///         Occurrence::new("04")?,
+    ///     );
+    ///
+    ///     assert!(Some(Occurrence::new("01")?) != matcher);
+    ///     assert!(Some(Occurrence::new("02")?) == matcher);
+    ///     assert!(Some(Occurrence::new("03")?) == matcher);
+    ///     assert!(Some(Occurrence::new("04")?) == matcher);
+    ///     assert!(Some(Occurrence::new("05")?) != matcher);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     fn eq(&self, other: &OccurrenceMatcher) -> bool {
         match other {
             OccurrenceMatcher::Any => true,
