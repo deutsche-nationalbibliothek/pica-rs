@@ -17,8 +17,14 @@ fn pica_bash_completion() -> TestResult {
         .arg(filename_str)
         .assert();
     assert.success();
-
     assert!(predicates::path::is_file().eval(filename_str));
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("completion").arg("bash").assert();
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(filename_str));
+
     Ok(())
 }
 
@@ -35,8 +41,14 @@ fn pica_fish_completion() -> TestResult {
         .arg(filename_str)
         .assert();
     assert.success();
-
     assert!(predicates::path::is_file().eval(filename_str));
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("completion").arg("fish").assert();
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(filename_str));
+
     Ok(())
 }
 
@@ -53,7 +65,13 @@ fn pica_zsh_completion() -> TestResult {
         .arg(filename_str)
         .assert();
     assert.success();
-
     assert!(predicates::path::is_file().eval(filename_str));
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("completion").arg("zsh").assert();
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(filename_str));
+
     Ok(())
 }
