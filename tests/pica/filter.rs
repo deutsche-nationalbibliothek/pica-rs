@@ -1,5 +1,8 @@
 use assert_cmd::Command;
+use flate2::read::GzDecoder;
 use predicates::prelude::*;
+use std::fs::{read_to_string, File};
+use std::io::Read;
 use std::path::Path;
 use tempfile::Builder;
 
@@ -363,6 +366,18 @@ fn pica_filter_exists_operator() -> TestResult {
     let assert = cmd
         .arg("filter")
         .arg("--skip-invalid")
+        .arg("047A/03?")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
         .arg("047A/03.e?")
         .arg("tests/data/121169502.dat")
         .assert();
@@ -398,6 +413,18 @@ fn pica_filter_exists_operator() -> TestResult {
 
 #[test]
 fn pica_filter_not_operator() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("!(047A/03.f?)")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
@@ -654,6 +681,103 @@ fn pica_filter_groups() -> TestResult {
 }
 
 #[test]
+fn pica_filter_tag_pattern() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("[012]03@.0 == '121169502'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("007[KN]{a == 'gnd' && 0 in ['121169502', '183361946']}")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("0[46][01]R.4 in ['berc', 'datl']")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_filter_multiple_subfields() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("028[A@].[abd] == 'Heike'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_filter_occurrence_matcher() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("047A/03.e == 'DE-386'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("047A/*.e == 'DE-386'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("047A.e == 'DE-386'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 fn pica_filter_invert_match() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -699,7 +823,31 @@ fn pica_filter_read_gzip() -> TestResult {
 }
 
 #[test]
-fn pica_filter_write_gzip() -> TestResult {
+fn pica_filter_write_plain_output() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("003@.0?")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert!(expected.eval(Path::new(filename_str)));
+
+    Ok(())
+}
+
+#[test]
+fn pica_filter_write_gzip_output() -> TestResult {
+    let expected = read_to_string("tests/data/1004916019.dat").unwrap();
+
     let filename = Builder::new().suffix(".gz").tempfile()?;
     let filename_str = filename.path();
 
@@ -713,12 +861,53 @@ fn pica_filter_write_gzip() -> TestResult {
         .assert();
     assert.success();
 
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("cat").arg(filename_str).assert();
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+    assert_eq!(expected, actual);
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
-    assert.success().stdout(expected);
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--gzip")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("003@.0?")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success();
+
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut expected = String::new();
+    gz.read_to_string(&mut expected).unwrap();
+    assert_eq!(expected, actual);
+
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[filter]
+gzip = true
+"#,
+        )
+        .arg("filter")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("003@.0?")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success();
+
+    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+    assert_eq!(expected, actual);
 
     Ok(())
 }
@@ -803,6 +992,63 @@ fn pica_filter_expression_file() -> TestResult {
     let expected =
         predicate::path::eq_file(Path::new("tests/data/119232022.dat"));
     assert.success().stdout(expected);
+
+    // invalid expression file
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("--file")
+        .arg("tests/data/119232022.dat")
+        .arg("True")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::starts_with("error: invalid filter: "));
+
+    Ok(())
+}
+
+#[test]
+fn pica_filter_invalid_filter() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.!?")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::eq("error: invalid filter: \"003@.!?\"\n"));
+
+    Ok(())
+}
+
+#[test]
+fn pica_filter_missing_file() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0?")
+        .arg("tests/data/dump2.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::eq(
+            "Pica Error: No such file or directory (os error 2)\n",
+        ));
 
     Ok(())
 }
