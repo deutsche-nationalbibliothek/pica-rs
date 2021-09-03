@@ -908,7 +908,7 @@ fn pica_filter_write_gzip_output() -> TestResult {
         .assert();
     assert.success();
 
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
+    let mut gz = GzDecoder::new(File::open(filename_str).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
     assert_eq!(expected, actual);
