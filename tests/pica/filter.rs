@@ -807,6 +807,24 @@ fn pica_filter_occurrence_matcher() -> TestResult {
 }
 
 #[test]
+fn pica_filter_read_stdin() -> TestResult {
+    let input = read_to_string("tests/data/121169502.dat")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("003@.0 == '121169502'")
+        .write_stdin(input)
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_filter_invert_match() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
