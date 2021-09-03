@@ -4,3 +4,4 @@ mod filter;
 mod frequency;
 mod invalid;
 mod json;
+mod partition;
