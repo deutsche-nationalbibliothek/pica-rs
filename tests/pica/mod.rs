@@ -7,3 +7,4 @@ mod json;
 mod partition;
 mod print;
 mod sample;
+mod select;
