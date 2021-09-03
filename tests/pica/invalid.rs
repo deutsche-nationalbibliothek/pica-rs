@@ -1,12 +1,10 @@
 use assert_cmd::Command;
-use flate2::read::GzDecoder;
 use predicates::prelude::*;
-use std::fs::{read_to_string, File};
-use std::io::Read;
+use std::fs::read_to_string;
 use std::path::Path;
 use tempfile::Builder;
 
-use crate::common::{CommandExt, TestContext, TestResult};
+use crate::common::TestResult;
 
 #[test]
 fn pica_invalid_stdout() -> TestResult {
