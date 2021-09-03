@@ -1,7 +1,6 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs::read_to_string;
-use std::path::Path;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -12,6 +11,21 @@ fn pica_json_single_record() -> TestResult {
     let assert = cmd.arg("json").arg("tests/data/1004916019.dat").assert();
 
     let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    assert.success().stdout(expected.trim_end().to_string());
+
+    Ok(())
+}
+
+#[test]
+fn pica_json_multiple_records() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("json")
+        .arg("--skip-invalid")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected = read_to_string("tests/data/dump.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
