@@ -10,7 +10,19 @@ fn path_new() {
 #[test]
 fn path_from_bytes() {
     assert!(Path::from_bytes("012A/*.0").is_ok());
-    assert!(Path::from_bytes("312A/*.0").is_err());
-    assert!(Path::from_bytes("012A/!.0").is_err());
-    assert!(Path::from_bytes("012A/*.!").is_err());
+
+    assert_eq!(
+        format!("{}", Path::from_bytes("312A.0").unwrap_err()),
+        "Invalid path expression"
+    );
+
+    assert_eq!(
+        format!("{}", Path::from_bytes("312A/!.0").unwrap_err()),
+        "Invalid path expression"
+    );
+
+    assert_eq!(
+        format!("{}", Path::from_bytes("012A/*.!").unwrap_err()),
+        "Invalid path expression"
+    );
 }
