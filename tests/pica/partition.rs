@@ -586,3 +586,22 @@ gzip = true
 
     Ok(())
 }
+
+#[test]
+fn pica_partition_invalid_path() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("002@.!")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stderr("Pica Error: Invalid path expression\n")
+        .stdout(predicate::str::is_empty());
+
+    Ok(())
+}

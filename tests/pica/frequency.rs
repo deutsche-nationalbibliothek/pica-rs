@@ -325,3 +325,22 @@ skip-invalid = false
 
     Ok(())
 }
+
+#[test]
+fn pica_frequency_invalid_path() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("frequency")
+        .arg("--skip-invalid")
+        .arg("002@.!")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stderr("Pica Error: Invalid path expression\n")
+        .stdout(predicate::str::is_empty());
+
+    Ok(())
+}
