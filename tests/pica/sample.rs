@@ -101,6 +101,37 @@ fn pica_sample_size_gt_len() -> TestResult {
 }
 
 #[test]
+fn pica_sample_size_invalid() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("0")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .stdout(predicate::str::is_empty())
+        .stderr("error: invalid sample size \'0\'. expected non-zero usize.\n");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("a")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .stdout(predicate::str::is_empty())
+        .stderr("error: invalid sample size \'a\'. expected non-zero usize.\n");
+
+    Ok(())
+}
+
+#[test]
 fn pica_sample_write_output() -> TestResult {
     let filename = Builder::new().suffix(".dat").tempfile()?;
     let filename_str = filename.path();
