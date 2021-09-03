@@ -44,6 +44,46 @@ fn pica_print_multiple_records() -> TestResult {
 }
 
 #[test]
+fn pica_print_limit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--skip-invalid")
+        .arg("--limit")
+        .arg("1")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected);
+
+    // invalid limit
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--skip-invalid")
+        .arg("--limit")
+        .arg("abc")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::eq(
+            "error: Invalid limit value, expected unsigned integer.\n",
+        ));
+
+    Ok(())
+}
+
+#[test]
 fn pica_print_write_output() -> TestResult {
     let filename = Builder::new().suffix(".txt").tempfile()?;
     let filename_str = filename.path();
