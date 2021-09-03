@@ -6,3 +6,4 @@ mod invalid;
 mod json;
 mod partition;
 mod print;
+mod sample;
