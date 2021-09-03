@@ -266,6 +266,12 @@ fn pica_select_write_output() -> TestResult {
     assert.success().stdout(predicate::str::is_empty());
 
     let expected = read_to_string("tests/data/dump.csv")?;
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     let actual = read_to_string(filename_str)?;
     assert_eq!(expected, actual);
 
