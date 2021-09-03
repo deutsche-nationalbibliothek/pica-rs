@@ -81,6 +81,41 @@ fn pica_split_outdir() -> TestResult {
         );
     }
 
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir.join("foo"))
+        .arg("1")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = [
+        ("0.dat", "tests/data/1004916019.dat"),
+        ("1.dat", "tests/data/119232022.dat"),
+        ("2.dat", "tests/data/000008672.dat"),
+        ("3.dat", "tests/data/000016586.dat"),
+        ("4.dat", "tests/data/000016756.dat"),
+        ("5.dat", "tests/data/000009229.dat"),
+        ("6.dat", "tests/data/121169502.dat"),
+    ];
+
+    for (filename, sample) in expected {
+        assert_eq!(
+            read_to_string(outdir.join("foo").join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
+    }
+
     Ok(())
 }
 
