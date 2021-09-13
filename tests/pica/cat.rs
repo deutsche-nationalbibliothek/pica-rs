@@ -1,107 +1,141 @@
-use crate::support::{CommandBuilder, MatchResult, SAMPLE1, SAMPLE2};
-use flate2::read::GzDecoder;
-use std::fs::{read_to_string, File};
-use std::io::Read;
+use assert_cmd::Command;
+use predicates::prelude::*;
+use std::fs::read_to_string;
+use std::path::Path;
 use tempfile::Builder;
 
-#[test]
-fn cat_no_file() -> MatchResult {
-    CommandBuilder::new("cat").with_status(2).run()?;
-    Ok(())
-}
+use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
-fn cat_single_file() -> MatchResult {
-    CommandBuilder::new("cat")
-        .arg("tests/data/1004916019.dat")
-        .with_stdout(SAMPLE1)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn cat_multiple_files() -> MatchResult {
-    CommandBuilder::new("cat")
-        .arg("tests/data/1004916019.dat")
-        .arg("tests/data/119232022.dat")
-        .with_stdout(SAMPLE1)
-        .with_stdout(SAMPLE2)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn cat_gzip_file() -> MatchResult {
-    CommandBuilder::new("cat")
-        .arg("tests/data/119232022.dat.gz")
-        .with_stdout(SAMPLE2)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn cat_missing_file() -> MatchResult {
-    CommandBuilder::new("cat")
-        .arg("tests/data/123456789X.dat")
-        .with_status(1)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn cat_invalid_file() -> MatchResult {
-    CommandBuilder::new("cat")
-        .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn cat_skip_invalid() -> MatchResult {
-    CommandBuilder::new("cat")
+fn pica_cat_single_file() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
         .arg("--skip-invalid")
         .arg("tests/data/1004916019.dat")
-        .arg("tests/data/invalid.dat")
-        .arg("tests/data/119232022.dat")
-        .with_stdout(SAMPLE1)
-        .with_stdout(SAMPLE2)
-        .run()?;
+        .assert();
 
-    CommandBuilder::new("cat")
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_cat_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--skip-invalid")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/000009229.dat")
+        .assert();
+
+    let expected = format!(
+        "{}{}",
+        read_to_string("tests/data/1004916019.dat").unwrap(),
+        read_to_string("tests/data/000009229.dat").unwrap()
+    );
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_cat_read_gzip() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--skip-invalid")
+        .arg("tests/data/1004916019.dat.gz")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_cat_write_gzip() -> TestResult {
+    let filename = Builder::new().suffix(".gz").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--gzip")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("cat").arg(filename_str).assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_cat_skip_invalid() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--skip-invalid")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("cat").arg("tests/data/dump.dat.gz").assert();
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::path::eq_file(Path::new(
+            "tests/data/1004916019.dat",
+        )))
+        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
+            &TestContext::new(),
             r#"[cat]
 skip-invalid = true
 "#,
         )
-        .arg("tests/data/1004916019.dat")
+        .arg("cat")
         .arg("tests/data/invalid.dat")
-        .arg("tests/data/119232022.dat")
-        .with_stdout(SAMPLE1)
-        .with_stdout(SAMPLE2)
-        .run()?;
+        .assert();
 
-    CommandBuilder::new("cat")
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
+            &TestContext::new(),
             r#"[global]
 skip-invalid = true
 "#,
         )
-        .arg("tests/data/1004916019.dat")
+        .arg("cat")
         .arg("tests/data/invalid.dat")
-        .arg("tests/data/119232022.dat")
-        .with_stdout(SAMPLE1)
-        .with_stdout(SAMPLE2)
-        .run()?;
+        .assert();
 
-    CommandBuilder::new("cat")
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
+            &TestContext::new(),
             r#"[global]
 skip-invalid = false
 
@@ -109,15 +143,16 @@ skip-invalid = false
 skip-invalid = true
 "#,
         )
-        .arg("tests/data/1004916019.dat")
+        .arg("cat")
         .arg("tests/data/invalid.dat")
-        .arg("tests/data/119232022.dat")
-        .with_stdout(SAMPLE1)
-        .with_stdout(SAMPLE2)
-        .run()?;
+        .assert();
 
-    CommandBuilder::new("cat")
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
+            &TestContext::new(),
             r#"[global]
 skip-invalid = false
 
@@ -125,114 +160,29 @@ skip-invalid = false
 skip-invalid = false
 "#,
         )
+        .arg("cat")
         .arg("--skip-invalid")
-        .arg("tests/data/1004916019.dat")
         .arg("tests/data/invalid.dat")
-        .arg("tests/data/119232022.dat")
-        .with_stdout(SAMPLE1)
-        .with_stdout(SAMPLE2)
-        .run()?;
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
 
     Ok(())
 }
 
 #[test]
-fn cat_write_plain_output() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-cat-plain").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("cat")
+fn pica_cat_missing_file() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
         .arg("--skip-invalid")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/119232022.dat")
-        .with_stdout_empty()
-        .run()?;
+        .arg("tests/data/10049160XX.dat")
+        .assert();
 
-    assert_eq!(read_to_string(filename).unwrap(), SAMPLE2);
-    Ok(())
-}
-
-#[test]
-fn cat_write_gzip_output() -> MatchResult {
-    // file extension
-    let tempdir = Builder::new().prefix("pica-cat-gzip").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat.gz");
-
-    CommandBuilder::new("cat")
-        .arg("--skip-invalid")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-
-    assert_eq!(SAMPLE1, s);
-
-    // gzip-flag
-    let tempdir = Builder::new().prefix("pica-cat-gzip").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("cat")
-        .arg("--skip-invalid")
-        .arg("--gzip")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-
-    assert_eq!(SAMPLE1, s);
-
-    // config
-    let tempdir = Builder::new().prefix("pica-cat-gzip").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("cat")
-        .arg("--skip-invalid")
-        .with_config(
-            r#"[cat]
-gzip = true
-"#,
-        )
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-
-    assert_eq!(SAMPLE1, s);
-
-    // cli flag overwrites config
-    let tempdir = Builder::new().prefix("pica-cat-gzip").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("cat")
-        .arg("--skip-invalid")
-        .with_config(
-            r#"[cat]
-gzip = false
-"#,
-        )
-        .arg("--gzip")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-
-    assert_eq!(SAMPLE1, s);
-
+    assert
+        .failure()
+        .stderr(predicate::str::starts_with("Pica Error:"))
+        .stdout(predicate::str::is_empty())
+        .code(1);
     Ok(())
 }

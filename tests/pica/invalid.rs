@@ -1,38 +1,47 @@
-use crate::support::{CommandBuilder, MatchResult, INVALID};
+use assert_cmd::Command;
+use predicates::prelude::*;
 use std::fs::read_to_string;
+use std::path::Path;
 use tempfile::Builder;
 
+use crate::common::TestResult;
+
 #[test]
-fn invalid_single_record() -> MatchResult {
-    CommandBuilder::new("invalid")
-        .arg("tests/data/invalid.dat")
-        .with_stdout(INVALID)
-        .run()?;
+fn pica_invalid_stdout() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("invalid").arg("tests/data/invalid.dat").assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/invalid.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("invalid").arg("tests/data/dump.dat.gz").assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/invalid.dat"));
+    assert.success().stdout(expected);
 
     Ok(())
 }
 
 #[test]
-fn invalid_multiple_record() -> MatchResult {
-    CommandBuilder::new("invalid")
+fn pica_invalid_output() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("invalid")
+        .arg("--output")
+        .arg(filename_str)
         .arg("tests/data/dump.dat.gz")
-        .with_stdout(INVALID)
-        .run()?;
+        .assert();
+    assert.success();
 
-    Ok(())
-}
+    let expected = read_to_string("tests/data/invalid.dat").unwrap();
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(expected, actual);
 
-#[test]
-fn invalid_write_output() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-cat").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("invalid")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
-
-    assert_eq!(read_to_string(filename).unwrap(), INVALID);
     Ok(())
 }

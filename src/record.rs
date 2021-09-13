@@ -237,12 +237,6 @@ impl PartialEq<&str> for Occurrence {
     }
 }
 
-impl PartialEq<str> for Occurrence {
-    fn eq(&self, other: &str) -> bool {
-        self.0 == other.as_bytes()
-    }
-}
-
 impl Occurrence {
     /// Creates a new `Occurrence`.
     ///

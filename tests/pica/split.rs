@@ -1,34 +1,43 @@
-use crate::support::{
-    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
-    SAMPLE6, SAMPLE7,
-};
+use assert_cmd::Command;
+use flate2::read::GzDecoder;
+use predicates::prelude::*;
 use std::fs::{read_to_string, remove_file, File};
 use std::io::Read;
-
-use flate2::read::GzDecoder;
 use tempfile::Builder;
 
+use crate::common::{CommandExt, TestContext, TestResult};
+
 #[test]
-fn split_default() -> MatchResult {
-    CommandBuilder::new("split")
-        .arg("-s")
+fn pica_split_default() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
         .arg("1")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
 
     let expected = [
-        ("0.dat", SAMPLE1),
-        ("1.dat", SAMPLE2),
-        ("2.dat", SAMPLE3),
-        ("3.dat", SAMPLE4),
-        ("4.dat", SAMPLE5),
-        ("5.dat", SAMPLE6),
-        ("6.dat", SAMPLE7),
+        ("0.dat", "tests/data/1004916019.dat"),
+        ("1.dat", "tests/data/119232022.dat"),
+        ("2.dat", "tests/data/000008672.dat"),
+        ("3.dat", "tests/data/000016586.dat"),
+        ("4.dat", "tests/data/000016756.dat"),
+        ("5.dat", "tests/data/000009229.dat"),
+        ("6.dat", "tests/data/121169502.dat"),
     ];
 
     for (filename, sample) in expected {
-        assert_eq!(read_to_string(filename).unwrap(), *sample);
+        assert_eq!(
+            read_to_string(filename).unwrap(),
+            read_to_string(sample).unwrap()
+        );
+
         remove_file(filename).unwrap();
     }
 
@@ -36,318 +45,472 @@ fn split_default() -> MatchResult {
 }
 
 #[test]
-fn split_outdir() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+fn pica_split_outdir() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
         .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir)
         .arg("1")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
 
     let expected = [
-        ("0.dat", SAMPLE1),
-        ("1.dat", SAMPLE2),
-        ("2.dat", SAMPLE3),
-        ("3.dat", SAMPLE4),
-        ("4.dat", SAMPLE5),
-        ("5.dat", SAMPLE6),
-        ("6.dat", SAMPLE7),
+        ("0.dat", "tests/data/1004916019.dat"),
+        ("1.dat", "tests/data/119232022.dat"),
+        ("2.dat", "tests/data/000008672.dat"),
+        ("3.dat", "tests/data/000016586.dat"),
+        ("4.dat", "tests/data/000016756.dat"),
+        ("5.dat", "tests/data/000009229.dat"),
+        ("6.dat", "tests/data/121169502.dat"),
     ];
 
     for (filename, sample) in expected {
-        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
-        remove_file(outdir.join(filename)).unwrap();
+        assert_eq!(
+            read_to_string(outdir.join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
+    }
+
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir.join("foo"))
+        .arg("1")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = [
+        ("0.dat", "tests/data/1004916019.dat"),
+        ("1.dat", "tests/data/119232022.dat"),
+        ("2.dat", "tests/data/000008672.dat"),
+        ("3.dat", "tests/data/000016586.dat"),
+        ("4.dat", "tests/data/000016756.dat"),
+        ("5.dat", "tests/data/000009229.dat"),
+        ("6.dat", "tests/data/121169502.dat"),
+    ];
+
+    for (filename, sample) in expected {
+        assert_eq!(
+            read_to_string(outdir.join("foo").join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
     }
 
     Ok(())
 }
 
 #[test]
-fn split_template() -> MatchResult {
-    // cli option
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+fn pica_split_template() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
         .arg("--skip-invalid")
+        .arg("--template")
+        .arg("CHUNK_{}.dat")
+        .arg("--outdir")
+        .arg(outdir)
         .arg("1")
-        .args("--template CHUNK_{}.dat")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
 
     let expected = [
-        ("CHUNK_0.dat", SAMPLE1),
-        ("CHUNK_1.dat", SAMPLE2),
-        ("CHUNK_2.dat", SAMPLE3),
-        ("CHUNK_3.dat", SAMPLE4),
-        ("CHUNK_4.dat", SAMPLE5),
-        ("CHUNK_5.dat", SAMPLE6),
-        ("CHUNK_6.dat", SAMPLE7),
+        ("CHUNK_0.dat", "tests/data/1004916019.dat"),
+        ("CHUNK_1.dat", "tests/data/119232022.dat"),
+        ("CHUNK_2.dat", "tests/data/000008672.dat"),
+        ("CHUNK_3.dat", "tests/data/000016586.dat"),
+        ("CHUNK_4.dat", "tests/data/000016756.dat"),
+        ("CHUNK_5.dat", "tests/data/000009229.dat"),
+        ("CHUNK_6.dat", "tests/data/121169502.dat"),
     ];
 
     for (filename, sample) in expected {
-        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
-        remove_file(outdir.join(filename)).unwrap();
+        assert_eq!(
+            read_to_string(outdir.join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
     }
 
     // config
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[split]
+            &TestContext::new(),
+            r#"[split]
 template = "CHUNK_{}.dat"
 "#,
         )
+        .arg("split")
         .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir)
         .arg("1")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
 
     let expected = [
-        ("CHUNK_0.dat", SAMPLE1),
-        ("CHUNK_1.dat", SAMPLE2),
-        ("CHUNK_2.dat", SAMPLE3),
-        ("CHUNK_3.dat", SAMPLE4),
-        ("CHUNK_4.dat", SAMPLE5),
-        ("CHUNK_5.dat", SAMPLE6),
-        ("CHUNK_6.dat", SAMPLE7),
+        ("CHUNK_0.dat", "tests/data/1004916019.dat"),
+        ("CHUNK_1.dat", "tests/data/119232022.dat"),
+        ("CHUNK_2.dat", "tests/data/000008672.dat"),
+        ("CHUNK_3.dat", "tests/data/000016586.dat"),
+        ("CHUNK_4.dat", "tests/data/000016756.dat"),
+        ("CHUNK_5.dat", "tests/data/000009229.dat"),
+        ("CHUNK_6.dat", "tests/data/121169502.dat"),
     ];
 
     for (filename, sample) in expected {
-        assert_eq!(read_to_string(outdir.join(filename)).unwrap(), *sample);
-        remove_file(outdir.join(filename)).unwrap();
+        assert_eq!(
+            read_to_string(outdir.join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
     }
 
     Ok(())
 }
 
 #[test]
-fn split_gzip() -> MatchResult {
-    // filename extension
-    let tempdir = Builder::new().prefix("pica-split-gzip").tempdir().unwrap();
+fn pica_split_gzip() -> TestResult {
+    // flag
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
-        .arg("--skip-invalid")
-        .arg("1")
-        .args("--template CHUNK_{}.dat.gz")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
-
-    let expected = [
-        ("CHUNK_0.dat.gz", SAMPLE1),
-        ("CHUNK_1.dat.gz", SAMPLE2),
-        ("CHUNK_2.dat.gz", SAMPLE3),
-        ("CHUNK_3.dat.gz", SAMPLE4),
-        ("CHUNK_4.dat.gz", SAMPLE5),
-        ("CHUNK_5.dat.gz", SAMPLE6),
-        ("CHUNK_6.dat.gz", SAMPLE7),
-    ];
-
-    for (filename, sample) in expected {
-        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
-        let mut s = String::new();
-        gz.read_to_string(&mut s).unwrap();
-
-        assert_eq!(*sample, s);
-    }
-
-    // gzip flag
-    let tempdir = Builder::new().prefix("pica-split-gzip").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
         .arg("--skip-invalid")
         .arg("--gzip")
+        .arg("--outdir")
+        .arg(outdir)
         .arg("1")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
 
     let expected = [
-        ("0.dat.gz", SAMPLE1),
-        ("1.dat.gz", SAMPLE2),
-        ("2.dat.gz", SAMPLE3),
-        ("3.dat.gz", SAMPLE4),
-        ("4.dat.gz", SAMPLE5),
-        ("5.dat.gz", SAMPLE6),
-        ("6.dat.gz", SAMPLE7),
+        ("0.dat.gz", "tests/data/1004916019.dat"),
+        ("1.dat.gz", "tests/data/119232022.dat"),
+        ("2.dat.gz", "tests/data/000008672.dat"),
+        ("3.dat.gz", "tests/data/000016586.dat"),
+        ("4.dat.gz", "tests/data/000016756.dat"),
+        ("5.dat.gz", "tests/data/000009229.dat"),
+        ("6.dat.gz", "tests/data/121169502.dat"),
     ];
 
     for (filename, sample) in expected {
-        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
-        let mut s = String::new();
-        gz.read_to_string(&mut s).unwrap();
+        let expected = read_to_string(sample).unwrap();
 
-        assert_eq!(*sample, s);
+        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut actual = String::new();
+        gz.read_to_string(&mut actual).unwrap();
+
+        assert_eq!(actual, expected);
+    }
+
+    // template
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
+        .arg("--template")
+        .arg("CHUNK_{}.dat.gz")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = [
+        ("CHUNK_0.dat.gz", "tests/data/1004916019.dat"),
+        ("CHUNK_1.dat.gz", "tests/data/119232022.dat"),
+        ("CHUNK_2.dat.gz", "tests/data/000008672.dat"),
+        ("CHUNK_3.dat.gz", "tests/data/000016586.dat"),
+        ("CHUNK_4.dat.gz", "tests/data/000016756.dat"),
+        ("CHUNK_5.dat.gz", "tests/data/000009229.dat"),
+        ("CHUNK_6.dat.gz", "tests/data/121169502.dat"),
+    ];
+
+    for (filename, sample) in expected {
+        let expected = read_to_string(sample).unwrap();
+
+        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut actual = String::new();
+        gz.read_to_string(&mut actual).unwrap();
+
+        assert_eq!(actual, expected);
     }
 
     // config
-    let tempdir = Builder::new().prefix("pica-split-gzip").tempdir().unwrap();
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[split]
-gzip = true
+            &TestContext::new(),
+            r#"[split]
+template = "CHUNK_{}.dat.gz"
 "#,
         )
+        .arg("split")
         .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir)
         .arg("1")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_empty()
-        .run()?;
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
 
     let expected = [
-        ("0.dat.gz", SAMPLE1),
-        ("1.dat.gz", SAMPLE2),
-        ("2.dat.gz", SAMPLE3),
-        ("3.dat.gz", SAMPLE4),
-        ("4.dat.gz", SAMPLE5),
-        ("5.dat.gz", SAMPLE6),
-        ("6.dat.gz", SAMPLE7),
+        ("CHUNK_0.dat.gz", "tests/data/1004916019.dat"),
+        ("CHUNK_1.dat.gz", "tests/data/119232022.dat"),
+        ("CHUNK_2.dat.gz", "tests/data/000008672.dat"),
+        ("CHUNK_3.dat.gz", "tests/data/000016586.dat"),
+        ("CHUNK_4.dat.gz", "tests/data/000016756.dat"),
+        ("CHUNK_5.dat.gz", "tests/data/000009229.dat"),
+        ("CHUNK_6.dat.gz", "tests/data/121169502.dat"),
     ];
 
     for (filename, sample) in expected {
-        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
-        let mut s = String::new();
-        gz.read_to_string(&mut s).unwrap();
+        let expected = read_to_string(sample).unwrap();
 
-        assert_eq!(*sample, s);
+        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut actual = String::new();
+        gz.read_to_string(&mut actual).unwrap();
+
+        assert_eq!(actual, expected);
     }
 
     Ok(())
 }
 
 #[test]
-fn split_invalid_chunk_size() -> MatchResult {
-    CommandBuilder::new("split")
-        .arg("abc")
-        .arg("tests/data/dump.dat.gz")
-        .with_stderr("error: invalid chunk size\n")
-        .with_status(1)
-        .run()?;
-
-    CommandBuilder::new("split")
+fn pica_split_invalid_chunk_size() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
         .arg("0")
         .arg("tests/data/dump.dat.gz")
-        .with_stderr("error: chunk size < 1\n")
-        .with_status(1)
-        .run()?;
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stderr("error: chunk size < 1\n")
+        .stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("abc")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::str::is_empty())
+        .stderr("error: invalid chunk size\n");
 
     Ok(())
 }
 
 #[test]
-fn split_skip_invalid() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+fn pica_split_skip_invalid() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
         .arg("--skip-invalid")
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
         .arg("tests/data/invalid.dat")
-        .run()?;
+        .assert();
 
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    // assert!(outdir.read_dir()?.next().is_none());
+
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stderr("Pica Error: Invalid record on line 1.\n")
+        .stdout(predicate::str::is_empty());
+
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[global]
+            &TestContext::new(),
+            r#"[global]
 skip-invalid = true
 "#,
         )
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("split")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
         .arg("tests/data/invalid.dat")
-        .run()?;
+        .assert();
 
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    // assert!(outdir.read_dir()?.next().is_none());
+
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[split]
+            &TestContext::new(),
+            r#"[split]
 skip-invalid = true
 "#,
         )
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("split")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
         .arg("tests/data/invalid.dat")
-        .run()?;
+        .assert();
 
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    // assert!(outdir.read_dir()?.next().is_none());
+
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[global]
+            &TestContext::new(),
+            r#"[global]
 skip-invalid = false
 
 [split]
 skip-invalid = true
 "#,
         )
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("split")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
         .arg("tests/data/invalid.dat")
-        .run()?;
+        .assert();
 
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    // assert!(outdir.read_dir()?.next().is_none());
+
+    let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
 
-    CommandBuilder::new("split")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[global]
+            &TestContext::new(),
+            r#"[global]
 skip-invalid = false
 
 [split]
 skip-invalid = false
 "#,
         )
+        .arg("split")
         .arg("--skip-invalid")
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
         .arg("tests/data/invalid.dat")
-        .run()?;
+        .assert();
 
-    Ok(())
-}
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
 
-#[test]
-fn split_invalid_file() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-split").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("split")
-        .arg("100")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
-        .run()?;
+    // assert!(outdir.read_dir()?.next().is_none());
 
     Ok(())
 }

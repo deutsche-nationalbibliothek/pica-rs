@@ -1,392 +1,607 @@
-use crate::support::{
-    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
-    SAMPLE6, SAMPLE7,
-};
+use crate::common::{CommandExt, TestContext, TestResult};
+use assert_cmd::Command;
 use flate2::read::GzDecoder;
+use predicates::prelude::*;
 use std::fs::{read_to_string, remove_file, File};
 use std::io::Read;
 use tempfile::Builder;
 
 #[test]
-fn partition_by_bbg() -> MatchResult {
-    CommandBuilder::new("partition")
+fn pica_partition_by_bbg() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
         .arg("--skip-invalid")
-        .arg("002@.[01]")
+        .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .assert();
+    assert.success();
 
-    assert_eq!(read_to_string("Ts1.dat").unwrap(), SAMPLE1);
-    remove_file("Ts1.dat").unwrap();
+    // Tb1
+    let actual = read_to_string("Tb1.dat").unwrap();
 
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE2);
-    exprected.push_str(SAMPLE7);
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
-    assert_eq!(read_to_string("Tp1.dat").unwrap(), exprected);
-    remove_file("Tp1.dat").unwrap();
-
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE3);
-    exprected.push_str(SAMPLE4);
-    exprected.push_str(SAMPLE5);
-    exprected.push_str(SAMPLE6);
-
-    assert_eq!(read_to_string("Tb1.dat").unwrap(), exprected);
+    assert_eq!(expected, actual);
     remove_file("Tb1.dat").unwrap();
 
+    // Tp1
+    let actual = read_to_string("Tp1.dat").unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+    remove_file("Tp1.dat").unwrap();
+
+    // Ts1
+    let actual = read_to_string("Ts1.dat").unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+
+    assert_eq!(expected, actual);
+    remove_file("Ts1.dat").unwrap();
+
     Ok(())
 }
 
 #[test]
-fn partition_template_str() -> MatchResult {
-    CommandBuilder::new("partition")
+fn pica_partition_filename_template() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
         .arg("--skip-invalid")
-        .args("--template BBG_{}.dat")
+        .arg("--template")
+        .arg("BBG_{}.dat")
         .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .assert();
+    assert.success();
 
-    assert_eq!(read_to_string("BBG_Ts1.dat").unwrap(), SAMPLE1);
-    remove_file("BBG_Ts1.dat").unwrap();
+    // Tb1
+    let actual = read_to_string("BBG_Tb1.dat").unwrap();
 
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE2);
-    exprected.push_str(SAMPLE7);
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
-    assert_eq!(read_to_string("BBG_Tp1.dat").unwrap(), exprected);
-    remove_file("BBG_Tp1.dat").unwrap();
-
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE3);
-    exprected.push_str(SAMPLE4);
-    exprected.push_str(SAMPLE5);
-    exprected.push_str(SAMPLE6);
-
-    assert_eq!(read_to_string("BBG_Tb1.dat").unwrap(), exprected);
+    assert_eq!(expected, actual);
     remove_file("BBG_Tb1.dat").unwrap();
 
-    CommandBuilder::new("partition")
-        .arg("--skip-invalid")
-        .with_config(
-            r#"
-[partition]
-template = "BBG_{}.dat"
-"#,
-        )
-        .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
+    // Tp1
+    let actual = read_to_string("BBG_Tp1.dat").unwrap();
 
-    assert_eq!(read_to_string("BBG_Ts1.dat").unwrap(), SAMPLE1);
-    remove_file("BBG_Ts1.dat").unwrap();
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE2);
-    exprected.push_str(SAMPLE7);
-
-    assert_eq!(read_to_string("BBG_Tp1.dat").unwrap(), exprected);
+    assert_eq!(expected, actual);
     remove_file("BBG_Tp1.dat").unwrap();
 
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE3);
-    exprected.push_str(SAMPLE4);
-    exprected.push_str(SAMPLE5);
-    exprected.push_str(SAMPLE6);
+    // Ts1
+    let actual = read_to_string("BBG_Ts1.dat").unwrap();
 
-    assert_eq!(read_to_string("BBG_Tb1.dat").unwrap(), exprected);
-    remove_file("BBG_Tb1.dat").unwrap();
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
 
-    Ok(())
-}
-
-#[test]
-fn partition_output_dir1() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-partition").tempdir().unwrap();
-    let outdir = tempdir.path().join("bbg");
-
-    CommandBuilder::new("partition")
-        .arg("--skip-invalid")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
-
-    assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
-
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE2);
-    exprected.push_str(SAMPLE7);
-
-    assert_eq!(read_to_string(outdir.join("Tp1.dat")).unwrap(), exprected);
-
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE3);
-    exprected.push_str(SAMPLE4);
-    exprected.push_str(SAMPLE5);
-    exprected.push_str(SAMPLE6);
-
-    assert_eq!(read_to_string(outdir.join("Tb1.dat")).unwrap(), exprected);
+    assert_eq!(expected, actual);
+    remove_file("BBG_Ts1.dat").unwrap();
 
     Ok(())
 }
 
 #[test]
-fn partition_output_dir2() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-partition").tempdir().unwrap();
-    let outdir = tempdir.path();
-
-    CommandBuilder::new("partition")
-        .arg("--skip-invalid")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
-
-    assert_eq!(read_to_string(outdir.join("Ts1.dat")).unwrap(), SAMPLE1);
-
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE2);
-    exprected.push_str(SAMPLE7);
-
-    assert_eq!(read_to_string(outdir.join("Tp1.dat")).unwrap(), exprected);
-
-    let mut exprected = String::new();
-    exprected.push_str(SAMPLE3);
-    exprected.push_str(SAMPLE4);
-    exprected.push_str(SAMPLE5);
-    exprected.push_str(SAMPLE6);
-
-    assert_eq!(read_to_string(outdir.join("Tb1.dat")).unwrap(), exprected);
-
-    Ok(())
-}
-
-#[test]
-fn partition_skip_invalid() -> MatchResult {
-    // CLI flag
-    let tempdir = Builder::new().prefix("pica-partition").tempdir().unwrap();
-    let outdir = tempdir.path().join("bbg");
-
-    CommandBuilder::new("partition")
-        .arg("--skip-invalid")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
-        .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
-
-    // global config
-    let tempdir = Builder::new().prefix("pica-partition").tempdir().unwrap();
-    let outdir = tempdir.path().join("bbg");
-
-    CommandBuilder::new("partition")
+fn pica_partition_filename_template_config() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[global]
+            &TestContext::new(),
+            r#"[partition]
+template = "bbg_{}.dat"
+"#,
+        )
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+    assert.success();
+
+    // Tb1
+    let actual = read_to_string("bbg_Tb1.dat").unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+    remove_file("bbg_Tb1.dat").unwrap();
+
+    // Tp1
+    let actual = read_to_string("bbg_Tp1.dat").unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+    remove_file("bbg_Tp1.dat").unwrap();
+
+    // Ts1
+    let actual = read_to_string("bbg_Ts1.dat").unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+
+    assert_eq!(expected, actual);
+    remove_file("bbg_Ts1.dat").unwrap();
+
+    Ok(())
+}
+
+#[test]
+fn pica_partition_output_dir1() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir)
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+    assert.success();
+
+    // Tb1
+    let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Tp1
+    let actual = read_to_string(tempdir.join("Tp1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Ts1
+    let actual = read_to_string(tempdir.join("Ts1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    Ok(())
+}
+
+#[test]
+fn pica_partition_output_dir2() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir.join("dir2"))
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+    assert.success();
+
+    // Tb1
+    let actual = read_to_string(tempdir.join("dir2/Tb1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Tp1
+    let actual = read_to_string(tempdir.join("dir2/Tp1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Ts1
+    let actual = read_to_string(tempdir.join("dir2/Ts1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    Ok(())
+}
+
+#[test]
+fn pica_partition_skip_invalid() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir)
+        .arg("002@.0")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert.success();
+    assert!(tempdir.read_dir()?.next().is_none());
+
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--outdir")
+        .arg(tempdir)
+        .arg("002@.0")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stderr(predicate::eq("Pica Error: Invalid record on line 1.\n"));
+
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
 skip-invalid = true
 "#,
         )
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("partition")
+        .arg("--outdir")
+        .arg(tempdir)
         .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .arg("tests/data/invalid.dat")
+        .assert();
 
-    // partition config
-    let tempdir = Builder::new().prefix("pica-partition").tempdir().unwrap();
-    let outdir = tempdir.path().join("bbg");
+    assert.success();
+    assert!(tempdir.read_dir()?.next().is_none());
 
-    CommandBuilder::new("partition")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[partition]
+            &TestContext::new(),
+            r#"[partition]
 skip-invalid = true
 "#,
         )
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("partition")
+        .arg("--outdir")
+        .arg(tempdir)
         .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .arg("tests/data/invalid.dat")
+        .assert();
 
-    // global/partition config
-    let tempdir = Builder::new().prefix("pica-partition").tempdir().unwrap();
-    let outdir = tempdir.path().join("bbg");
+    assert.success();
+    assert!(tempdir.read_dir()?.next().is_none());
 
-    CommandBuilder::new("partition")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[global]
+            &TestContext::new(),
+            r#"[global]
 skip-invalid = false
 
 [partition]
 skip-invalid = true
 "#,
         )
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("partition")
+        .arg("--outdir")
+        .arg(tempdir)
         .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .arg("tests/data/invalid.dat")
+        .assert();
 
-    // CLI flag overwrites config
-    let tempdir = Builder::new().prefix("pica-partition").tempdir().unwrap();
-    let outdir = tempdir.path().join("bbg");
+    assert.success();
+    assert!(tempdir.read_dir()?.next().is_none());
 
-    CommandBuilder::new("partition")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[global]
+            &TestContext::new(),
+            r#"[global]
 skip-invalid = false
 
 [partition]
 skip-invalid = false
 "#,
         )
+        .arg("partition")
         .arg("--skip-invalid")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("--outdir")
+        .arg(tempdir)
         .arg("002@.0")
-        .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert.success();
+    assert!(tempdir.read_dir()?.next().is_none());
 
     Ok(())
 }
 
 #[test]
-fn partition_gzip_output() -> MatchResult {
-    // filename extension
-    let tempdir = Builder::new()
-        .prefix("pica-partition-gzip")
-        .tempdir()
-        .unwrap();
-    let outdir = tempdir.path();
+fn pica_partition_write_gzip_template() -> TestResult {
+    let outdir = Builder::new().tempdir().unwrap();
+    let outdir = outdir.path();
 
-    CommandBuilder::new("partition")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
         .arg("--skip-invalid")
-        .args("--template {}.dat.gz")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("--template")
+        .arg("{}.dat.gz")
+        .arg("--outdir")
+        .arg(outdir)
         .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .assert();
+    assert.success();
 
+    // Tb1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Tp1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Ts1
     let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
 
-    assert_eq!(SAMPLE1, s);
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
 
-    // gzip flag
-    let tempdir = Builder::new()
-        .prefix("pica-partition-gzip")
-        .tempdir()
-        .unwrap();
-    let outdir = tempdir.path();
+    assert_eq!(expected, actual);
 
-    CommandBuilder::new("partition")
+    Ok(())
+}
+
+#[test]
+fn pica_partition_write_gzip_flag1() -> TestResult {
+    let outdir = Builder::new().tempdir().unwrap();
+    let outdir = outdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
         .arg("--skip-invalid")
         .arg("--gzip")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("--outdir")
+        .arg(outdir)
         .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .assert();
+    assert.success();
 
+    // Tb1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Tp1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Ts1
     let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
 
-    assert_eq!(SAMPLE1, s);
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
 
-    // gzip flag #2
-    let tempdir = Builder::new()
-        .prefix("pica-partition-gzip")
-        .tempdir()
-        .unwrap();
-    let outdir = tempdir.path();
+    assert_eq!(expected, actual);
 
-    CommandBuilder::new("partition")
+    Ok(())
+}
+
+#[test]
+fn pica_partition_write_gzip_flag2() -> TestResult {
+    let outdir = Builder::new().tempdir().unwrap();
+    let outdir = outdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
         .arg("--skip-invalid")
         .arg("--gzip")
-        .args("--template {}.dat")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("--template")
+        .arg("{}.dat")
+        .arg("--outdir")
+        .arg(outdir)
         .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .assert();
+    assert.success();
 
+    // Tb1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Tp1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Ts1
     let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat")).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
 
-    assert_eq!(SAMPLE1, s);
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
 
-    // config
-    let tempdir = Builder::new()
-        .prefix("pica-partition-gzip")
-        .tempdir()
-        .unwrap();
-    let outdir = tempdir.path();
+    assert_eq!(expected, actual);
 
-    CommandBuilder::new("partition")
+    Ok(())
+}
+
+#[test]
+fn pica_partition_write_gzip_config() -> TestResult {
+    let outdir = Builder::new().tempdir().unwrap();
+    let outdir = outdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[partition]
+            &TestContext::new(),
+            r#"[partition]
 gzip = true
 "#,
         )
+        .arg("partition")
         .arg("--skip-invalid")
-        .args("--template {}.dat")
-        .args(format!("--outdir {}", outdir.to_str().unwrap()))
+        .arg("--outdir")
+        .arg(outdir)
         .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
-        .run()?;
+        .assert();
+    assert.success();
 
-    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat")).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
+    // Tb1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
 
-    assert_eq!(SAMPLE1, s);
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Tp1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Ts1
+    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+
+    assert_eq!(expected, actual);
 
     Ok(())
 }
 
 #[test]
-fn partition_no_path() -> MatchResult {
-    CommandBuilder::new("partition")
-        .arg("tests/data/dump.dat.gz")
-        .with_status(1)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn partition_invalid_path1() -> MatchResult {
-    CommandBuilder::new("partition")
-        .arg("00!@.0")
-        .arg("tests/data/dump.dat.gz")
-        .with_stderr("Pica Error: Invalid path expression\n")
-        .with_status(1)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn partition_invalid_path2() -> MatchResult {
-    CommandBuilder::new("partition")
+fn pica_partition_invalid_path() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
         .arg("--skip-invalid")
-        .args("--outdir /root/foo")
-        .arg("002@.0")
+        .arg("002@.!")
         .arg("tests/data/dump.dat.gz")
-        .with_status(1)
-        .run()?;
+        .assert();
 
-    Ok(())
-}
-
-#[test]
-fn partition_invalid_file() -> MatchResult {
-    CommandBuilder::new("partition")
-        .arg("002@.0")
-        .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
-        .run()?;
+    assert
+        .failure()
+        .code(1)
+        .stderr("Pica Error: Invalid path expression\n")
+        .stdout(predicate::str::is_empty());
 
     Ok(())
 }

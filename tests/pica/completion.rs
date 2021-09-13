@@ -1,47 +1,77 @@
-use crate::support::{CommandBuilder, MatchResult};
+use assert_cmd::Command;
+use predicates::prelude::*;
 use tempfile::Builder;
 
-#[test]
-fn test_bash_completion() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-completion").tempdir().unwrap();
-    let filename = tempdir.path().join("pica.sh");
+use crate::common::TestResult;
 
-    CommandBuilder::new("completion")
-        .args(format!("--output {}", filename.to_str().unwrap()))
+#[test]
+fn pica_bash_completion() -> TestResult {
+    let filename = Builder::new().tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("completion")
         .arg("bash")
-        .with_stdout_empty()
-        .run()?;
+        .arg("--output")
+        .arg(filename_str)
+        .assert();
+    assert.success();
+    assert!(predicates::path::is_file().eval(filename_str));
 
-    assert!(filename.exists());
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("completion").arg("bash").assert();
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(filename_str));
+
     Ok(())
 }
 
 #[test]
-fn test_fish_completion() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-completion").tempdir().unwrap();
-    let filename = tempdir.path().join("pica.fish");
+fn pica_fish_completion() -> TestResult {
+    let filename = Builder::new().tempfile()?;
+    let filename_str = filename.path();
 
-    CommandBuilder::new("completion")
-        .args(format!("--output {}", filename.to_str().unwrap()))
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("completion")
         .arg("fish")
-        .with_stdout_empty()
-        .run()?;
+        .arg("--output")
+        .arg(filename_str)
+        .assert();
+    assert.success();
+    assert!(predicates::path::is_file().eval(filename_str));
 
-    assert!(filename.exists());
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("completion").arg("fish").assert();
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(filename_str));
+
     Ok(())
 }
 
 #[test]
-fn test_zsh_completion() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-completion").tempdir().unwrap();
-    let filename = tempdir.path().join("pica.zsh");
+fn pica_zsh_completion() -> TestResult {
+    let filename = Builder::new().tempfile()?;
+    let filename_str = filename.path();
 
-    CommandBuilder::new("completion")
-        .args(format!("--output {}", filename.to_str().unwrap()))
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("completion")
         .arg("zsh")
-        .with_stdout_empty()
-        .run()?;
+        .arg("--output")
+        .arg(filename_str)
+        .assert();
+    assert.success();
+    assert!(predicates::path::is_file().eval(filename_str));
 
-    assert!(filename.exists());
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("completion").arg("zsh").assert();
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(filename_str));
+
     Ok(())
 }

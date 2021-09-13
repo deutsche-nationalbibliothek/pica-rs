@@ -1,6 +1,6 @@
 //! Filter Expressions
 
-use crate::{ByteRecord, Field, Occurrence, Result, Subfield};
+use crate::{ByteRecord, Error, Field, Occurrence, Result, Subfield};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag, take_while_m_n};
@@ -58,7 +58,7 @@ pub enum OccurrenceMatcher {
 }
 
 impl OccurrenceMatcher {
-    /// Creates a `OccurrenceMatcher`
+    /// Creates a `OccurrenceMatcher::Occurrence`
     ///
     /// # Example
     ///
@@ -82,9 +82,61 @@ impl OccurrenceMatcher {
     {
         Ok(OccurrenceMatcher::Occurrence(Occurrence::new(value)?))
     }
+
+    /// Creates a `OccurrenceMatcher::Occurrence`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Occurrence, OccurrenceMatcher};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let matcher = OccurrenceMatcher::range("01", "03")?;
+    ///     assert_eq!(
+    ///         matcher,
+    ///         OccurrenceMatcher::Range(
+    ///             Occurrence::new("01")?,
+    ///             Occurrence::new("03")?
+    ///         )
+    ///     );
+    ///
+    ///     assert!(OccurrenceMatcher::range("01", "01").is_err());
+    ///     assert!(OccurrenceMatcher::range("03", "01").is_err());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn range<T>(min: T, max: T) -> Result<OccurrenceMatcher>
+    where
+        T: Into<BString> + PartialOrd,
+    {
+        if min >= max {
+            return Err(Error::InvalidOccurrence("min >= max".to_string()));
+        }
+
+        Ok(OccurrenceMatcher::Range(
+            Occurrence::new(min)?,
+            Occurrence::new(max)?,
+        ))
+    }
 }
 
 impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
+    /// Equality comparision between `OccurrenceMatcher` and an
+    /// `Option<Occurrence>`
+    ///
+    /// ```rust
+    /// use pica::{Occurrence, OccurrenceMatcher};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     assert!(Some(Occurrence::new("001")?) == OccurrenceMatcher::Any);
+    ///     assert!(None == OccurrenceMatcher::Any);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     fn eq(&self, other: &OccurrenceMatcher) -> bool {
         match other {
             OccurrenceMatcher::Any => true,
@@ -298,15 +350,14 @@ fn parse_literal<'a, E: ParseError<&'a str>>(
     verify(is_not("\'\\"), |s: &str| !s.is_empty())(i)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 enum StringFragment<'a> {
     Literal(&'a str),
     EscapedChar(char),
     EscapedWs,
 }
 
-/// Combine parse_literal, parse_escaped_whitespace, and parse_escaped_char
-/// into a StringFragment.
+/// Combine parse_literal, parse_escaped_char into a StringFragment.
 fn parse_fragment<'a, E>(i: &'a str) -> IResult<&'a str, StringFragment<'a>, E>
 where
     E: ParseError<&'a str>
@@ -870,6 +921,16 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_not_expr() {
+        let field_expr = Filter::Not(Box::new(Filter::Exists(
+            Tag::Constant("003@".to_string()),
+            OccurrenceMatcher::None,
+        )));
+
+        assert_eq!(parse_field_not_expr("!003@?"), Ok(("", field_expr)));
+    }
+
+    #[test]
     fn test_parse_field_group() {
         let field_expr = Filter::Grouped(Box::new(Filter::Field(
             Tag::Constant("003@".to_string()),
@@ -930,5 +991,18 @@ mod tests {
         );
 
         assert_eq!(Filter::decode("003@.0 == '123456789X'").unwrap(), expected);
+    }
+
+    #[test]
+    fn test_tag_partial_eq() {
+        let tag = Tag::Constant("003@".to_string());
+        assert_eq!(tag, BString::from("003@"));
+        assert_eq!(BString::from("003@"), tag);
+
+        let tag = Tag::Pattern(vec!['0'], vec!['1'], vec!['2'], vec!['A', '@']);
+        assert_eq!(tag, BString::from("012A"));
+        assert_eq!(BString::from("012A"), tag);
+        assert_eq!(tag, BString::from("012@"));
+        assert_eq!(BString::from("012@"), tag);
     }
 }

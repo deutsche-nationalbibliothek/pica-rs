@@ -1,266 +1,298 @@
-use crate::support::{
-    CommandBuilder, MatchResult, SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5,
-    SAMPLE6, SAMPLE7,
-};
+use assert_cmd::Command;
 use flate2::read::GzDecoder;
+use predicates::prelude::*;
 use std::fs::{read_to_string, File};
 use std::io::Read;
+use std::path::Path;
 use tempfile::Builder;
 
+use crate::common::{CommandExt, TestContext, TestResult};
+
 #[test]
-fn sample_single_record() -> MatchResult {
-    CommandBuilder::new("sample")
+fn pica_cat_sample() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
         .arg("1")
-        .arg("tests/data/1004916019.dat")
-        .with_stdout(SAMPLE1)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn sample_multiple_records() -> MatchResult {
-    CommandBuilder::new("sample")
         .arg("--skip-invalid")
-        .arg("1")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout_one_of(
-            [
-                SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5, SAMPLE6, SAMPLE7,
-            ]
-            .to_vec(),
-        )
-        .run()?;
+        .assert();
 
-    Ok(())
-}
+    let data_dir = Path::new("tests/data");
 
-#[test]
-fn sample_size_le_len() -> MatchResult {
-    CommandBuilder::new("sample")
-        .arg("--skip-invalid")
-        .arg("1")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout_one_of(
-            [
-                SAMPLE1, SAMPLE2, SAMPLE3, SAMPLE4, SAMPLE5, SAMPLE6, SAMPLE7,
-            ]
-            .to_vec(),
-        )
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn sample_size_eq_len() -> MatchResult {
-    CommandBuilder::new("sample")
-        .arg("--skip-invalid")
-        .arg("2")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout_lines(2)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn sample_size_gt_len() -> MatchResult {
-    CommandBuilder::new("sample")
-        .arg("--skip-invalid")
-        .arg("8")
-        .arg("tests/data/dump.dat.gz")
-        .with_stdout_lines(7)
-        .run()?;
-
-    Ok(())
-}
-
-#[test]
-fn sample_write_plain_output() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-sample").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("sample")
-        .arg("--skip-invalid")
-        .arg("1")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    assert_eq!(
-        read_to_string("tests/data/1004916019.dat").unwrap(),
-        read_to_string(filename).unwrap()
+    assert.success().stdout(
+        predicate::never()
+            .or(predicate::path::eq_file(data_dir.join("1004916019.dat")))
+            .or(predicate::path::eq_file(data_dir.join("119232022.dat")))
+            .or(predicate::path::eq_file(data_dir.join("000008672.dat")))
+            .or(predicate::path::eq_file(data_dir.join("000016586.dat")))
+            .or(predicate::path::eq_file(data_dir.join("000016756.dat")))
+            .or(predicate::path::eq_file(data_dir.join("000009229.dat")))
+            .or(predicate::path::eq_file(data_dir.join("121169502.dat"))),
     );
 
     Ok(())
 }
 
 #[test]
-fn sample_write_gzip_output() -> MatchResult {
-    // file extension
-    let tempdir = Builder::new().prefix("pica-sample").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat.gz");
+fn pica_sample_size_le_len() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
 
-    CommandBuilder::new("sample")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
         .arg("--skip-invalid")
-        .arg("1")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
+        .arg("--output")
+        .arg(filename_str)
+        .arg("2")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
 
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
+    assert.success();
 
-    assert_eq!(SAMPLE1, s);
-
-    // gzip flag
-    let tempdir = Builder::new().prefix("pica-sample").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("sample")
-        .arg("--skip-invalid")
-        .arg("--gzip")
-        .arg("1")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-
-    assert_eq!(SAMPLE1, s);
-
-    // config
-    let tempdir = Builder::new().prefix("pica-sample").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.dat");
-
-    CommandBuilder::new("sample")
-        .with_config(
-            r#"
-[sample]
-gzip = true
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("1")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    let mut gz = GzDecoder::new(File::open(filename).unwrap());
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-
-    assert_eq!(SAMPLE1, s);
-
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(actual.lines().count(), 2);
     Ok(())
 }
 
 #[test]
-fn sample_invalid_sample_size() -> MatchResult {
-    CommandBuilder::new("sample")
+fn pica_sample_size_eq_len() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("7")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert.success();
+
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(actual.lines().count(), 7);
+    Ok(())
+}
+
+#[test]
+fn pica_sample_size_gt_len() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("8")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert.success();
+
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(actual.lines().count(), 7);
+    Ok(())
+}
+
+#[test]
+fn pica_sample_size_invalid() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
         .arg("0")
         .arg("tests/data/dump.dat.gz")
-        .with_status(1)
-        .run()?;
+        .assert();
 
-    CommandBuilder::new("sample")
-        .arg("\\-1")
-        .arg("tests/data/dump.dat.gz")
-        .with_status(1)
-        .run()?;
+    assert
+        .failure()
+        .stdout(predicate::str::is_empty())
+        .stderr("error: invalid sample size \'0\'. expected non-zero usize.\n");
 
-    CommandBuilder::new("sample")
-        .arg("abc")
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("a")
         .arg("tests/data/dump.dat.gz")
-        .with_status(1)
-        .run()?;
+        .assert();
+
+    assert
+        .failure()
+        .stdout(predicate::str::is_empty())
+        .stderr("error: invalid sample size \'a\'. expected non-zero usize.\n");
 
     Ok(())
 }
 
 #[test]
-fn sample_skip_invalid() -> MatchResult {
-    CommandBuilder::new("sample")
+fn pica_sample_write_output() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
         .arg("--skip-invalid")
-        .arg("100")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
+        .arg("--output")
+        .arg(filename_str)
+        .arg("1")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
 
-    CommandBuilder::new("sample")
-        .with_config(
-            r#"
-[global]
-skip-invalid = true
-"#,
-        )
-        .arg("100")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("sample")
-        .with_config(
-            r#"
-[sample]
-skip-invalid = true
-"#,
-        )
-        .arg("100")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("sample")
-        .with_config(
-            r#"
-[global]
-skip-invalid = false
-
-[sample]
-skip-invalid = true
-"#,
-        )
-        .arg("100")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("sample")
-        .with_config(
-            r#"
-[global]
-skip-invalid = false
-
-[sample]
-skip-invalid = false
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("100")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert!(expected.eval(Path::new(filename_str)));
 
     Ok(())
 }
 
 #[test]
-fn sample_invalid_file() -> MatchResult {
-    CommandBuilder::new("sample")
-        .arg("100")
+fn pica_sample_write_gzip() -> TestResult {
+    let expected = read_to_string("tests/data/1004916019.dat").unwrap();
+
+    // filename
+    let filename = Builder::new().suffix(".dat.gz").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("1")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut gz = GzDecoder::new(File::open(filename_str).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+    assert_eq!(expected, actual);
+
+    // flag
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("--gzip")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("1")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut gz = GzDecoder::new(File::open(filename_str).unwrap());
+    let mut actual = String::new();
+    gz.read_to_string(&mut actual).unwrap();
+    assert_eq!(expected, actual);
+
+    Ok(())
+}
+
+#[test]
+fn pica_sample_skip_invalid() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("1")
+        .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
-        .run()?;
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("1")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("sample")
+        .arg("1")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[sample]
+skip-invalid = true
+"#,
+        )
+        .arg("sample")
+        .arg("1")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = false
+
+[sample]
+skip-invalid = true
+"#,
+        )
+        .arg("sample")
+        .arg("1")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = false
+
+[sample]
+skip-invalid = false
+"#,
+        )
+        .arg("sample")
+        .arg("--skip-invalid")
+        .arg("1")
+        .arg("tests/data/invalid.dat")
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
 
     Ok(())
 }
