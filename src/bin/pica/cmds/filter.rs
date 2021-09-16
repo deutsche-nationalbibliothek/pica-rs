@@ -79,7 +79,6 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
-        .limit(limit)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
@@ -102,6 +101,8 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     };
 
+    let mut count = 0;
+
     for result in reader.byte_records() {
         let record = result?;
         let mut is_match = filter.matches(&record);
@@ -112,6 +113,11 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
         if is_match {
             writer.write_byte_record(&record)?;
+            count += 1;
+        }
+
+        if limit > 0 && count >= limit {
+            break;
         }
     }
 
