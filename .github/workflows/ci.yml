@@ -54,6 +54,7 @@ jobs:
     runs-on: ${{matrix.os}}
     needs: [check]
     env:
+      RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2021-compatibility"
       CARGO_INCREMENTAL: 0
     continue-on-error: ${{ matrix.can-fail }}
     steps:
