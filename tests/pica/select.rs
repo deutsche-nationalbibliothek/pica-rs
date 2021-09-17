@@ -250,6 +250,36 @@ fn pica_select_tab_separated() -> TestResult {
 }
 
 #[test]
+fn pica_select_no_empty_columns() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("--no-empty-columns")
+        .arg("003@.0, 001[AB]{0, t}")
+        .arg("tests/data/119232022.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stdout("119232022,8999:20-07-20,13:19:49.000\n");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("003@.0, 001[AB]{0, t}")
+        .arg("tests/data/119232022.dat.gz")
+        .assert();
+
+    assert.success().stdout(
+        r#"119232022,0386:16-03-95,
+119232022,8999:20-07-20,13:19:49.000
+"#,
+    );
+
+    Ok(())
+}
+
+#[test]
 fn pica_select_write_output() -> TestResult {
     let filename = Builder::new().suffix(".csv").tempfile()?;
     let filename_str = filename.path();

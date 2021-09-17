@@ -23,6 +23,11 @@ pub fn cli() -> App {
                 .about("skip invalid records"),
         )
         .arg(
+            Arg::new("no-empty-columns")
+                .long("no-empty-columns")
+                .about("disallow empty columns"),
+        )
+        .arg(
             Arg::new("tsv")
                 .short('t')
                 .long("tsv")
@@ -55,6 +60,7 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 
 pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
+    let no_empty_columns = args.is_present("no-empty-columns");
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
@@ -87,6 +93,10 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             .fold(Outcome::default(), |acc, x| acc * x);
 
         for row in outcome.iter() {
+            if no_empty_columns && row.iter().any(|column| column.is_empty()) {
+                continue;
+            }
+
             if !row.iter().all(|col| col.is_empty()) {
                 writer.write_record(row)?;
             }
