@@ -1,254 +1,254 @@
-001A $0 8999:22-07-10
-001B $0 1250:10-09-14 $t 08:28:16.000
-001D $0 0384:27-07-10
-001U $0 utf8
-001X $0 0
-002@ $0 Ts1
-003@ $0 1004916019
-003U $a http://d-nb.info/gnd/7710287-3
-004B $a sip
-007K $a gnd $0 7710287-3
-007N $a swd $0 7710287-3 $v zg
-008A $a s
-029R $9 952570254 $7 Tb1 $V kiz $A gnd $0 5263070-5 $a Chrysler Corporation $4 hers
-041A $a Plymouth $g Marke
-041R $9 041145135 $7 Ts1 $V saz $A gnd $0 4114513-6 $a Markenname $4 obin
-042A $a 31.7
-047A/03 $e DE-210
-047A/03 $r DE-384
-047C $S swd $i s $a Plymouth <Marke> $0 7710287-3
-050D $a Kombiniere mit einer Produktgruppe, z.B. Personenkraftwagen
-050E $a Wikipedia, Internet $u http://www.mobile.de/modellverzeichnis/plymouth/
-050H $a Markenname
+001A $08999:22-07-10
+001B $01250:10-09-14$t08:28:16.000
+001D $00384:27-07-10
+001U $0utf8
+001X $00
+002@ $0Ts1
+003@ $01004916019
+003U $ahttp://d-nb.info/gnd/7710287-3
+004B $asip
+007K $agnd$07710287-3
+007N $aswd$07710287-3$vzg
+008A $as
+029R $9952570254$7Tb1$Vkiz$Agnd$05263070-5$aChrysler Corporation$4hers
+041A $aPlymouth$gMarke
+041R $9041145135$7Ts1$Vsaz$Agnd$04114513-6$aMarkenname$4obin
+042A $a31.7
+047A/03 $eDE-210
+047A/03 $rDE-384
+047C $Sswd$is$aPlymouth <Marke>$07710287-3
+050D $aKombiniere mit einer Produktgruppe, z.B. Personenkraftwagen
+050E $aWikipedia, Internet$uhttp://www.mobile.de/modellverzeichnis/plymouth/
+050H $aMarkenname
 
-001A $0 0386:16-03-95
-001B $0 8999:20-07-20 $t 13:19:49.000
-001D $0 9999:06-04-08
-001U $0 utf8
-001X $0 0
-002@ $0 Tp1
-003@ $0 119232022
-003U $a http://d-nb.info/gnd/119232022 $z http://d-nb.info/gnd/172642531
-004B $a pik
-007K $a gnd $0 119232022
-007N $a gnd $0 172642531
-007N $a pnd $0 172642531 $v zg
-007N $a pnd $0 119232022 $v zg
-007N $a swd $0 4370325-2 $v zg
-008A $a s $a z $a f
-008B $a w $a k $a v
-010E $e rda
-028@ $d Ada K. $c of $a Lovelace
-028@ $d Augusta Ada $c of $a Lovelace
-028@ $d Ada Augusta $c of $a Lovelace
-028@ $d Ada $a Byron
-028@ $d Augusta Ada $a Byron King
-028@ $d Augusta Ada $a King
-028@ $d Ada $a King
-028@ $d Ada Augusta $a Byron $4 nafr
-028@ $d Augusta Ada $a Byron
-028@ $d Ada $a Byron Lovelace
-028@ $d Ada $a Lovelace
-028@ $d Ada King, Countess of $a Lovelace
-028@ $d Augusta Ada King $a Lovelace
-028@ $d Augusta Ada $a Lovelace
-028A $d Ada King $c of $a Lovelace
-028R $9 118518208 $7 Tp1 $V piz $A gnd $0 118518208 $E 1788 $G 1824 $d George Gordon Byron $a Byron $l Baron $4 bezf $v Vater
-028R $9 118638130 $7 Tp1 $V piz $A gnd $0 118638130 $E 1792 $G 1860 $d Anne Isabella Milbanke Byron $a Byron $4 bezf $v Mutter
-028R $9 119389991 $7 Tp1 $V piz $A gnd $0 119389991 $E 1837 $G 1917 $d Anne Isabella $a Blunt $4 bezf $v Tochter
-028R $d william $a king $4 bezf
-032T $a f
-041R $9 042527880 $7 Ts1 $V saz $A gnd $0 4252788-0 $a Mathematikerin $4 berc
-042A $a 28p $a 9.5p
-042B $a XA-GB
-047A/03 $e DE-386
-047A/03 $r DE-576
-047C $S pnd $i a $a Lovelace, Ada King /of $0 119232022
-047C $S pnd $i a $a Lovelace, Ada K. /of $0 172642531
-050C $a Der Ehemann Baron William King (1805-1893) wurde 1838 zum 1. Earl of Lovelace erhoben.
-050E $a LoC-Na gegen Modern Engl. biogr.
-050E $a https://de.wikipedia.org/wiki/Ada_Lovelace
-050E $a LCAuth, (OGND)
-050G $b Brit. Mathematikerin; Countess of Lovelace
-050G $b Informatikerin, Mathematikerin, Grossbritannien
-060R $a 10.12.1815 $b 27.12.1852 $4 datx
-060R $a 1815 $b 1852 $4 datl
-065R $9 040743357 $7 Tgz $V gik $A gnd $0 4074335-4 $a London $4 ortg
-065R $9 040743357 $7 Tgz $V gik $A gnd $0 4074335-4 $a London $4 orts
-070A/03 $0 (DE-588)119232022
+001A $00386:16-03-95
+001B $08999:20-07-20$t13:19:49.000
+001D $09999:06-04-08
+001U $0utf8
+001X $00
+002@ $0Tp1
+003@ $0119232022
+003U $ahttp://d-nb.info/gnd/119232022$zhttp://d-nb.info/gnd/172642531
+004B $apik
+007K $agnd$0119232022
+007N $agnd$0172642531
+007N $apnd$0172642531$vzg
+007N $apnd$0119232022$vzg
+007N $aswd$04370325-2$vzg
+008A $as$az$af
+008B $aw$ak$av
+010E $erda
+028@ $dAda K.$cof$aLovelace
+028@ $dAugusta Ada$cof$aLovelace
+028@ $dAda Augusta$cof$aLovelace
+028@ $dAda$aByron
+028@ $dAugusta Ada$aByron King
+028@ $dAugusta Ada$aKing
+028@ $dAda$aKing
+028@ $dAda Augusta$aByron$4nafr
+028@ $dAugusta Ada$aByron
+028@ $dAda$aByron Lovelace
+028@ $dAda$aLovelace
+028@ $dAda King, Countess of$aLovelace
+028@ $dAugusta Ada King$aLovelace
+028@ $dAugusta Ada$aLovelace
+028A $dAda King$cof$aLovelace
+028R $9118518208$7Tp1$Vpiz$Agnd$0118518208$E1788$G1824$dGeorge Gordon Byron$aByron$lBaron$4bezf$vVater
+028R $9118638130$7Tp1$Vpiz$Agnd$0118638130$E1792$G1860$dAnne Isabella Milbanke Byron$aByron$4bezf$vMutter
+028R $9119389991$7Tp1$Vpiz$Agnd$0119389991$E1837$G1917$dAnne Isabella$aBlunt$4bezf$vTochter
+028R $dwilliam$aking$4bezf
+032T $af
+041R $9042527880$7Ts1$Vsaz$Agnd$04252788-0$aMathematikerin$4berc
+042A $a28p$a9.5p
+042B $aXA-GB
+047A/03 $eDE-386
+047A/03 $rDE-576
+047C $Spnd$ia$aLovelace, Ada King /of$0119232022
+047C $Spnd$ia$aLovelace, Ada K. /of$0172642531
+050C $aDer Ehemann Baron William King (1805-1893) wurde 1838 zum 1. Earl of Lovelace erhoben.
+050E $aLoC-Na gegen Modern Engl. biogr.
+050E $ahttps://de.wikipedia.org/wiki/Ada_Lovelace
+050E $aLCAuth, (OGND)
+050G $bBrit. Mathematikerin; Countess of Lovelace
+050G $bInformatikerin, Mathematikerin, Grossbritannien
+060R $a10.12.1815$b27.12.1852$4datx
+060R $a1815$b1852$4datl
+065R $9040743357$7Tgz$Vgik$Agnd$04074335-4$aLondon$4ortg
+065R $9040743357$7Tgz$Vgik$Agnd$04074335-4$aLondon$4orts
+070A/03 $0(DE-588)119232022
 
-001@ $0 -
-001A $0 9002:18-04-89
-001B $0 9999:27-09-17 $t 00:43:48.000
-001D $0 9999:23-04-10
-001U $0 utf8
-001X $0 0
-002@ $0 Tb1
-003@ $0 000008672
-003U $a http://d-nb.info/gnd/867-9 $z http://d-nb.info/gnd/7538748-7
-004B $a kiz
-007K $a gnd $0 867-9
-007N $a gnd $0 7538748-7
-007N $a gnd $0 1085295990
-007N $a swd $0 7538748-7 $v zg
-007N $a gkd $0 867-9 $v zg
-008A $a f $a s
-008B $a z $a v
-029@ $a Vacuum Society $g USA
-029@ $a AVS $4 abku
-029@ $a Committee on Vacuum Techniques
-029@ $a CVT $4 abku
-029A $a American Vacuum Society
-029R $9 984002073 $7 Tb1 $A gnd $0 10168051-X $a AVS, the Science and Technology Society $4 nach
-041R $9 040622665 $7 Ts1 $A gnd $0 4062266-6 $a Vakuum $4 them
-041R $9 04066581X $7 Ts1 $V saz $A gnd $0 4066581-1 $a Wissenschaftliche Gesellschaft $4 obin
-042A $a 6.5 $a 9.3c $a 21.5 $a 31.1b $a 31.9a
-042B $a XD-US
-042B $a XD-US
-047A/03 $e DE-1
-047A/03 $r DE-1
-047C $S gkd $i a $a American Vacuum Society $0 867-9
-047C $S swd $i k $a American Vacuum Society $0 7538748-7
-050C $a MMi
-050E $a GKD
-050H $a 1953 gegr. wiss. Ges., die sich mit Problemen des Vakuums und vor allem seiner Anwendung in der Technik beschäftigt
-065R $9 040787044 $7 Tgz $V gik $A gnd $0 4078704-7 $a USA $4 geow
+001@ $0-
+001A $09002:18-04-89
+001B $09999:27-09-17$t00:43:48.000
+001D $09999:23-04-10
+001U $0utf8
+001X $00
+002@ $0Tb1
+003@ $0000008672
+003U $ahttp://d-nb.info/gnd/867-9$zhttp://d-nb.info/gnd/7538748-7
+004B $akiz
+007K $agnd$0867-9
+007N $agnd$07538748-7
+007N $agnd$01085295990
+007N $aswd$07538748-7$vzg
+007N $agkd$0867-9$vzg
+008A $af$as
+008B $az$av
+029@ $aVacuum Society$gUSA
+029@ $aAVS$4abku
+029@ $aCommittee on Vacuum Techniques
+029@ $aCVT$4abku
+029A $aAmerican Vacuum Society
+029R $9984002073$7Tb1$Agnd$010168051-X$aAVS, the Science and Technology Society$4nach
+041R $9040622665$7Ts1$Agnd$04062266-6$aVakuum$4them
+041R $904066581X$7Ts1$Vsaz$Agnd$04066581-1$aWissenschaftliche Gesellschaft$4obin
+042A $a6.5$a9.3c$a21.5$a31.1b$a31.9a
+042B $aXD-US
+042B $aXD-US
+047A/03 $eDE-1
+047A/03 $rDE-1
+047C $Sgkd$ia$aAmerican Vacuum Society$0867-9
+047C $Sswd$ik$aAmerican Vacuum Society$07538748-7
+050C $aMMi
+050E $aGKD
+050H $a1953 gegr. wiss. Ges., die sich mit Problemen des Vakuums und vor allem seiner Anwendung in der Technik beschäftigt
+065R $9040787044$7Tgz$Vgik$Agnd$04078704-7$aUSA$4geow
 
-001@ $0 -
-001A $0 9002:18-04-89
-001B $0 1240:19-04-17 $t 14:37:25.000
-001D $0 9999:23-04-10
-001U $0 utf8
-001X $0 0
-002@ $0 Tb1
-003@ $0 000016586
-003U $a http://d-nb.info/gnd/1658-5 $z http://d-nb.info/gnd/4318278-1
-004B $a kiz
-007K $a gnd $0 1658-5
-007N $a gnd $0 4318278-1
-007N $a swd $0 4318278-1 $v zg
-007N $a gkd $0 16291087-3
-007N $a gkd $0 1658-5 $v zg
-008A $a f $a s
-008B $a z $a v
-029@ $a Univ. of Minnesota, Minneapolis
-029@ $a Universidad de Minnesota
-029@ $a U of M
-029@ $a UM $4 abku
-029A $a University of Minnesota
-042A $a 6.6
-042B $a XD-US
-047A/03 $e DE-1
-047A/03 $r DE-1
-047C $S gkd $i a $a University of Minnesota <Minneapolis, Minn.> $0 1658-5
-047C $S swd $i c $a Minneapolis <Minn.> / University of Minnesota $0 4318278-1
-050E $a Homepage $b Stand: 19.04.2017 $u http://www.umn.edu
-060R $a 1851 $4 datb
-065R $9 040394972 $7 Tg1 $V gik $A gnd $0 4039497-9 $a Minneapolis, Minn. $4 orta
-070A/03 $S IDS $0 320104243
+001@ $0-
+001A $09002:18-04-89
+001B $01240:19-04-17$t14:37:25.000
+001D $09999:23-04-10
+001U $0utf8
+001X $00
+002@ $0Tb1
+003@ $0000016586
+003U $ahttp://d-nb.info/gnd/1658-5$zhttp://d-nb.info/gnd/4318278-1
+004B $akiz
+007K $agnd$01658-5
+007N $agnd$04318278-1
+007N $aswd$04318278-1$vzg
+007N $agkd$016291087-3
+007N $agkd$01658-5$vzg
+008A $af$as
+008B $az$av
+029@ $aUniv. of Minnesota, Minneapolis
+029@ $aUniversidad de Minnesota
+029@ $aU of M
+029@ $aUM$4abku
+029A $aUniversity of Minnesota
+042A $a6.6
+042B $aXD-US
+047A/03 $eDE-1
+047A/03 $rDE-1
+047C $Sgkd$ia$aUniversity of Minnesota <Minneapolis, Minn.>$01658-5
+047C $Sswd$ic$aMinneapolis <Minn.> / University of Minnesota$04318278-1
+050E $aHomepage$bStand: 19.04.2017$uhttp://www.umn.edu
+060R $a1851$4datb
+065R $9040394972$7Tg1$Vgik$Agnd$04039497-9$aMinneapolis, Minn.$4orta
+070A/03 $SIDS$0320104243
 
-001@ $0 -
-001A $0 9002:18-04-89
-001B $0 1601:26-11-19 $t 10:50:14.000
-001D $0 9999:23-04-10
-001U $0 utf8
-001X $0 0
-002@ $0 Tb1
-003@ $0 000016756
-003U $a http://d-nb.info/gnd/1675-5 $z http://d-nb.info/gnd/1088210104 $z http://d-nb.info/gnd/7542287-6 $z http://d-nb.info/gnd/1086256751
-004B $a kiz
-007K $a gnd $0 1675-5
-007N $a gnd $0 1086256751
-007N $a gnd $0 7542287-6
-007N $a swd $0 7542287-6 $v zg
-007N $a gnd $0 1088210104
-007N $a gkd $0 1675-5 $v zg
-008A $a f $a s
-008B $a v $a z
-010E $b ger
-029@ $a Institut International de Philosophie
-029@ $a Internationales Institut für Philosophie
-029@ $a Instituto Internacional de Filosofia
-029@ $a Institute of Philosophy $g International Institute of Philosophie
-029@ $a Institut für Philosophie
-029@ $a IIP $4 abku
-029A $a International Institute of Philosophy
-029R $9 000261246 $7 Tb1 $V kiz $A gnd $0 26124-5 $a Institut International de Collaboration Philosophique $g Paris $4 vorg
-041R $9 041900944 $7 Ts1 $A gnd $0 4190094-7 $a Wissenschaftliche Einrichtung $4 obin
-042A $a 6.5 $a 4.1
-042B $a XP
-047A/03 $e DE-1
-047A/03 $r DE-1
-047C $S gkd $i a $a International Institute of Philosophy $0 1675-5
-047C $S swd $i c $a Paris / Internationales Institut für Philosophie $0 7542287-6
-050E $a Yearb. 1995
-060R $a 1937 $4 datb
-065R $9 040181456 $7 Tgz $V gik $A gnd $0 4018145-5 $a Frankreich $4 geow
-065R $9 040446603 $7 Tgz $V gik $A gnd $0 4044660-8 $a Paris $4 orta
-070A/03 $S IDS $0 000000307
+001@ $0-
+001A $09002:18-04-89
+001B $01601:26-11-19$t10:50:14.000
+001D $09999:23-04-10
+001U $0utf8
+001X $00
+002@ $0Tb1
+003@ $0000016756
+003U $ahttp://d-nb.info/gnd/1675-5$zhttp://d-nb.info/gnd/1088210104$zhttp://d-nb.info/gnd/7542287-6$zhttp://d-nb.info/gnd/1086256751
+004B $akiz
+007K $agnd$01675-5
+007N $agnd$01086256751
+007N $agnd$07542287-6
+007N $aswd$07542287-6$vzg
+007N $agnd$01088210104
+007N $agkd$01675-5$vzg
+008A $af$as
+008B $av$az
+010E $bger
+029@ $aInstitut International de Philosophie
+029@ $aInternationales Institut für Philosophie
+029@ $aInstituto Internacional de Filosofia
+029@ $aInstitute of Philosophy$gInternational Institute of Philosophie
+029@ $aInstitut für Philosophie
+029@ $aIIP$4abku
+029A $aInternational Institute of Philosophy
+029R $9000261246$7Tb1$Vkiz$Agnd$026124-5$aInstitut International de Collaboration Philosophique$gParis$4vorg
+041R $9041900944$7Ts1$Agnd$04190094-7$aWissenschaftliche Einrichtung$4obin
+042A $a6.5$a4.1
+042B $aXP
+047A/03 $eDE-1
+047A/03 $rDE-1
+047C $Sgkd$ia$aInternational Institute of Philosophy$01675-5
+047C $Sswd$ic$aParis / Internationales Institut für Philosophie$07542287-6
+050E $aYearb. 1995
+060R $a1937$4datb
+065R $9040181456$7Tgz$Vgik$Agnd$04018145-5$aFrankreich$4geow
+065R $9040446603$7Tgz$Vgik$Agnd$04044660-8$aParis$4orta
+070A/03 $SIDS$0000000307
 
-001@ $0 -
-001A $0 9002:18-04-89
-001B $0 9999:05-06-20 $t 05:40:04.000
-001D $0 9999:23-04-10
-001U $0 utf8
-001X $0 0
-002@ $0 Tb1
-003@ $0 000009229
-003U $a http://d-nb.info/gnd/922-2 $z http://d-nb.info/gnd/4499175-7 $z http://d-nb.info/gnd/1090453043
-004B $a kiz
-007K $a gnd $0 922-2
-007N $a gnd $0 1090453043
-007N $a gnd $0 4499175-7
-007N $a swd $0 4499175-7 $v zg
-007N $a gkd $0 922-2 $v zg
-008A $a f $a s
-008B $a z $a v $a w $a e
-010E $b ger $e rda
-029@ $a Cancer Society $g USA
-029@ $a ACS $4 abku
-029A $a American Cancer Society
-029R $9 005078091 $7 Tb1 $V kiz $A gnd $0 507809-X $a American Society for the Control of Cancer $4 vorg
-042A $a 27.4
-042B $a XD-US
-047A/03 $e DE-1
-047A/03 $r DE-1
-047C $S gkd $i a $a American Cancer Society $0 922-2
-047C $S swd $i k $a American Cancer Society $0 4499175-7
-050E $a GKD
-050E $a Homepage $b Stand: 08.10.2018 $u https://www.cancer.org
-060R $a 1945 $4 datb
-065R $9 040787044 $7 Tgz $V gik $A gnd $0 4078704-7 $a USA $4 geow
-070A/03 $0 (DE-588)922-2
+001@ $0-
+001A $09002:18-04-89
+001B $09999:05-06-20$t05:40:04.000
+001D $09999:23-04-10
+001U $0utf8
+001X $00
+002@ $0Tb1
+003@ $0000009229
+003U $ahttp://d-nb.info/gnd/922-2$zhttp://d-nb.info/gnd/4499175-7$zhttp://d-nb.info/gnd/1090453043
+004B $akiz
+007K $agnd$0922-2
+007N $agnd$01090453043
+007N $agnd$04499175-7
+007N $aswd$04499175-7$vzg
+007N $agkd$0922-2$vzg
+008A $af$as
+008B $az$av$aw$ae
+010E $bger$erda
+029@ $aCancer Society$gUSA
+029@ $aACS$4abku
+029A $aAmerican Cancer Society
+029R $9005078091$7Tb1$Vkiz$Agnd$0507809-X$aAmerican Society for the Control of Cancer$4vorg
+042A $a27.4
+042B $aXD-US
+047A/03 $eDE-1
+047A/03 $rDE-1
+047C $Sgkd$ia$aAmerican Cancer Society$0922-2
+047C $Sswd$ik$aAmerican Cancer Society$04499175-7
+050E $aGKD
+050E $aHomepage$bStand: 08.10.2018$uhttps://www.cancer.org
+060R $a1945$4datb
+065R $9040787044$7Tgz$Vgik$Agnd$04078704-7$aUSA$4geow
+070A/03 $0(DE-588)922-2
 
-001@ $0 -
-001A $0 0386:17-06-99
-001B $0 9999:17-10-16 $t 17:00:44.000
-001D $0 9999:06-04-08
-001U $0 utf8
-001X $0 0
-002@ $0 Tp1
-003@ $0 121169502
-003U $a http://d-nb.info/gnd/121169502 $z http://d-nb.info/gnd/183361946
-004B $a piz
-007K $a gnd $0 121169502
-007N $a gnd $0 183361946
-007N $a pnd $0 183361946 $v zg
-007N $a pnd $0 121169502 $v zg
-007N $a swd $0 4549141-0 $v zg
-008A $a s $a f
-008B $a v $a w
-028@ $d Heike $a Klußmann
-028A $d Heike $a Klussmann
-041R $a Installationskünstlerin $4 berc
-041R $a Photographin $4 beru
-042A $a 13.7p $a 13.5p
-042B $a XA-DE
-047A/03 $e DE-386
-047A/03 $r DE-576
-047C $S pnd $i a $a Klussmann, Heike $0 121169502
-047C $S pnd $i a $a Klussmann, Heike $0 183361946
-050C $a NDSBIO
-050E $a Internet
-060R $a 1968 $4 datl
+001@ $0-
+001A $00386:17-06-99
+001B $09999:17-10-16$t17:00:44.000
+001D $09999:06-04-08
+001U $0utf8
+001X $00
+002@ $0Tp1
+003@ $0121169502
+003U $ahttp://d-nb.info/gnd/121169502$zhttp://d-nb.info/gnd/183361946
+004B $apiz
+007K $agnd$0121169502
+007N $agnd$0183361946
+007N $apnd$0183361946$vzg
+007N $apnd$0121169502$vzg
+007N $aswd$04549141-0$vzg
+008A $as$af
+008B $av$aw
+028@ $dHeike$aKlußmann
+028A $dHeike$aKlussmann
+041R $aInstallationskünstlerin$4berc
+041R $aPhotographin$4beru
+042A $a13.7p$a13.5p
+042B $aXA-DE
+047A/03 $eDE-386
+047A/03 $rDE-576
+047C $Spnd$ia$aKlussmann, Heike$0121169502
+047C $Spnd$ia$aKlussmann, Heike$0183361946
+050C $aNDSBIO
+050E $aInternet
+060R $a1968$4datl
 

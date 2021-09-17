@@ -189,13 +189,13 @@ impl fmt::Display for Subfield {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let subfield = Subfield::new('0', "123456789X")?;
-    ///     assert_eq!(format!("{}", subfield), "$0 123456789X");
+    ///     assert_eq!(format!("{}", subfield), "$0123456789X");
     ///
     ///     Ok(())
     /// }
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
-        write!(f, "${} {}", self.code, self.value)
+        write!(f, "${}{}", self.code, self.value)
     }
 }
 
@@ -234,6 +234,29 @@ impl Deref for Occurrence {
 impl PartialEq<&str> for Occurrence {
     fn eq(&self, other: &&str) -> bool {
         self.0 == other.as_bytes()
+    }
+}
+
+impl fmt::Display for Occurrence {
+    /// Format the field in a human-readable format.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{Error, Occurrence};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let occurrence = Occurrence::new("01")?;
+    ///     assert_eq!(format!("{}", occurrence), "/01");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
+        write!(f, "/{}", self.0)?;
+
+        Ok(())
     }
 }
 
@@ -601,7 +624,7 @@ impl fmt::Display for Field {
     ///         ],
     ///     )?;
     ///
-    ///     assert_eq!(format!("{}", field), "012A/01 $0 123456789X $a foo");
+    ///     assert_eq!(format!("{}", field), "012A/01 $0123456789X$afoo");
     ///
     ///     Ok(())
     /// }
@@ -618,7 +641,7 @@ impl fmt::Display for Field {
                 .iter()
                 .map(|s| format!("{}", s))
                 .collect::<Vec<_>>()
-                .join(" ");
+                .join("");
 
             write!(f, " {}", subfields)?;
         }
@@ -967,7 +990,7 @@ impl fmt::Display for ByteRecord {
     ///     let record = ByteRecord::from_bytes(
     ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
     ///     )?;
-    ///     assert_eq!(format!("{}", record), "003@ $0 123456789X\n012A/01 $a 123");
+    ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
     ///
     ///     Ok(())
     /// }
@@ -1069,7 +1092,7 @@ impl fmt::Display for StringRecord {
     ///     let record = StringRecord::from_bytes(
     ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
     ///     )?;
-    ///     assert_eq!(format!("{}", record), "003@ $0 123456789X\n012A/01 $a 123");
+    ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
     ///
     ///     Ok(())
     /// }
