@@ -8,11 +8,11 @@ use std::io::Write;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct JsonConfig {
-    pub skip_invalid: Option<bool>,
+pub(crate) struct JsonConfig {
+    pub(crate) skip_invalid: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("json")
         .about("Serialize records to JSON.")
         .arg(
@@ -31,7 +31,7 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.json, config.global);
 
     let mut reader = ReaderBuilder::new()

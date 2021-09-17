@@ -1,7 +1,6 @@
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::util::{App, CliArgs, CliError, CliResult};
-use atty;
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
@@ -10,12 +9,12 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct PrintConfig {
-    pub skip_invalid: Option<bool>,
-    pub add_spaces: Option<bool>,
+pub(crate) struct PrintConfig {
+    pub(crate) skip_invalid: Option<bool>,
+    pub(crate) add_spaces: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("print")
         .about("Print records in human readable format.")
         .arg(
@@ -52,7 +51,7 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.print, config.global);
 
     let add_spaces = if args.is_present("add-spaces") {

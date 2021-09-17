@@ -5,18 +5,18 @@ use tempfile::{Builder, TempDir};
 
 pub type TestResult = Result<(), Box<dyn std::error::Error>>;
 
-pub struct TestContext {
-    pub tempdir: TempDir,
+pub(crate) struct TestContext {
+    pub(crate) tempdir: TempDir,
 }
 
 impl TestContext {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         let tempdir = Builder::new().tempdir().unwrap();
         TestContext { tempdir }
     }
 }
 
-pub trait CommandExt {
+pub(crate) trait CommandExt {
     fn with_config(&mut self, ctx: &TestContext, content: &str) -> &mut Self;
 }
 

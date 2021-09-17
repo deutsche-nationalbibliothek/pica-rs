@@ -9,11 +9,11 @@ use std::io::{self, Write};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct SelectConfig {
-    pub skip_invalid: Option<bool>,
+pub(crate) struct SelectConfig {
+    pub(crate) skip_invalid: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("select")
         .about("Select fields from a record.")
         .arg(
@@ -58,7 +58,7 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
     })
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
     let no_empty_columns = args.is_present("no-empty-columns");
 

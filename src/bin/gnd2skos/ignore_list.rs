@@ -22,7 +22,9 @@ struct Record {
 }
 
 impl IgnoreList {
-    pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Self, std::io::Error> {
+    pub(crate) fn from_path<P: AsRef<Path>>(
+        path: P,
+    ) -> Result<Self, std::io::Error> {
         let mut list = HashSet::new();
         let mut reader = csv::Reader::from_path(path)?;
         for result in reader.deserialize() {
@@ -33,7 +35,7 @@ impl IgnoreList {
         Ok(IgnoreList { inner: list })
     }
 
-    pub fn contains(&self, label: String, idn: String) -> bool {
+    pub(crate) fn contains(&self, label: String, idn: String) -> bool {
         self.inner.contains(&(label, idn))
     }
 }

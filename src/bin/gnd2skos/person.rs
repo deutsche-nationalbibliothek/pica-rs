@@ -9,7 +9,7 @@ use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
 use crate::AppContext;
 
-pub struct Person(pub(crate) StringRecord);
+pub(crate) struct Person(pub(crate) StringRecord);
 
 impl Deref for Person {
     type Target = StringRecord;
@@ -20,7 +20,7 @@ impl Deref for Person {
 }
 
 impl Person {
-    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+    pub(crate) fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
         if field.contains_code('a') {

@@ -5,29 +5,29 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct GlobalConfig {
-    pub skip_invalid: Option<bool>,
+pub(crate) struct GlobalConfig {
+    pub(crate) skip_invalid: Option<bool>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct Config {
+pub(crate) struct Config {
     #[serde(skip)]
-    pub path: Option<PathBuf>,
-    pub global: Option<GlobalConfig>,
-    pub cat: Option<crate::cmds::cat::CatConfig>,
-    pub filter: Option<crate::cmds::filter::FilterConfig>,
-    pub frequency: Option<crate::cmds::frequency::FrequencyConfig>,
-    pub json: Option<crate::cmds::json::JsonConfig>,
-    pub partition: Option<crate::cmds::partition::PartitionConfig>,
-    pub print: Option<crate::cmds::print::PrintConfig>,
-    pub sample: Option<crate::cmds::sample::SampleConfig>,
-    pub select: Option<crate::cmds::select::SelectConfig>,
-    pub slice: Option<crate::cmds::slice::SliceConfig>,
-    pub split: Option<crate::cmds::split::SplitConfig>,
+    pub(crate) path: Option<PathBuf>,
+    pub(crate) global: Option<GlobalConfig>,
+    pub(crate) cat: Option<crate::cmds::cat::CatConfig>,
+    pub(crate) filter: Option<crate::cmds::filter::FilterConfig>,
+    pub(crate) frequency: Option<crate::cmds::frequency::FrequencyConfig>,
+    pub(crate) json: Option<crate::cmds::json::JsonConfig>,
+    pub(crate) partition: Option<crate::cmds::partition::PartitionConfig>,
+    pub(crate) print: Option<crate::cmds::print::PrintConfig>,
+    pub(crate) sample: Option<crate::cmds::sample::SampleConfig>,
+    pub(crate) select: Option<crate::cmds::select::SelectConfig>,
+    pub(crate) slice: Option<crate::cmds::slice::SliceConfig>,
+    pub(crate) split: Option<crate::cmds::split::SplitConfig>,
 }
 
 impl Config {
-    pub fn new() -> Result<Self, std::io::Error> {
+    pub(crate) fn new() -> Result<Self, std::io::Error> {
         let mut config = Config::default();
 
         if let Some(project_dirs) =
@@ -49,7 +49,9 @@ impl Config {
         Ok(config)
     }
 
-    pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Self, std::io::Error> {
+    pub(crate) fn from_path<P: AsRef<Path>>(
+        path: P,
+    ) -> Result<Self, std::io::Error> {
         let path = PathBuf::from(path.as_ref());
         let content = read_to_string(&path)?;
 
@@ -60,7 +62,7 @@ impl Config {
         Ok(config)
     }
 
-    pub fn from_path_or_default<P: AsRef<Path>>(
+    pub(crate) fn from_path_or_default<P: AsRef<Path>>(
         path: Option<P>,
     ) -> Result<Self, std::io::Error> {
         match path {

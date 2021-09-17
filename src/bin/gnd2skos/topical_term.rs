@@ -8,7 +8,7 @@ use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
 use crate::AppContext;
 
-pub struct TopicalTerm(pub(crate) StringRecord);
+pub(crate) struct TopicalTerm(pub(crate) StringRecord);
 
 impl Deref for TopicalTerm {
     type Target = StringRecord;
@@ -19,7 +19,7 @@ impl Deref for TopicalTerm {
 }
 
 impl TopicalTerm {
-    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+    pub(crate) fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
         if field.contains_code('a') {

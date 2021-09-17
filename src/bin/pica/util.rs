@@ -1,12 +1,12 @@
 use std::convert::From;
 use std::{fmt, io};
 
-pub type App = clap::App<'static>;
-pub type CliArgs = clap::ArgMatches;
-pub type CliResult<T> = Result<T, CliError>;
+pub(crate) type App = clap::App<'static>;
+pub(crate) type CliArgs = clap::ArgMatches;
+pub(crate) type CliResult<T> = Result<T, CliError>;
 
 #[derive(Debug)]
-pub enum CliError {
+pub(crate) enum CliError {
     Io(io::Error),
     Csv(csv::Error),
     Pica(pica::Error),

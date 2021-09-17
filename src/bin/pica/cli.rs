@@ -1,6 +1,6 @@
 use clap::{App, AppSettings, Arg};
 
-pub fn build_cli() -> App<'static> {
+pub(crate) fn build_cli() -> App<'static> {
     App::new("pica")
         .about("Tools to work with bibliographic records encoded in Pica+")
         .setting(AppSettings::SubcommandRequired)

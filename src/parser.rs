@@ -19,7 +19,7 @@ const RS: char = '\x1E';
 const SP: char = '\x20';
 
 /// Parser result.
-pub type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
+type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
 
 /// An error that can occur when parsing PICA+ records.
 #[derive(Debug, PartialEq)]
@@ -76,7 +76,7 @@ pub(crate) fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
 }
 
 /// Parses a field occurrence.
-pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
+fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
     map(
         preceded(
             tag(b"/"),
@@ -87,7 +87,7 @@ pub fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
 }
 
 /// Parses a field tag.
-pub fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
+fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
     map(
         recognize(tuple((
             one_of("012"),
@@ -99,7 +99,7 @@ pub fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
 }
 
 /// Parses a field.
-pub fn parse_field(i: &[u8]) -> ParseResult<Field> {
+fn parse_field(i: &[u8]) -> ParseResult<Field> {
     map(
         terminated(
             tuple((
@@ -118,7 +118,7 @@ pub fn parse_field(i: &[u8]) -> ParseResult<Field> {
 }
 
 /// Parses a record.
-pub fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
+pub(crate) fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
     all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
 }
 

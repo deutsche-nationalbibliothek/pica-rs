@@ -9,7 +9,7 @@ use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
 use crate::AppContext;
 
-pub struct Event(pub(crate) StringRecord);
+pub(crate) struct Event(pub(crate) StringRecord);
 
 const CHECK: [char; 4] = ['n', 'd', 'c', 'g'];
 
@@ -22,7 +22,7 @@ impl Deref for Event {
 }
 
 impl Event {
-    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+    pub(crate) fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut parens = String::new();
         let mut label = String::new();
 
