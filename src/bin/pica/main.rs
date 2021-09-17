@@ -3,6 +3,7 @@ extern crate clap;
 extern crate csv;
 extern crate regex;
 extern crate serde;
+extern crate termcolor;
 
 mod cli;
 mod cmds;

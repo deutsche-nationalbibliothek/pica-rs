@@ -84,6 +84,94 @@ fn pica_print_limit() -> TestResult {
 }
 
 #[test]
+fn pica_print_color() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--color")
+        .arg("always")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019-color.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--color")
+        .arg("never")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_print_add_spaces() -> TestResult {
+    let expected = read_to_string("tests/data/1004916019-spaces.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    // CLI flag
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--add-spaces")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected.to_owned());
+
+    // Config
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[print]
+add-spaces = true
+"#,
+        )
+        .arg("print")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_print_write_output() -> TestResult {
     let filename = Builder::new().suffix(".txt").tempfile()?;
     let filename_str = filename.path();
