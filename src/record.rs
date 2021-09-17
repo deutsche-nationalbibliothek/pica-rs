@@ -195,7 +195,7 @@ impl fmt::Display for Subfield {
     /// }
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
-        write!(f, "${} {}", self.code, self.value)
+        write!(f, "${}{}", self.code, self.value)
     }
 }
 
@@ -618,7 +618,7 @@ impl fmt::Display for Field {
                 .iter()
                 .map(|s| format!("{}", s))
                 .collect::<Vec<_>>()
-                .join(" ");
+                .join("");
 
             write!(f, " {}", subfields)?;
         }
