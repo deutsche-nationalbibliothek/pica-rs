@@ -1,6 +1,6 @@
 use clap::{App, Arg};
 
-pub fn build_cli() -> App<'static> {
+pub(crate) fn build_cli() -> App<'static> {
     App::new("gnd2skos")
         .about("Convert GND records to SKOS.")
         .version(crate_version!())

@@ -12,7 +12,7 @@ use crate::ns::skos;
 use crate::person::Person;
 use crate::AppContext;
 
-pub struct Work(pub(crate) StringRecord);
+pub(crate) struct Work(pub(crate) StringRecord);
 
 impl Deref for Work {
     type Target = StringRecord;
@@ -23,7 +23,7 @@ impl Deref for Work {
 }
 
 impl Work {
-    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+    pub(crate) fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
         for subfield in field.iter() {
@@ -56,7 +56,7 @@ impl Work {
         }
     }
 
-    pub fn get_prefix(&self) -> Option<StrLiteral> {
+    fn get_prefix(&self) -> Option<StrLiteral> {
         for tag in &["028R", "065R", "029R", "030R"] {
             for field in self.all(tag).unwrap_or_default() {
                 let relation_exists = field.iter().any(|subfield| {

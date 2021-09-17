@@ -5,7 +5,7 @@ use clap_generate::generators::{Bash, Fish, Zsh};
 use std::fs::File;
 use std::io::{self, Write};
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("completion")
         .arg(
             Arg::new("shell")
@@ -22,7 +22,7 @@ pub fn cli() -> App {
         .about("Generate a completions file for Bash, Fish or ZSH shell.")
 }
 
-pub fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(filename) => Box::new(File::create(filename)?),
         None => Box::new(io::stdout()),

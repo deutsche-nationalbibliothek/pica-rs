@@ -13,13 +13,13 @@ use std::str::FromStr;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct PartitionConfig {
-    pub skip_invalid: Option<bool>,
-    pub gzip: Option<bool>,
-    pub template: Option<String>,
+pub(crate) struct PartitionConfig {
+    pub(crate) skip_invalid: Option<bool>,
+    pub(crate) gzip: Option<bool>,
+    pub(crate) template: Option<String>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("partition")
         .about("Partition a list of records by subfield value.")
         .arg(
@@ -51,7 +51,7 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid =
         skip_invalid_flag!(args, config.partition, config.global);
     let gzip_compression = gzip_flag!(args, config.partition);

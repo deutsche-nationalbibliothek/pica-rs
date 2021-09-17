@@ -4,7 +4,7 @@ use pica::{Error, ParsePicaError, ReaderBuilder};
 use std::fs::File;
 use std::io::{self, BufWriter, Write};
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("invalid")
         .about("Filter out invalid records.")
         .arg(
@@ -17,7 +17,7 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs) -> CliResult<()> {
     let mut reader = ReaderBuilder::new()
         .skip_invalid(false)
         .from_path_or_stdin(args.value_of("filename"))?;

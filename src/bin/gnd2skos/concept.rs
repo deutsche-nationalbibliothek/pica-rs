@@ -8,9 +8,9 @@ use sophia::ns::Namespace;
 use sophia::term::literal::Literal;
 use sophia::term::SimpleIri;
 
-pub type StrLiteral = Literal<Box<str>>;
+pub(crate) type StrLiteral = Literal<Box<str>>;
 
-pub trait Concept {
+pub(crate) trait Concept {
     fn skosify<G: MutableGraph>(&self, graph: &mut G, ctx: &AppContext);
 
     fn add_relations<G: MutableGraph>(

@@ -9,7 +9,7 @@ use crate::concept::{Concept, StrLiteral};
 use crate::ns::skos;
 use crate::AppContext;
 
-pub struct CorporateBody(pub(crate) StringRecord);
+pub(crate) struct CorporateBody(pub(crate) StringRecord);
 
 impl Deref for CorporateBody {
     type Target = StringRecord;
@@ -20,7 +20,7 @@ impl Deref for CorporateBody {
 }
 
 impl CorporateBody {
-    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+    pub(crate) fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
         for subfield in field.iter() {
