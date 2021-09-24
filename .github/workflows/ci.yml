@@ -31,56 +31,58 @@ jobs:
         with:
           toolchain: stable
           override: true            
-      - name: cargo check
-        uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --verbose
 
-
-#   test:
-#     name: test (${{ matrix.os }} with rust-${{ matrix.rust }})
-#     strategy:
-#       matrix:
-#         include:
-#           - os: ubuntu-latest
-#             rust: stable
-#             can-fail: false
-#           - os: ubuntu-latest
-#             rust: beta
-#             can-fail: false
-#           - os: ubuntu-latest
-#             rust: nightly
-#             can-fail: true
-#           - os: macos-latest
-#             rust: stable
-#             can-fail: false
-#           - os: windows-latest
-#             rust: stable
-#             can-fail: false
-#     runs-on: ${{matrix.os}}
-#     needs: [check]
-#     env:
-#       RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2021-compatibility"
-#       CARGO_INCREMENTAL: 0
-#     continue-on-error: ${{ matrix.can-fail }}
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: abbbi/github-actions-tune@v1
-#         if: matrix.os == 'ubuntu-latest'
-#       - uses: actions/cache@v2
-#         with:
-#           key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
-#           path: |
-#             ~/.cargo/bin/
-#             ~/.cargo/registry/index/
-#             ~/.cargo/registry/cache/
-#             ~/.cargo/git/db/
-#             target/
-#       - run: |
-#           rustup update --no-self-update ${{ matrix.rust }}
-#           rustup default ${{ matrix.rust }}
-#           cargo test --all
+  test:
+    name: test (${{ matrix.os }} with rust-${{ matrix.rust }})
+    needs: [check]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rust: stable
+            can-fail: false
+          - os: ubuntu-latest
+            rust: beta
+            can-fail: false
+          - os: ubuntu-latest
+            rust: nightly
+            can-fail: true
+          - os: macos-latest
+            rust: stable
+            can-fail: false
+          - os: windows-latest
+            rust: stable
+            can-fail: false
+    runs-on: ${{matrix.os}}
+    env:
+      RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2021-compatibility"
+      CARGO_INCREMENTAL: 0
+    continue-on-error: ${{ matrix.can-fail }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: abbbi/github-actions-tune@v1
+        if: matrix.os == 'ubuntu-latest'
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          default: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all
 
 #   fuzz:
 #     name: fuzz ${{ matrix.name }}
