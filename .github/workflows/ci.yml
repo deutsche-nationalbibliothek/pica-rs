@@ -254,7 +254,7 @@ jobs:
           args: --all-features --all-targets -- -D warnings
 
   upgrades:
-    # if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [test]
     steps:
