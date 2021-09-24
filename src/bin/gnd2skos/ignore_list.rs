@@ -2,17 +2,9 @@ use serde::Deserialize;
 use std::collections::HashSet;
 use std::path::Path;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct IgnoreList {
     inner: HashSet<(String, String)>,
-}
-
-impl Default for IgnoreList {
-    fn default() -> Self {
-        IgnoreList {
-            inner: HashSet::new(),
-        }
-    }
 }
 
 #[derive(Debug, Deserialize)]

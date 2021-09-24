@@ -29,7 +29,7 @@ pub enum Selector {
     Value(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Outcome(pub(crate) Vec<Vec<BString>>);
 
 impl Outcome {
@@ -43,12 +43,6 @@ impl Outcome {
 
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
-    }
-}
-
-impl Default for Outcome {
-    fn default() -> Outcome {
-        Outcome(Vec::<Vec<BString>>::new())
     }
 }
 
