@@ -78,11 +78,49 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           override: true
-          default: true
       - uses: actions-rs/cargo@v1
         with:
           command: test
           args: --all
+
+  coverage:
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: abbbi/github-actions-tune@v1
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clean
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features --no-fail-fast
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
+          RUSTDOCFLAGS: '-Cpanic=abort'
+      - uses: actions-rs/grcov@v0.1
+        id: coverage
+      - uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ${{ steps.coverage.outputs.report }}
 
 #   fuzz:
 #     name: fuzz ${{ matrix.name }}
@@ -133,45 +171,6 @@ jobs:
 #           rustup default ${{ matrix.rust }}
 #           cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
 
-#   grcov:
-#     name: coverage
-#     runs-on: ubuntu-latest
-#     continue-on-error: true
-#     needs: [check, test]
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: abbbi/github-actions-tune@v1
-#       - uses: actions/cache@v2
-#         with:
-#           key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
-#           path: |
-#             ~/.cargo/bin/
-#             ~/.cargo/registry/index/
-#             ~/.cargo/registry/cache/
-#             ~/.cargo/git/db/
-#             target/
-#       - uses: actions-rs/toolchain@v1
-#         with:
-#           toolchain: nightly
-#           override: true
-#       - uses: actions-rs/cargo@v1
-#         with:
-#           command: clean
-#       - uses: actions-rs/cargo@v1
-#         with:
-#           command: test
-#           args: --all-features --no-fail-fast
-#         env:
-#           CARGO_INCREMENTAL: '0'
-#           RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
-#           RUSTDOCFLAGS: '-Cpanic=abort'
-#       - id: coverage
-#         uses: actions-rs/grcov@v0.1
-#       - name: Coveralls upload
-#         uses: coverallsapp/github-action@master
-#         with:
-#           github-token: ${{ secrets.GITHUB_TOKEN }}
-#           path-to-lcov: ${{ steps.coverage.outputs.report }}
 
 #   fmt:
 #     name: rustfmt
