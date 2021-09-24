@@ -161,7 +161,7 @@ mod tests {
         assert_eq!(parse_subfield_code(b"0").unwrap().1, '0');
         assert_eq!(parse_subfield_code(b"a").unwrap().1, 'a');
         assert_eq!(parse_subfield_code(b"Z").unwrap().1, 'Z');
-        assert_eq!(parse_subfield_code(b"!").is_err(), true);
+        assert!(parse_subfield_code(b"!").is_err());
     }
 
     #[test]
@@ -183,8 +183,8 @@ mod tests {
             Subfield::from_unchecked('a', "")
         );
 
-        assert_eq!(parse_subfield(b"a123").is_err(), true);
-        assert_eq!(parse_subfield(b"").is_err(), true);
+        assert!(parse_subfield(b"a123").is_err());
+        assert!(parse_subfield(b"").is_err());
     }
 
     #[test]
@@ -201,7 +201,7 @@ mod tests {
             parse_field_occurrence(b"/001").unwrap().1,
             Occurrence::from_unchecked("001")
         );
-        assert_eq!(parse_field_occurrence(b"/XYZ").is_err(), true);
+        assert!(parse_field_occurrence(b"/XYZ").is_err());
     }
 
     #[test]
@@ -209,12 +209,12 @@ mod tests {
         assert_eq!(parse_field_tag(b"003@").unwrap().1, BString::from("003@"));
         assert_eq!(parse_field_tag(b"012A").unwrap().1, BString::from("012A"));
 
-        assert_eq!(parse_field_tag(b"003").is_err(), true);
-        assert_eq!(parse_field_tag(b"03").is_err(), true);
-        assert_eq!(parse_field_tag(b"0").is_err(), true);
-        assert_eq!(parse_field_tag(b"").is_err(), true);
-        assert_eq!(parse_field_tag(b"003!").is_err(), true);
-        assert_eq!(parse_field_tag(b"303@").is_err(), true);
+        assert!(parse_field_tag(b"003").is_err());
+        assert!(parse_field_tag(b"03").is_err());
+        assert!(parse_field_tag(b"0").is_err());
+        assert!(parse_field_tag(b"").is_err());
+        assert!(parse_field_tag(b"003!").is_err());
+        assert!(parse_field_tag(b"303@").is_err());
     }
 
     #[test]
