@@ -83,11 +83,62 @@ jobs:
           command: test
           args: --all
 
+  fuzz:
+    name: fuzz ${{ matrix.name }}
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+    strategy:
+      matrix:
+        include:
+          - target: fuzz_byte_record
+            name: fuzz-byte-record
+            max-total-time: 300
+            rust: nightly
+            can-fail: false
+          - target: fuzz_path
+            name: fuzz-path
+            max-total-time: 300
+            rust: nightly
+            can-fail: false
+          # - target: fuzz_filter
+          #   name: fuzz-filter
+          #   max-total-time: 300
+          #   rust: nightly
+          #   can-fail: true
+          # - target: fuzz_selectors
+          #   name: fuzz-selectors
+          #   max-total-time: 300
+          #   rust: nightly
+          #   can-fail: false
+    runs-on: ubuntu-latest
+    needs: [check]
+    env:
+      CARGO_INCREMENTAL: 0
+    continue-on-error: ${{ matrix.can-fail }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: abbbi/github-actions-tune@v1
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - run: |
+          cargo install cargo-fuzz
+          cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
+
   coverage:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     continue-on-error: true
-    needs: [check]
+    needs: [test]
     steps:
       - uses: actions/checkout@v2
       - uses: abbbi/github-actions-tune@v1
@@ -122,54 +173,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ${{ steps.coverage.outputs.report }}
 
-#   fuzz:
-#     name: fuzz ${{ matrix.name }}
-#     strategy:
-#       matrix:
-#         include:
-#           - target: fuzz_byte_record
-#             name: fuzz-byte-record
-#             max-total-time: 300
-#             rust: nightly
-#             can-fail: false
-#           # - target: fuzz_filter
-#           #   name: fuzz-filter
-#           #   max-total-time: 300
-#           #   rust: nightly
-#           #   can-fail: true
-#           - target: fuzz_path
-#             name: fuzz-path
-#             max-total-time: 300
-#             rust: nightly
-#             can-fail: false
-#           # - target: fuzz_selectors
-#           #   name: fuzz-selectors
-#           #   max-total-time: 300
-#           #   rust: nightly
-#           #   can-fail: false
-#     runs-on: ubuntu-latest
-#     needs: [check, test]
-#     env:
-#       CARGO_INCREMENTAL: 0
-#     continue-on-error: ${{ matrix.can-fail }}
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: abbbi/github-actions-tune@v1
-#       - uses: actions/cache@v2
-#         with:
-#           key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
-#           path: |
-#             ~/.cargo/bin/
-#             ~/.cargo/registry/index/
-#             ~/.cargo/registry/cache/
-#             ~/.cargo/git/db/
-#             target/
-#       - name: Install `cargo fuzz`
-#         run: cargo install cargo-fuzz
-#       - run: |
-#           rustup update --no-self-update ${{ matrix.rust }}
-#           rustup default ${{ matrix.rust }}
-#           cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
 
 
 #   fmt:
