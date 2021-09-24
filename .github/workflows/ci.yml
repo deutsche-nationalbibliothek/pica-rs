@@ -36,24 +36,33 @@ jobs:
           command: check
 
   test:
-    name: test (${{ matrix.os }} with rust-${{ matrix.rust }})
-    needs: [check]
+    name: test (${{ matrix.target }} with rust-${{ matrix.rust }})
+    needs: check
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
             rust: stable
             can-fail: false
           - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
             rust: beta
             can-fail: false
           - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
             rust: nightly
             can-fail: true
           - os: macos-latest
+            target: x86_64-apple-darwin
             rust: stable
             can-fail: false
           - os: windows-latest
+            target: x86_64-pc-windows-gnu
+            rust: stable
+            can-fail: false
+          - os: windows-latest
+            target: i686-pc-windows-msvc
             rust: stable
             can-fail: false
     runs-on: ${{matrix.os}}
@@ -77,6 +86,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
           override: true
       - uses: actions-rs/cargo@v1
         with:
@@ -110,7 +120,7 @@ jobs:
           #   rust: nightly
           #   can-fail: false
     runs-on: ubuntu-latest
-    needs: [check]
+    needs: check
     env:
       CARGO_INCREMENTAL: 0
     continue-on-error: ${{ matrix.can-fail }}
@@ -139,7 +149,7 @@ jobs:
 
   rustfmt:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v2
       - uses: abbbi/github-actions-tune@v1
@@ -166,7 +176,7 @@ jobs:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     continue-on-error: true
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v2
       - uses: abbbi/github-actions-tune@v1
@@ -203,7 +213,7 @@ jobs:
 
   clippy:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v2
       - uses: abbbi/github-actions-tune@v1
@@ -229,7 +239,7 @@ jobs:
   audit:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v1
       - uses: abbbi/github-actions-tune@v1
@@ -253,7 +263,7 @@ jobs:
   upgrades:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v2
       - uses: abbbi/github-actions-tune@v1
@@ -267,7 +277,7 @@ jobs:
   book:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v2
       - uses: abbbi/github-actions-tune@v1
