@@ -50,9 +50,8 @@ jobs:
             rust: stable
             target: i686-pc-windows-msvc
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
+      - uses: actions/checkout@v1
+      - uses: abbbi/github-actions-tune@v1
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -99,4 +98,5 @@ jobs:
           asset_content_type: application/octet-stream
           asset_path: ${{ env.ASSET }}
           asset_name: ${{ env.ASSET }}
-          
+  
+        
