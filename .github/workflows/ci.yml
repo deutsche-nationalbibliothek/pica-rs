@@ -14,122 +14,7 @@ defaults:
 
 jobs:
   check:
-    name: check
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-      - run: |
-          rustup update stable && rustup default stable
-          cargo check
-
-  test:
-    name: test (${{ matrix.os }} with rust-${{ matrix.rust }})
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            rust: stable
-            can-fail: false
-          - os: ubuntu-latest
-            rust: beta
-            can-fail: false
-          - os: ubuntu-latest
-            rust: nightly
-            can-fail: true
-          - os: macos-latest
-            rust: stable
-            can-fail: false
-          - os: windows-latest
-            rust: stable
-            can-fail: false
-    runs-on: ${{matrix.os}}
-    needs: [check]
-    env:
-      RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2021-compatibility"
-      CARGO_INCREMENTAL: 0
-    continue-on-error: ${{ matrix.can-fail }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: abbbi/github-actions-tune@v1
-        if: matrix.os == 'ubuntu-latest'
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-      - run: |
-          rustup update --no-self-update ${{ matrix.rust }}
-          rustup default ${{ matrix.rust }}
-          cargo test --all
-
-  fuzz:
-    name: fuzz ${{ matrix.name }}
-    strategy:
-      matrix:
-        include:
-          - target: fuzz_byte_record
-            name: fuzz-byte-record
-            max-total-time: 300
-            rust: nightly
-            can-fail: false
-          # - target: fuzz_filter
-          #   name: fuzz-filter
-          #   max-total-time: 300
-          #   rust: nightly
-          #   can-fail: true
-          - target: fuzz_path
-            name: fuzz-path
-            max-total-time: 300
-            rust: nightly
-            can-fail: false
-          # - target: fuzz_selectors
-          #   name: fuzz-selectors
-          #   max-total-time: 300
-          #   rust: nightly
-          #   can-fail: false
-    runs-on: ubuntu-latest
-    needs: [check, test]
-    env:
-      CARGO_INCREMENTAL: 0
-    continue-on-error: ${{ matrix.can-fail }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-      - name: Install `cargo fuzz`
-        run: cargo install cargo-fuzz
-      - run: |
-          rustup update --no-self-update ${{ matrix.rust }}
-          rustup default ${{ matrix.rust }}
-          cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
-
-  grcov:
-    name: coverage
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    needs: [check, test]
     steps:
       - uses: actions/checkout@v2
       - uses: abbbi/github-actions-tune@v1
@@ -144,88 +29,209 @@ jobs:
             target/
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/cargo@v1
+          toolchain: stable
+          override: true            
+      - name: cargo check
+        uses: actions-rs/cargo@v1
         with:
-          command: clean
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features --no-fail-fast
-        env:
-          CARGO_INCREMENTAL: '0'
-          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
-          RUSTDOCFLAGS: '-Cpanic=abort'
-      - id: coverage
-        uses: actions-rs/grcov@v0.1
-      - name: Coveralls upload
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ${{ steps.coverage.outputs.report }}
+          command: check
+          args: --verbose
 
-  fmt:
-    name: rustfmt
-    runs-on: ubuntu-latest
-    needs: [check, test]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-nightly-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-      - run: |
-          rustup update nightly && rustup default nightly
-          rustup component add rustfmt
-          cargo fmt --all -- --check
 
-  clippy:
-    name: clippy
-    runs-on: ubuntu-latest
-    needs: [check, test]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-      - run: |
-          rustup update stable && rustup default stable
-          rustup component add clippy
-          cargo clippy -- -D warnings
+#   test:
+#     name: test (${{ matrix.os }} with rust-${{ matrix.rust }})
+#     strategy:
+#       matrix:
+#         include:
+#           - os: ubuntu-latest
+#             rust: stable
+#             can-fail: false
+#           - os: ubuntu-latest
+#             rust: beta
+#             can-fail: false
+#           - os: ubuntu-latest
+#             rust: nightly
+#             can-fail: true
+#           - os: macos-latest
+#             rust: stable
+#             can-fail: false
+#           - os: windows-latest
+#             rust: stable
+#             can-fail: false
+#     runs-on: ${{matrix.os}}
+#     needs: [check]
+#     env:
+#       RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2021-compatibility"
+#       CARGO_INCREMENTAL: 0
+#     continue-on-error: ${{ matrix.can-fail }}
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: abbbi/github-actions-tune@v1
+#         if: matrix.os == 'ubuntu-latest'
+#       - uses: actions/cache@v2
+#         with:
+#           key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+#           path: |
+#             ~/.cargo/bin/
+#             ~/.cargo/registry/index/
+#             ~/.cargo/registry/cache/
+#             ~/.cargo/git/db/
+#             target/
+#       - run: |
+#           rustup update --no-self-update ${{ matrix.rust }}
+#           rustup default ${{ matrix.rust }}
+#           cargo test --all
 
-  book:
-    name: book
-    runs-on: ubuntu-latest
-    needs: [check]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-      - uses: peaceiris/actions-mdbook@v1
-        with:
-          mdbook-version: 'latest'
-      - run: |
-          mdbook build docs/book && mdbook test docs/book
+#   fuzz:
+#     name: fuzz ${{ matrix.name }}
+#     strategy:
+#       matrix:
+#         include:
+#           - target: fuzz_byte_record
+#             name: fuzz-byte-record
+#             max-total-time: 300
+#             rust: nightly
+#             can-fail: false
+#           # - target: fuzz_filter
+#           #   name: fuzz-filter
+#           #   max-total-time: 300
+#           #   rust: nightly
+#           #   can-fail: true
+#           - target: fuzz_path
+#             name: fuzz-path
+#             max-total-time: 300
+#             rust: nightly
+#             can-fail: false
+#           # - target: fuzz_selectors
+#           #   name: fuzz-selectors
+#           #   max-total-time: 300
+#           #   rust: nightly
+#           #   can-fail: false
+#     runs-on: ubuntu-latest
+#     needs: [check, test]
+#     env:
+#       CARGO_INCREMENTAL: 0
+#     continue-on-error: ${{ matrix.can-fail }}
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: abbbi/github-actions-tune@v1
+#       - uses: actions/cache@v2
+#         with:
+#           key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+#           path: |
+#             ~/.cargo/bin/
+#             ~/.cargo/registry/index/
+#             ~/.cargo/registry/cache/
+#             ~/.cargo/git/db/
+#             target/
+#       - name: Install `cargo fuzz`
+#         run: cargo install cargo-fuzz
+#       - run: |
+#           rustup update --no-self-update ${{ matrix.rust }}
+#           rustup default ${{ matrix.rust }}
+#           cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
+
+#   grcov:
+#     name: coverage
+#     runs-on: ubuntu-latest
+#     continue-on-error: true
+#     needs: [check, test]
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: abbbi/github-actions-tune@v1
+#       - uses: actions/cache@v2
+#         with:
+#           key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
+#           path: |
+#             ~/.cargo/bin/
+#             ~/.cargo/registry/index/
+#             ~/.cargo/registry/cache/
+#             ~/.cargo/git/db/
+#             target/
+#       - uses: actions-rs/toolchain@v1
+#         with:
+#           toolchain: nightly
+#           override: true
+#       - uses: actions-rs/cargo@v1
+#         with:
+#           command: clean
+#       - uses: actions-rs/cargo@v1
+#         with:
+#           command: test
+#           args: --all-features --no-fail-fast
+#         env:
+#           CARGO_INCREMENTAL: '0'
+#           RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
+#           RUSTDOCFLAGS: '-Cpanic=abort'
+#       - id: coverage
+#         uses: actions-rs/grcov@v0.1
+#       - name: Coveralls upload
+#         uses: coverallsapp/github-action@master
+#         with:
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           path-to-lcov: ${{ steps.coverage.outputs.report }}
+
+#   fmt:
+#     name: rustfmt
+#     runs-on: ubuntu-latest
+#     needs: [check, test]
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: abbbi/github-actions-tune@v1
+#       - uses: actions/cache@v2
+#         with:
+#           key: ${{ runner.os }}-cargo-nightly-${{ hashFiles('**/Cargo.toml') }}
+#           path: |
+#             ~/.cargo/bin/
+#             ~/.cargo/registry/index/
+#             ~/.cargo/registry/cache/
+#             ~/.cargo/git/db/
+#             target/
+#       - run: |
+#           rustup update nightly && rustup default nightly
+#           rustup component add rustfmt
+#           cargo fmt --all -- --check
+
+#   clippy:
+#     name: clippy
+#     runs-on: ubuntu-latest
+#     needs: [check, test]
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: abbbi/github-actions-tune@v1
+#       - uses: actions/cache@v2
+#         with:
+#           key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
+#           path: |
+#             ~/.cargo/bin/
+#             ~/.cargo/registry/index/
+#             ~/.cargo/registry/cache/
+#             ~/.cargo/git/db/
+#             target/
+#       - run: |
+#           rustup update stable && rustup default stable
+#           rustup component add clippy
+#           cargo clippy -- -D warnings
+
+#   book:
+#     name: book
+#     runs-on: ubuntu-latest
+#     needs: [check]
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: abbbi/github-actions-tune@v1
+#       - uses: actions/cache@v2
+#         with:
+#           key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
+#           path: |
+#             ~/.cargo/bin/
+#             ~/.cargo/registry/index/
+#             ~/.cargo/registry/cache/
+#             ~/.cargo/git/db/
+#             target/
+#       - uses: peaceiris/actions-mdbook@v1
+#         with:
+#           mdbook-version: 'latest'
+#       - run: |
+#           mdbook build docs/book && mdbook test docs/book
 
