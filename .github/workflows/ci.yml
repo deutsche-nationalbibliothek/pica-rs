@@ -218,8 +218,8 @@ jobs:
           command: test
           args: --all-features --no-fail-fast
         env:
-          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
           RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
           CARGO_INCREMENTAL: '0'
       - uses: actions-rs/grcov@v0.1
         id: coverage
@@ -291,3 +291,39 @@ jobs:
       - run: |
           cargo upgrades
 
+  gh-pages:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: [rustfmt, coverage, clippy, audit, upgrades]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: abbbi/github-actions-tune@v1
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+      - uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: 'latest'
+      - run: |
+          mkdir -p target/docs
+          cargo doc --all --no-deps --target-dir target/docs/api
+          mdbook build docs/book --dest-dir ../../target/docs/book
+
+          echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' >> target/docs/api/index.html
+          echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: target/docs
+          keep_files: false
+          force_orphan: true
