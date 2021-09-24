@@ -46,3 +46,6 @@ name = "gnd2skos"
 codegen-units = 1
 panic = "abort"
 lto = true
+
+[profile.dev]
+debug = 0
