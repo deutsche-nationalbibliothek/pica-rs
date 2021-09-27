@@ -1025,6 +1025,186 @@ fn pica_filter_limit() -> TestResult {
 }
 
 #[test]
+fn pica_filter_ignore_case() -> TestResult {
+    // `==` Operator
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("050E.a == 'internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--ignore-case")
+        .arg("050E.a == 'internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    // `===` Operator
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("050E.a === 'internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--ignore-case")
+        .arg("050E.a === 'internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    // `!=` Operator
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("050E.a != 'internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--ignore-case")
+        .arg("050E.a != 'internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    // `=^` Operator
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("050E.a =^ 'inter'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--ignore-case")
+        .arg("050E.a =^ 'inter'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    // `=$` Operator
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("050E.a =$ 'neT'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--ignore-case")
+        .arg("050E.a =$ 'neT'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    // `=~` Operator
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("050E.a =~ '^internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--ignore-case")
+        .arg("050E.a =~ '^internet'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    // `in` Operator
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("050E.a in ['internet', 'inTernet']")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--ignore-case")
+        .arg("050E.a in ['internet', 'inTernet']")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_filter_expression_file() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

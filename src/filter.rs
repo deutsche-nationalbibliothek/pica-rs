@@ -19,8 +19,9 @@ use nom::sequence::{
 use nom::{Finish, IResult};
 
 use bstr::{BString, ByteSlice};
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use std::cmp::PartialEq;
+use std::str;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Tag {
@@ -187,11 +188,18 @@ pub enum SubfieldFilter {
 
 impl SubfieldFilter {
     pub fn matches(&self, field: &Field, ignore_case: bool) -> bool {
+        let cmp_fn = |x: &BString, y: &BString| -> bool {
+            if ignore_case {
+                x.to_lowercase() == y.to_lowercase()
+            } else {
+                x == y
+            }
+        };
         match self {
             SubfieldFilter::Comparison(codes, op, values) => match op {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
                     codes.contains(&subfield.code)
-                        && subfield.value() == &values[0]
+                        && cmp_fn(subfield.value(), &values[0])
                 }),
                 ComparisonOp::StrictEq => {
                     let subfields = field
@@ -200,9 +208,9 @@ impl SubfieldFilter {
                         .collect::<Vec<&Subfield>>();
 
                     !subfields.is_empty()
-                        && subfields
-                            .iter()
-                            .all(|subfield| subfield.value() == &values[0])
+                        && subfields.iter().all(|subfield| {
+                            cmp_fn(subfield.value(), &values[0])
+                        })
                 }
                 ComparisonOp::Ne => {
                     let subfields = field
@@ -211,24 +219,42 @@ impl SubfieldFilter {
                         .collect::<Vec<&Subfield>>();
 
                     subfields.is_empty()
-                        || subfields
-                            .iter()
-                            .all(|subfield| subfield.value() != &values[0])
+                        || subfields.iter().all(|subfield| {
+                            !cmp_fn(subfield.value(), &values[0])
+                        })
                 }
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
                     codes.contains(&subfield.code)
-                        && subfield.value.starts_with(&values[0])
+                        && if ignore_case {
+                            subfield
+                                .value
+                                .to_ascii_lowercase()
+                                .starts_with(&values[0].to_lowercase())
+                        } else {
+                            subfield.value.starts_with(&values[0])
+                        }
                 }),
                 ComparisonOp::EndsWith => field.iter().any(|subfield| {
                     codes.contains(&subfield.code)
-                        && subfield.value.ends_with(&values[0])
+                        && if ignore_case {
+                            subfield
+                                .value
+                                .to_ascii_lowercase()
+                                .ends_with(&values[0].to_lowercase())
+                        } else {
+                            subfield.value.ends_with(&values[0])
+                        }
                 }),
                 ComparisonOp::Re => {
                     // SAFETY: It's safe to call `unwrap()` because the parser
                     // verified that the regular expression is `ok`.
-                    let re =
-                        Regex::new(unsafe { values[0].to_str_unchecked() })
-                            .unwrap();
+                    let re = RegexBuilder::new(unsafe {
+                        str::from_utf8_unchecked(values[0].as_bytes())
+                    })
+                    .case_insensitive(ignore_case)
+                    .build()
+                    .unwrap();
+
                     field.iter().any(|subfield| {
                         let value =
                             String::from_utf8(subfield.value.to_vec()).unwrap();
@@ -237,7 +263,9 @@ impl SubfieldFilter {
                 }
                 ComparisonOp::In => field.iter().any(|subfield| {
                     codes.contains(&subfield.code)
-                        && values.contains(subfield.value())
+                        && values
+                            .iter()
+                            .any(|x: &BString| cmp_fn(x, subfield.value()))
                 }),
             },
             SubfieldFilter::Boolean(lhs, op, rhs) => match op {
