@@ -919,7 +919,7 @@ impl ByteRecord {
             .collect()
     }
 
-    pub fn select(&self, selector: &Selector) -> Outcome {
+    pub fn select(&self, selector: &Selector, ignore_case: bool) -> Outcome {
         match selector {
             Selector::Value(value) => {
                 Outcome::from_values(vec![BString::from(value.as_bytes())])
@@ -931,7 +931,7 @@ impl ByteRecord {
                     .filter(|field| field.occurrence == selector.occurrence)
                     .filter(|field| {
                         if let Some(filter) = &selector.filter {
-                            filter.matches(field, false)
+                            filter.matches(field, ignore_case)
                         } else {
                             true
                         }
