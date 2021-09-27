@@ -10,9 +10,9 @@
 ## About
 
 This repository provides a collection of tools to work with bibliographic
-records encoded in Pica+, the internal format of the OCLC Cataloging
+records encoded in PICA+, the internal format of the OCLC Cataloging
 system. The development of this tool was motivated by the wish to have a fast
-and efficient way to transform Pica+ records to a data format, which can be
+and efficient way to transform PICA+ records to a data format, which can be
 easily processed Python's [pandas](https://git.io/v7Qt8) library.
 
 Most of the commands are inspired by the [xsv](https://git.io/JIoJG) toolkit.
@@ -45,6 +45,9 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 * [split](#split) — split a list of records into chunks
 
 ## Usage
+
+PICA+ data is read from input file(s) or standard input in normalized PICA+
+serialization. Compressed `.gz` archives are decompressed.
 
 ### Cat
 
@@ -150,12 +153,12 @@ outdir
 
 ### Print
 
-The `print` command is used to print records in a human-readable format. The
-format is similar to [PICA Plain](http://format.gbv.de/pica/plain).
+The `print` command is used to print records in humand-readable
+[PICA Plain](http://format.gbv.de/pica/plain) format.
 
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
-003@ $0 123456789 $a b
+003@ $0123456789$ab
 ```
 
 ### Sample
@@ -242,12 +245,13 @@ outdir
 
 ## Related Projects
 
-- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) - Catmandu modules for working with PICA+ data.
-- [Metafacture](https://github.com/metafacture) - Tool suite for metadata processing.
-- [PICA::Data](https://github.com/gbv/PICA-Data) -  Perl module to handle PICA+ data.
-- [PICA::Record](https://github.com/gbv/PICA-Record) -  Perl module to handle PICA+ records (deprecated).
-- [luapica](http://jakobvoss.de/luapica/) - Handle PICA+ data in Lua.
-- [picaplus](https://github.com/FID-Judaica/picaplus)  tooling for working with pica+
+- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) - Catmandu modules for working with PICA+ data
+- [PICA::Data](https://github.com/gbv/PICA-Data) -  Perl module and command line tool to handle PICA+ data
+- [Metafacture](https://github.com/metafacture) - Tool suite for metadata processing
+- [pica-data-js](https://github.com/gbv/pica-data-js) - Handle PICA+ data in JavaScript
+- [luapica](http://jakobvoss.de/luapica/) - Handle PICA+ data in Lua
+- [picaplus](https://github.com/FID-Judaica/picaplus) - tooling for working with PICA+
+- [PICA::Record](https://github.com/gbv/PICA-Record) -  Perl module to handle PICA+ records (deprecated)
 
 ## License
 
