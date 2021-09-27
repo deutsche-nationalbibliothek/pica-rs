@@ -931,7 +931,7 @@ impl ByteRecord {
                     .filter(|field| field.occurrence == selector.occurrence)
                     .filter(|field| {
                         if let Some(filter) = &selector.filter {
-                            filter.matches(field)
+                            filter.matches(field, false)
                         } else {
                             true
                         }

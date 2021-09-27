@@ -186,7 +186,7 @@ pub enum SubfieldFilter {
 }
 
 impl SubfieldFilter {
-    pub fn matches(&self, field: &Field) -> bool {
+    pub fn matches(&self, field: &Field, ignore_case: bool) -> bool {
         match self {
             SubfieldFilter::Comparison(codes, op, values) => match op {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
@@ -242,11 +242,19 @@ impl SubfieldFilter {
                 }),
             },
             SubfieldFilter::Boolean(lhs, op, rhs) => match op {
-                BooleanOp::And => lhs.matches(field) && rhs.matches(field),
-                BooleanOp::Or => lhs.matches(field) || rhs.matches(field),
+                BooleanOp::And => {
+                    lhs.matches(field, ignore_case)
+                        && rhs.matches(field, ignore_case)
+                }
+                BooleanOp::Or => {
+                    lhs.matches(field, ignore_case)
+                        || rhs.matches(field, ignore_case)
+                }
             },
-            SubfieldFilter::Grouped(filter) => filter.matches(field),
-            SubfieldFilter::Not(filter) => !filter.matches(field),
+            SubfieldFilter::Grouped(filter) => {
+                filter.matches(field, ignore_case)
+            }
+            SubfieldFilter::Not(filter) => !filter.matches(field, ignore_case),
             SubfieldFilter::Exists(codes) => {
                 field.iter().any(|subfield| codes.contains(&subfield.code))
             }
@@ -265,24 +273,30 @@ pub enum Filter {
 }
 
 impl<'a> Filter {
-    pub fn matches(&self, record: &ByteRecord) -> bool {
+    pub fn matches(&self, record: &ByteRecord, ignore_case: bool) -> bool {
         match self {
             Filter::Field(tag, occurrence, filter) => {
                 record.iter().any(|field| {
                     &field.tag == tag
                         && field.occurrence == *occurrence
-                        && filter.matches(field)
+                        && filter.matches(field, ignore_case)
                 })
             }
             Filter::Exists(tag, occurrence) => record.iter().any(|field| {
                 &field.tag == tag && field.occurrence == *occurrence
             }),
             Filter::Boolean(lhs, op, rhs) => match op {
-                BooleanOp::And => lhs.matches(record) && rhs.matches(record),
-                BooleanOp::Or => lhs.matches(record) || rhs.matches(record),
+                BooleanOp::And => {
+                    lhs.matches(record, ignore_case)
+                        && rhs.matches(record, ignore_case)
+                }
+                BooleanOp::Or => {
+                    lhs.matches(record, ignore_case)
+                        || rhs.matches(record, ignore_case)
+                }
             },
-            Filter::Grouped(filter) => filter.matches(record),
-            Filter::Not(filter) => !filter.matches(record),
+            Filter::Grouped(filter) => filter.matches(record, ignore_case),
+            Filter::Not(filter) => !filter.matches(record, ignore_case),
             Filter::True => true,
         }
     }

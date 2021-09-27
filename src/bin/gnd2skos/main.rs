@@ -46,6 +46,7 @@ pub struct AppContext<'a> {
 
 fn main() -> CliResult<()> {
     let args = cli::build_cli().get_matches();
+    let ignore_case = args.is_present("ignore-case");
 
     let label_ignore_list = match args.value_of("label-ignore-list") {
         Some(filename) => IgnoreList::from_path(filename)?,
@@ -84,7 +85,7 @@ fn main() -> CliResult<()> {
     for result in reader.records() {
         let record = result?;
 
-        if !filter.matches(&record) {
+        if !filter.matches(&record, ignore_case) {
             continue;
         }
 

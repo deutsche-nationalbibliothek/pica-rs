@@ -35,6 +35,12 @@ pub(crate) fn build_cli() -> App<'static> {
                 .long("label-ignore-list"),
         )
         .arg(
+            Arg::new("ignore-case")
+                .short('i')
+                .long("--ignore-case")
+                .about("When this flag is provided, comparision operations will be search case insensitive."),
+        )
+        .arg(
             Arg::new("filter")
                 .about("A filter expression used for searching.")
                 .takes_value(true)
