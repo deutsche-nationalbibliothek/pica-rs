@@ -229,7 +229,7 @@ mod tests {
                     Some(SubfieldFilter::Comparison(
                         vec!['E'],
                         ComparisonOp::Eq,
-                        vec!["m".to_string()]
+                        vec![BString::from("m")]
                     )),
                     vec!['9', 'E', 'H']
                 ))

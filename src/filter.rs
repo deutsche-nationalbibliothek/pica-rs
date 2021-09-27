@@ -18,7 +18,7 @@ use nom::sequence::{
 };
 use nom::{Finish, IResult};
 
-use bstr::BString;
+use bstr::{BString, ByteSlice};
 use regex::Regex;
 use std::cmp::PartialEq;
 
@@ -178,7 +178,7 @@ pub enum ComparisonOp {
 
 #[derive(Debug, PartialEq)]
 pub enum SubfieldFilter {
-    Comparison(Vec<char>, ComparisonOp, Vec<String>),
+    Comparison(Vec<char>, ComparisonOp, Vec<BString>),
     Boolean(Box<SubfieldFilter>, BooleanOp, Box<SubfieldFilter>),
     Grouped(Box<SubfieldFilter>),
     Exists(Vec<char>),
@@ -217,16 +217,18 @@ impl SubfieldFilter {
                 }
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
                     codes.contains(&subfield.code)
-                        && subfield.value.starts_with(values[0].as_bytes())
+                        && subfield.value.starts_with(&values[0])
                 }),
                 ComparisonOp::EndsWith => field.iter().any(|subfield| {
                     codes.contains(&subfield.code)
-                        && subfield.value.ends_with(values[0].as_bytes())
+                        && subfield.value.ends_with(&values[0])
                 }),
                 ComparisonOp::Re => {
                     // SAFETY: It's safe to call `unwrap()` because the parser
                     // verified that the regular expression is `ok`.
-                    let re = Regex::new(&values[0]).unwrap();
+                    let re =
+                        Regex::new(unsafe { values[0].to_str_unchecked() })
+                            .unwrap();
                     field.iter().any(|subfield| {
                         let value =
                             String::from_utf8(subfield.value.to_vec()).unwrap();
@@ -235,10 +237,7 @@ impl SubfieldFilter {
                 }
                 ComparisonOp::In => field.iter().any(|subfield| {
                     codes.contains(&subfield.code)
-                        && values.contains(
-                            &String::from_utf8(subfield.value.to_vec())
-                                .unwrap(),
-                        )
+                        && values.contains(subfield.value())
                 }),
             },
             SubfieldFilter::Boolean(lhs, op, rhs) => match op {
@@ -542,7 +541,9 @@ fn parse_subfield_regex(i: &str) -> IResult<&str, SubfieldFilter> {
             map(ws(tag("=~")), |_| ComparisonOp::Re),
             verify(ws(parse_string), |s| Regex::new(s).is_ok()),
         )),
-        |(names, op, regex)| SubfieldFilter::Comparison(names, op, vec![regex]),
+        |(names, op, regex)| {
+            SubfieldFilter::Comparison(names, op, vec![BString::from(regex)])
+        },
     )(i)
 }
 
@@ -554,7 +555,9 @@ fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
             ws(parse_comparison_op),
             ws(parse_string),
         )),
-        |(names, op, value)| SubfieldFilter::Comparison(names, op, vec![value]),
+        |(names, op, value)| {
+            SubfieldFilter::Comparison(names, op, vec![BString::from(value)])
+        },
     )(i)
 }
 
@@ -571,7 +574,11 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
             ),
         )),
         |(names, negate, op, values)| {
-            let filter = SubfieldFilter::Comparison(names, op, values);
+            let filter = SubfieldFilter::Comparison(
+                names,
+                op,
+                values.iter().map(|x| BString::from(x.as_bytes())).collect(),
+            );
             if negate.is_some() {
                 SubfieldFilter::Not(Box::new(filter))
             } else {
@@ -775,7 +782,7 @@ mod tests {
         let filter = SubfieldFilter::Comparison(
             vec!['0'],
             ComparisonOp::Eq,
-            vec!["123456789X".to_string()],
+            vec![BString::from("123456789X")],
         );
         assert_eq!(
             parse_subfield_comparison("0 == '123456789X'"),
@@ -792,7 +799,7 @@ mod tests {
                 SubfieldFilter::Comparison(
                     vec!['0'],
                     ComparisonOp::Re,
-                    vec!["^Tp[123]$".to_string()],
+                    vec![BString::from("^Tp[123]$")],
                 )
             ))
         );
@@ -806,9 +813,9 @@ mod tests {
             vec!['0'],
             ComparisonOp::In,
             vec![
-                "123456789X".to_string(),
-                "123456789Y".to_string(),
-                "123456789Z".to_string(),
+                BString::from("123456789X"),
+                BString::from("123456789Y"),
+                BString::from("123456789Z"),
             ],
         );
         assert_eq!(
@@ -893,7 +900,7 @@ mod tests {
                 Box::new(SubfieldFilter::Comparison(
                     vec!['a'],
                     ComparisonOp::Eq,
-                    vec!["abc".to_string()],
+                    vec![BString::from("abc")],
                 )),
             ),
         );
@@ -927,7 +934,7 @@ mod tests {
             SubfieldFilter::Comparison(
                 vec!['0'],
                 ComparisonOp::Eq,
-                vec!["abc".to_string()],
+                vec![BString::from("abc")],
             ),
         );
 
@@ -952,7 +959,7 @@ mod tests {
             SubfieldFilter::Comparison(
                 vec!['0'],
                 ComparisonOp::Eq,
-                vec!["abc".to_string()],
+                vec![BString::from("abc")],
             ),
         )));
 
@@ -971,7 +978,7 @@ mod tests {
                 SubfieldFilter::Comparison(
                     vec!['0'],
                     ComparisonOp::Eq,
-                    vec!["abc".to_string()],
+                    vec![BString::from("abc")],
                 ),
             )),
             BooleanOp::And,
@@ -1000,7 +1007,7 @@ mod tests {
             SubfieldFilter::Comparison(
                 vec!['0'],
                 ComparisonOp::Eq,
-                vec!["123456789X".to_string()],
+                vec![BString::from("123456789X")],
             ),
         );
 
