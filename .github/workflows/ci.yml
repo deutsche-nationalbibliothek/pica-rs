@@ -99,9 +99,7 @@ jobs:
 
   fuzz:
     name: fuzz ${{ matrix.name }}
-    # if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    # see https://github.com/rust-fuzz/cargo-fuzz/issues/276
-    if: ${{ false }}
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     strategy:
       matrix:
         include:
