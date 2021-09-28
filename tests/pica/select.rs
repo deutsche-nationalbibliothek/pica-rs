@@ -280,6 +280,30 @@ fn pica_select_no_empty_columns() -> TestResult {
 }
 
 #[test]
+fn pica_select_ignore_case() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("003@.0, 050E{a == 'internet', a}")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert.success().stdout("121169502,\n");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("--ignore-case")
+        .arg("003@.0, 050E{a == 'internet', a}")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert.success().stdout("121169502,Internet\n");
+
+    Ok(())
+}
+
+#[test]
 fn pica_select_write_output() -> TestResult {
     let filename = Builder::new().suffix(".csv").tempfile()?;
     let filename_str = filename.path();

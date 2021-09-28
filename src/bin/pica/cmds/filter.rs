@@ -37,6 +37,12 @@ pub(crate) fn cli() -> App {
                 .about("Filter only records that did not match."),
         )
         .arg(
+            Arg::new("ignore-case")
+                .short('i')
+                .long("--ignore-case")
+                .about("When this flag is provided, comparision operations will be search case insensitive."),
+        )
+        .arg(
             Arg::new("limit")
                 .short('l')
                 .long("--limit")
@@ -67,6 +73,7 @@ pub(crate) fn cli() -> App {
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.filter, config.global);
     let gzip_compression = gzip_flag!(args, config.filter);
+    let ignore_case = args.is_present("ignore-case");
 
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
@@ -105,7 +112,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for result in reader.byte_records() {
         let record = result?;
-        let mut is_match = filter.matches(&record);
+        let mut is_match = filter.matches(&record, ignore_case);
 
         if args.is_present("invert-match") {
             is_match = !is_match;

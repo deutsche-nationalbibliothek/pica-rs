@@ -28,6 +28,12 @@ pub(crate) fn cli() -> App {
                 .about("disallow empty columns"),
         )
         .arg(
+            Arg::new("ignore-case")
+                .short('i')
+                .long("--ignore-case")
+                .about("When this flag is provided, comparision operations will be search case insensitive."),
+        )
+        .arg(
             Arg::new("tsv")
                 .short('t')
                 .long("tsv")
@@ -61,6 +67,7 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
     let no_empty_columns = args.is_present("no-empty-columns");
+    let ignore_case = args.is_present("ignore-case");
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
@@ -89,7 +96,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         let record = result?;
         let outcome = selectors
             .iter()
-            .map(|selector| record.select(selector))
+            .map(|selector| record.select(selector, ignore_case))
             .fold(Outcome::default(), |acc, x| acc * x);
 
         for row in outcome.iter() {
