@@ -134,7 +134,11 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     stdout.set_color(
                         ColorSpec::new().set_fg(Some(Color::White)),
                     )?;
-                    write!(&mut stdout, "{}", subfield.value())?;
+
+                    let mut value: String = subfield.value().to_string();
+                    value = value.replace("$", "$$");
+
+                    write!(&mut stdout, "{}", value)?;
                 }
 
                 writeln!(&mut stdout)?;

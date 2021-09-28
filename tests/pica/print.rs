@@ -23,6 +23,23 @@ fn pica_print_stdout() -> TestResult {
 }
 
 #[test]
+fn pica_print_escape_dollar() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("print").arg("tests/data/dollar.dat").assert();
+
+    let expected = read_to_string("tests/data/dollar.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_print_multiple_records() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
