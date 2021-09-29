@@ -231,9 +231,15 @@ impl Deref for Occurrence {
     }
 }
 
+impl PartialEq<str> for Occurrence {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other.as_bytes()
+    }
+}
+
 impl PartialEq<&str> for Occurrence {
     fn eq(&self, other: &&str) -> bool {
-        self.0 == other.as_bytes()
+        self == *other
     }
 }
 
@@ -672,10 +678,12 @@ impl Serialize for Field {
         // `StringRecord` and not for `ByteRecord`.
         unsafe {
             state.serialize_field("name", &self.tag.to_str_unchecked())?;
-            state.serialize_field(
-                "occurrence",
-                &self.occurrence().map(|o| o.to_str_unchecked()),
-            )?;
+            if let Some(occurrence) = self.occurrence() {
+                state.serialize_field(
+                    "occurrence",
+                    occurrence.to_str_unchecked(),
+                )?;
+            }
         }
 
         state.serialize_field("subfields", &self.subfields)?;

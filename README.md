@@ -118,7 +118,6 @@ $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
     "fields": [
       {
         "name": "003@",
-        "occurrence": null,
         "subfields": [
           {
             "name": "0",
