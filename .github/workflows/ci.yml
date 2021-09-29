@@ -204,15 +204,16 @@ jobs:
           command: test
           args: --verbose --all-features --no-fail-fast
         env:
-          CARGO_INCREMENTAL: '0'
           RUSTFLAGS: "-Zinstrument-coverage"
+          LLVM_PROFILE_FILE: "pica-%p-%m.profraw"
       - uses: actions-rs/install@v0.1
         with:
           crate: grcov
           version: latest
       - name: Run grcov
         run: |
-          grcov . --binary-path target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../**' --ignore '/*' -o coverage.lcov
+          ls *profraw
+          grcov . --source-prefix . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing --ignore '../**' --ignore '/*' -o coverage.lcov
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
