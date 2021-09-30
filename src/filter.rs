@@ -509,7 +509,6 @@ pub(crate) fn parse_occurrence_matcher(
         preceded(
             char('/'),
             cut(alt((
-                map(tag("00"), |_| OccurrenceMatcher::None),
                 map(
                     verify(
                         separated_pair(
@@ -534,6 +533,7 @@ pub(crate) fn parse_occurrence_matcher(
                         )
                     },
                 ),
+                map(tag("00"), |_| OccurrenceMatcher::None),
                 map(
                     recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
                     |value| {
@@ -1060,5 +1060,31 @@ mod tests {
         assert_eq!(BString::from("012A"), tag);
         assert_eq!(tag, BString::from("012@"));
         assert_eq!(BString::from("012@"), tag);
+    }
+
+    #[test]
+    fn test_parse_occurrence_matcher() {
+        assert_eq!(
+            parse_occurrence_matcher("/00"),
+            Ok(("", OccurrenceMatcher::None))
+        );
+        assert_eq!(
+            parse_occurrence_matcher("/01"),
+            Ok(("", OccurrenceMatcher::new("01").unwrap()))
+        );
+        assert_eq!(
+            parse_occurrence_matcher("/00-03"),
+            Ok((
+                "",
+                OccurrenceMatcher::Range(
+                    Occurrence::new("00").unwrap(),
+                    Occurrence::new("03").unwrap()
+                )
+            ))
+        );
+        assert_eq!(
+            parse_occurrence_matcher("abc"),
+            Ok(("abc", OccurrenceMatcher::None))
+        );
     }
 }
