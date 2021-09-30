@@ -212,7 +212,7 @@ jobs:
           version: latest
       - name: Run grcov
         run: >-
-          grcov
+          grcov .
             --source-dir .
             --binary-path ./target/debug/
             --branch
@@ -223,7 +223,6 @@ jobs:
             --ignore 'tests/*'
             --output-type lcov
             --output-path coverage.lcov
-            .
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
