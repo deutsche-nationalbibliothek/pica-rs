@@ -34,7 +34,7 @@ pub(crate) fn run(args: &CliArgs) -> CliResult<()> {
             Err(Error::InvalidRecord(ParsePicaError { data, .. })) => {
                 writer.write_all(&data)?;
             }
-            Err(e) => return Err(CliError::from(e)),
+            Err(e) => return Err(CliError::from(e)), // no-coverage
             _ => continue,
         }
     }
