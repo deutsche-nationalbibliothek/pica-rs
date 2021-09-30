@@ -212,7 +212,7 @@ jobs:
           version: latest
       - name: Run grcov
         run: |
-          grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing --ignore '../**' --ignore '/*' -o coverage.lcov
+          grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing --ignore '../**' --ignore '/*' --ignore '/examples' -o coverage.lcov2
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
