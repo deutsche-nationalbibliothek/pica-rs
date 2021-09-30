@@ -42,6 +42,11 @@ name = "pica"
 path = "src/bin/gnd2skos/main.rs"
 name = "gnd2skos"
 
+[[example]]
+name = "parser"
+path = "examples/parser.rs"
+test = false
+
 [profile.release]
 codegen-units = 1
 panic = "abort"

@@ -194,6 +194,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          components: llvm-tools-preview
           override: true
       - uses: actions-rs/cargo@v1
         with:
@@ -203,15 +204,18 @@ jobs:
           command: test
           args: --all-features --no-fail-fast
         env:
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
-          CARGO_INCREMENTAL: '0'
-      - uses: actions-rs/grcov@v0.1
-        id: coverage
+          RUSTFLAGS: "-Zinstrument-coverage"
+          LLVM_PROFILE_FILE: "pica-%p-%m.profraw"
+      - uses: actions-rs/install@v0.1
+        with:
+          crate: grcov
+          version: latest
+      - name: Run grcov
+        run: grcov *.profraw -s . --binary-path ./target/debug/ --branch --ignore-not-existing --ignore 'examples/*' --ignore 'tests/*' --ignore '../**' --ignore '/*' --excl-line "(unreachable!|#\\[derive\\(|no-coverage)" -t lcov -o coverage.lcov
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ${{ steps.coverage.outputs.report }}
+          path-to-lcov: coverage.lcov
 
   clippy:
     runs-on: ubuntu-latest
