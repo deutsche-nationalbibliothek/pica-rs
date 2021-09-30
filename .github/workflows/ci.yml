@@ -213,7 +213,7 @@ jobs:
       - name: Run grcov
         run: >-
           grcov *.profraw
-            --source-dir .
+            -s .
             --binary-path ./target/debug/
             --branch
             --ignore-not-existing
