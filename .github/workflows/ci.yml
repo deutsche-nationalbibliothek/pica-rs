@@ -211,7 +211,19 @@ jobs:
           crate: grcov
           version: latest
       - name: Run grcov
-        run: grcov *.profraw -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing --ignore '../**' --ignore '/*' --ignore 'examples/*' --ignore 'tests/*' --excl-line "(unreachable!|#\\[derive\\(|no-coverage)" -o coverage.lcov
+        run: >-
+          grcov *.profraw
+            --source-dir .
+            --binary-path ./target/debug/
+            --branch
+            --ignore-not-existing
+            --ignore 'examples/*'
+            --ignore 'tests/*'
+            --ignore '../**'
+            --ignore '/*'
+            --excl-line "(unreachable!|#\\[derive\\(|no-coverage)"
+            --output-type lcov
+            --output-path coverage.lcov
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
