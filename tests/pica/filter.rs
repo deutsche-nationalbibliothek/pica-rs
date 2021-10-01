@@ -752,11 +752,12 @@ fn pica_filter_occurrence_matcher() -> TestResult {
         predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
     assert.success().stdout(expected);
 
+    // "/00" and no occurrence are semantically the same
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
         .arg("--skip-invalid")
-        .arg("047A/*.e == 'DE-386'")
+        .arg("001X/00.0 == '0'")
         .arg("tests/data/121169502.dat")
         .assert();
 

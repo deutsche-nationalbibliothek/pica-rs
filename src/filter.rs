@@ -141,7 +141,13 @@ impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
     fn eq(&self, other: &OccurrenceMatcher) -> bool {
         match other {
             OccurrenceMatcher::Any => true,
-            OccurrenceMatcher::None => self.is_none(),
+            OccurrenceMatcher::None => {
+                if let Some(ref rhs) = self {
+                    rhs == "00"
+                } else {
+                    true
+                }
+            }
             OccurrenceMatcher::Occurrence(lhs) => {
                 if let Some(rhs) = self {
                     lhs == rhs
@@ -527,6 +533,7 @@ pub(crate) fn parse_occurrence_matcher(
                         )
                     },
                 ),
+                map(tag("00"), |_| OccurrenceMatcher::None),
                 map(
                     recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
                     |value| {
@@ -921,7 +928,7 @@ mod tests {
     fn test_parse_field_complex() {
         let field_expr = Filter::Field(
             Tag::Constant("012A".to_string()),
-            OccurrenceMatcher::new("000").unwrap(),
+            OccurrenceMatcher::None,
             SubfieldFilter::Boolean(
                 Box::new(SubfieldFilter::Exists(vec!['0'])),
                 BooleanOp::Or,
@@ -934,7 +941,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_field_complex("012A/000{0? || a == 'abc'}"),
+            parse_field_complex("012A/00{0? || a == 'abc'}"),
             Ok(("", field_expr))
         );
     }
@@ -943,9 +950,9 @@ mod tests {
     fn test_parse_field_exists() {
         let field_expr = Filter::Exists(
             Tag::Constant("012A".to_string()),
-            OccurrenceMatcher::new("00").unwrap(),
+            OccurrenceMatcher::new("01").unwrap(),
         );
-        assert_eq!(parse_field_exists("012A/00?"), Ok(("", field_expr)));
+        assert_eq!(parse_field_exists("012A/01?"), Ok(("", field_expr)));
 
         let field_expr = Filter::Exists(
             Tag::Constant("012A".to_string()),
@@ -1053,5 +1060,31 @@ mod tests {
         assert_eq!(BString::from("012A"), tag);
         assert_eq!(tag, BString::from("012@"));
         assert_eq!(BString::from("012@"), tag);
+    }
+
+    #[test]
+    fn test_parse_occurrence_matcher() {
+        assert_eq!(
+            parse_occurrence_matcher("/00"),
+            Ok(("", OccurrenceMatcher::None))
+        );
+        assert_eq!(
+            parse_occurrence_matcher("/01"),
+            Ok(("", OccurrenceMatcher::new("01").unwrap()))
+        );
+        assert_eq!(
+            parse_occurrence_matcher("/00-03"),
+            Ok((
+                "",
+                OccurrenceMatcher::Range(
+                    Occurrence::new("00").unwrap(),
+                    Occurrence::new("03").unwrap()
+                )
+            ))
+        );
+        assert_eq!(
+            parse_occurrence_matcher("abc"),
+            Ok(("abc", OccurrenceMatcher::None))
+        );
     }
 }

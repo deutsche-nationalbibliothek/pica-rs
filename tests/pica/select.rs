@@ -147,6 +147,15 @@ fn pica_select_occurrence_matcher() -> TestResult {
         .assert();
     assert.success().stdout("DE-386\n");
 
+    // sepecial case "/00"
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("001U/00.0")
+        .arg("tests/data/119232022.dat.gz")
+        .assert();
+    assert.success().stdout("utf8\n");
+
     // explicit
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

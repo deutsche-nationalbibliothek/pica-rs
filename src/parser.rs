@@ -104,7 +104,11 @@ fn parse_field(i: &[u8]) -> ParseResult<Field> {
         terminated(
             tuple((
                 parse_field_tag,
-                alt((map(parse_field_occurrence, Some), success(None))),
+                alt((
+                    map(tag("/00"), |_| None),
+                    map(parse_field_occurrence, Some),
+                    success(None),
+                )),
                 preceded(char(SP), many0(parse_subfield)),
             )),
             char(RS),
@@ -233,7 +237,7 @@ mod tests {
     #[test]
     fn test_parse_fields() {
         assert_eq!(
-            parse_fields(b"003@ \x1f0123456789X\x1e012A/00 \x1fa123\x1e")
+            parse_fields(b"003@ \x1f0123456789X\x1e012A/00 \x1fa123\x1e012A/01 \x1fa456\x1e")
                 .unwrap()
                 .1,
             vec![
@@ -245,10 +249,17 @@ mod tests {
                 .unwrap(),
                 Field::new(
                     "012A",
-                    Some(Occurrence::new("00").unwrap()),
+                    None,
                     vec![Subfield::new('a', "123").unwrap()]
                 )
+					.unwrap(),
+				Field::new(
+                    "012A",
+                    Some(Occurrence::new("01").unwrap()),
+                    vec![Subfield::new('a', "456").unwrap()]
+                )
                 .unwrap()
+
             ]
         );
     }
