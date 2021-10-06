@@ -1,15 +1,16 @@
 use crate::filter::{
-    parse_field_tag, parse_occurrence_matcher, parse_string,
-    parse_subfield_code, parse_subfield_filter, ws, OccurrenceMatcher,
-    SubfieldFilter, Tag,
+    parse_occurrence_matcher, parse_string, parse_subfield_code,
+    parse_subfield_filter, ws, OccurrenceMatcher, SubfieldFilter,
 };
+use crate::parser::ParseResult;
+use crate::TagMatcher;
 
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
 use nom::combinator::{all_consuming, cut, map, opt};
 use nom::multi::separated_list1;
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
-use nom::{Finish, IResult};
+use nom::Finish;
 
 use bstr::BString;
 use std::default::Default;
@@ -17,7 +18,7 @@ use std::ops::{Add, Deref, Mul};
 
 #[derive(Debug, PartialEq)]
 pub struct FieldSelector {
-    pub(crate) tag: Tag,
+    pub(crate) tag: TagMatcher,
     pub(crate) occurrence: OccurrenceMatcher,
     pub(crate) filter: Option<SubfieldFilter>,
     pub(crate) subfields: Vec<char>,
@@ -102,7 +103,7 @@ impl Add for Outcome {
 
 impl FieldSelector {
     pub fn new(
-        tag: Tag,
+        tag: TagMatcher,
         occurrence: OccurrenceMatcher,
         filter: Option<SubfieldFilter>,
         subfields: Vec<char>,
@@ -120,7 +121,7 @@ pub struct Selectors(Vec<Selector>);
 
 impl Selectors {
     pub fn decode(s: &str) -> Result<Self, String> {
-        match parse_selectors(s).finish() {
+        match parse_selectors(s.as_bytes()).finish() {
             Ok((_, selectors)) => Ok(selectors),
             _ => Err("invalid select statement".to_string()),
         }
@@ -135,18 +136,18 @@ impl Deref for Selectors {
     }
 }
 
-fn parse_selector(i: &str) -> IResult<&str, Selector> {
+fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
     alt((
         map(ws(parse_string), Selector::Value),
         map(
             tuple((
-                parse_field_tag,
+                TagMatcher::parse_tag_matcher,
                 parse_occurrence_matcher,
                 preceded(char('.'), cut(parse_subfield_code)),
             )),
-            |(tag, occurrence, subfield)| {
+            |(tag_matcher, occurrence, subfield)| {
                 Selector::Field(FieldSelector::new(
-                    tag,
+                    tag_matcher,
                     occurrence,
                     None,
                     vec![subfield],
@@ -155,7 +156,7 @@ fn parse_selector(i: &str) -> IResult<&str, Selector> {
         ),
         map(
             tuple((
-                parse_field_tag,
+                TagMatcher::parse_tag_matcher,
                 parse_occurrence_matcher,
                 delimited(
                     ws(char('{')),
@@ -166,16 +167,19 @@ fn parse_selector(i: &str) -> IResult<&str, Selector> {
                     ws(char('}')),
                 ),
             )),
-            |(tag, occurrence, (filter, subfields))| {
+            |(tag_matcher, occurrence, (filter, subfields))| {
                 Selector::Field(FieldSelector::new(
-                    tag, occurrence, filter, subfields,
+                    tag_matcher,
+                    occurrence,
+                    filter,
+                    subfields,
                 ))
             },
         ),
     ))(i)
 }
 
-fn parse_selectors(i: &str) -> IResult<&str, Selectors> {
+fn parse_selectors(i: &[u8]) -> ParseResult<Selectors> {
     all_consuming(map(
         delimited(
             multispace0,
@@ -194,71 +198,56 @@ mod tests {
     #[test]
     fn test_parse_selector() {
         assert_eq!(
-            parse_selector("003@.0"),
-            Ok((
-                "",
-                Selector::Field(FieldSelector::new(
-                    Tag::Constant("003@".to_string()),
-                    OccurrenceMatcher::None,
-                    None,
-                    vec!['0']
-                ))
+            parse_selector(b"003@.0").unwrap().1,
+            Selector::Field(FieldSelector::new(
+                TagMatcher::new("003@").unwrap(),
+                OccurrenceMatcher::None,
+                None,
+                vec!['0']
             ))
         );
 
         assert_eq!(
-            parse_selector("044H/*{ 9, E ,H}"),
-            Ok((
-                "",
-                Selector::Field(FieldSelector::new(
-                    Tag::Constant("044H".to_string()),
-                    OccurrenceMatcher::Any,
-                    None,
-                    vec!['9', 'E', 'H']
-                ))
+            parse_selector(b"044H/*{ 9, E ,H}").unwrap().1,
+            Selector::Field(FieldSelector::new(
+                TagMatcher::new("044H").unwrap(),
+                OccurrenceMatcher::Any,
+                None,
+                vec!['9', 'E', 'H']
             ))
         );
 
         assert_eq!(
-            parse_selector("044H/*{ E == 'm', 9, E , H }"),
-            Ok((
-                "",
-                Selector::Field(FieldSelector::new(
-                    Tag::Constant("044H".to_string()),
-                    OccurrenceMatcher::Any,
-                    Some(SubfieldFilter::Comparison(
-                        vec!['E'],
-                        ComparisonOp::Eq,
-                        vec![BString::from("m")]
-                    )),
-                    vec!['9', 'E', 'H']
-                ))
+            parse_selector(b"044H/*{ E == 'm', 9, E , H }").unwrap().1,
+            Selector::Field(FieldSelector::new(
+                TagMatcher::new("044H").unwrap(),
+                OccurrenceMatcher::Any,
+                Some(SubfieldFilter::Comparison(
+                    vec!['E'],
+                    ComparisonOp::Eq,
+                    vec![BString::from("m")]
+                )),
+                vec!['9', 'E', 'H']
             ))
         );
 
         assert_eq!(
-            parse_selector("012A/*.a"),
-            Ok((
-                "",
-                Selector::Field(FieldSelector::new(
-                    Tag::Constant("012A".to_string()),
-                    OccurrenceMatcher::Any,
-                    None,
-                    vec!['a']
-                ))
+            parse_selector(b"012A/*.a").unwrap().1,
+            Selector::Field(FieldSelector::new(
+                TagMatcher::new("012A").unwrap(),
+                OccurrenceMatcher::Any,
+                None,
+                vec!['a']
             ))
         );
 
         assert_eq!(
-            parse_selector("012A/01.a"),
-            Ok((
-                "",
-                Selector::Field(FieldSelector::new(
-                    Tag::Constant("012A".to_string()),
-                    OccurrenceMatcher::new("01").unwrap(),
-                    None,
-                    vec!['a']
-                ))
+            parse_selector(b"012A/01.a").unwrap().1,
+            Selector::Field(FieldSelector::new(
+                TagMatcher::new("012A").unwrap(),
+                OccurrenceMatcher::new("01").unwrap(),
+                None,
+                vec!['a']
             ))
         );
     }

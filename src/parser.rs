@@ -1,17 +1,20 @@
 //! This module provides functions to parse PICA+ records.
 
-use crate::{Field, Occurrence, OccurrenceMatcher, Path, Subfield};
+use crate::{Field, Occurrence, OccurrenceMatcher, Path, Subfield, Tag};
+
+use std::fmt;
+use std::ops::RangeFrom;
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0, one_of, satisfy};
 use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
+use nom::error::ParseError;
 use nom::multi::{count, many0, many1, many_m_n};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
-use nom::Err;
+use nom::{AsChar, Err, FindToken, IResult, InputIter, InputLength, Slice};
 
 use bstr::BString;
-use std::fmt;
 
 const NL: char = '\x0A';
 const US: char = '\x1F';
@@ -19,7 +22,7 @@ const RS: char = '\x1E';
 const SP: char = '\x20';
 
 /// Parser result.
-type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
+pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
 
 /// An error that can occur when parsing PICA+ records.
 #[derive(Debug, PartialEq)]
@@ -103,7 +106,7 @@ fn parse_field(i: &[u8]) -> ParseResult<Field> {
     map(
         terminated(
             tuple((
-                parse_field_tag,
+                Tag::parse_tag,
                 alt((
                     map(tag("/00"), |_| None),
                     map(parse_field_occurrence, Some),
@@ -154,6 +157,23 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
             codes,
         },
     )(i)
+}
+
+pub(crate) fn parse_character_class<I, T, E: ParseError<I>>(
+    list: T,
+) -> impl FnMut(I) -> IResult<I, Vec<char>, E>
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar + Copy,
+    T: FindToken<<I as InputIter>::Item> + Clone,
+{
+    alt((
+        preceded(
+            char('['),
+            cut(terminated(many1(one_of(list.clone())), char(']'))),
+        ),
+        map(one_of(list), |x| vec![x]),
+    ))
 }
 
 #[cfg(test)]
@@ -226,7 +246,7 @@ mod tests {
         assert_eq!(
             parse_field(b"003@ \x1f0123456789X\x1e").unwrap().1,
             Field::new(
-                "003@",
+                Tag::new("003@").unwrap(),
                 None,
                 vec![Subfield::new('0', "123456789X").unwrap()]
             )
@@ -242,19 +262,19 @@ mod tests {
                 .1,
             vec![
                 Field::new(
-                    "003@",
+                    Tag::new("003@").unwrap(),
                     None,
                     vec![Subfield::new('0', "123456789X").unwrap()]
                 )
                 .unwrap(),
                 Field::new(
-                    "012A",
+                    Tag::new("012A").unwrap(),
                     None,
                     vec![Subfield::new('a', "123").unwrap()]
                 )
 					.unwrap(),
 				Field::new(
-                    "012A",
+                    Tag::new("012A").unwrap(),
                     Some(Occurrence::new("01").unwrap()),
                     vec![Subfield::new('a', "456").unwrap()]
                 )

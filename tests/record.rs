@@ -1,4 +1,4 @@
-use pica::{Field, Occurrence, Subfield};
+use pica::{Field, Occurrence, Subfield, Tag};
 
 #[test]
 fn subfield_new() {
@@ -52,10 +52,5 @@ fn occurrence_new() {
 
 #[test]
 fn field_new() {
-    assert!(Field::new("003@", None, vec![]).is_ok());
-
-    assert_eq!(
-        format!("{}", Field::new("303@", None, vec![]).unwrap_err()),
-        "Invalid field tag."
-    );
+    assert!(Field::new(Tag::new("003@").unwrap(), None, vec![]).is_ok());
 }
