@@ -114,7 +114,7 @@ impl Tag {
     /// tag ::= [0-2] [0-9]{2} ([a-z] | [A-Z] | "@")
     /// ```
     #[inline]
-    pub(crate) fn parse_tag(i: &[u8]) -> ParseResult<Tag> {
+    pub(crate) fn parse_tag(i: &[u8]) -> ParseResult<Self> {
         map(
             recognize(tuple((
                 one_of("012"),

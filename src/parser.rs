@@ -10,7 +10,7 @@ use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0, one_of, satisfy};
 use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
 use nom::error::ParseError;
-use nom::multi::{count, many0, many1, many_m_n};
+use nom::multi::{count, many0, many1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{AsChar, Err, FindToken, IResult, InputIter, InputLength, Slice};
 
@@ -78,17 +78,6 @@ pub(crate) fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
     )(i)
 }
 
-/// Parses a field occurrence.
-fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
-    map(
-        preceded(
-            tag(b"/"),
-            cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
-        ),
-        Occurrence::from_unchecked,
-    )(i)
-}
-
 /// Parses a field tag.
 fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
     map(
@@ -109,7 +98,7 @@ fn parse_field(i: &[u8]) -> ParseResult<Field> {
                 Tag::parse_tag,
                 alt((
                     map(tag("/00"), |_| None),
-                    map(parse_field_occurrence, Some),
+                    map(Occurrence::parse_occurrence, Some),
                     success(None),
                 )),
                 preceded(char(SP), many0(parse_subfield)),
@@ -129,24 +118,13 @@ pub(crate) fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
     all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
 }
 
-/// Parses a occurrence matcher.
-pub(crate) fn parse_occurrence_matcher(
-    i: &[u8],
-) -> ParseResult<OccurrenceMatcher> {
-    alt((
-        map(tag(b"/*"), |_| OccurrenceMatcher::Any),
-        map(parse_field_occurrence, OccurrenceMatcher::Occurrence),
-        success(OccurrenceMatcher::None),
-    ))(i)
-}
-
 pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
     map(
         all_consuming(delimited(
             multispace0,
             tuple((
                 parse_field_tag,
-                parse_occurrence_matcher,
+                OccurrenceMatcher::parse_occurrence_matcher,
                 preceded(char('.'), parse_subfield_codes),
             )),
             multispace0,
@@ -212,23 +190,6 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_field_occurrence() {
-        assert_eq!(
-            parse_field_occurrence(b"/00").unwrap().1,
-            Occurrence::from_unchecked("00")
-        );
-        assert_eq!(
-            parse_field_occurrence(b"/01").unwrap().1,
-            Occurrence::from_unchecked("01")
-        );
-        assert_eq!(
-            parse_field_occurrence(b"/001").unwrap().1,
-            Occurrence::from_unchecked("001")
-        );
-        assert!(parse_field_occurrence(b"/XYZ").is_err());
-    }
-
-    #[test]
     fn test_parse_field_tag() {
         assert_eq!(parse_field_tag(b"003@").unwrap().1, BString::from("003@"));
         assert_eq!(parse_field_tag(b"012A").unwrap().1, BString::from("012A"));
@@ -281,26 +242,6 @@ mod tests {
                 .unwrap()
 
             ]
-        );
-    }
-
-    #[test]
-    fn test_parse_occurrence_matcher() {
-        assert_eq!(
-            parse_occurrence_matcher(b"/00").unwrap().1,
-            OccurrenceMatcher::new("00").unwrap()
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"/001").unwrap().1,
-            OccurrenceMatcher::new("001").unwrap()
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"/*").unwrap().1,
-            OccurrenceMatcher::Any,
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"").unwrap().1,
-            OccurrenceMatcher::None,
         );
     }
 

@@ -1,9 +1,9 @@
 use crate::filter::{
-    parse_occurrence_matcher, parse_string, parse_subfield_code,
-    parse_subfield_filter, ws, OccurrenceMatcher, SubfieldFilter,
+    parse_string, parse_subfield_code, parse_subfield_filter, ws,
+    SubfieldFilter,
 };
 use crate::parser::ParseResult;
-use crate::TagMatcher;
+use crate::{OccurrenceMatcher, TagMatcher};
 
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
@@ -142,7 +142,7 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
         map(
             tuple((
                 TagMatcher::parse_tag_matcher,
-                parse_occurrence_matcher,
+                OccurrenceMatcher::parse_occurrence_matcher,
                 preceded(char('.'), cut(parse_subfield_code)),
             )),
             |(tag_matcher, occurrence, subfield)| {
@@ -157,7 +157,7 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
         map(
             tuple((
                 TagMatcher::parse_tag_matcher,
-                parse_occurrence_matcher,
+                OccurrenceMatcher::parse_occurrence_matcher,
                 delimited(
                     ws(char('{')),
                     pair(

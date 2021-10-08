@@ -14,13 +14,14 @@ fn test_occurrence_matcher() {
     );
 
     // OccurrenceMatcher::Occurrence
-    let matcher = OccurrenceMatcher::Occurrence(Occurrence::new("01").unwrap());
+    let matcher = OccurrenceMatcher::new("01").unwrap();
     assert_eq!(Some(Occurrence::new("01").unwrap()), matcher);
     assert_ne!(Some(Occurrence::new("02").unwrap()), matcher);
     assert_ne!(None, matcher);
 
     // OccurrenceMatcher::Range
     let matcher = OccurrenceMatcher::range("02", "04").unwrap();
+
     assert_ne!(Some(Occurrence::new("01").unwrap()), matcher);
     assert_eq!(Some(Occurrence::new("02").unwrap()), matcher);
     assert_eq!(Some(Occurrence::new("03").unwrap()), matcher);

@@ -1,21 +1,15 @@
 //! Filter Expressions
 
 use crate::parser::ParseResult;
-use crate::{
-    ByteRecord, Error, Field, Occurrence, Result, Subfield, TagMatcher,
-};
+use crate::{ByteRecord, Field, OccurrenceMatcher, Subfield, TagMatcher};
 
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0, multispace1, satisfy};
-use nom::combinator::{
-    all_consuming, cut, map, opt, recognize, success, value, verify,
-};
+use nom::combinator::{all_consuming, cut, map, opt, value, verify};
 use nom::error::{FromExternalError, ParseError};
-use nom::multi::{fold_many0, many0, many1, many_m_n, separated_list1};
-use nom::sequence::{
-    delimited, pair, preceded, separated_pair, terminated, tuple,
-};
+use nom::multi::{fold_many0, many0, many1, separated_list1};
+use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
 
 use bstr::{BString, ByteSlice};
@@ -23,122 +17,6 @@ use regex::bytes::Regex;
 use regex::RegexBuilder;
 use std::cmp::PartialEq;
 use std::str;
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum OccurrenceMatcher {
-    Occurrence(Occurrence),
-    Range(Occurrence, Occurrence),
-    None,
-    Any,
-}
-
-impl OccurrenceMatcher {
-    /// Creates a `OccurrenceMatcher::Occurrence`
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica::{Occurrence, OccurrenceMatcher};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let matcher = OccurrenceMatcher::new("001")?;
-    ///     assert_eq!(
-    ///         matcher,
-    ///         OccurrenceMatcher::Occurrence(Occurrence::new("001")?)
-    ///     );
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn new<T>(value: T) -> Result<OccurrenceMatcher>
-    where
-        T: Into<BString>,
-    {
-        Ok(OccurrenceMatcher::Occurrence(Occurrence::new(value)?))
-    }
-
-    /// Creates a `OccurrenceMatcher::Occurrence`
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica::{Occurrence, OccurrenceMatcher};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let matcher = OccurrenceMatcher::range("01", "03")?;
-    ///     assert_eq!(
-    ///         matcher,
-    ///         OccurrenceMatcher::Range(
-    ///             Occurrence::new("01")?,
-    ///             Occurrence::new("03")?
-    ///         )
-    ///     );
-    ///
-    ///     assert!(OccurrenceMatcher::range("01", "01").is_err());
-    ///     assert!(OccurrenceMatcher::range("03", "01").is_err());
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn range<T>(min: T, max: T) -> Result<OccurrenceMatcher>
-    where
-        T: Into<BString> + PartialOrd,
-    {
-        if min >= max {
-            return Err(Error::InvalidOccurrence("min >= max".to_string()));
-        }
-
-        Ok(OccurrenceMatcher::Range(
-            Occurrence::new(min)?,
-            Occurrence::new(max)?,
-        ))
-    }
-}
-
-impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
-    /// Equality comparision between `OccurrenceMatcher` and an
-    /// `Option<Occurrence>`
-    ///
-    /// ```rust
-    /// use pica::{Occurrence, OccurrenceMatcher};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     assert!(Some(Occurrence::new("001")?) == OccurrenceMatcher::Any);
-    ///     assert!(None == OccurrenceMatcher::Any);
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    fn eq(&self, other: &OccurrenceMatcher) -> bool {
-        match other {
-            OccurrenceMatcher::Any => true,
-            OccurrenceMatcher::None => {
-                if let Some(ref rhs) = self {
-                    rhs == "00"
-                } else {
-                    true
-                }
-            }
-            OccurrenceMatcher::Occurrence(lhs) => {
-                if let Some(rhs) = self {
-                    lhs == rhs
-                } else {
-                    false
-                }
-            }
-            OccurrenceMatcher::Range(min, max) => {
-                if let Some(rhs) = self {
-                    (rhs.0 >= min.0) && (rhs.0 <= max.0)
-                } else {
-                    false
-                }
-            }
-        }
-    }
-}
 
 #[derive(Debug, PartialEq)]
 pub enum BooleanOp {
@@ -482,53 +360,6 @@ pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     ))(i)
 }
 
-pub(crate) fn parse_occurrence_matcher(
-    i: &[u8],
-) -> ParseResult<OccurrenceMatcher> {
-    alt((
-        preceded(
-            char('/'),
-            cut(alt((
-                map(
-                    verify(
-                        separated_pair(
-                            recognize(many_m_n(
-                                2,
-                                3,
-                                satisfy(|c| c.is_ascii_digit()),
-                            )),
-                            char('-'),
-                            cut(recognize(many_m_n(
-                                2,
-                                3,
-                                satisfy(|c| c.is_ascii_digit()),
-                            ))),
-                        ),
-                        |(min, max)| min < max,
-                    ),
-                    |(min, max)| {
-                        OccurrenceMatcher::Range(
-                            Occurrence::from_unchecked(min),
-                            Occurrence::from_unchecked(max),
-                        )
-                    },
-                ),
-                map(tag("00"), |_| OccurrenceMatcher::None),
-                map(
-                    recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
-                    |value| {
-                        OccurrenceMatcher::Occurrence(
-                            Occurrence::from_unchecked(value),
-                        )
-                    },
-                ),
-                map(char('*'), |_| OccurrenceMatcher::Any),
-            ))),
-        ),
-        success(OccurrenceMatcher::None),
-    ))(i)
-}
-
 /// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
 fn parse_boolean_op(i: &[u8]) -> ParseResult<BooleanOp> {
     alt((
@@ -664,7 +495,10 @@ pub(crate) fn parse_subfield_filter(i: &[u8]) -> ParseResult<SubfieldFilter> {
 fn parse_field_complex(i: &[u8]) -> ParseResult<Filter> {
     map(
         tuple((
-            pair(TagMatcher::parse_tag_matcher, opt(parse_occurrence_matcher)),
+            pair(
+                TagMatcher::parse_tag_matcher,
+                opt(OccurrenceMatcher::parse_occurrence_matcher),
+            ),
             preceded(
                 ws(char('{')),
                 cut(terminated(parse_subfield_filter, ws(char('}')))),
@@ -683,7 +517,10 @@ fn parse_field_complex(i: &[u8]) -> ParseResult<Filter> {
 fn parse_field_simple(i: &[u8]) -> ParseResult<Filter> {
     map(
         tuple((
-            pair(TagMatcher::parse_tag_matcher, opt(parse_occurrence_matcher)),
+            pair(
+                TagMatcher::parse_tag_matcher,
+                opt(OccurrenceMatcher::parse_occurrence_matcher),
+            ),
             preceded(
                 ws(char('.')),
                 cut(alt((
@@ -706,7 +543,10 @@ fn parse_field_simple(i: &[u8]) -> ParseResult<Filter> {
 fn parse_field_exists(i: &[u8]) -> ParseResult<Filter> {
     map(
         terminated(
-            pair(TagMatcher::parse_tag_matcher, opt(parse_occurrence_matcher)),
+            pair(
+                TagMatcher::parse_tag_matcher,
+                opt(OccurrenceMatcher::parse_occurrence_matcher),
+            ),
             char('?'),
         ),
         |(tag_matcher, occurrence)| {
@@ -775,6 +615,8 @@ impl Filter {
 
 #[cfg(test)]
 mod tests {
+    use crate::Occurrence;
+
     use super::*;
 
     #[test]
@@ -923,7 +765,7 @@ mod tests {
     fn test_parse_field_exists() {
         let field_expr = Filter::Exists(
             TagMatcher::new("012A").unwrap(),
-            OccurrenceMatcher::new("01").unwrap(),
+            OccurrenceMatcher::Some(Occurrence::new("01").unwrap()),
         );
         assert_eq!(parse_field_exists(b"012A/01?").unwrap().1, field_expr);
 
@@ -1025,28 +867,5 @@ mod tests {
         );
 
         assert_eq!(Filter::decode("003@.0 == '123456789X'").unwrap(), expected);
-    }
-
-    #[test]
-    fn test_parse_occurrence_matcher() {
-        assert_eq!(
-            parse_occurrence_matcher(b"/00").unwrap().1,
-            OccurrenceMatcher::None
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"/01").unwrap().1,
-            OccurrenceMatcher::new("01").unwrap()
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"/00-03").unwrap().1,
-            OccurrenceMatcher::Range(
-                Occurrence::new("00").unwrap(),
-                Occurrence::new("03").unwrap()
-            )
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"abc").unwrap().1,
-            OccurrenceMatcher::None
-        );
     }
 }
