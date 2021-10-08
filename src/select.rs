@@ -26,7 +26,7 @@ pub struct FieldSelector {
 
 #[derive(Debug, PartialEq)]
 pub enum Selector {
-    Field(FieldSelector),
+    Field(Box<FieldSelector>),
     Value(String),
 }
 
@@ -146,12 +146,12 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
                 preceded(char('.'), cut(parse_subfield_code)),
             )),
             |(tag_matcher, occurrence, subfield)| {
-                Selector::Field(FieldSelector::new(
+                Selector::Field(Box::new(FieldSelector::new(
                     tag_matcher,
                     occurrence,
                     None,
                     vec![subfield],
-                ))
+                )))
             },
         ),
         map(
@@ -168,12 +168,12 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
                 ),
             )),
             |(tag_matcher, occurrence, (filter, subfields))| {
-                Selector::Field(FieldSelector::new(
+                Selector::Field(Box::new(FieldSelector::new(
                     tag_matcher,
                     occurrence,
                     filter,
                     subfields,
-                ))
+                )))
             },
         ),
     ))(i)
@@ -199,27 +199,27 @@ mod tests {
     fn test_parse_selector() {
         assert_eq!(
             parse_selector(b"003@.0").unwrap().1,
-            Selector::Field(FieldSelector::new(
+            Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::new("003@").unwrap(),
                 OccurrenceMatcher::None,
                 None,
                 vec!['0']
-            ))
+            )))
         );
 
         assert_eq!(
             parse_selector(b"044H/*{ 9, E ,H}").unwrap().1,
-            Selector::Field(FieldSelector::new(
+            Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::new("044H").unwrap(),
                 OccurrenceMatcher::Any,
                 None,
                 vec!['9', 'E', 'H']
-            ))
+            )))
         );
 
         assert_eq!(
             parse_selector(b"044H/*{ E == 'm', 9, E , H }").unwrap().1,
-            Selector::Field(FieldSelector::new(
+            Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::new("044H").unwrap(),
                 OccurrenceMatcher::Any,
                 Some(SubfieldFilter::Comparison(
@@ -228,27 +228,27 @@ mod tests {
                     vec![BString::from("m")]
                 )),
                 vec!['9', 'E', 'H']
-            ))
+            )))
         );
 
         assert_eq!(
             parse_selector(b"012A/*.a").unwrap().1,
-            Selector::Field(FieldSelector::new(
+            Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::new("012A").unwrap(),
                 OccurrenceMatcher::Any,
                 None,
                 vec!['a']
-            ))
+            )))
         );
 
         assert_eq!(
             parse_selector(b"012A/01.a").unwrap().1,
-            Selector::Field(FieldSelector::new(
+            Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::new("012A").unwrap(),
                 OccurrenceMatcher::new("01").unwrap(),
                 None,
                 vec!['a']
-            ))
+            )))
         );
     }
 }
