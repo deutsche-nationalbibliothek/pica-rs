@@ -8,6 +8,7 @@ pub use self::path::Path;
 pub use self::reader::{Reader, ReaderBuilder};
 pub use self::record::{ByteRecord, Field, Occurrence, StringRecord, Subfield};
 pub use self::select::{Outcome, Selector, Selectors};
+pub use self::tag::{Level, Tag, TagMatcher};
 pub use self::writer::{GzipWriter, PicaWriter, PlainWriter, WriterBuilder};
 
 mod error;
@@ -17,4 +18,7 @@ mod path;
 mod reader;
 mod record;
 mod select;
+mod tag;
+#[cfg(test)]
+mod test;
 mod writer;
