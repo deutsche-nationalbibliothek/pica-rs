@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::{Path, Tag};
+use crate::{Occurrence, Path, Tag};
 
 use bstr::{BString, ByteSlice};
 use regex::bytes::Regex;
@@ -215,103 +215,6 @@ impl Serialize for Subfield {
             state.serialize_field("value", &self.value.to_str_unchecked())?;
         }
         state.end()
-    }
-}
-
-/// A PICA+ occurrence.
-#[derive(Debug, PartialEq, Clone)]
-pub struct Occurrence(pub(crate) BString);
-
-impl Deref for Occurrence {
-    type Target = BString;
-
-    /// Dereferences the value
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl PartialEq<str> for Occurrence {
-    fn eq(&self, other: &str) -> bool {
-        self.0 == other.as_bytes()
-    }
-}
-
-impl PartialEq<&str> for Occurrence {
-    fn eq(&self, other: &&str) -> bool {
-        self == *other
-    }
-}
-
-impl fmt::Display for Occurrence {
-    /// Format the field in a human-readable format.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica::{Error, Occurrence};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let occurrence = Occurrence::new("01")?;
-    ///     assert_eq!(format!("{}", occurrence), "/01");
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
-        write!(f, "/{}", self.0)?;
-
-        Ok(())
-    }
-}
-
-impl Occurrence {
-    /// Creates a new `Occurrence`.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use bstr::BString;
-    /// use pica::Occurrence;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let occurrence = Occurrence::new("00")?;
-    ///     assert_eq!(occurrence, "00");
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn new<S>(occurrence: S) -> Result<Occurrence>
-    where
-        S: Into<BString>,
-    {
-        let occurrence = occurrence.into();
-
-        if occurrence.len() < 2 || occurrence.len() > 3 {
-            return Err(Error::InvalidOccurrence(
-                "length < 2 || length > 3".to_string(),
-            ));
-        }
-
-        if !occurrence.iter().all(u8::is_ascii_digit) {
-            return Err(Error::InvalidOccurrence(format!(
-                "Invalid occurrence '{}'",
-                occurrence
-            )));
-        }
-
-        Ok(Occurrence(occurrence))
-    }
-
-    /// Creates a new `Occurrence` without checking the input.
-    #[inline]
-    pub(crate) fn from_unchecked<S>(occurrence: S) -> Occurrence
-    where
-        S: Into<BString>,
-    {
-        Self(occurrence.into())
     }
 }
 
@@ -597,7 +500,7 @@ impl Field {
         writer.write_all(self.tag.as_slice())?;
 
         if let Some(ref occurrence) = self.occurrence {
-            write!(writer, "/{}", occurrence.0)?;
+            write!(writer, "{}", occurrence)?;
         }
 
         writer.write_all(&[b' '])?;
@@ -639,7 +542,7 @@ impl fmt::Display for Field {
         write!(f, "{}", self.tag)?;
 
         if let Some(ref occurrence) = self.occurrence {
-            write!(f, "/{}", occurrence.0)?;
+            write!(f, "{}", occurrence)?;
         }
 
         if !self.is_empty() {

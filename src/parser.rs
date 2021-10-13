@@ -1,13 +1,14 @@
 //! This module provides functions to parse PICA+ records.
 
+use crate::occurrence::{parse_occurrence, parse_occurrence_matcher};
 use crate::tag::{parse_tag, parse_tag_matcher};
-use crate::{Field, Occurrence, OccurrenceMatcher, Path, Subfield};
+use crate::{Field, Path, Subfield};
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0, one_of, satisfy};
 use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
 use nom::error::ParseError;
-use nom::multi::{many0, many1, many_m_n};
+use nom::multi::{many0, many1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{AsChar, Err, FindToken, IResult, InputIter, InputLength, Slice};
 use std::ops::RangeFrom;
@@ -94,17 +95,6 @@ pub(crate) fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
     )(i)
 }
 
-/// Parses a field occurrence.
-fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
-    map(
-        preceded(
-            tag(b"/"),
-            cut(recognize(many_m_n(2, 3, one_of("0123456789")))),
-        ),
-        Occurrence::from_unchecked,
-    )(i)
-}
-
 /// Parses a field.
 fn parse_field(i: &[u8]) -> ParseResult<Field> {
     map(
@@ -113,7 +103,7 @@ fn parse_field(i: &[u8]) -> ParseResult<Field> {
                 parse_tag,
                 alt((
                     map(tag("/00"), |_| None),
-                    map(parse_field_occurrence, Some),
+                    map(parse_occurrence, Some),
                     success(None),
                 )),
                 preceded(char(SP), many0(parse_subfield)),
@@ -131,17 +121,6 @@ fn parse_field(i: &[u8]) -> ParseResult<Field> {
 /// Parses a record.
 pub(crate) fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
     all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
-}
-
-/// Parses a occurrence matcher.
-pub(crate) fn parse_occurrence_matcher(
-    i: &[u8],
-) -> ParseResult<OccurrenceMatcher> {
-    alt((
-        map(tag(b"/*"), |_| OccurrenceMatcher::Any),
-        map(parse_field_occurrence, OccurrenceMatcher::Occurrence),
-        success(OccurrenceMatcher::None),
-    ))(i)
 }
 
 pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
@@ -167,6 +146,7 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 mod tests {
     use super::*;
     use crate::test::TestResult;
+    use crate::{Occurrence, OccurrenceMatcher};
 
     #[test]
     fn test_parse_subfield_code() -> TestResult {
@@ -201,25 +181,6 @@ mod tests {
 
         assert!(parse_subfield(b"a123").is_err());
         assert!(parse_subfield(b"").is_err());
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_field_occurrence() -> TestResult {
-        assert_eq!(
-            parse_field_occurrence(b"/00")?.1,
-            Occurrence::from_unchecked("00")
-        );
-        assert_eq!(
-            parse_field_occurrence(b"/01")?.1,
-            Occurrence::from_unchecked("01")
-        );
-        assert_eq!(
-            parse_field_occurrence(b"/001")?.1,
-            Occurrence::from_unchecked("001")
-        );
-        assert!(parse_field_occurrence(b"/XYZ").is_err());
 
         Ok(())
     }
@@ -263,22 +224,6 @@ mod tests {
                 )?
             ]
         );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_occurrence_matcher() -> TestResult {
-        assert_eq!(
-            parse_occurrence_matcher(b"/00")?.1,
-            OccurrenceMatcher::new("00").unwrap()
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"/001")?.1,
-            OccurrenceMatcher::new("001").unwrap()
-        );
-        assert_eq!(parse_occurrence_matcher(b"/*")?.1, OccurrenceMatcher::Any,);
-        assert_eq!(parse_occurrence_matcher(b"")?.1, OccurrenceMatcher::None,);
 
         Ok(())
     }

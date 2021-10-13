@@ -17,6 +17,7 @@ use nom::Finish;
 use crate::error::Error;
 use crate::parser::{parse_character_class, ParseResult};
 
+/// A PICA+ tag.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tag(pub(crate) BString);
 
@@ -44,7 +45,6 @@ pub(crate) fn parse_tag(i: &[u8]) -> ParseResult<Tag> {
     )(i)
 }
 
-/// A PICA+ tag.
 impl Tag {
     /// Creates a PICA+ tag from a string slice.
     ///
@@ -251,7 +251,7 @@ mod tests {
     }
 
     #[quickcheck]
-    fn double_tag_from_string_representation_is_identity(tag: Tag) -> bool {
+    fn tag_from_string_representation_is_identity(tag: Tag) -> bool {
         tag == Tag::new(tag.to_string()).unwrap()
     }
 
