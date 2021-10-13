@@ -1,6 +1,12 @@
 #[macro_use]
 extern crate lazy_static;
 
+#[cfg(test)]
+extern crate quickcheck;
+#[cfg(test)]
+#[macro_use(quickcheck)]
+extern crate quickcheck_macros;
+
 pub use self::error::{Error, Result};
 pub use self::filter::{Filter, OccurrenceMatcher, ParseFilterError};
 pub use self::parser::{ParsePathError, ParsePicaError};

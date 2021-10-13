@@ -250,6 +250,11 @@ mod tests {
         Tag::from_unchecked("345A").level();
     }
 
+    #[quickcheck]
+    fn double_tag_from_string_representation_is_identity(tag: Tag) -> bool {
+        tag == Tag::new(tag.to_string()).unwrap()
+    }
+
     #[test]
     fn test_parse_tag_matcher() -> TestResult {
         assert_eq!(
