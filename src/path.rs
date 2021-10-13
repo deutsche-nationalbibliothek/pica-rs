@@ -86,12 +86,12 @@ impl Path {
     ///         Path::new("003@", OccurrenceMatcher::None, vec!['0'])?
     ///     );
     ///
-    ///     let path = Path::from_bytes("012A/00.0")?;
+    ///     let path = Path::from_bytes("012A/01.0")?;
     ///     assert_eq!(
     ///         path,
     ///         Path::new(
     ///             "012A",
-    ///             OccurrenceMatcher::Occurrence(Occurrence::new("00")?),
+    ///             OccurrenceMatcher::Some(Occurrence::new("01")?),
     ///             vec!['0']
     ///         )?
     ///     );

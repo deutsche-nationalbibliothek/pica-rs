@@ -1,7 +1,8 @@
 use crate::filter::{
-    parse_occurrence_matcher, parse_string, parse_subfield_code,
-    parse_subfield_filter, ws, OccurrenceMatcher, SubfieldFilter,
+    parse_string, parse_subfield_code, parse_subfield_filter, ws,
+    SubfieldFilter,
 };
+use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
 use crate::parser::ParseResult;
 use crate::tag::parse_tag_matcher;
 use crate::TagMatcher;

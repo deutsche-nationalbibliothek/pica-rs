@@ -8,8 +8,8 @@ extern crate quickcheck;
 extern crate quickcheck_macros;
 
 pub use self::error::{Error, Result};
-pub use self::filter::{Filter, OccurrenceMatcher, ParseFilterError};
-pub use self::occurrence::Occurrence;
+pub use self::filter::{Filter, ParseFilterError};
+pub use self::occurrence::{Occurrence, OccurrenceMatcher};
 pub use self::parser::{ParsePathError, ParsePicaError};
 pub use self::path::Path;
 pub use self::reader::{Reader, ReaderBuilder};

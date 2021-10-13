@@ -14,7 +14,7 @@ fn test_occurrence_matcher() {
     );
 
     // OccurrenceMatcher::Occurrence
-    let matcher = OccurrenceMatcher::Occurrence(Occurrence::new("01").unwrap());
+    let matcher = OccurrenceMatcher::Some(Occurrence::new("01").unwrap());
     assert_eq!(Some(Occurrence::new("01").unwrap()), matcher);
     assert_ne!(Some(Occurrence::new("02").unwrap()), matcher);
     assert_ne!(None, matcher);
