@@ -16,7 +16,7 @@ use nom::Finish;
 use crate::error::Error;
 use crate::parser::{parse_character_class, ParseResult};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tag(pub(crate) BString);
 
 #[derive(Debug, PartialEq)]
@@ -127,6 +127,17 @@ impl PartialEq<&str> for Tag {
 //         *self == other.0
 //     }
 // }
+#[cfg(test)]
+impl quickcheck::Arbitrary for Tag {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let p1 = *g.choose(b"012").unwrap();
+        let p2 = *g.choose(b"0123456789").unwrap();
+        let p3 = *g.choose(b"0123456789").unwrap();
+        let p4 = *g.choose(b"ABCDEFGHIJKLMNOPQRSTUVWXYZ@").unwrap();
+
+        Tag::from_unchecked(vec![p1, p2, p3, p4])
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub enum TagMatcher {
