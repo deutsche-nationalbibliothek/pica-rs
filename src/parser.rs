@@ -1,14 +1,16 @@
 //! This module provides functions to parse PICA+ records.
 
+use crate::tag::{parse_tag, parse_tag_matcher};
 use crate::{Field, Occurrence, OccurrenceMatcher, Path, Subfield};
-
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0, one_of, satisfy};
 use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
-use nom::multi::{count, many0, many1, many_m_n};
+use nom::error::ParseError;
+use nom::multi::{many0, many1, many_m_n};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
-use nom::Err;
+use nom::{AsChar, Err, FindToken, IResult, InputIter, InputLength, Slice};
+use std::ops::RangeFrom;
 
 use bstr::BString;
 use std::fmt;
@@ -19,7 +21,24 @@ const RS: char = '\x1E';
 const SP: char = '\x20';
 
 /// Parser result.
-type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
+pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
+
+pub(crate) fn parse_character_class<I, T, E: ParseError<I>>(
+    list: T,
+) -> impl FnMut(I) -> IResult<I, Vec<char>, E>
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar + Copy,
+    T: FindToken<<I as InputIter>::Item> + Clone,
+{
+    alt((
+        preceded(
+            char('['),
+            cut(terminated(many1(one_of(list.clone())), char(']'))),
+        ),
+        map(one_of(list), |x| vec![x]),
+    ))
+}
 
 /// An error that can occur when parsing PICA+ records.
 #[derive(Debug, PartialEq)]
@@ -86,24 +105,12 @@ fn parse_field_occurrence(i: &[u8]) -> ParseResult<Occurrence> {
     )(i)
 }
 
-/// Parses a field tag.
-fn parse_field_tag(i: &[u8]) -> ParseResult<BString> {
-    map(
-        recognize(tuple((
-            one_of("012"),
-            count(one_of("0123456789"), 2),
-            one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-        ))),
-        BString::from,
-    )(i)
-}
-
 /// Parses a field.
 fn parse_field(i: &[u8]) -> ParseResult<Field> {
     map(
         terminated(
             tuple((
-                parse_field_tag,
+                parse_tag,
                 alt((
                     map(tag("/00"), |_| None),
                     map(parse_field_occurrence, Some),
@@ -142,7 +149,7 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
         all_consuming(delimited(
             multispace0,
             tuple((
-                parse_field_tag,
+                parse_tag_matcher,
                 parse_occurrence_matcher,
                 preceded(char('.'), parse_subfield_codes),
             )),
@@ -159,149 +166,143 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test::TestResult;
 
     #[test]
-    fn test_parse_subfield_code() {
-        assert_eq!(parse_subfield_code(b"0").unwrap().1, '0');
-        assert_eq!(parse_subfield_code(b"a").unwrap().1, 'a');
-        assert_eq!(parse_subfield_code(b"Z").unwrap().1, 'Z');
+    fn test_parse_subfield_code() -> TestResult {
+        assert_eq!(parse_subfield_code(b"0")?.1, '0');
+        assert_eq!(parse_subfield_code(b"a")?.1, 'a');
+        assert_eq!(parse_subfield_code(b"Z")?.1, 'Z');
         assert!(parse_subfield_code(b"!").is_err());
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_parse_subfield_value() {
-        assert_eq!(parse_subfield_value(b"abc").unwrap().1, "abc");
-        assert_eq!(parse_subfield_value(b"a\x1ebc").unwrap().1, "a");
-        assert_eq!(parse_subfield_value(b"a\x1fbc").unwrap().1, "a");
-        assert_eq!(parse_subfield_value(b"").unwrap().1, "");
+    fn test_parse_parse_subfield_value() -> TestResult {
+        assert_eq!(parse_subfield_value(b"abc")?.1, "abc");
+        assert_eq!(parse_subfield_value(b"a\x1ebc")?.1, "a");
+        assert_eq!(parse_subfield_value(b"a\x1fbc")?.1, "a");
+        assert_eq!(parse_subfield_value(b"")?.1, "");
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_subfield() {
+    fn test_parse_subfield() -> TestResult {
         assert_eq!(
-            parse_subfield(b"\x1fa123").unwrap().1,
+            parse_subfield(b"\x1fa123")?.1,
             Subfield::from_unchecked('a', "123")
         );
         assert_eq!(
-            parse_subfield(b"\x1fa").unwrap().1,
+            parse_subfield(b"\x1fa")?.1,
             Subfield::from_unchecked('a', "")
         );
 
         assert!(parse_subfield(b"a123").is_err());
         assert!(parse_subfield(b"").is_err());
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_field_occurrence() {
+    fn test_parse_field_occurrence() -> TestResult {
         assert_eq!(
-            parse_field_occurrence(b"/00").unwrap().1,
+            parse_field_occurrence(b"/00")?.1,
             Occurrence::from_unchecked("00")
         );
         assert_eq!(
-            parse_field_occurrence(b"/01").unwrap().1,
+            parse_field_occurrence(b"/01")?.1,
             Occurrence::from_unchecked("01")
         );
         assert_eq!(
-            parse_field_occurrence(b"/001").unwrap().1,
+            parse_field_occurrence(b"/001")?.1,
             Occurrence::from_unchecked("001")
         );
         assert!(parse_field_occurrence(b"/XYZ").is_err());
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_field_tag() {
-        assert_eq!(parse_field_tag(b"003@").unwrap().1, BString::from("003@"));
-        assert_eq!(parse_field_tag(b"012A").unwrap().1, BString::from("012A"));
-
-        assert!(parse_field_tag(b"003").is_err());
-        assert!(parse_field_tag(b"03").is_err());
-        assert!(parse_field_tag(b"0").is_err());
-        assert!(parse_field_tag(b"").is_err());
-        assert!(parse_field_tag(b"003!").is_err());
-        assert!(parse_field_tag(b"303@").is_err());
-    }
-
-    #[test]
-    fn test_parse_field() {
+    fn test_parse_field() -> TestResult {
         assert_eq!(
-            parse_field(b"003@ \x1f0123456789X\x1e").unwrap().1,
+            parse_field(b"003@ \x1f0123456789X\x1e")?.1,
             Field::new(
                 "003@",
                 None,
                 vec![Subfield::new('0', "123456789X").unwrap()]
-            )
-            .unwrap()
+            )?
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_fields() {
+    fn test_parse_fields() -> TestResult {
         assert_eq!(
             parse_fields(b"003@ \x1f0123456789X\x1e012A/00 \x1fa123\x1e012A/01 \x1fa456\x1e")
-                .unwrap()
+                ?
                 .1,
             vec![
                 Field::new(
                     "003@",
                     None,
                     vec![Subfield::new('0', "123456789X").unwrap()]
-                )
-                .unwrap(),
+                )?
+                ,
                 Field::new(
                     "012A",
                     None,
                     vec![Subfield::new('a', "123").unwrap()]
-                )
-					.unwrap(),
-				Field::new(
+                )?,
+		Field::new(
                     "012A",
                     Some(Occurrence::new("01").unwrap()),
                     vec![Subfield::new('a', "456").unwrap()]
-                )
-                .unwrap()
-
+                )?
             ]
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_occurrence_matcher() {
+    fn test_parse_occurrence_matcher() -> TestResult {
         assert_eq!(
-            parse_occurrence_matcher(b"/00").unwrap().1,
+            parse_occurrence_matcher(b"/00")?.1,
             OccurrenceMatcher::new("00").unwrap()
         );
         assert_eq!(
-            parse_occurrence_matcher(b"/001").unwrap().1,
+            parse_occurrence_matcher(b"/001")?.1,
             OccurrenceMatcher::new("001").unwrap()
         );
-        assert_eq!(
-            parse_occurrence_matcher(b"/*").unwrap().1,
-            OccurrenceMatcher::Any,
-        );
-        assert_eq!(
-            parse_occurrence_matcher(b"").unwrap().1,
-            OccurrenceMatcher::None,
-        );
+        assert_eq!(parse_occurrence_matcher(b"/*")?.1, OccurrenceMatcher::Any,);
+        assert_eq!(parse_occurrence_matcher(b"")?.1, OccurrenceMatcher::None,);
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_path() {
+    fn test_parse_path() -> TestResult {
         assert_eq!(
-            parse_path(b"003@.0").unwrap().1,
+            parse_path(b"003@.0")?.1,
             Path::new("003@", OccurrenceMatcher::None, vec!['0']).unwrap()
         );
         assert_eq!(
-            parse_path(b"012A/01.0").unwrap().1,
+            parse_path(b"012A/01.0")?.1,
             Path::new("012A", OccurrenceMatcher::new("01").unwrap(), vec!['0'])
                 .unwrap()
         );
         assert_eq!(
-            parse_path(b"012A/*.[ab]").unwrap().1,
+            parse_path(b"012A/*.[ab]")?.1,
             Path::new("012A", OccurrenceMatcher::Any, vec!['a', 'b']).unwrap()
         );
         assert_eq!(
-            parse_path(b"012A/*.0").unwrap().1,
+            parse_path(b"012A/*.0")?.1,
             Path::new("012A", OccurrenceMatcher::Any, vec!['0']).unwrap()
         );
+
+        Ok(())
     }
 }

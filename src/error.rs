@@ -9,6 +9,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// An error that can occur when processing PICA+ data.
 #[derive(Debug)]
 pub enum Error {
+    InvalidTag(String),
+    InvalidTagMatcher(String),
     InvalidSubfield(String),
     InvalidOccurrence(String),
     InvalidField(String),
@@ -23,6 +25,8 @@ impl error::Error for Error {}
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
+            Self::InvalidTag(ref m) => f.write_str(m),
+            Self::InvalidTagMatcher(ref m) => f.write_str(m),
             Error::InvalidSubfield(ref m) => f.write_str(m),
             Error::InvalidOccurrence(ref m) => f.write_str(m),
             Error::InvalidField(ref m) => f.write_str(m),

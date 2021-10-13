@@ -15,14 +15,14 @@
 
 use crate::parser::{parse_path, ParsePathError};
 use crate::record::FIELD_TAG_RE;
-use crate::{Error, OccurrenceMatcher, Result};
+use crate::{Error, OccurrenceMatcher, Result, Tag, TagMatcher};
 
 use bstr::BString;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 pub struct Path {
-    pub(crate) tag: BString,
+    pub(crate) tag: TagMatcher,
     pub(crate) occurrence: OccurrenceMatcher,
     pub(crate) codes: Vec<char>,
 }
@@ -65,7 +65,7 @@ impl Path {
         }
 
         Ok(Path {
-            tag,
+            tag: TagMatcher::Some(Tag::from_unchecked(tag)),
             occurrence,
             codes,
         })

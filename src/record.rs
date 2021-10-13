@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::Path;
+use crate::{Path, Tag};
 
 use bstr::{BString, ByteSlice};
 use regex::bytes::Regex;
@@ -318,7 +318,7 @@ impl Occurrence {
 /// A PICA+ field, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq)]
 pub struct Field {
-    pub(crate) tag: BString,
+    pub(crate) tag: Tag,
     pub(crate) occurrence: Option<Occurrence>,
     pub(crate) subfields: Vec<Subfield>,
 }
@@ -356,7 +356,7 @@ impl Field {
         }
 
         Ok(Field {
-            tag,
+            tag: Tag::from_unchecked(tag),
             occurrence,
             subfields,
         })
