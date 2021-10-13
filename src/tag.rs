@@ -6,6 +6,7 @@ use std::fmt;
 use std::ops::Deref;
 
 use bstr::BString;
+
 use nom::branch::alt;
 use nom::character::complete::{char, one_of, satisfy};
 use nom::combinator::{all_consuming, map, recognize};
@@ -121,12 +122,6 @@ impl PartialEq<&str> for Tag {
     }
 }
 
-// impl PartialEq<Tag> for &str {
-//     #[inline]
-//     fn eq(&self, other: &Tag) -> bool {
-//         *self == other.0
-//     }
-// }
 #[cfg(test)]
 impl quickcheck::Arbitrary for Tag {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
