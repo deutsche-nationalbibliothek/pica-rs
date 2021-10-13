@@ -290,6 +290,9 @@ mod tests {
             )
         );
 
+        assert!(TagMatcher::new("0[123A]4A").is_err());
+        assert!(TagMatcher::new("003@ ").is_err());
+
         Ok(())
     }
 
