@@ -51,7 +51,7 @@ impl OccurrenceMatcher {
     /// ```
     pub fn new<T>(value: T) -> Result<OccurrenceMatcher>
     where
-        T: Into<BString>,
+        T: AsRef<str>,
     {
         Ok(OccurrenceMatcher::Occurrence(Occurrence::new(value)?))
     }
@@ -82,7 +82,7 @@ impl OccurrenceMatcher {
     /// ```
     pub fn range<T>(min: T, max: T) -> Result<OccurrenceMatcher>
     where
-        T: Into<BString> + PartialOrd,
+        T: AsRef<str> + PartialOrd,
     {
         if min >= max {
             return Err(Error::InvalidOccurrence("min >= max".to_string()));
@@ -129,7 +129,7 @@ impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
             }
             OccurrenceMatcher::Range(min, max) => {
                 if let Some(rhs) = self {
-                    (rhs.0 >= min.0) && (rhs.0 <= max.0)
+                    (rhs >= min) && (rhs <= max)
                 } else {
                     false
                 }

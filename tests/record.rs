@@ -38,16 +38,6 @@ fn subfield_validate() {
 fn occurrence_new() {
     assert!(Occurrence::new("01").is_ok());
     assert!(Occurrence::new("001").is_ok());
-
-    assert_eq!(
-        format!("{}", Occurrence::new("0001").unwrap_err()),
-        "length < 2 || length > 3"
-    );
-
-    assert_eq!(
-        format!("{}", Occurrence::new("0a").unwrap_err()),
-        "Invalid occurrence '0a'"
-    );
 }
 
 #[test]

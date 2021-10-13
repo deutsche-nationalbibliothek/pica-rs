@@ -11,8 +11,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     InvalidTag(String),
     InvalidTagMatcher(String),
-    InvalidSubfield(String),
     InvalidOccurrence(String),
+    InvalidSubfield(String),
     InvalidField(String),
     InvalidRecord(ParsePicaError),
     InvalidPath(ParsePathError),
@@ -27,8 +27,8 @@ impl Display for Error {
         match *self {
             Self::InvalidTag(ref m) => f.write_str(m),
             Self::InvalidTagMatcher(ref m) => f.write_str(m),
+            Self::InvalidOccurrence(ref m) => f.write_str(m),
             Error::InvalidSubfield(ref m) => f.write_str(m),
-            Error::InvalidOccurrence(ref m) => f.write_str(m),
             Error::InvalidField(ref m) => f.write_str(m),
             Error::InvalidRecord(ref e) => e.fmt(f),
             Error::InvalidPath(ref e) => e.fmt(f),
