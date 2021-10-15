@@ -30,7 +30,7 @@ impl Display for Error {
             Self::InvalidTagMatcher(ref m) => f.write_str(m),
             Self::InvalidOccurrence(ref m) => f.write_str(m),
             Self::InvalidOccurrenceMatcher(ref m) => f.write_str(m),
-            Error::InvalidSubfield(ref m) => f.write_str(m),
+            Self::InvalidSubfield(ref m) => f.write_str(m),
             Error::InvalidField(ref m) => f.write_str(m),
             Error::InvalidRecord(ref e) => e.fmt(f),
             Error::InvalidPath(ref e) => e.fmt(f),

@@ -1,23 +1,23 @@
 //! This module provides functions to parse PICA+ records.
 
-use crate::occurrence::{parse_occurrence, parse_occurrence_matcher};
-use crate::tag::{parse_tag, parse_tag_matcher};
-use crate::{Field, Path, Subfield};
+use std::fmt;
+
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{char, multispace0, one_of, satisfy};
-use nom::combinator::{all_consuming, cut, map, opt, recognize, success};
+use nom::bytes::complete::tag;
+use nom::character::complete::{char, multispace0, one_of};
+use nom::combinator::{all_consuming, cut, map, opt, success};
 use nom::error::ParseError;
 use nom::multi::{many0, many1};
-use nom::sequence::{delimited, pair, preceded, terminated, tuple};
+use nom::sequence::{delimited, preceded, terminated, tuple};
 use nom::{AsChar, Err, FindToken, IResult, InputIter, InputLength, Slice};
 use std::ops::RangeFrom;
 
-use bstr::BString;
-use std::fmt;
+use crate::occurrence::{parse_occurrence, parse_occurrence_matcher};
+use crate::subfield::{parse_subfield, parse_subfield_code};
+use crate::tag::{parse_tag, parse_tag_matcher};
+use crate::{Field, Path};
 
 const NL: char = '\x0A';
-const US: char = '\x1F';
 const RS: char = '\x1E';
 const SP: char = '\x20';
 
@@ -66,33 +66,12 @@ impl fmt::Display for ParsePathError {
     }
 }
 
-/// Parses a subfield code.
-pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
-    map(satisfy(|c| c.is_ascii_alphanumeric()), char::from)(i)
-}
-
 /// Parses multiple subfield codes.
 pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
         map(parse_subfield_code, |x| vec![x]),
         delimited(char('['), many1(parse_subfield_code), char(']')),
     ))(i)
-}
-
-/// Parses a subfield value.
-pub(crate) fn parse_subfield_value(i: &[u8]) -> ParseResult<BString> {
-    recognize(many0(is_not("\x1E\x1F")))(i).map(|(i, o)| (i, BString::from(o)))
-}
-
-/// Parses a subfield.
-pub(crate) fn parse_subfield(i: &[u8]) -> ParseResult<Subfield> {
-    map(
-        preceded(
-            char(US),
-            cut(pair(parse_subfield_code, parse_subfield_value)),
-        ),
-        |(code, value)| Subfield::from_unchecked(code, value),
-    )(i)
 }
 
 /// Parses a field.
@@ -146,44 +125,7 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 mod tests {
     use super::*;
     use crate::test::TestResult;
-    use crate::{Occurrence, OccurrenceMatcher};
-
-    #[test]
-    fn test_parse_subfield_code() -> TestResult {
-        assert_eq!(parse_subfield_code(b"0")?.1, '0');
-        assert_eq!(parse_subfield_code(b"a")?.1, 'a');
-        assert_eq!(parse_subfield_code(b"Z")?.1, 'Z');
-        assert!(parse_subfield_code(b"!").is_err());
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_parse_subfield_value() -> TestResult {
-        assert_eq!(parse_subfield_value(b"abc")?.1, "abc");
-        assert_eq!(parse_subfield_value(b"a\x1ebc")?.1, "a");
-        assert_eq!(parse_subfield_value(b"a\x1fbc")?.1, "a");
-        assert_eq!(parse_subfield_value(b"")?.1, "");
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_subfield() -> TestResult {
-        assert_eq!(
-            parse_subfield(b"\x1fa123")?.1,
-            Subfield::from_unchecked('a', "123")
-        );
-        assert_eq!(
-            parse_subfield(b"\x1fa")?.1,
-            Subfield::from_unchecked('a', "")
-        );
-
-        assert!(parse_subfield(b"a123").is_err());
-        assert!(parse_subfield(b"").is_err());
-
-        Ok(())
-    }
+    use crate::{Occurrence, OccurrenceMatcher, Subfield};
 
     #[test]
     fn test_parse_field() -> TestResult {
