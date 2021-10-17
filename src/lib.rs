@@ -19,6 +19,7 @@ pub use self::subfield::Subfield;
 pub use self::tag::{Level, Tag, TagMatcher};
 pub use self::writer::{GzipWriter, PicaWriter, PlainWriter, WriterBuilder};
 
+mod common;
 mod error;
 mod filter;
 mod occurrence;

@@ -14,8 +14,9 @@ use nom::multi::count;
 use nom::sequence::tuple;
 use nom::Finish;
 
+use crate::common::ParseResult;
 use crate::error::Error;
-use crate::parser::{parse_character_class, ParseResult};
+use crate::parser::parse_character_class;
 
 /// A PICA+ tag.
 #[derive(Debug, Clone, PartialEq, Eq)]

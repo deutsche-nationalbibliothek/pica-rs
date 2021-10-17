@@ -1,9 +1,5 @@
 //! Filter Expressions
 
-use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
-use crate::parser::ParseResult;
-use crate::tag::{parse_tag_matcher, TagMatcher};
-use crate::{ByteRecord, Field, Subfield};
 use bstr::{BString, ByteSlice};
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
@@ -16,6 +12,11 @@ use nom::{Finish, IResult};
 use regex::{Regex, RegexBuilder};
 use std::cmp::PartialEq;
 use std::str;
+
+use crate::common::ParseResult;
+use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
+use crate::tag::{parse_tag_matcher, TagMatcher};
+use crate::{ByteRecord, Field, Subfield};
 
 #[derive(Debug, PartialEq)]
 pub enum BooleanOp {

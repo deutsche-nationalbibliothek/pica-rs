@@ -12,11 +12,11 @@ use nom::combinator::{cut, map, recognize};
 use nom::multi::many0;
 use nom::sequence::{pair, preceded};
 
+use crate::common::ParseResult;
 use crate::error::{Error, Result};
-use crate::parser::ParseResult;
 
 /// A PICA+ subfield, that may contian invalid UTF-8 data.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Subfield {
     pub(crate) code: char,
     pub(crate) value: BString,
@@ -222,6 +222,11 @@ impl Serialize for Subfield {
         state.end()
     }
 }
+
+// #[derive(Debug, PartialEq)]
+// pub enum SubfieldMatcher {
+//     Comparison(Vec<char>, ComparisonOp, Vec<BString>),
+// }
 
 #[cfg(test)]
 mod tests {

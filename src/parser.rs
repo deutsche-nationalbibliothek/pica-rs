@@ -9,9 +9,10 @@ use nom::combinator::{all_consuming, cut, map, opt, success};
 use nom::error::ParseError;
 use nom::multi::{many0, many1};
 use nom::sequence::{delimited, preceded, terminated, tuple};
-use nom::{AsChar, Err, FindToken, IResult, InputIter, InputLength, Slice};
+use nom::{AsChar, FindToken, IResult, InputIter, InputLength, Slice};
 use std::ops::RangeFrom;
 
+use crate::common::ParseResult;
 use crate::occurrence::{parse_occurrence, parse_occurrence_matcher};
 use crate::subfield::{parse_subfield, parse_subfield_code};
 use crate::tag::{parse_tag, parse_tag_matcher};
@@ -20,9 +21,6 @@ use crate::{Field, Path};
 const NL: char = '\x0A';
 const RS: char = '\x1E';
 const SP: char = '\x20';
-
-/// Parser result.
-pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), Err<()>>;
 
 pub(crate) fn parse_character_class<I, T, E: ParseError<I>>(
     list: T,
