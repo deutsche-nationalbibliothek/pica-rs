@@ -13,7 +13,7 @@ use nom::IResult;
 pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 
 /// A comparison operator.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ComparisonOp {
     Eq,         // ==
     StrictEq,   // ===
@@ -26,11 +26,25 @@ pub enum ComparisonOp {
 
 pub(crate) fn parse_comparison_op(i: &[u8]) -> ParseResult<ComparisonOp> {
     alt((
-        map(tag("==="), |_| ComparisonOp::StrictEq),
-        map(tag("=="), |_| ComparisonOp::Eq),
-        map(tag("!="), |_| ComparisonOp::Ne),
-        map(tag("=^"), |_| ComparisonOp::StartsWith),
-        map(tag("=$"), |_| ComparisonOp::EndsWith),
+        value(ComparisonOp::StrictEq, tag("===")),
+        value(ComparisonOp::Eq, tag("==")),
+        value(ComparisonOp::Ne, tag("!=")),
+        value(ComparisonOp::StartsWith, tag("=^")),
+        value(ComparisonOp::EndsWith, tag("=$")),
+    ))(i)
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum BooleanOp {
+    And,
+    Or,
+}
+
+/// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
+pub(crate) fn parse_boolean_op(i: &[u8]) -> ParseResult<BooleanOp> {
+    alt((
+        value(BooleanOp::And, tag("&&")),
+        value(BooleanOp::Or, tag("||")),
     ))(i)
 }
 

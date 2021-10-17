@@ -17,7 +17,8 @@ use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
 use nom::Finish;
 
 use crate::common::{
-    parse_comparison_op, parse_string, ws, ComparisonOp, ParseResult,
+    parse_boolean_op, parse_comparison_op, parse_string, ws, BooleanOp,
+    ComparisonOp, ParseResult,
 };
 use crate::error::{Error, Result};
 
@@ -232,6 +233,7 @@ impl Serialize for Subfield {
 #[derive(Debug, PartialEq)]
 pub enum SubfieldMatcher {
     Comparison(Vec<char>, ComparisonOp, Vec<String>),
+    Composite(Box<SubfieldMatcher>, BooleanOp, Box<SubfieldMatcher>),
     Group(Box<SubfieldMatcher>),
     Not(Box<SubfieldMatcher>),
     Exists(Vec<char>),
@@ -315,17 +317,51 @@ fn parse_subfield_matcher_exists(i: &[u8]) -> ParseResult<SubfieldMatcher> {
 
 #[inline]
 fn parse_subfield_matcher_group(i: &[u8]) -> ParseResult<SubfieldMatcher> {
-    todo!()
+    map(
+        preceded(
+            ws(char('(')),
+            cut(terminated(parse_subfield_matcher, ws(char(')')))),
+        ),
+        |matcher| SubfieldMatcher::Group(Box::new(matcher)),
+    )(i)
 }
 
 #[inline]
-fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+fn parse_subfield_matcher_not(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    map(
+        preceded(ws(char('!')), cut(parse_subfield_matcher)),
+        |matcher| SubfieldMatcher::Not(Box::new(matcher)),
+    )(i)
+}
+
+#[inline]
+fn parse_subfield_matcher_primary(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     alt((
         ws(parse_subfield_matcher_comparison),
         ws(parse_subfield_matcher_regex),
         ws(parse_subfield_matcher_in),
         ws(parse_subfield_matcher_exists),
+        ws(parse_subfield_matcher_group),
+        ws(parse_subfield_matcher_not),
     ))(i)
+}
+
+#[inline]
+fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    let (i, (first, remainder)) = tuple((
+        parse_subfield_matcher_primary,
+        many0(pair(
+            ws(parse_boolean_op),
+            ws(parse_subfield_matcher_primary),
+        )),
+    ))(i)?;
+
+    Ok((
+        i,
+        remainder.into_iter().fold(first, |prev, (op, next)| {
+            SubfieldMatcher::Composite(Box::new(prev), op, Box::new(next))
+        }),
+    ))
 }
 
 impl FromStr for SubfieldMatcher {
@@ -638,6 +674,72 @@ mod tests {
         assert_eq!(
             parse_subfield_matcher(b"[ab]?")?.1,
             SubfieldMatcher::Exists(vec!['a', 'b'])
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_group() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"(0?) ")?.1,
+            SubfieldMatcher::Group(Box::new(SubfieldMatcher::Exists(vec![
+                '0'
+            ])))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_not() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b" !0? ")?.1,
+            SubfieldMatcher::Not(Box::new(SubfieldMatcher::Exists(vec!['0'])))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_composite() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"0? && a? && b?")?.1,
+            SubfieldMatcher::Composite(
+                Box::new(SubfieldMatcher::Composite(
+                    Box::new(SubfieldMatcher::Exists(vec!['0'])),
+                    BooleanOp::And,
+                    Box::new(SubfieldMatcher::Exists(vec!['a']))
+                )),
+                BooleanOp::And,
+                Box::new(SubfieldMatcher::Exists(vec!['b']))
+            )
+        );
+
+        assert_eq!(
+            parse_subfield_matcher(b"0? || a? || b?")?.1,
+            SubfieldMatcher::Composite(
+                Box::new(SubfieldMatcher::Composite(
+                    Box::new(SubfieldMatcher::Exists(vec!['0'])),
+                    BooleanOp::Or,
+                    Box::new(SubfieldMatcher::Exists(vec!['a']))
+                )),
+                BooleanOp::Or,
+                Box::new(SubfieldMatcher::Exists(vec!['b']))
+            )
+        );
+
+        assert_eq!(
+            parse_subfield_matcher(b"0? || a? && b?")?.1,
+            SubfieldMatcher::Composite(
+                Box::new(SubfieldMatcher::Composite(
+                    Box::new(SubfieldMatcher::Exists(vec!['0'])),
+                    BooleanOp::Or,
+                    Box::new(SubfieldMatcher::Exists(vec!['a']))
+                )),
+                BooleanOp::And,
+                Box::new(SubfieldMatcher::Exists(vec!['b']))
+            )
         );
 
         Ok(())
