@@ -2,17 +2,23 @@
 //! PICA+ subfield.
 
 use std::fmt;
+use std::str::FromStr;
 
 use bstr::{BString, ByteSlice};
+use regex::Regex;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
-use nom::bytes::complete::is_not;
+use nom::branch::alt;
+use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, satisfy};
-use nom::combinator::{cut, map, recognize};
-use nom::multi::many0;
-use nom::sequence::{pair, preceded};
+use nom::combinator::{all_consuming, cut, map, opt, recognize, verify};
+use nom::multi::{many0, many1, separated_list1};
+use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
+use nom::Finish;
 
-use crate::common::ParseResult;
+use crate::common::{
+    parse_comparison_op, parse_string, ws, ComparisonOp, ParseResult,
+};
 use crate::error::{Error, Result};
 
 /// A PICA+ subfield, that may contian invalid UTF-8 data.
@@ -223,15 +229,139 @@ impl Serialize for Subfield {
     }
 }
 
-// #[derive(Debug, PartialEq)]
-// pub enum SubfieldMatcher {
-//     Comparison(Vec<char>, ComparisonOp, Vec<BString>),
-// }
+#[derive(Debug, PartialEq)]
+pub enum SubfieldMatcher {
+    Comparison(Vec<char>, ComparisonOp, Vec<String>),
+    Group(Box<SubfieldMatcher>),
+    Not(Box<SubfieldMatcher>),
+    Exists(Vec<char>),
+}
+
+/// Parses a class of subfield codes or a single subfield code.
+#[inline]
+fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
+    alt((
+        preceded(
+            char('['),
+            cut(terminated(many1(parse_subfield_code), char(']'))),
+        ),
+        map(parse_subfield_code, |x| vec![x]),
+    ))(i)
+}
+
+#[inline]
+fn parse_subfield_matcher_comparison(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    map(
+        tuple((
+            ws(parse_subfield_codes),
+            ws(parse_comparison_op),
+            ws(parse_string),
+        )),
+        |(codes, op, value)| {
+            SubfieldMatcher::Comparison(codes, op, vec![value])
+        },
+    )(i)
+}
+
+#[inline]
+fn parse_subfield_matcher_regex(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    map(
+        separated_pair(
+            ws(parse_subfield_codes),
+            ws(tag("=~")),
+            verify(ws(parse_string), |x| Regex::new(x).is_ok()),
+        ),
+        |(codes, regex)| {
+            SubfieldMatcher::Comparison(codes, ComparisonOp::Re, vec![regex])
+        },
+    )(i)
+}
+
+#[inline]
+fn parse_subfield_matcher_in(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    map(
+        tuple((
+            ws(parse_subfield_codes),
+            opt(ws(tag("not"))),
+            ws(tag("in")),
+            preceded(
+                ws(char('[')),
+                cut(terminated(
+                    separated_list1(ws(char(',')), parse_string),
+                    ws(char(']')),
+                )),
+            ),
+        )),
+        |(codes, not, _, values)| {
+            let mut matcher =
+                SubfieldMatcher::Comparison(codes, ComparisonOp::In, values);
+
+            if not.is_some() {
+                matcher = SubfieldMatcher::Not(Box::new(matcher));
+            }
+
+            matcher
+        },
+    )(i)
+}
+
+#[inline]
+fn parse_subfield_matcher_exists(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    map(
+        terminated(ws(parse_subfield_codes), char('?')),
+        SubfieldMatcher::Exists,
+    )(i)
+}
+
+#[inline]
+fn parse_subfield_matcher_group(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    todo!()
+}
+
+#[inline]
+fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    alt((
+        ws(parse_subfield_matcher_comparison),
+        ws(parse_subfield_matcher_regex),
+        ws(parse_subfield_matcher_in),
+        ws(parse_subfield_matcher_exists),
+    ))(i)
+}
+
+impl FromStr for SubfieldMatcher {
+    type Err = crate::error::Error;
+
+    /// Parse a `SubfieldMatcher` from a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::SubfieldMatcher;
+    /// use std::str::FromStr;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let matcher = SubfieldMatcher::from_str("0 == '0123456789X'");
+    ///     assert!(matcher.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    fn from_str(s: &str) -> Result<Self> {
+        match all_consuming(parse_subfield_matcher)(s.as_bytes()).finish() {
+            Ok((_, tag)) => Ok(tag),
+            Err(_) => Err(Error::InvalidSubfieldMatcher(
+                "Invalid subfield matcher!".to_string(),
+            )),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use std::io::Cursor;
 
+    use crate::common::ComparisonOp;
     use crate::test::TestResult;
 
     use super::*;
@@ -338,6 +468,177 @@ mod tests {
         assert_eq!(parse_subfield(b"\x1fa")?.1, Subfield::new('a', "")?);
         assert!(parse_subfield(b"a123").is_err());
         assert!(parse_subfield(b"").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_codes() -> TestResult {
+        assert_eq!(parse_subfield_codes(b"a")?.1, vec!['a']);
+        assert_eq!(parse_subfield_codes(b"[abc]")?.1, vec!['a', 'b', 'c']);
+        assert!(parse_subfield_codes(b"[ab").is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_codes() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"[ab] == 'test'")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['a', 'b'],
+                ComparisonOp::Eq,
+                vec!["test".to_string()]
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_ws() -> TestResult {
+        assert!(parse_subfield_matcher(b" a == 'test'").is_ok());
+        assert!(parse_subfield_matcher(b"a == 'test' ").is_ok());
+        assert!(parse_subfield_matcher(b"a  == 'test'").is_ok());
+        assert!(parse_subfield_matcher(b"a ==  'test'").is_ok());
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_from_str() -> TestResult {
+        assert_eq!(
+            SubfieldMatcher::from_str("0 == '0123456789X'")?,
+            SubfieldMatcher::Comparison(
+                vec!['0'],
+                ComparisonOp::Eq,
+                vec!["0123456789X".to_string()]
+            )
+        );
+
+        assert!(SubfieldMatcher::from_str("foo").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_eq() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"a == 'foobar'")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['a'],
+                ComparisonOp::Eq,
+                vec!["foobar".to_string()]
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_strict_eq() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"a === 'foobar'")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['a'],
+                ComparisonOp::StrictEq,
+                vec!["foobar".to_string()]
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_ne() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"a != 'foobar'")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['a'],
+                ComparisonOp::Ne,
+                vec!["foobar".to_string()]
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_starts_with() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"a =^ 'foobar'")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['a'],
+                ComparisonOp::StartsWith,
+                vec!["foobar".to_string()]
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_ends_with() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"a =$ 'foobar'")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['a'],
+                ComparisonOp::EndsWith,
+                vec!["foobar".to_string()]
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_regex() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"a =~ '^(foo|bar)$'")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['a'],
+                ComparisonOp::Re,
+                vec!["^(foo|bar)$".to_string()]
+            )
+        );
+
+        assert!(parse_subfield_matcher(b"0 =~ '^Tp[123]($'").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_in() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b"0 in [ '123'  , '456' ] ")?.1,
+            SubfieldMatcher::Comparison(
+                vec!['0'],
+                ComparisonOp::In,
+                vec!["123".to_string(), "456".to_string()]
+            )
+        );
+
+        assert_eq!(
+            parse_subfield_matcher(b"0 not in ['123', '456']")?.1,
+            SubfieldMatcher::Not(Box::new(SubfieldMatcher::Comparison(
+                vec!['0'],
+                ComparisonOp::In,
+                vec!["123".to_string(), "456".to_string()]
+            )))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher_exists() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher(b" 0? ")?.1,
+            SubfieldMatcher::Exists(vec!['0'])
+        );
+
+        assert_eq!(
+            parse_subfield_matcher(b"[ab]?")?.1,
+            SubfieldMatcher::Exists(vec!['a', 'b'])
+        );
 
         Ok(())
     }
