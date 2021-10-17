@@ -29,9 +29,9 @@ pub(crate) fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {
     };
 
     match args.value_of("shell").unwrap() {
-        "bash" => generate::<Bash, _>(cli, "pica", &mut writer),
-        "fish" => generate::<Fish, _>(cli, "pica", &mut writer),
-        "zsh" => generate::<Zsh, _>(cli, "pica", &mut writer),
+        "bash" => generate(Bash, cli, "pica", &mut writer),
+        "fish" => generate(Fish, cli, "pica", &mut writer),
+        "zsh" => generate(Zsh, cli, "pica", &mut writer),
         _ => unreachable!(),
     }
 
