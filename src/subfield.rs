@@ -232,7 +232,7 @@ impl Serialize for Subfield {
 
 #[derive(Debug, PartialEq)]
 pub enum SubfieldMatcher {
-    Comparison(Vec<char>, ComparisonOp, Vec<String>),
+    Comparison(Vec<char>, ComparisonOp, Vec<BString>),
     Composite(Box<SubfieldMatcher>, BooleanOp, Box<SubfieldMatcher>),
     Group(Box<SubfieldMatcher>),
     Not(Box<SubfieldMatcher>),
@@ -257,7 +257,7 @@ fn parse_subfield_matcher_comparison(i: &[u8]) -> ParseResult<SubfieldMatcher> {
         tuple((
             ws(parse_subfield_codes),
             ws(parse_comparison_op),
-            ws(parse_string),
+            map(ws(parse_string), BString::from),
         )),
         |(codes, op, value)| {
             SubfieldMatcher::Comparison(codes, op, vec![value])
@@ -271,7 +271,10 @@ fn parse_subfield_matcher_regex(i: &[u8]) -> ParseResult<SubfieldMatcher> {
         separated_pair(
             ws(parse_subfield_codes),
             ws(tag("=~")),
-            verify(ws(parse_string), |x| Regex::new(x).is_ok()),
+            map(
+                verify(ws(parse_string), |x| Regex::new(x).is_ok()),
+                BString::from,
+            ),
         ),
         |(codes, regex)| {
             SubfieldMatcher::Comparison(codes, ComparisonOp::Re, vec![regex])
@@ -289,7 +292,10 @@ fn parse_subfield_matcher_in(i: &[u8]) -> ParseResult<SubfieldMatcher> {
             preceded(
                 ws(char('[')),
                 cut(terminated(
-                    separated_list1(ws(char(',')), parse_string),
+                    separated_list1(
+                        ws(char(',')),
+                        map(parse_string, BString::from),
+                    ),
                     ws(char(']')),
                 )),
             ),
@@ -362,6 +368,17 @@ fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
             SubfieldMatcher::Composite(Box::new(prev), op, Box::new(next))
         }),
     ))
+}
+
+#[derive(Debug)]
+pub struct MatcherFlags {
+    _ignore_case: bool,
+}
+
+impl SubfieldMatcher {
+    pub fn is_match(&self, _subfield: &Subfield, _flags: MatcherFlags) -> bool {
+        unimplemented!()
+    }
 }
 
 impl FromStr for SubfieldMatcher {
