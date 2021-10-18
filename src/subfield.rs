@@ -2,10 +2,10 @@
 //! PICA+ subfield.
 
 use std::fmt;
-use std::str::FromStr;
+use std::str::{self, FromStr};
 
 use bstr::{BString, ByteSlice};
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 use nom::branch::alt;
@@ -18,7 +18,7 @@ use nom::Finish;
 
 use crate::common::{
     parse_boolean_op, parse_comparison_op, parse_string, ws, BooleanOp,
-    ComparisonOp, ParseResult,
+    ComparisonOp, MatcherFlags, ParseResult,
 };
 use crate::error::{Error, Result};
 
@@ -370,14 +370,90 @@ fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     ))
 }
 
-#[derive(Debug)]
-pub struct MatcherFlags {
-    _ignore_case: bool,
-}
-
 impl SubfieldMatcher {
-    pub fn is_match(&self, _subfield: &Subfield, _flags: MatcherFlags) -> bool {
-        unimplemented!()
+    pub fn is_match(&self, subfield: &Subfield, flags: &MatcherFlags) -> bool {
+        let compare_fn = |lhs: &BString, rhs: &BString| -> bool {
+            if flags.ignore_case {
+                lhs.to_lowercase() == rhs.to_lowercase()
+            } else {
+                lhs == rhs
+            }
+        };
+
+        match self {
+            SubfieldMatcher::Comparison(codes, ComparisonOp::Eq, values) => {
+                codes.contains(&subfield.code())
+                    && compare_fn(subfield.value(), &values[0])
+            }
+            SubfieldMatcher::Comparison(codes, ComparisonOp::Ne, values) => {
+                codes.contains(&subfield.code())
+                    && !compare_fn(subfield.value(), &values[0])
+            }
+            SubfieldMatcher::Comparison(
+                codes,
+                ComparisonOp::StartsWith,
+                values,
+            ) => {
+                codes.contains(&subfield.code())
+                    && if flags.ignore_case {
+                        subfield
+                            .value()
+                            .to_lowercase()
+                            .starts_with(&values[0].to_lowercase())
+                    } else {
+                        subfield.value().starts_with(&values[0])
+                    }
+            }
+            SubfieldMatcher::Comparison(
+                codes,
+                ComparisonOp::EndsWith,
+                values,
+            ) => {
+                codes.contains(&subfield.code())
+                    && if flags.ignore_case {
+                        subfield
+                            .value()
+                            .to_lowercase()
+                            .ends_with(&values[0].to_lowercase())
+                    } else {
+                        subfield.value().ends_with(&values[0])
+                    }
+            }
+            SubfieldMatcher::Comparison(codes, ComparisonOp::Re, values) => {
+                // SAFETY: It's not unsafe because the parser verified
+                // that the regular expression is a valid utf8 string.
+                let mut re_builder = RegexBuilder::new(unsafe {
+                    str::from_utf8_unchecked(values[0].as_bytes())
+                });
+
+                // SAFETY: It's safe to call `unwrap()` because the parser
+                // verified that the regular expression is `ok`.
+                let re = re_builder
+                    .case_insensitive(flags.ignore_case)
+                    .build()
+                    .unwrap();
+
+                codes.contains(&subfield.code())
+                    && re.is_match(str::from_utf8(subfield.value()).unwrap())
+            }
+            SubfieldMatcher::Comparison(codes, ComparisonOp::In, values) => {
+                codes.contains(&subfield.code())
+                    && values
+                        .iter()
+                        .any(|x: &BString| compare_fn(subfield.value(), x))
+            }
+            SubfieldMatcher::Exists(codes) => codes.contains(&subfield.code()),
+            SubfieldMatcher::Composite(lhs, BooleanOp::And, rhs) => {
+                lhs.is_match(subfield, flags) && rhs.is_match(subfield, flags)
+            }
+            SubfieldMatcher::Composite(lhs, BooleanOp::Or, rhs) => {
+                lhs.is_match(subfield, flags) || rhs.is_match(subfield, flags)
+            }
+            SubfieldMatcher::Group(matcher) => {
+                matcher.is_match(subfield, flags)
+            }
+            SubfieldMatcher::Not(matcher) => !matcher.is_match(subfield, flags),
+        }
     }
 }
 
@@ -540,7 +616,7 @@ mod tests {
             SubfieldMatcher::Comparison(
                 vec!['a', 'b'],
                 ComparisonOp::Eq,
-                vec!["test".to_string()]
+                vec![BString::from("test")]
             )
         );
 
@@ -557,43 +633,13 @@ mod tests {
     }
 
     #[test]
-    fn test_subfield_matcher_from_str() -> TestResult {
-        assert_eq!(
-            SubfieldMatcher::from_str("0 == '0123456789X'")?,
-            SubfieldMatcher::Comparison(
-                vec!['0'],
-                ComparisonOp::Eq,
-                vec!["0123456789X".to_string()]
-            )
-        );
-
-        assert!(SubfieldMatcher::from_str("foo").is_err());
-
-        Ok(())
-    }
-
-    #[test]
     fn test_parse_subfield_matcher_eq() -> TestResult {
         assert_eq!(
             parse_subfield_matcher(b"a == 'foobar'")?.1,
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::Eq,
-                vec!["foobar".to_string()]
-            )
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_subfield_matcher_strict_eq() -> TestResult {
-        assert_eq!(
-            parse_subfield_matcher(b"a === 'foobar'")?.1,
-            SubfieldMatcher::Comparison(
-                vec!['a'],
-                ComparisonOp::StrictEq,
-                vec!["foobar".to_string()]
+                vec![BString::from("foobar")]
             )
         );
 
@@ -607,7 +653,7 @@ mod tests {
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::Ne,
-                vec!["foobar".to_string()]
+                vec![BString::from("foobar")]
             )
         );
 
@@ -621,7 +667,7 @@ mod tests {
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::StartsWith,
-                vec!["foobar".to_string()]
+                vec![BString::from("foobar")]
             )
         );
 
@@ -635,7 +681,7 @@ mod tests {
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::EndsWith,
-                vec!["foobar".to_string()]
+                vec![BString::from("foobar")]
             )
         );
 
@@ -649,7 +695,7 @@ mod tests {
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::Re,
-                vec!["^(foo|bar)$".to_string()]
+                vec![BString::from("^(foo|bar)$")]
             )
         );
 
@@ -665,7 +711,7 @@ mod tests {
             SubfieldMatcher::Comparison(
                 vec!['0'],
                 ComparisonOp::In,
-                vec!["123".to_string(), "456".to_string()]
+                vec![BString::from("123"), BString::from("456")]
             )
         );
 
@@ -674,9 +720,11 @@ mod tests {
             SubfieldMatcher::Not(Box::new(SubfieldMatcher::Comparison(
                 vec!['0'],
                 ComparisonOp::In,
-                vec!["123".to_string(), "456".to_string()]
+                vec![BString::from("123"), BString::from("456")]
             )))
         );
+
+        assert!(parse_subfield_matcher(b"0 in []").is_err());
 
         Ok(())
     }
@@ -758,6 +806,182 @@ mod tests {
                 Box::new(SubfieldMatcher::Exists(vec!['b']))
             )
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_from_str() -> TestResult {
+        assert_eq!(
+            SubfieldMatcher::from_str("0 == '0123456789X'")?,
+            SubfieldMatcher::Comparison(
+                vec!['0'],
+                ComparisonOp::Eq,
+                vec![BString::from("0123456789X")]
+            )
+        );
+
+        assert!(SubfieldMatcher::from_str("foo").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_eq() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0 == 'abc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 == 'aBc'")?;
+        let flags = MatcherFlags { ignore_case: true };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 == 'aBc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_ne() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0 != 'def'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 != 'aBc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 != 'aBc'")?;
+        let flags = MatcherFlags { ignore_case: true };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_starts_with() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0 =^ 'ab'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =^ ' ab'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =^ 'aB'")?;
+        let flags = MatcherFlags { ignore_case: true };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =^ 'aB'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_ends_with() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0 =$ 'bc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =$ 'bc '")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =$ 'Bc'")?;
+        let flags = MatcherFlags { ignore_case: true };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =$ 'Bc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_regex() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0 =~ '^a'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =~ '^A'")?;
+        let flags = MatcherFlags { ignore_case: true };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 =~ '^b'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_in() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0 in ['abc', 'def']")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 in ['deF', 'abC']")?;
+        let flags = MatcherFlags { ignore_case: true };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("0 in ['def', 'hij']")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_exists() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("[ab01]?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("a?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_and() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("0? && 0 == 'abc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("[ab01]?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("a?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
 
         Ok(())
     }

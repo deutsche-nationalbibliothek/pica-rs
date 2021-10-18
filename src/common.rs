@@ -12,11 +12,15 @@ use nom::IResult;
 /// Parser result.
 pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 
+#[derive(Debug)]
+pub struct MatcherFlags {
+    pub ignore_case: bool,
+}
+
 /// A comparison operator.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ComparisonOp {
     Eq,         // ==
-    StrictEq,   // ===
     Ne,         // !=
     Re,         // !~
     StartsWith, // =^
@@ -26,7 +30,6 @@ pub enum ComparisonOp {
 
 pub(crate) fn parse_comparison_op(i: &[u8]) -> ParseResult<ComparisonOp> {
     alt((
-        value(ComparisonOp::StrictEq, tag("===")),
         value(ComparisonOp::Eq, tag("==")),
         value(ComparisonOp::Ne, tag("!=")),
         value(ComparisonOp::StartsWith, tag("=^")),
