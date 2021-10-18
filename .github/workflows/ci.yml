@@ -144,6 +144,7 @@ jobs:
           override: true
       - uses: actions-rs/install@v0.1
         with:
+          use-tool-cache: true
           crate: cargo-fuzz
           version: latest
       - run: |
@@ -208,6 +209,7 @@ jobs:
           LLVM_PROFILE_FILE: "pica-%p-%m.profraw"
       - uses: actions-rs/install@v0.1
         with:
+          use-tool-cache: true
           crate: grcov
           version: latest
       - name: Run grcov
@@ -275,6 +277,7 @@ jobs:
       - uses: abbbi/github-actions-tune@v1
       - uses: actions-rs/install@v0.1
         with:
+          use-tool-cache: true
           crate: cargo-upgrades
           version: latest
       - run: |
