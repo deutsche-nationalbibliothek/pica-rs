@@ -13,16 +13,10 @@ use regex::{Regex, RegexBuilder};
 use std::cmp::PartialEq;
 use std::str;
 
-use crate::common::ParseResult;
+use crate::common::{parse_boolean_op, BooleanOp, ParseResult};
 use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
 use crate::tag::{parse_tag_matcher, TagMatcher};
 use crate::{ByteRecord, Field, Subfield};
-
-#[derive(Debug, PartialEq)]
-pub enum BooleanOp {
-    And,
-    Or,
-}
 
 #[derive(Debug, PartialEq)]
 pub enum ComparisonOp {
@@ -281,14 +275,6 @@ pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
         map(parse_subfield_code, |x| vec![x]),
         delimited(ws(char('[')), many1(ws(parse_subfield_code)), ws(char(']'))),
-    ))(i)
-}
-
-/// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
-fn parse_boolean_op(i: &[u8]) -> ParseResult<BooleanOp> {
-    alt((
-        map(tag("&&"), |_| BooleanOp::And),
-        map(tag("||"), |_| BooleanOp::Or),
     ))(i)
 }
 
@@ -793,3 +779,32 @@ mod tests {
         Ok(())
     }
 }
+
+// #[inline]
+// fn parse_subfield_matcher_group(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+//     map(
+//         preceded(
+//             ws(char('(')),
+//             cut(terminated(parse_subfield_matcher, ws(char(')')))),
+//         ),
+//         |matcher| SubfieldMatcher::Group(Box::new(matcher)),
+//     )(i)
+// }
+
+// #[inline]
+// fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+//     let (i, (first, remainder)) = tuple((
+//         parse_subfield_matcher_primary,
+//         many0(pair(
+//             ws(parse_boolean_op),
+//             ws(parse_subfield_matcher_primary),
+//         )),
+//     ))(i)?;
+
+//     Ok((
+//         i,
+//         remainder.into_iter().fold(first, |prev, (op, next)| {
+//             SubfieldMatcher::Composite(Box::new(prev), op, Box::new(next))
+//         }),
+//     ))
+// }

@@ -17,8 +17,8 @@ use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
 use nom::Finish;
 
 use crate::common::{
-    parse_boolean_op, parse_comparison_op, parse_string, ws, BooleanOp,
-    ComparisonOp, MatcherFlags, ParseResult,
+    parse_comparison_op, parse_string, ws, ComparisonOp, MatcherFlags,
+    ParseResult,
 };
 use crate::error::{Error, Result};
 
@@ -32,6 +32,18 @@ pub struct Subfield {
 /// Parses a subfield code.
 pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
     map(satisfy(|c| c.is_ascii_alphanumeric()), char::from)(i)
+}
+
+/// Parses a class of subfield codes or a single subfield code.
+#[inline]
+fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
+    alt((
+        preceded(
+            char('['),
+            cut(terminated(many1(parse_subfield_code), char(']'))),
+        ),
+        map(parse_subfield_code, |x| vec![x]),
+    ))(i)
 }
 
 /// Parses a subfield value.
@@ -230,27 +242,15 @@ impl Serialize for Subfield {
     }
 }
 
+/// A `Subfield` matcher
 #[derive(Debug, PartialEq)]
 pub enum SubfieldMatcher {
     Comparison(Vec<char>, ComparisonOp, Vec<BString>),
-    Composite(Box<SubfieldMatcher>, BooleanOp, Box<SubfieldMatcher>),
-    Group(Box<SubfieldMatcher>),
     Not(Box<SubfieldMatcher>),
     Exists(Vec<char>),
 }
 
-/// Parses a class of subfield codes or a single subfield code.
-#[inline]
-fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
-    alt((
-        preceded(
-            char('['),
-            cut(terminated(many1(parse_subfield_code), char(']'))),
-        ),
-        map(parse_subfield_code, |x| vec![x]),
-    ))(i)
-}
-
+/// parses a comparison expression
 #[inline]
 fn parse_subfield_matcher_comparison(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
@@ -265,6 +265,7 @@ fn parse_subfield_matcher_comparison(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     )(i)
 }
 
+/// Parses a regex comparison expression
 #[inline]
 fn parse_subfield_matcher_regex(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
@@ -282,6 +283,7 @@ fn parse_subfield_matcher_regex(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     )(i)
 }
 
+/// Parses a "in" expression
 #[inline]
 fn parse_subfield_matcher_in(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
@@ -313,6 +315,7 @@ fn parse_subfield_matcher_in(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     )(i)
 }
 
+/// Parses a "exists" expression
 #[inline]
 fn parse_subfield_matcher_exists(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
@@ -321,17 +324,7 @@ fn parse_subfield_matcher_exists(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     )(i)
 }
 
-#[inline]
-fn parse_subfield_matcher_group(i: &[u8]) -> ParseResult<SubfieldMatcher> {
-    map(
-        preceded(
-            ws(char('(')),
-            cut(terminated(parse_subfield_matcher, ws(char(')')))),
-        ),
-        |matcher| SubfieldMatcher::Group(Box::new(matcher)),
-    )(i)
-}
-
+/// Parses a "not" expression
 #[inline]
 fn parse_subfield_matcher_not(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
@@ -340,34 +333,16 @@ fn parse_subfield_matcher_not(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     )(i)
 }
 
+/// Parses a subfield matcher expression.
 #[inline]
-fn parse_subfield_matcher_primary(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     alt((
         ws(parse_subfield_matcher_comparison),
         ws(parse_subfield_matcher_regex),
         ws(parse_subfield_matcher_in),
         ws(parse_subfield_matcher_exists),
-        ws(parse_subfield_matcher_group),
         ws(parse_subfield_matcher_not),
     ))(i)
-}
-
-#[inline]
-fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
-    let (i, (first, remainder)) = tuple((
-        parse_subfield_matcher_primary,
-        many0(pair(
-            ws(parse_boolean_op),
-            ws(parse_subfield_matcher_primary),
-        )),
-    ))(i)?;
-
-    Ok((
-        i,
-        remainder.into_iter().fold(first, |prev, (op, next)| {
-            SubfieldMatcher::Composite(Box::new(prev), op, Box::new(next))
-        }),
-    ))
 }
 
 impl SubfieldMatcher {
@@ -420,18 +395,12 @@ impl SubfieldMatcher {
                     }
             }
             SubfieldMatcher::Comparison(codes, ComparisonOp::Re, values) => {
-                // SAFETY: It's not unsafe because the parser verified
-                // that the regular expression is a valid utf8 string.
-                let mut re_builder = RegexBuilder::new(unsafe {
+                let re = RegexBuilder::new(unsafe {
                     str::from_utf8_unchecked(values[0].as_bytes())
-                });
-
-                // SAFETY: It's safe to call `unwrap()` because the parser
-                // verified that the regular expression is `ok`.
-                let re = re_builder
-                    .case_insensitive(flags.ignore_case)
-                    .build()
-                    .unwrap();
+                })
+                .case_insensitive(flags.ignore_case)
+                .build()
+                .unwrap();
 
                 codes.contains(&subfield.code())
                     && re.is_match(str::from_utf8(subfield.value()).unwrap())
@@ -443,15 +412,6 @@ impl SubfieldMatcher {
                         .any(|x: &BString| compare_fn(subfield.value(), x))
             }
             SubfieldMatcher::Exists(codes) => codes.contains(&subfield.code()),
-            SubfieldMatcher::Composite(lhs, BooleanOp::And, rhs) => {
-                lhs.is_match(subfield, flags) && rhs.is_match(subfield, flags)
-            }
-            SubfieldMatcher::Composite(lhs, BooleanOp::Or, rhs) => {
-                lhs.is_match(subfield, flags) || rhs.is_match(subfield, flags)
-            }
-            SubfieldMatcher::Group(matcher) => {
-                matcher.is_match(subfield, flags)
-            }
             SubfieldMatcher::Not(matcher) => !matcher.is_match(subfield, flags),
         }
     }
@@ -633,9 +593,9 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_subfield_matcher_eq() -> TestResult {
+    fn test_parse_subfield_matcher_comparison_eq() -> TestResult {
         assert_eq!(
-            parse_subfield_matcher(b"a == 'foobar'")?.1,
+            parse_subfield_matcher_comparison(b"a == 'foobar'")?.1,
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::Eq,
@@ -647,9 +607,9 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_subfield_matcher_ne() -> TestResult {
+    fn test_parse_subfield_matcher_comparison_ne() -> TestResult {
         assert_eq!(
-            parse_subfield_matcher(b"a != 'foobar'")?.1,
+            parse_subfield_matcher_comparison(b"a != 'foobar'")?.1,
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::Ne,
@@ -661,9 +621,9 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_subfield_matcher_starts_with() -> TestResult {
+    fn test_parse_subfield_matcher_comparison_starts_with() -> TestResult {
         assert_eq!(
-            parse_subfield_matcher(b"a =^ 'foobar'")?.1,
+            parse_subfield_matcher_comparison(b"a =^ 'foobar'")?.1,
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::StartsWith,
@@ -675,9 +635,9 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_subfield_matcher_ends_with() -> TestResult {
+    fn test_parse_subfield_matcher_comparison_ends_with() -> TestResult {
         assert_eq!(
-            parse_subfield_matcher(b"a =$ 'foobar'")?.1,
+            parse_subfield_matcher_comparison(b"a =$ 'foobar'")?.1,
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::EndsWith,
@@ -691,7 +651,7 @@ mod tests {
     #[test]
     fn test_parse_subfield_matcher_regex() -> TestResult {
         assert_eq!(
-            parse_subfield_matcher(b"a =~ '^(foo|bar)$'")?.1,
+            parse_subfield_matcher_regex(b"a =~ '^(foo|bar)$'")?.1,
             SubfieldMatcher::Comparison(
                 vec!['a'],
                 ComparisonOp::Re,
@@ -699,7 +659,7 @@ mod tests {
             )
         );
 
-        assert!(parse_subfield_matcher(b"0 =~ '^Tp[123]($'").is_err());
+        assert!(parse_subfield_matcher_regex(b"0 =~ '^Tp[123]($'").is_err());
 
         Ok(())
     }
@@ -707,7 +667,7 @@ mod tests {
     #[test]
     fn test_parse_subfield_matcher_in() -> TestResult {
         assert_eq!(
-            parse_subfield_matcher(b"0 in [ '123'  , '456' ] ")?.1,
+            parse_subfield_matcher_in(b"0 in [ '123'  , '456' ] ")?.1,
             SubfieldMatcher::Comparison(
                 vec!['0'],
                 ComparisonOp::In,
@@ -716,7 +676,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_subfield_matcher(b"0 not in ['123', '456']")?.1,
+            parse_subfield_matcher_in(b"0 not in ['123', '456']")?.1,
             SubfieldMatcher::Not(Box::new(SubfieldMatcher::Comparison(
                 vec!['0'],
                 ComparisonOp::In,
@@ -724,7 +684,7 @@ mod tests {
             )))
         );
 
-        assert!(parse_subfield_matcher(b"0 in []").is_err());
+        assert!(parse_subfield_matcher_in(b"0 in []").is_err());
 
         Ok(())
     }
@@ -732,79 +692,13 @@ mod tests {
     #[test]
     fn test_parse_subfield_matcher_exists() -> TestResult {
         assert_eq!(
-            parse_subfield_matcher(b" 0? ")?.1,
+            parse_subfield_matcher_exists(b" 0? ")?.1,
             SubfieldMatcher::Exists(vec!['0'])
         );
 
         assert_eq!(
-            parse_subfield_matcher(b"[ab]?")?.1,
+            parse_subfield_matcher_exists(b"[ab]?")?.1,
             SubfieldMatcher::Exists(vec!['a', 'b'])
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_subfield_matcher_group() -> TestResult {
-        assert_eq!(
-            parse_subfield_matcher(b"(0?) ")?.1,
-            SubfieldMatcher::Group(Box::new(SubfieldMatcher::Exists(vec![
-                '0'
-            ])))
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_subfield_matcher_not() -> TestResult {
-        assert_eq!(
-            parse_subfield_matcher(b" !0? ")?.1,
-            SubfieldMatcher::Not(Box::new(SubfieldMatcher::Exists(vec!['0'])))
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_subfield_matcher_composite() -> TestResult {
-        assert_eq!(
-            parse_subfield_matcher(b"0? && a? && b?")?.1,
-            SubfieldMatcher::Composite(
-                Box::new(SubfieldMatcher::Composite(
-                    Box::new(SubfieldMatcher::Exists(vec!['0'])),
-                    BooleanOp::And,
-                    Box::new(SubfieldMatcher::Exists(vec!['a']))
-                )),
-                BooleanOp::And,
-                Box::new(SubfieldMatcher::Exists(vec!['b']))
-            )
-        );
-
-        assert_eq!(
-            parse_subfield_matcher(b"0? || a? || b?")?.1,
-            SubfieldMatcher::Composite(
-                Box::new(SubfieldMatcher::Composite(
-                    Box::new(SubfieldMatcher::Exists(vec!['0'])),
-                    BooleanOp::Or,
-                    Box::new(SubfieldMatcher::Exists(vec!['a']))
-                )),
-                BooleanOp::Or,
-                Box::new(SubfieldMatcher::Exists(vec!['b']))
-            )
-        );
-
-        assert_eq!(
-            parse_subfield_matcher(b"0? || a? && b?")?.1,
-            SubfieldMatcher::Composite(
-                Box::new(SubfieldMatcher::Composite(
-                    Box::new(SubfieldMatcher::Exists(vec!['0'])),
-                    BooleanOp::Or,
-                    Box::new(SubfieldMatcher::Exists(vec!['a']))
-                )),
-                BooleanOp::And,
-                Box::new(SubfieldMatcher::Exists(vec!['b']))
-            )
         );
 
         Ok(())
@@ -953,25 +847,6 @@ mod tests {
         let subfield = Subfield::new('0', "abc")?;
 
         let matcher = SubfieldMatcher::from_str("0?")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&subfield, &flags));
-
-        let matcher = SubfieldMatcher::from_str("[ab01]?")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&subfield, &flags));
-
-        let matcher = SubfieldMatcher::from_str("a?")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(!matcher.is_match(&subfield, &flags));
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_subfield_matcher_is_match_and() -> TestResult {
-        let subfield = Subfield::new('0', "abc")?;
-
-        let matcher = SubfieldMatcher::from_str("0? && 0 == 'abc'")?;
         let flags = MatcherFlags { ignore_case: false };
         assert!(matcher.is_match(&subfield, &flags));
 
