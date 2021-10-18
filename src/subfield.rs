@@ -232,7 +232,7 @@ impl Serialize for Subfield {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("Subfield", 2)?;
-        state.serialize_field("name", &self.code)?;
+        state.serialize_field("tag", &self.code)?;
         // SAFETY: It's save because `Serialize` is only implemented for
         // `StringRecord` and not for `ByteRecord`.
         unsafe {
