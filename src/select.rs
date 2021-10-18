@@ -1,11 +1,3 @@
-use crate::filter::{
-    parse_string, parse_subfield_code, parse_subfield_filter, ws,
-    SubfieldFilter,
-};
-use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
-use crate::parser::ParseResult;
-use crate::tag::parse_tag_matcher;
-use crate::TagMatcher;
 use bstr::BString;
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
@@ -15,6 +7,15 @@ use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::Finish;
 use std::default::Default;
 use std::ops::{Add, Deref, Mul};
+
+use crate::common::ParseResult;
+use crate::filter::{
+    parse_string, parse_subfield_code, parse_subfield_filter, ws,
+    SubfieldFilter,
+};
+use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
+use crate::tag::parse_tag_matcher;
+use crate::TagMatcher;
 
 #[derive(Debug, PartialEq)]
 pub struct FieldSelector {

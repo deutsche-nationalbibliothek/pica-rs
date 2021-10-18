@@ -14,8 +14,8 @@ use nom::multi::many_m_n;
 use nom::sequence::{preceded, separated_pair};
 use nom::Finish;
 
+use crate::common::ParseResult;
 use crate::error::Error;
-use crate::parser::ParseResult;
 
 /// A PICA+ occurrence.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
