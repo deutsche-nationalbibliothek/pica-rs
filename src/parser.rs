@@ -3,24 +3,22 @@
 use std::fmt;
 
 use nom::branch::alt;
-use nom::bytes::complete::tag;
 use nom::character::complete::{char, multispace0, one_of};
-use nom::combinator::{all_consuming, cut, map, opt, success};
+use nom::combinator::{all_consuming, cut, map, opt};
 use nom::error::ParseError;
-use nom::multi::{many0, many1};
+use nom::multi::many1;
 use nom::sequence::{delimited, preceded, terminated, tuple};
 use nom::{AsChar, FindToken, IResult, InputIter, InputLength, Slice};
 use std::ops::RangeFrom;
 
 use crate::common::ParseResult;
-use crate::occurrence::{parse_occurrence, parse_occurrence_matcher};
-use crate::subfield::{parse_subfield, parse_subfield_code};
-use crate::tag::{parse_tag, parse_tag_matcher};
-use crate::{Field, Path};
+use crate::field::{parse_field, Field};
+use crate::occurrence::parse_occurrence_matcher;
+use crate::subfield::parse_subfield_code;
+use crate::tag::parse_tag_matcher;
+use crate::Path;
 
 const NL: char = '\x0A';
-const RS: char = '\x1E';
-const SP: char = '\x20';
 
 pub(crate) fn parse_character_class<I, T, E: ParseError<I>>(
     list: T,
@@ -72,29 +70,6 @@ pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     ))(i)
 }
 
-/// Parses a field.
-fn parse_field(i: &[u8]) -> ParseResult<Field> {
-    map(
-        terminated(
-            tuple((
-                parse_tag,
-                alt((
-                    map(tag("/00"), |_| None),
-                    map(parse_occurrence, Some),
-                    success(None),
-                )),
-                preceded(char(SP), many0(parse_subfield)),
-            )),
-            char(RS),
-        ),
-        |(tag, occurrence, subfields)| Field {
-            tag,
-            occurrence,
-            subfields,
-        },
-    )(i)
-}
-
 /// Parses a record.
 pub(crate) fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
     all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
@@ -123,21 +98,7 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 mod tests {
     use super::*;
     use crate::test::TestResult;
-    use crate::{Occurrence, OccurrenceMatcher, Subfield};
-
-    #[test]
-    fn test_parse_field() -> TestResult {
-        assert_eq!(
-            parse_field(b"003@ \x1f0123456789X\x1e")?.1,
-            Field::new(
-                "003@",
-                None,
-                vec![Subfield::new('0', "123456789X").unwrap()]
-            )?
-        );
-
-        Ok(())
-    }
+    use crate::{Occurrence, OccurrenceMatcher, Subfield, Tag};
 
     #[test]
     fn test_parse_fields() -> TestResult {
@@ -147,21 +108,21 @@ mod tests {
                 .1,
             vec![
                 Field::new(
-                    "003@",
+                    Tag::new("003@")?,
                     None,
                     vec![Subfield::new('0', "123456789X").unwrap()]
-                )?
+                )
                 ,
                 Field::new(
-                    "012A",
+                    Tag::new("012A")?,
                     None,
                     vec![Subfield::new('a', "123").unwrap()]
-                )?,
-		Field::new(
-                    "012A",
+                ),
+		        Field::new(
+                    Tag::new("012A")?,
                     Some(Occurrence::new("01").unwrap()),
                     vec![Subfield::new('a', "456").unwrap()]
-                )?
+                )
             ]
         );
 
