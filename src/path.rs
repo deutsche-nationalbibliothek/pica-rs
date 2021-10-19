@@ -14,10 +14,8 @@
 //! ```
 
 use crate::parser::{parse_path, ParsePathError};
-use crate::record::FIELD_TAG_RE;
 use crate::{Error, OccurrenceMatcher, Result, Tag, TagMatcher};
 
-use bstr::BString;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
@@ -44,17 +42,8 @@ impl Path {
         codes: Vec<char>,
     ) -> Result<Path>
     where
-        S: Into<BString>,
+        S: AsRef<str>,
     {
-        let tag = tag.into();
-
-        if !FIELD_TAG_RE.is_match(tag.as_slice()) {
-            return Err(Error::InvalidField(format!(
-                "Invalid field tag '{}' in path expression.",
-                tag
-            )));
-        }
-
         for code in &codes {
             if !code.is_ascii_alphanumeric() {
                 return Err(Error::InvalidSubfield(format!(
@@ -65,7 +54,7 @@ impl Path {
         }
 
         Ok(Path {
-            tag: TagMatcher::Some(Tag::from_unchecked(tag)),
+            tag: TagMatcher::Some(Tag::new(tag)?),
             occurrence,
             codes,
         })
