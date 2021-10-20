@@ -246,6 +246,7 @@ impl Serialize for Subfield {
 #[derive(Debug, PartialEq)]
 pub enum SubfieldMatcher {
     Comparison(Vec<char>, ComparisonOp, Vec<BString>),
+    Group(Box<SubfieldMatcher>),
     Not(Box<SubfieldMatcher>),
     Exists(Vec<char>),
 }
@@ -333,6 +334,17 @@ fn parse_subfield_matcher_not(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     )(i)
 }
 
+#[inline]
+fn parse_subfield_matcher_group(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+    map(
+        preceded(
+            ws(char('(')),
+            cut(terminated(parse_subfield_matcher, ws(char(')')))),
+        ),
+        |matcher| SubfieldMatcher::Group(Box::new(matcher)),
+    )(i)
+}
+
 /// Parses a subfield matcher expression.
 #[inline]
 fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
@@ -342,6 +354,7 @@ fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
         ws(parse_subfield_matcher_in),
         ws(parse_subfield_matcher_exists),
         ws(parse_subfield_matcher_not),
+        ws(parse_subfield_matcher_group),
     ))(i)
 }
 
@@ -413,6 +426,9 @@ impl SubfieldMatcher {
             }
             SubfieldMatcher::Exists(codes) => codes.contains(&subfield.code()),
             SubfieldMatcher::Not(matcher) => !matcher.is_match(subfield, flags),
+            SubfieldMatcher::Group(matcher) => {
+                matcher.is_match(subfield, flags)
+            }
         }
     }
 }
@@ -705,6 +721,27 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_subfield_matcher_group() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher_group(b" ( 0? ) ")?.1,
+            SubfieldMatcher::Group(Box::new(SubfieldMatcher::Exists(vec![
+                '0'
+            ])))
+        );
+
+        assert_eq!(
+            parse_subfield_matcher_group(b" ( (0?) ) ")?.1,
+            SubfieldMatcher::Group(Box::new(SubfieldMatcher::Group(Box::new(
+                SubfieldMatcher::Exists(vec!['0'])
+            ))))
+        );
+
+        assert!(parse_subfield_matcher_group(b"((0?)").is_err());
+
+        Ok(())
+    }
+
+    #[test]
     fn test_subfield_matcher_from_str() -> TestResult {
         assert_eq!(
             SubfieldMatcher::from_str("0 == '0123456789X'")?,
@@ -857,6 +894,21 @@ mod tests {
         let matcher = SubfieldMatcher::from_str("a?")?;
         let flags = MatcherFlags { ignore_case: false };
         assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_group() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("(0?)")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("(([ab01]?))")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
 
         Ok(())
     }

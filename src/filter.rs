@@ -781,17 +781,6 @@ mod tests {
 }
 
 // #[inline]
-// fn parse_subfield_matcher_group(i: &[u8]) -> ParseResult<SubfieldMatcher> {
-//     map(
-//         preceded(
-//             ws(char('(')),
-//             cut(terminated(parse_subfield_matcher, ws(char(')')))),
-//         ),
-//         |matcher| SubfieldMatcher::Group(Box::new(matcher)),
-//     )(i)
-// }
-
-// #[inline]
 // fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
 //     let (i, (first, remainder)) = tuple((
 //         parse_subfield_matcher_primary,
