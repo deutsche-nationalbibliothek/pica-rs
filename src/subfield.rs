@@ -329,7 +329,13 @@ fn parse_subfield_matcher_exists(i: &[u8]) -> ParseResult<SubfieldMatcher> {
 #[inline]
 fn parse_subfield_matcher_not(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
-        preceded(ws(char('!')), cut(parse_subfield_matcher)),
+        preceded(
+            ws(char('!')),
+            cut(alt((
+                parse_subfield_matcher_group,
+                parse_subfield_matcher_exists,
+            ))),
+        ),
         |matcher| SubfieldMatcher::Not(Box::new(matcher)),
     )(i)
 }
@@ -742,6 +748,25 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_subfield_matcher_not() -> TestResult {
+        assert_eq!(
+            parse_subfield_matcher_not(b" !0? ")?.1,
+            SubfieldMatcher::Not(Box::new(SubfieldMatcher::Exists(vec!['0'])))
+        );
+
+        assert_eq!(
+            parse_subfield_matcher_not(b" !(0?) ")?.1,
+            SubfieldMatcher::Not(Box::new(SubfieldMatcher::Group(Box::new(
+                SubfieldMatcher::Exists(vec!['0'])
+            ))))
+        );
+
+        assert!(parse_subfield_matcher_not(b"!!0?").is_err());
+
+        Ok(())
+    }
+
+    #[test]
     fn test_subfield_matcher_from_str() -> TestResult {
         assert_eq!(
             SubfieldMatcher::from_str("0 == '0123456789X'")?,
@@ -909,6 +934,29 @@ mod tests {
         let matcher = SubfieldMatcher::from_str("(([ab01]?))")?;
         let flags = MatcherFlags { ignore_case: false };
         assert!(matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_is_match_not() -> TestResult {
+        let subfield = Subfield::new('0', "abc")?;
+
+        let matcher = SubfieldMatcher::from_str("!1?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("!(1?)")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("!(0?)")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
+
+        let matcher = SubfieldMatcher::from_str("!([ab01]?)")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfield, &flags));
 
         Ok(())
     }
