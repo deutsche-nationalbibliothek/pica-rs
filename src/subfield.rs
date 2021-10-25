@@ -548,13 +548,30 @@ fn parse_subfields_matcher_not(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
 
 /// Parses a subfield matcher expression.
 #[inline]
-fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+pub(crate) fn parse_subfields_matcher(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
     alt((
         parse_subfields_matcher_group,
         parse_subfields_matcher_not,
         parse_subfields_matcher_composite,
         parse_subfields_matcher_singleton,
     ))(i)
+}
+
+#[inline]
+pub(crate) fn parse_subfields_matcher_simple(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
+    map(
+        alt((
+            ws(parse_subfield_matcher_comparison),
+            ws(parse_subfield_matcher_regex),
+            ws(parse_subfield_matcher_in),
+            ws(parse_subfield_matcher_exists),
+        )),
+        SubfieldsMatcher::Singleton,
+    )(i)
 }
 
 impl SubfieldsMatcher {

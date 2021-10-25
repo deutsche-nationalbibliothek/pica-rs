@@ -237,6 +237,19 @@ impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
     }
 }
 
+impl PartialEq<OccurrenceMatcher> for Option<&Occurrence> {
+    /// Equality comparision between `OccurrenceMatcher` and an
+    /// `Option<Occurrence>`
+    fn eq(&self, rhs: &OccurrenceMatcher) -> bool {
+        match self {
+            Some(occurrence) => *occurrence == rhs,
+            None => {
+                matches!(rhs, OccurrenceMatcher::Any | OccurrenceMatcher::None)
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -377,8 +390,8 @@ mod tests {
     #[test]
     fn test_option_occurrence_eq_matcher() -> TestResult {
         // None
-        assert_eq!(None, OccurrenceMatcher::None);
-        assert_eq!(None, OccurrenceMatcher::Any);
+        assert_eq!(Option::<&Occurrence>::None, OccurrenceMatcher::None);
+        assert_eq!(Option::<&Occurrence>::None, OccurrenceMatcher::Any);
 
         // Some
         assert_eq!(Some(Occurrence::new("00")?), OccurrenceMatcher::new("00")?);
