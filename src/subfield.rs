@@ -17,8 +17,8 @@ use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
 use nom::Finish;
 
 use crate::common::{
-    parse_comparison_op, parse_string, ws, ComparisonOp, MatcherFlags,
-    ParseResult,
+    parse_boolean_op, parse_comparison_op, parse_string, ws, BooleanOp,
+    ComparisonOp, MatcherFlags, ParseResult,
 };
 use crate::error::{Error, Result};
 
@@ -463,6 +463,150 @@ impl FromStr for SubfieldMatcher {
             Ok((_, tag)) => Ok(tag),
             Err(_) => Err(Error::InvalidSubfieldMatcher(
                 "Invalid subfield matcher!".to_string(),
+            )),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum SubfieldsMatcher {
+    Singleton(SubfieldMatcher),
+    Composite(Box<SubfieldsMatcher>, BooleanOp, Box<SubfieldsMatcher>),
+    Group(Box<SubfieldsMatcher>),
+    Not(Box<SubfieldsMatcher>),
+}
+
+/// Parses a subfields matcher singleton
+#[inline]
+fn parse_subfields_matcher_singleton(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
+    map(parse_subfield_matcher, SubfieldsMatcher::Singleton)(i)
+}
+
+/// Parses a subfields matcher composite
+#[inline]
+fn parse_subfields_matcher_composite(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
+    let (i, (first, remainder)) = tuple((
+        alt((
+            ws(parse_subfields_matcher_group),
+            ws(parse_subfields_matcher_singleton),
+            ws(parse_subfields_matcher_not),
+        )),
+        many0(pair(
+            ws(parse_boolean_op),
+            alt((
+                ws(parse_subfields_matcher_group),
+                ws(parse_subfields_matcher_singleton),
+                ws(parse_subfields_matcher_not),
+            )),
+        )),
+    ))(i)?;
+
+    Ok((
+        i,
+        remainder.into_iter().fold(first, |prev, (op, next)| {
+            SubfieldsMatcher::Composite(Box::new(prev), op, Box::new(next))
+        }),
+    ))
+}
+
+/// Parses a subfields matcher group
+#[inline]
+fn parse_subfields_matcher_group(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+    map(
+        preceded(
+            ws(char('(')),
+            cut(terminated(
+                alt((
+                    parse_subfields_matcher_composite,
+                    parse_subfields_matcher_singleton,
+                )),
+                ws(char(')')),
+            )),
+        ),
+        |matcher| SubfieldsMatcher::Group(Box::new(matcher)),
+    )(i)
+}
+
+/// Parses subfields matcher "not" expression
+#[inline]
+fn parse_subfields_matcher_not(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+    map(
+        preceded(
+            ws(char('!')),
+            cut(alt((
+                parse_subfields_matcher_group,
+                parse_subfields_matcher_singleton,
+            ))),
+        ),
+        |matcher| SubfieldsMatcher::Not(Box::new(matcher)),
+    )(i)
+}
+
+/// Parses a subfield matcher expression.
+#[inline]
+fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+    alt((
+        parse_subfields_matcher_group,
+        parse_subfields_matcher_not,
+        parse_subfields_matcher_composite,
+        parse_subfields_matcher_singleton,
+    ))(i)
+}
+
+impl SubfieldsMatcher {
+    pub fn is_match(
+        &self,
+        subfields: &[Subfield],
+        flags: &MatcherFlags,
+    ) -> bool {
+        match self {
+            SubfieldsMatcher::Singleton(matcher) => subfields
+                .iter()
+                .any(|subfield| matcher.is_match(subfield, flags)),
+            SubfieldsMatcher::Composite(lhs, BooleanOp::And, rhs) => {
+                lhs.is_match(subfields, flags) && rhs.is_match(subfields, flags)
+            }
+            SubfieldsMatcher::Composite(lhs, BooleanOp::Or, rhs) => {
+                lhs.is_match(subfields, flags) || rhs.is_match(subfields, flags)
+            }
+            SubfieldsMatcher::Group(matcher) => {
+                matcher.is_match(subfields, flags)
+            }
+            SubfieldsMatcher::Not(matcher) => {
+                !matcher.is_match(subfields, flags)
+            }
+        }
+    }
+}
+
+impl FromStr for SubfieldsMatcher {
+    type Err = crate::error::Error;
+
+    /// Parse a `SubfieldsMatcher` from a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::SubfieldsMatcher;
+    /// use std::str::FromStr;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let matcher = SubfieldsMatcher::from_str("0 == '0123456789X'");
+    ///     assert!(matcher.is_ok());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    fn from_str(s: &str) -> Result<Self> {
+        match all_consuming(parse_subfields_matcher)(s.as_bytes()).finish() {
+            Ok((_, tag)) => Ok(tag),
+            Err(_) => Err(Error::InvalidSubfieldsMatcher(
+                "Invalid subfields matcher!".to_string(),
             )),
         }
     }
@@ -957,6 +1101,226 @@ mod tests {
         let matcher = SubfieldMatcher::from_str("!([ab01]?)")?;
         let flags = MatcherFlags { ignore_case: false };
         assert!(!matcher.is_match(&subfield, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfields_matcher_singleton() -> TestResult {
+        assert_eq!(
+            parse_subfields_matcher_singleton(b"0 == '123456789X'")?.1,
+            SubfieldsMatcher::Singleton(SubfieldMatcher::Comparison(
+                vec!['0'],
+                ComparisonOp::Eq,
+                vec![BString::from("123456789X")]
+            ))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfields_matcher_composite() -> TestResult {
+        assert_eq!(
+            parse_subfields_matcher_composite(b"a? && a =^ '1' || a =$ 'X'")?.1,
+            SubfieldsMatcher::Composite(
+                Box::new(SubfieldsMatcher::Composite(
+                    Box::new(SubfieldsMatcher::Singleton(
+                        SubfieldMatcher::Exists(vec!['a'])
+                    )),
+                    BooleanOp::And,
+                    Box::new(SubfieldsMatcher::Singleton(
+                        SubfieldMatcher::Comparison(
+                            vec!['a'],
+                            ComparisonOp::StartsWith,
+                            vec![BString::from("1")]
+                        )
+                    )),
+                )),
+                BooleanOp::Or,
+                Box::new(SubfieldsMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['a'],
+                        ComparisonOp::EndsWith,
+                        vec![BString::from("X")]
+                    )
+                ))
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfields_matcher_group() -> TestResult {
+        assert_eq!(
+            parse_subfields_matcher_group(b"(a =^ '1' || a =$ 'X')")?.1,
+            SubfieldsMatcher::Group(Box::new(SubfieldsMatcher::Composite(
+                Box::new(SubfieldsMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['a'],
+                        ComparisonOp::StartsWith,
+                        vec![BString::from("1")]
+                    )
+                )),
+                BooleanOp::Or,
+                Box::new(SubfieldsMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['a'],
+                        ComparisonOp::EndsWith,
+                        vec![BString::from("X")]
+                    )
+                ))
+            )))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfields_matcher_not() -> TestResult {
+        assert_eq!(
+            parse_subfields_matcher_not(b" !(a =^ '1' || a =$ 'X')")?.1,
+            SubfieldsMatcher::Not(Box::new(SubfieldsMatcher::Group(Box::new(
+                SubfieldsMatcher::Composite(
+                    Box::new(SubfieldsMatcher::Singleton(
+                        SubfieldMatcher::Comparison(
+                            vec!['a'],
+                            ComparisonOp::StartsWith,
+                            vec![BString::from("1")]
+                        )
+                    )),
+                    BooleanOp::Or,
+                    Box::new(SubfieldsMatcher::Singleton(
+                        SubfieldMatcher::Comparison(
+                            vec!['a'],
+                            ComparisonOp::EndsWith,
+                            vec![BString::from("X")]
+                        )
+                    ))
+                )
+            ))))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfields_matcher_from_str() -> TestResult {
+        assert_eq!(
+            SubfieldsMatcher::from_str("a =^ 'ab' && b =$ 'cd'")?,
+            SubfieldsMatcher::Composite(
+                Box::new(SubfieldsMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['a'],
+                        ComparisonOp::StartsWith,
+                        vec![BString::from("ab")]
+                    )
+                )),
+                BooleanOp::And,
+                Box::new(SubfieldsMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['b'],
+                        ComparisonOp::EndsWith,
+                        vec![BString::from("cd")]
+                    )
+                )),
+            )
+        );
+
+        assert!(SubfieldsMatcher::from_str("a? &&").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfields_matcher_is_match_singleton() -> TestResult {
+        let subfields =
+            vec![Subfield::new('a', "abc")?, Subfield::new('a', "def")?];
+
+        let matcher = SubfieldsMatcher::from_str("a?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        let matcher = SubfieldsMatcher::from_str("!0?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        let matcher = SubfieldsMatcher::from_str("b?")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfields, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfields_matcher_is_match_composite() -> TestResult {
+        let subfields =
+            vec![Subfield::new('a', "abc")?, Subfield::new('a', "def")?];
+
+        let matcher = SubfieldsMatcher::from_str("a? && a == 'abc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        let matcher = SubfieldsMatcher::from_str("a? && a == 'def'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        let matcher = SubfieldsMatcher::from_str("a? && a == 'hij'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfields, &flags));
+
+        let matcher = SubfieldsMatcher::from_str("a == 'def' || a == 'abc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        let matcher = SubfieldsMatcher::from_str("x != 'abc' && a == 'abc'")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfields, &flags));
+
+        let matcher = SubfieldsMatcher::from_str(
+            "a? && (a == 'h' || a == 'abc') && !x?",
+        )?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfields_matcher_is_match_group() -> TestResult {
+        let subfields = vec![
+            Subfield::new('a', "abc")?,
+            Subfield::new('a', "def")?,
+            Subfield::new('x', "0")?,
+        ];
+
+        let matcher = SubfieldsMatcher::from_str("(a == 'abc' || a == 'def')")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        let matcher =
+            SubfieldsMatcher::from_str("a? && (a == 'abc' || a == 'def')")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfields_matcher_is_match_not() -> TestResult {
+        let subfields =
+            vec![Subfield::new('a', "abc")?, Subfield::new('a', "def")?];
+
+        // not strictly a subfields matcher "not" expression
+        let matcher = SubfieldsMatcher::from_str("!(a == 'hij')")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(matcher.is_match(&subfields, &flags));
+
+        let matcher =
+            SubfieldsMatcher::from_str("!(a == 'hij' || a == 'abc')")?;
+        let flags = MatcherFlags { ignore_case: false };
+        assert!(!matcher.is_match(&subfields, &flags));
 
         Ok(())
     }
