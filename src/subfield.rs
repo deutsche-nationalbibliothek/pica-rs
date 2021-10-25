@@ -1206,6 +1206,34 @@ mod tests {
     }
 
     #[test]
+    fn test_subfields_matcher_from_str() -> TestResult {
+        assert_eq!(
+            SubfieldsMatcher::from_str("a =^ 'ab' && b =$ 'cd'")?,
+            SubfieldsMatcher::Composite(
+                Box::new(SubfieldsMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['a'],
+                        ComparisonOp::StartsWith,
+                        vec![BString::from("ab")]
+                    )
+                )),
+                BooleanOp::And,
+                Box::new(SubfieldsMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['b'],
+                        ComparisonOp::EndsWith,
+                        vec![BString::from("cd")]
+                    )
+                )),
+            )
+        );
+
+        assert!(SubfieldsMatcher::from_str("a? &&").is_err());
+
+        Ok(())
+    }
+
+    #[test]
     fn test_subfields_matcher_is_match_singleton() -> TestResult {
         let subfields =
             vec![Subfield::new('a', "abc")?, Subfield::new('a', "def")?];
