@@ -1,23 +1,184 @@
-# Beginner Tutorial
+# pica.rs Anfänger-Tutorial
+## Was ist pica.rs?
 
-Lorem Ipsum is simply dummy text of the printing and typesetting
-industry. Lorem Ipsum has been the industry's standard dummy text ever since
-the 1500s, when an unknown printer took a galley of type and scrambled it to
-make a type specimen book. It has survived not only five centuries, but also
-the leap into electronic typesetting, remaining essentially unchanged. It was
-popularised in the 1960s with the release of Letraset sheets containing Lorem
-Ipsum passages, and more recently with desktop publishing software like Aldus
-PageMaker including versions of Lorem Ipsum.
+pica.rs ist ein Set von Kommandozeilen-Tools zur Arbeit mit PICA+-Bibliothekskatalog-Daten. Wenn Sie nicht wissen, was PICA-Daten sind, brauchen Sie diese Tools nicht. 😉 Große Datenabzüge bis hin zu Gesamtabzügen können schnell gefiltert werden und es können die Daten einzelner Felder und Unterfelder in CSV-Dateien exportiert werden, Häufigkeitsverteilungen des Inhalts einzelner Unterfeldern erfasst werden und vieles mehr.
 
-## Überschrift 2
+## Wie funktioniert pica.rs?
+Das Tool kann mit extrem großen Dateien umgehen, weil es diese sequentiell ausliest und prozessiert. Die Dateien werden nicht geöffnet und in den Arbeitsspeicher geladen, sondern ›häppchenweise‹ ausgewertet. Es ist deswegen kein Rechner mit besonders viel Arbeitsspeicher notwendig. Es empfiehlt sich aber, die Ausgangsdaten auf möglichst schnellen lokalen Laufwerken abzulegen. Netzlaufwerke sind weniger geeignet und verlangsamen das Tool unnötig.
 
-### Überschrift 3
+pica.rs läuft unter Windows, Linux und Mac OS.
 
-* ABC
-* DEF
+## Installation
+#TODO
+Download
+Entpacken
+Pica Registrieren
 
-### Überschrift 3
+## Kommandozeile
+pica.rs ist auch deswegen sehr schnell, weil es kein grafisches Interface hat. Man sollte deshalb einige Basics der Kommandozeilen (auch Terminal oder Shell genannt) des jeweiligen Betriebssystems kennen. Alle Befehle werden hier in der Fassung für gängige Linux-und Mac OS-Terminals gezeigt, abweichende Befehle der Windows Power Shell werden meistens in Klammern erwähnt.
+
+Zum Testen steht unter [testdaten.dat] ein Testdatenpaket mit 1.000 zufällig ausgewählten Datensätzen aus dem Bestand der Deutschen Nationalbibliothek bereit. Der Test-Datensatz enthält sowohl Titeldaten als auch GND-Normdatensätze.
+
+## Pipes
+Um das Tool optimal nutzen zu können, sollten Sie verstehen, was __Pipes__ sind. Im Terminal wird die Ausgabe ausgeführter Programme oder Befehle üblicherweise in die sogenannte __Standardausgabe__ (`stdout`) geschrieben. Normalerweise ist das die Bildschirmausgabe des Terminals selbst. Wenn sie z. B. den Inhalt des aktuellen Ordners mit `ls` (Windows: `dir`) auslesen, wird eine Liste aller Dateien und Ordner direkt im Terminal ausgegeben.
+
+Sie könnten diese Ausgabe aber auch umleiten: z.B. in eine Datei oder auf einen angeschlossenen Drucker etc.
+
+Piping nennt man ein Verfahren, bei dem die Ausgabe eines Befehls direkt als Eingabe für einen weiteren Befehl verwendet wird. Wie Rohre (pipes) werden die Befehle aneinandergesteckt und die Daten fließen von einem Programm zum nächsten.
+
+Dazu werden die Befehle mit einem senkrechten Strich verbunden: `|` Unter Linux und Windows ist dieser Strich normalerweise über die Tastenkombination `AltGr + ß` zu erreichen, unter MacOS über `Alt + 7`.
+
+Man könnte also z. B. die Ausgabe von `ls` bzw. `dir` an einen Befehl weiterleiten, der die Anzahl der ausgegeben Zeilen zählt. Dieser Befehl heißt `wc -l` (von word count -lines). Das korrekte Piping geht so:
 
 ```bash
-$ pica filter "003@.0 == '0123456789X'" DUMP.dat
+ls | wc -l
 ```
+
+Die Ausgabe von Word Count lässt sich wieder weiterleiten, z.B. in eine Datei:
+
+```bash
+ls | wc -l > ordnerinhalt.txt
+```
+
+Der `>`-Operator leitet den Inhalt in eine Datei weiter und ist eine Art Sonderfall des Pipings, der nur für das Schreiben in Dateien gilt.
+
+Man könnte die Ausgabe mit einer weiteren Pipe auch an noch einen weiteren Befehl übergeben.
+
+Mit Pipes lassen sich die einzelnen pica.rs-Tools (select, filter, frequency usw.) miteinander verknüpfen. Die Ausgabe des einen Tools kann entweder zum nächsten Tool, in eine Datei oder einfach auf den Bildschirm geleitet werden. Alle Tools (außer cat und ?) schreiben immer in die Standardausgabe. Will man die Ausgabe anders erhalten, muss man das dem Befehl mitteilen.
+
+## Los geht’s
+Navigieren Sie im Terminal zu dem Ordner, in dem das Testdatenpaket liegt. Wir gehen davon aus, dass Sie im Hauptverzeichnis Ihres aktuellen Benutzers (unter Linux und Mac OS über das Kürzel `~` zu erreichen) im Verzeichnis `pica-test` arbeiten. Das Testdatenpaket heißt `testdaten.dat`.
+
+```bash
+cd ~/pica-test
+```
+
+Überprüfen Sie, ob das Testdatenpaket vorhanden ist.
+
+```bash
+ls (unter Windows: dir)
+```
+
+Sie sehen etwas wie:
+
+```bash
+total 1872
+drwxr-xr-x   3 testuser  staff    96B  9 Nov 14:24 .
+drwxr-xr-x+ 76 testuser  staff   2,4K  9 Nov 14:25 ..
+-rw-r--r--@  1 testuser  staff   935K 14 Sep 18:30 testdaten.dat
+```
+
+## print
+Wir beginnen mit mit __pica print__. Dieses Tool formatiert die unleserlichen PICA+-Daten zu gut lesbaren Datensätzen. Mit dem Befehl lassen sich die teilweise unübersichtlichen Daten gut überblicken. Wir wollen nur einen Datensatz aus den Testdaten auf dem Bildschirm ausgeben.
+
+```bash
+pica print -l 1 testdaten.dat
+```
+
+Die Option `-l` steht für Limit und begrenzt die Ausgabe auf einen Datensatz. Die folgende Ziffer gibt die Anzahl der auszugebenden Datensätze an.
+
+Wir können die Ausgabe auch in eine Datei schreiben:
+
+```bash
+pica print -l 1 testdaten.dat -o testdatensatz.txt
+```
+
+Wenn Sie nur einen Dateinamen angeben, wird die Datei im aktuellen Verzeichnis abgelegt. Wollen sie in ein anderes Verzeichnis schreiben, müssen sie den kompletten Pfad dorthin angeben.
+
+Im Folgenden gehen wir davon aus, dass Sie grundlegend mit der Struktur von Pica-Daten vertraut sind, also z. B. Feldern und Unterfeldern, Satzarten, Codes etc.
+
+## filter
+
+Mit __filter__ können Teilmengen aus einem Daten-Dump nach einem bestimmten Selektionskriterium gebildet werden. __filter__ gibt grundsätzlich den ganzen Datensatz aus, wenn die angegebenen Filterkriterien erfüllt sind.
+
+Wir wissen, dass in unseren Testdaten jeweils 100 Datensätze der unterschiedlichen Satzarten enthalten sind. Wir wollen alle Oa-Sätze herausfiltern und den ersten davon mit `print` ausgeben.
+
+```bash
+pica filter -s "002@.0 == 'Oa'" testdaten.dat | pica print -l 1
+```
+
+Das Ergebnis könnte man auch wieder in eine Datei schreiben:
+
+```bash
+pica filter -s "002@.0 == 'Oa'" testdaten.dat -o oa-test.dat
+```
+
+Achtung: Dateien werden ohne Rückfrage überschrieben und werden nicht im Papierkorb gesichert. Gewöhnen Sie sich am besten an, in ein eigenes Ausgabeverzeichnis zu schreiben oder fügen Sie das aktuelle Datum an den Ausgabedateinamen an, damit sie nicht ausversehen eine ältere Datei überschreiben.
+
+### Filter-Ausdrücke
+
+Der Filterausdruck in den doppelten Anführungszeichen ist das mächtigste Werkzeug von pica.rs. Mehrere Ausdrücke können zu komplexen Suchfiltern kombiniert werden.
+
+Jeder Filterausdruck besteht immer aus einer Feldbezeichnung wie `002@` und einem Unterfeldfilter wie `.0`. Felder können auch nummerierte Okkurrenzen haben wie `/01`. Okkurrenzen lassen sich nach ihrem Wert filtern oder alle Okkurrenzen können mit `/*` durchsucht werden.
+
+Um z. B. Unterfeld `9` aller Okkurrenzen von Feld `041A` zu filtern, müsste der Feldausdruck so lauten: `041A/*.9`.
+
+Unterfeld `a` aus Feld `010@` wird so gefiltert: `010@.a`
+
+Werte können über folgende Vergleichsoperatoren gesucht werden.
+
+- gleich `==` 
+- strict equal `===`
+- ungleich `!=`
+- beginnt mit Prefix `=^`
+- endet mit Suffix `=$`
+- entspricht regulärem Ausdruck `=~`
+- enthalten in `in`
+- nicht enthalten in `not in`
+- Feld existiert `?`
+
+Die Operatoren können in runden Klammern gruppiert und mit den boolschen Operatoren UND `&&` sowie ODER `||` verbunden werden.
+
+#TODO Beispiele und Erklärung aller Operatoren
+
+## Select
+
+Mit __select__ können die Werte einzelner Unterfelder in eine CSV-Datei exportiert werden. Dabei können mehrere Unterfelder kombiniert werden. Man kann aus riesigen Datenbeständen exakt die Daten extrahieren, die man für weitere Datenanalyse benötigt.
+
+Der Selektionsausdruck enthält eine durch Kommas getrennte Liste von Unterfeldern, die ausgelesen werden sollen, z. B.:
+
+```bash
+pica select "002@.0, 003@.0" testdaten.dat -o test-select.csv
+```
+
+Das Ergebnis ist eine CSV-Datei mit zwei Spalten, in diesem Beispiel einer Spalte für die Satzart und einer Spalte für die IDN.
+
+Wenn Felder mehrere Unterfelder haben, können diese in einer Liste in geschweiften Klammer an die Feldbezeichnung angehängt werden.
+
+```bash
+pica select "002@.0, 003@.0, 021A{a,h}" testdaten.dat -o test-select.csv
+```
+
+In die Selektionsausdrücke können auch Filterausdrücke eingebaut werden. Dazu muss die erste Position der Liste in den geschweiften Klammern mit einem Filterausdruck belegt werden.
+
+```bash
+pica select "003@.0, 028A{4 == 'aut',9,d,a}" testdaten.dat -o test-select.csv
+```
+
+In diesem Beispiel werden die Angaben zu den beteiligten Personen aus Feld 028A nur übernommen, wenn Unterfeld 4 den Wert `aut` enthält, die Person also Autor\*in ist und nicht etwa Herausgeber\*in.
+
+Für diese Filterausdrücke gelten dieselben Regeln wie für Filterausdrücke im filter-Tool, die oben beschrieben wurden.
+
+Wenn Felder wiederholbar sind (z. B. bei Schlagwortens) werden für die Wiederholungen mehrere Zeilen in die CSV ausgegeben. Die ausgegebene CSV-Datei kann also mehr Zeilen enthalten, als Datensätze in den Ausgangsdaten waren. Es empfiehlt sich deshalb einen eindeutigen Identifikator mitzuselektieren, damit die wiederholten Felddaten von neuen Datensätzen unterschieden werden können.
+
+Es können auch Spaltennamen für die CSV-Ausgabe angegeben werden mit der Option -H. Wichtig: die Anzahl Spaltennamen muss der Anzahl der selektierten Unterfelder entsprechen.
+
+```bash
+pica select -H "idn, autor-idn, autor-vorname, autor-nachname" "003@.0, 028A{4 == 'aut',9,d,a}" testdaten.dat -o test-select.csv
+``` 
+
+## Warum zwei Filtermöglichkeiten
+#TODO
+Die doppelte Filtermöglichkeit einmal mit dem Filter-Tool und einmal im select-Tool verwirrt auf den ersten Blick etwas.
+
+
+
+## Arbeit mit großen Datenabzügen
+
+pica.rs parst immer den kompletten Datenbestand, auch wenn man nur wenige Ergebnisse erwartet. Deshalb ist es manchmal sinnvoll, die Ausgangsdatei in kleinere Dateien zu teilen, die dann viel schneller verarbeitet werden können.
+
+In unseren Testdaten haben wir Titeldaten und Normdaten zusammen. Es könnte z.B. sinnvoll sein, die Normdaten zu extrahieren, wenn man keine Titeldaten braucht oder nur eine bestimmte Satzart zu extrahieren, wenn man nur innerhalb dieser Satzart suchen will.
+
+- partition
+- slice
+- split
