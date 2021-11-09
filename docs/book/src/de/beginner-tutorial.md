@@ -26,7 +26,7 @@ Sie könnten diese Ausgabe aber auch umleiten: z.B. in eine Datei oder auf einen
 
 Piping nennt man ein Verfahren, bei dem die Ausgabe eines Befehls direkt als Eingabe für einen weiteren Befehl verwendet wird. Wie Rohre (pipes) werden die Befehle aneinandergesteckt und die Daten fließen von einem Programm zum nächsten.
 
-Dazu werden die Befehle mit einem senkrechten Strich verbunden: `|` Unter Linux und Windows ist dieser Strich normalerweise über die Tastenkombination `AltGr + ß` zu erreichen, unter MacOS über `Alt + 7`.
+Dazu werden die Befehle mit einem senkrechten Strich verbunden: `|` Unter Linux und Windows ist dieser Strich normalerweise über die Tastenkombination `AltGr + <` zu erreichen, unter MacOS über `Alt + 7`.
 
 Man könnte also z. B. die Ausgabe von `ls` bzw. `dir` an einen Befehl weiterleiten, der die Anzahl der ausgegeben Zeilen zählt. Dieser Befehl heißt `wc -l` (von word count -lines). Das korrekte Piping geht so:
 
@@ -159,7 +159,7 @@ In diesem Beispiel werden die Angaben zu den beteiligten Personen aus Feld 028A 
 
 Für diese Filterausdrücke gelten dieselben Regeln wie für Filterausdrücke im filter-Tool, die oben beschrieben wurden.
 
-Wenn Felder wiederholbar sind (z. B. bei Schlagwortens) werden für die Wiederholungen mehrere Zeilen in die CSV ausgegeben. Die ausgegebene CSV-Datei kann also mehr Zeilen enthalten, als Datensätze in den Ausgangsdaten waren. Es empfiehlt sich deshalb einen eindeutigen Identifikator mitzuselektieren, damit die wiederholten Felddaten von neuen Datensätzen unterschieden werden können.
+Wenn Felder wiederholbar sind (z. B. bei Schlagworten), wird pro Wiederholung eine neue Zeile in die CSV ausgegeben. Die ausgegebene CSV-Datei kann also mehr Zeilen enthalten, als Datensätze in den Ausgangsdaten waren. Es empfiehlt sich deshalb einen eindeutigen Identifikator mitzuselektieren, damit die wiederholten Felddaten von neuen Datensätzen unterschieden werden können.
 
 Es können auch Spaltennamen für die CSV-Ausgabe angegeben werden mit der Option -H. Wichtig: die Anzahl Spaltennamen muss der Anzahl der selektierten Unterfelder entsprechen.
 
@@ -179,6 +179,7 @@ pica.rs parst immer den kompletten Datenbestand, auch wenn man nur wenige Ergebn
 
 In unseren Testdaten haben wir Titeldaten und Normdaten zusammen. Es könnte z.B. sinnvoll sein, die Normdaten zu extrahieren, wenn man keine Titeldaten braucht oder nur eine bestimmte Satzart zu extrahieren, wenn man nur innerhalb dieser Satzart suchen will.
 
+#TODO
 - partition
 - slice
 - split
