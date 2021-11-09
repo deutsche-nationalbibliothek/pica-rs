@@ -9,11 +9,11 @@ use std::io::{self, Write};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct SelectConfig {
-    pub skip_invalid: Option<bool>,
+pub(crate) struct SelectConfig {
+    pub(crate) skip_invalid: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("select")
         .about("Select fields from a record.")
         .arg(
@@ -21,6 +21,17 @@ pub fn cli() -> App {
                 .short('s')
                 .long("skip-invalid")
                 .about("skip invalid records"),
+        )
+        .arg(
+            Arg::new("no-empty-columns")
+                .long("no-empty-columns")
+                .about("disallow empty columns"),
+        )
+        .arg(
+            Arg::new("ignore-case")
+                .short('i')
+                .long("--ignore-case")
+                .about("When this flag is provided, comparision operations will be search case insensitive."),
         )
         .arg(
             Arg::new("tsv")
@@ -53,8 +64,10 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
     })
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
+    let no_empty_columns = args.is_present("no-empty-columns");
+    let ignore_case = args.is_present("ignore-case");
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
@@ -83,10 +96,14 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         let record = result?;
         let outcome = selectors
             .iter()
-            .map(|selector| record.select(selector))
+            .map(|selector| record.select(selector, ignore_case))
             .fold(Outcome::default(), |acc, x| acc * x);
 
         for row in outcome.iter() {
+            if no_empty_columns && row.iter().any(|column| column.is_empty()) {
+                continue;
+            }
+
             if !row.iter().all(|col| col.is_empty()) {
                 writer.write_record(row)?;
             }

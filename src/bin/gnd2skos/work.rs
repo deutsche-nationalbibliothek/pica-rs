@@ -1,9 +1,8 @@
+use bstr::ByteSlice;
 use pica::{Field, StringRecord};
 use sophia::graph::MutableGraph;
 use sophia::ns::{rdf, Namespace};
 use std::ops::Deref;
-
-use bstr::ByteSlice;
 
 use crate::concept::{Concept, StrLiteral};
 use crate::corporate_body::CorporateBody;
@@ -11,8 +10,9 @@ use crate::event::Event;
 use crate::geoplace::GeoPlace;
 use crate::ns::skos;
 use crate::person::Person;
+use crate::AppContext;
 
-pub struct Work(pub(crate) StringRecord);
+pub(crate) struct Work(pub(crate) StringRecord);
 
 impl Deref for Work {
     type Target = StringRecord;
@@ -23,7 +23,7 @@ impl Deref for Work {
 }
 
 impl Work {
-    pub fn get_label(field: &Field) -> Option<StrLiteral> {
+    pub(crate) fn get_label(field: &Field) -> Option<StrLiteral> {
         let mut label = String::new();
 
         for subfield in field.iter() {
@@ -56,7 +56,7 @@ impl Work {
         }
     }
 
-    pub fn get_prefix(&self) -> Option<StrLiteral> {
+    fn get_prefix(&self) -> Option<StrLiteral> {
         for tag in &["028R", "065R", "029R", "030R"] {
             for field in self.all(tag).unwrap_or_default() {
                 let relation_exists = field.iter().any(|subfield| {
@@ -87,7 +87,7 @@ impl Work {
 }
 
 impl Concept for Work {
-    fn skosify<G: MutableGraph>(&self, graph: &mut G) {
+    fn skosify<G: MutableGraph>(&self, graph: &mut G, ctx: &AppContext) {
         let gnd = Namespace::new("http://d-nb.info/gnd/").unwrap();
         let idn = self.first("003@").unwrap().first('0').unwrap();
         let subj = gnd.get(idn.to_str().unwrap()).unwrap();
@@ -98,22 +98,10 @@ impl Concept for Work {
 
         // skos:prefLabel
         if let Some(label) = Self::get_label(self.first("022A").unwrap()) {
-            if let Some(ref prefix) = prefix {
-                let label = StrLiteral::new_lang(
-                    format!("{} : {}", prefix.txt(), label.txt()),
-                    "de",
-                )
-                .unwrap();
-
-                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
-            } else {
-                graph.insert(&subj, &skos::prefLabel, &label).unwrap();
-            }
-        }
-
-        // skos:altLabel
-        for field in self.all("022@").unwrap_or_default() {
-            if let Some(label) = Self::get_label(field) {
+            if !ctx
+                .label_ignore_list
+                .contains(label.txt().to_string(), idn.to_string())
+            {
                 if let Some(ref prefix) = prefix {
                     let label = StrLiteral::new_lang(
                         format!("{} : {}", prefix.txt(), label.txt()),
@@ -121,11 +109,38 @@ impl Concept for Work {
                     )
                     .unwrap();
 
-                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    graph.insert(&subj, &skos::prefLabel, &label).unwrap();
                 } else {
-                    graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    graph.insert(&subj, &skos::prefLabel, &label).unwrap();
                 }
             }
+        }
+
+        // skos:altLabel
+        for field in self.all("022@").unwrap_or_default() {
+            if let Some(label) = Self::get_label(field) {
+                if !ctx
+                    .label_ignore_list
+                    .contains(label.txt().to_string(), idn.to_string())
+                {
+                    if let Some(ref prefix) = prefix {
+                        let label = StrLiteral::new_lang(
+                            format!("{} : {}", prefix.txt(), label.txt()),
+                            "de",
+                        )
+                        .unwrap();
+
+                        graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    } else {
+                        graph.insert(&subj, &skos::altLabel, &label).unwrap();
+                    }
+                }
+            }
+        }
+
+        // skos:broader or skos:related
+        for field in ["022R", "028R", "029R", "030R", "041R", "065R"] {
+            self.add_relations(&subj, self.all(field), graph, ctx.args);
         }
     }
 }

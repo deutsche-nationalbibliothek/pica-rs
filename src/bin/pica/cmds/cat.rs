@@ -7,12 +7,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct CatConfig {
-    pub skip_invalid: Option<bool>,
-    pub gzip: Option<bool>,
+pub(crate) struct CatConfig {
+    pub(crate) skip_invalid: Option<bool>,
+    pub(crate) gzip: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("cat")
         .about("Concatenate records from multiple files.")
         .arg(
@@ -35,10 +35,10 @@ pub fn cli() -> App {
                 .value_name("file")
                 .about("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filenames").multiple(true).required(true))
+        .arg(Arg::new("filenames").multiple_values(true).required(true))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.cat, config.global);
     let gzip_compression = gzip_flag!(args, config.cat);
 

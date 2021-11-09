@@ -8,9 +8,8 @@ use std::io::BufReader;
 
 fn main() {
     let filename = env::args()
-        .skip(1)
-        .next()
-        .unwrap_or("tests/data/1.dat".to_string());
+        .nth(1)
+        .unwrap_or_else(|| "tests/data/1.dat".to_string());
 
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);

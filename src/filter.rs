@@ -1,80 +1,22 @@
 //! Filter Expressions
 
-use crate::{ByteRecord, Field, Occurrence, Result, Subfield};
-
+use bstr::{BString, ByteSlice};
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag, take_while_m_n};
-use nom::character::complete::{
-    char, multispace0, multispace1, one_of, satisfy,
-};
-use nom::combinator::{
-    all_consuming, cut, map, map_opt, map_res, opt, recognize, success, value,
-    verify,
-};
+use nom::bytes::complete::{is_not, tag};
+use nom::character::complete::{char, multispace0, multispace1, satisfy};
+use nom::combinator::{all_consuming, cut, map, opt, value, verify};
 use nom::error::{FromExternalError, ParseError};
-use nom::multi::{count, fold_many0, many0, many_m_n, separated_list1};
+use nom::multi::{fold_many0, many0, many1, separated_list1};
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
 use nom::{Finish, IResult};
-
-use bstr::BString;
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use std::cmp::PartialEq;
+use std::str;
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum OccurrenceMatcher {
-    Occurrence(Occurrence),
-    None,
-    Any,
-}
-
-impl OccurrenceMatcher {
-    /// Creates a `OccurrenceMatcher`
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica::{Occurrence, OccurrenceMatcher};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let matcher = OccurrenceMatcher::new("001")?;
-    ///     assert_eq!(
-    ///         matcher,
-    ///         OccurrenceMatcher::Occurrence(Occurrence::new("001")?)
-    ///     );
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn new<T>(value: T) -> Result<OccurrenceMatcher>
-    where
-        T: Into<BString>,
-    {
-        Ok(OccurrenceMatcher::Occurrence(Occurrence::new(value)?))
-    }
-}
-
-impl PartialEq<OccurrenceMatcher> for Option<Occurrence> {
-    fn eq(&self, other: &OccurrenceMatcher) -> bool {
-        match other {
-            OccurrenceMatcher::Any => true,
-            OccurrenceMatcher::None => self.is_none(),
-            OccurrenceMatcher::Occurrence(lhs) => {
-                if let Some(rhs) = self {
-                    lhs == rhs
-                } else {
-                    false
-                }
-            }
-        }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub enum BooleanOp {
-    And,
-    Or,
-}
+use crate::common::{parse_boolean_op, BooleanOp, ParseResult};
+use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
+use crate::tag::{parse_tag_matcher, TagMatcher};
+use crate::{ByteRecord, Field, Subfield};
 
 #[derive(Debug, PartialEq)]
 pub enum ComparisonOp {
@@ -89,76 +31,111 @@ pub enum ComparisonOp {
 
 #[derive(Debug, PartialEq)]
 pub enum SubfieldFilter {
-    Comparison(char, ComparisonOp, Vec<String>),
+    Comparison(Vec<char>, ComparisonOp, Vec<BString>),
     Boolean(Box<SubfieldFilter>, BooleanOp, Box<SubfieldFilter>),
     Grouped(Box<SubfieldFilter>),
-    Exists(char),
+    Exists(Vec<char>),
     Not(Box<SubfieldFilter>),
 }
 
 impl SubfieldFilter {
-    pub fn matches(&self, field: &Field) -> bool {
+    pub fn matches(&self, field: &Field, ignore_case: bool) -> bool {
+        let cmp_fn = |x: &BString, y: &BString| -> bool {
+            if ignore_case {
+                x.to_lowercase() == y.to_lowercase()
+            } else {
+                x == y
+            }
+        };
         match self {
-            SubfieldFilter::Comparison(code, op, values) => match op {
+            SubfieldFilter::Comparison(codes, op, values) => match op {
                 ComparisonOp::Eq => field.iter().any(|subfield| {
-                    subfield.code == *code && subfield.value() == &values[0]
+                    codes.contains(&subfield.code)
+                        && cmp_fn(subfield.value(), &values[0])
                 }),
                 ComparisonOp::StrictEq => {
                     let subfields = field
                         .iter()
-                        .filter(|subfield| subfield.code == *code)
+                        .filter(|subfield| codes.contains(&subfield.code))
                         .collect::<Vec<&Subfield>>();
 
                     !subfields.is_empty()
-                        && subfields
-                            .iter()
-                            .all(|subfield| subfield.value() == &values[0])
+                        && subfields.iter().all(|subfield| {
+                            cmp_fn(subfield.value(), &values[0])
+                        })
                 }
                 ComparisonOp::Ne => {
                     let subfields = field
                         .iter()
-                        .filter(|subfield| subfield.code == *code)
+                        .filter(|subfield| codes.contains(&subfield.code))
                         .collect::<Vec<&Subfield>>();
 
                     subfields.is_empty()
-                        || subfields
-                            .iter()
-                            .all(|subfield| subfield.value() != &values[0])
+                        || subfields.iter().all(|subfield| {
+                            !cmp_fn(subfield.value(), &values[0])
+                        })
                 }
                 ComparisonOp::StartsWith => field.iter().any(|subfield| {
-                    subfield.code == *code
-                        && subfield.value.starts_with(values[0].as_bytes())
+                    codes.contains(&subfield.code)
+                        && if ignore_case {
+                            subfield
+                                .value
+                                .to_ascii_lowercase()
+                                .starts_with(&values[0].to_lowercase())
+                        } else {
+                            subfield.value.starts_with(&values[0])
+                        }
                 }),
                 ComparisonOp::EndsWith => field.iter().any(|subfield| {
-                    subfield.code == *code
-                        && subfield.value.ends_with(values[0].as_bytes())
+                    codes.contains(&subfield.code)
+                        && if ignore_case {
+                            subfield
+                                .value
+                                .to_ascii_lowercase()
+                                .ends_with(&values[0].to_lowercase())
+                        } else {
+                            subfield.value.ends_with(&values[0])
+                        }
                 }),
                 ComparisonOp::Re => {
                     // SAFETY: It's safe to call `unwrap()` because the parser
                     // verified that the regular expression is `ok`.
-                    let re = Regex::new(&values[0]).unwrap();
+                    let re = RegexBuilder::new(unsafe {
+                        str::from_utf8_unchecked(values[0].as_bytes())
+                    })
+                    .case_insensitive(ignore_case)
+                    .build()
+                    .unwrap();
+
                     field.iter().any(|subfield| {
                         let value =
                             String::from_utf8(subfield.value.to_vec()).unwrap();
-                        subfield.code == *code && re.is_match(&value)
+                        codes.contains(&subfield.code) && re.is_match(&value)
                     })
                 }
                 ComparisonOp::In => field.iter().any(|subfield| {
-                    subfield.code == *code
-                        && values.contains(
-                            &String::from_utf8(subfield.value.to_vec())
-                                .unwrap(),
-                        )
+                    codes.contains(&subfield.code)
+                        && values
+                            .iter()
+                            .any(|x: &BString| cmp_fn(x, subfield.value()))
                 }),
             },
             SubfieldFilter::Boolean(lhs, op, rhs) => match op {
-                BooleanOp::And => lhs.matches(field) && rhs.matches(field),
-                BooleanOp::Or => lhs.matches(field) || rhs.matches(field),
+                BooleanOp::And => {
+                    lhs.matches(field, ignore_case)
+                        && rhs.matches(field, ignore_case)
+                }
+                BooleanOp::Or => {
+                    lhs.matches(field, ignore_case)
+                        || rhs.matches(field, ignore_case)
+                }
             },
-            SubfieldFilter::Grouped(filter) => filter.matches(field),
-            SubfieldFilter::Not(filter) => !filter.matches(field),
-            SubfieldFilter::Exists(code) => {
-                field.iter().any(|subfield| subfield.code == *code)
+            SubfieldFilter::Grouped(filter) => {
+                filter.matches(field, ignore_case)
+            }
+            SubfieldFilter::Not(filter) => !filter.matches(field, ignore_case),
+            SubfieldFilter::Exists(codes) => {
+                field.iter().any(|subfield| codes.contains(&subfield.code))
             }
         }
     }
@@ -166,81 +143,64 @@ impl SubfieldFilter {
 
 #[derive(Debug, PartialEq)]
 pub enum Filter {
-    Field(String, OccurrenceMatcher, SubfieldFilter),
+    Field(TagMatcher, OccurrenceMatcher, SubfieldFilter),
     Boolean(Box<Filter>, BooleanOp, Box<Filter>),
-    Exists(String, OccurrenceMatcher),
+    Exists(TagMatcher, OccurrenceMatcher),
     Grouped(Box<Filter>),
     Not(Box<Filter>),
     True,
 }
 
 impl<'a> Filter {
-    pub fn matches(&self, record: &ByteRecord) -> bool {
+    pub fn matches(&self, record: &ByteRecord, ignore_case: bool) -> bool {
         match self {
             Filter::Field(tag, occurrence, filter) => {
                 record.iter().any(|field| {
                     &field.tag == tag
                         && field.occurrence == *occurrence
-                        && filter.matches(field)
+                        && filter.matches(field, ignore_case)
                 })
             }
             Filter::Exists(tag, occurrence) => record.iter().any(|field| {
                 &field.tag == tag && field.occurrence == *occurrence
             }),
             Filter::Boolean(lhs, op, rhs) => match op {
-                BooleanOp::And => lhs.matches(record) && rhs.matches(record),
-                BooleanOp::Or => lhs.matches(record) || rhs.matches(record),
+                BooleanOp::And => {
+                    lhs.matches(record, ignore_case)
+                        && rhs.matches(record, ignore_case)
+                }
+                BooleanOp::Or => {
+                    lhs.matches(record, ignore_case)
+                        || rhs.matches(record, ignore_case)
+                }
             },
-            Filter::Grouped(filter) => filter.matches(record),
-            Filter::Not(filter) => !filter.matches(record),
+            Filter::Grouped(filter) => filter.matches(record, ignore_case),
+            Filter::Not(filter) => !filter.matches(record, ignore_case),
             Filter::True => true,
         }
     }
 }
 
 /// Strip whitespaces from the beginning and end.
-pub(crate) fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(
+pub(crate) fn ws<'a, F: 'a, O, E: ParseError<&'a [u8]>>(
     inner: F,
-) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
 where
-    F: Fn(&'a str) -> IResult<&'a str, O, E>,
+    F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
 {
     delimited(multispace0, inner, multispace0)
 }
 
-/// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1-6 hex
-/// numerals. We will combine this later with parse_escaped_char to parse
-/// sequences like \u{00AC}.
-fn parse_unicode<'a, E>(i: &'a str) -> IResult<&'a str, char, E>
-where
-    E: ParseError<&'a str>
-        + FromExternalError<&'a str, std::num::ParseIntError>,
-{
-    let parse_delimited_hex = preceded(
-        char('u'),
-        delimited(
-            char('{'),
-            take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit()),
-            char('}'),
-        ),
-    );
-
-    map_opt(
-        map_res(parse_delimited_hex, move |hex| u32::from_str_radix(hex, 16)),
-        std::char::from_u32,
-    )(i)
-}
-
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
-fn parse_escaped_char<'a, E>(i: &'a str) -> IResult<&'a str, char, E>
+fn parse_escaped_char<'a, E>(i: &'a [u8]) -> IResult<&'a [u8], char, E>
 where
-    E: ParseError<&'a str>
-        + FromExternalError<&'a str, std::num::ParseIntError>,
+    E: ParseError<&'a [u8]>
+        + FromExternalError<&'a [u8], std::num::ParseIntError>,
 {
     preceded(
         char('\\'),
         alt((
-            parse_unicode,
+            // parse_unicode,
             value('\n', char('n')),
             value('\r', char('r')),
             value('\t', char('t')),
@@ -254,25 +214,26 @@ where
 }
 
 /// Parse a non-empty block of text that doesn't include \ or ".
-fn parse_literal<'a, E: ParseError<&'a str>>(
-    i: &'a str,
-) -> IResult<&'a str, &'a str, E> {
-    verify(is_not("\'\\"), |s: &str| !s.is_empty())(i)
+fn parse_literal<'a, E: ParseError<&'a [u8]>>(
+    i: &'a [u8],
+) -> IResult<&'a [u8], &'a [u8], E> {
+    verify(is_not("\'\\"), |s: &[u8]| !s.is_empty())(i)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 enum StringFragment<'a> {
-    Literal(&'a str),
+    Literal(&'a [u8]),
     EscapedChar(char),
     EscapedWs,
 }
 
-/// Combine parse_literal, parse_escaped_whitespace, and parse_escaped_char
-/// into a StringFragment.
-fn parse_fragment<'a, E>(i: &'a str) -> IResult<&'a str, StringFragment<'a>, E>
+/// Combine parse_literal, parse_escaped_char into a StringFragment.
+fn parse_fragment<'a, E>(
+    i: &'a [u8],
+) -> IResult<&'a [u8], StringFragment<'a>, E>
 where
-    E: ParseError<&'a str>
-        + FromExternalError<&'a str, std::num::ParseIntError>,
+    E: ParseError<&'a [u8]>
+        + FromExternalError<&'a [u8], std::num::ParseIntError>,
 {
     alt((
         map(parse_literal, StringFragment::Literal),
@@ -281,73 +242,44 @@ where
     ))(i)
 }
 
-/// Parse a string. Use a loop of parse_fragment and push all of the fragments
-/// into an output string.
-pub(crate) fn parse_string<'a, E>(i: &'a str) -> IResult<&'a str, String, E>
+pub(crate) fn parse_string<'a, E>(i: &'a [u8]) -> IResult<&'a [u8], String, E>
 where
-    E: ParseError<&'a str>
-        + FromExternalError<&'a str, std::num::ParseIntError>,
+    E: ParseError<&'a [u8]>
+        + FromExternalError<&'a [u8], std::num::ParseIntError>,
 {
-    delimited(
-        char('\''),
-        fold_many0(parse_fragment, String::new(), |mut string, fragment| {
-            match fragment {
-                StringFragment::Literal(s) => string.push_str(s),
-                StringFragment::EscapedChar(c) => string.push(c),
-                StringFragment::EscapedWs => {}
-            }
-            string
-        }),
-        char('\''),
+    map(
+        delimited(
+            char('\''),
+            fold_many0(parse_fragment, Vec::new, |mut string, fragment| {
+                match fragment {
+                    StringFragment::Literal(s) => string.extend_from_slice(s),
+                    StringFragment::EscapedChar(c) => string.push(c as u8),
+                    StringFragment::EscapedWs => {}
+                }
+                string
+            }),
+            char('\''),
+        ),
+        // FIXME
+        |x| String::from_utf8(x).unwrap(),
     )(i)
 }
 
-/// Parses a field tag.
-pub(crate) fn parse_field_tag(i: &str) -> IResult<&str, &str> {
-    recognize(tuple((
-        one_of("012"),
-        count(one_of("0123456789"), 2),
-        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-    )))(i)
-}
-
 /// Parses a subfield code.
-pub(crate) fn parse_subfield_code(i: &str) -> IResult<&str, char> {
+pub(crate) fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
     satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
-pub(crate) fn parse_occurrence_matcher(
-    i: &str,
-) -> IResult<&str, OccurrenceMatcher> {
+/// Parses multiple subfield codes.
+pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
-        preceded(
-            char('/'),
-            cut(alt((
-                map(
-                    recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
-                    |value| {
-                        OccurrenceMatcher::Occurrence(
-                            Occurrence::from_unchecked(value),
-                        )
-                    },
-                ),
-                map(char('*'), |_| OccurrenceMatcher::Any),
-            ))),
-        ),
-        success(OccurrenceMatcher::None),
-    ))(i)
-}
-
-/// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
-fn parse_boolean_op(i: &str) -> IResult<&str, BooleanOp> {
-    alt((
-        map(tag("&&"), |_| BooleanOp::And),
-        map(tag("||"), |_| BooleanOp::Or),
+        map(parse_subfield_code, |x| vec![x]),
+        delimited(ws(char('[')), many1(ws(parse_subfield_code)), ws(char(']'))),
     ))(i)
 }
 
 /// Parses a comparison operator.
-fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
+fn parse_comparison_op(i: &[u8]) -> ParseResult<ComparisonOp> {
     alt((
         map(tag("==="), |_| ComparisonOp::StrictEq),
         map(tag("=="), |_| ComparisonOp::Eq),
@@ -358,33 +290,37 @@ fn parse_comparison_op(i: &str) -> IResult<&str, ComparisonOp> {
     ))(i)
 }
 
-fn parse_subfield_regex(i: &str) -> IResult<&str, SubfieldFilter> {
+fn parse_subfield_regex(i: &[u8]) -> ParseResult<SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_codes),
             map(ws(tag("=~")), |_| ComparisonOp::Re),
             verify(ws(parse_string), |s| Regex::new(s).is_ok()),
         )),
-        |(name, op, regex)| SubfieldFilter::Comparison(name, op, vec![regex]),
+        |(names, op, regex)| {
+            SubfieldFilter::Comparison(names, op, vec![BString::from(regex)])
+        },
     )(i)
 }
 
 /// Parses a subfield comparison expression.
-fn parse_subfield_comparison(i: &str) -> IResult<&str, SubfieldFilter> {
+fn parse_subfield_comparison(i: &[u8]) -> ParseResult<SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_codes),
             ws(parse_comparison_op),
             ws(parse_string),
         )),
-        |(name, op, value)| SubfieldFilter::Comparison(name, op, vec![value]),
+        |(names, op, value)| {
+            SubfieldFilter::Comparison(names, op, vec![BString::from(value)])
+        },
     )(i)
 }
 
-fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
+fn parse_subfield_in_expr(i: &[u8]) -> ParseResult<SubfieldFilter> {
     map(
         tuple((
-            ws(parse_subfield_code),
+            ws(parse_subfield_codes),
             opt(ws(tag("not"))),
             map(tag("in"), |_| ComparisonOp::In),
             delimited(
@@ -393,8 +329,12 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
                 ws(char(']')),
             ),
         )),
-        |(name, negate, op, values)| {
-            let filter = SubfieldFilter::Comparison(name, op, values);
+        |(names, negate, op, values)| {
+            let filter = SubfieldFilter::Comparison(
+                names,
+                op,
+                values.iter().map(|x| BString::from(x.as_bytes())).collect(),
+            );
             if negate.is_some() {
                 SubfieldFilter::Not(Box::new(filter))
             } else {
@@ -405,14 +345,14 @@ fn parse_subfield_in_expr(i: &str) -> IResult<&str, SubfieldFilter> {
 }
 
 /// Parses a subfield exists expression.
-fn parse_subfield_exists(i: &str) -> IResult<&str, SubfieldFilter> {
-    map(terminated(parse_subfield_code, char('?')), |name| {
-        SubfieldFilter::Exists(name)
+fn parse_subfield_exists(i: &[u8]) -> ParseResult<SubfieldFilter> {
+    map(terminated(parse_subfield_codes, char('?')), |names| {
+        SubfieldFilter::Exists(names)
     })(i)
 }
 
 /// Parses a subfield group expression.
-fn parse_subfield_group(i: &str) -> IResult<&str, SubfieldFilter> {
+fn parse_subfield_group(i: &[u8]) -> ParseResult<SubfieldFilter> {
     map(
         preceded(
             ws(char('(')),
@@ -423,7 +363,7 @@ fn parse_subfield_group(i: &str) -> IResult<&str, SubfieldFilter> {
 }
 
 /// Parses a subfield not expression.
-fn parse_subfield_not_expr(i: &str) -> IResult<&str, SubfieldFilter> {
+fn parse_subfield_not_expr(i: &[u8]) -> ParseResult<SubfieldFilter> {
     map(
         preceded(
             ws(char('!')),
@@ -433,7 +373,7 @@ fn parse_subfield_not_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     )(i)
 }
 
-fn parse_subfield_primary(i: &str) -> IResult<&str, SubfieldFilter> {
+fn parse_subfield_primary(i: &[u8]) -> ParseResult<SubfieldFilter> {
     alt((
         parse_subfield_comparison,
         parse_subfield_regex,
@@ -444,7 +384,7 @@ fn parse_subfield_primary(i: &str) -> IResult<&str, SubfieldFilter> {
     ))(i)
 }
 
-fn parse_subfield_boolean_expr(i: &str) -> IResult<&str, SubfieldFilter> {
+fn parse_subfield_boolean_expr(i: &[u8]) -> ParseResult<SubfieldFilter> {
     let (i, (first, remainder)) = tuple((
         parse_subfield_primary,
         many0(pair(ws(parse_boolean_op), ws(parse_subfield_primary))),
@@ -458,14 +398,14 @@ fn parse_subfield_boolean_expr(i: &str) -> IResult<&str, SubfieldFilter> {
     ))
 }
 
-pub(crate) fn parse_subfield_filter(i: &str) -> IResult<&str, SubfieldFilter> {
+pub(crate) fn parse_subfield_filter(i: &[u8]) -> ParseResult<SubfieldFilter> {
     alt((parse_subfield_boolean_expr, parse_subfield_primary))(i)
 }
 
-fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
+fn parse_field_complex(i: &[u8]) -> ParseResult<Filter> {
     map(
         tuple((
-            pair(parse_field_tag, opt(parse_occurrence_matcher)),
+            pair(parse_tag_matcher, opt(parse_occurrence_matcher)),
             preceded(
                 ws(char('{')),
                 cut(terminated(parse_subfield_filter, ws(char('}')))),
@@ -473,7 +413,7 @@ fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
         )),
         |((tag, occurrence), filter)| {
             Filter::Field(
-                String::from(tag),
+                tag,
                 occurrence.unwrap_or(OccurrenceMatcher::None),
                 filter,
             )
@@ -481,10 +421,10 @@ fn parse_field_complex(i: &str) -> IResult<&str, Filter> {
     )(i)
 }
 
-fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
+fn parse_field_simple(i: &[u8]) -> ParseResult<Filter> {
     map(
         tuple((
-            pair(parse_field_tag, opt(parse_occurrence_matcher)),
+            pair(parse_tag_matcher, opt(parse_occurrence_matcher)),
             preceded(
                 ws(char('.')),
                 cut(alt((
@@ -496,7 +436,7 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
         )),
         |((tag, occurrence), filter)| {
             Filter::Field(
-                String::from(tag),
+                tag,
                 occurrence.unwrap_or(OccurrenceMatcher::None),
                 filter,
             )
@@ -504,43 +444,40 @@ fn parse_field_simple(i: &str) -> IResult<&str, Filter> {
     )(i)
 }
 
-fn parse_field_exists(i: &str) -> IResult<&str, Filter> {
+fn parse_field_exists(i: &[u8]) -> ParseResult<Filter> {
     map(
         terminated(
-            pair(parse_field_tag, opt(parse_occurrence_matcher)),
+            pair(parse_tag_matcher, opt(parse_occurrence_matcher)),
             char('?'),
         ),
         |(tag, occurrence)| {
-            Filter::Exists(
-                String::from(tag),
-                occurrence.unwrap_or(OccurrenceMatcher::None),
-            )
+            Filter::Exists(tag, occurrence.unwrap_or(OccurrenceMatcher::None))
         },
     )(i)
 }
 
-fn parse_field_expr(i: &str) -> IResult<&str, Filter> {
+fn parse_field_expr(i: &[u8]) -> ParseResult<Filter> {
     alt((parse_field_simple, parse_field_complex, parse_field_exists))(i)
 }
 
-fn parse_field_group(i: &str) -> IResult<&str, Filter> {
+fn parse_field_group(i: &[u8]) -> ParseResult<Filter> {
     map(
         preceded(ws(char('(')), cut(terminated(parse_filter_expr, char(')')))),
         |e| Filter::Grouped(Box::new(e)),
     )(i)
 }
 
-fn parse_field_not_expr(i: &str) -> IResult<&str, Filter> {
+fn parse_field_not_expr(i: &[u8]) -> ParseResult<Filter> {
     map(preceded(ws(char('!')), cut(parse_field_primary)), |e| {
         Filter::Not(Box::new(e))
     })(i)
 }
 
-fn parse_field_primary(i: &str) -> IResult<&str, Filter> {
+fn parse_field_primary(i: &[u8]) -> ParseResult<Filter> {
     alt((parse_field_group, parse_field_expr, parse_field_not_expr))(i)
 }
 
-fn parse_field_boolean_expr(i: &str) -> IResult<&str, Filter> {
+fn parse_field_boolean_expr(i: &[u8]) -> ParseResult<Filter> {
     let (i, (first, remainder)) = tuple((
         parse_field_primary,
         many0(pair(ws(parse_boolean_op), ws(parse_field_primary))),
@@ -554,11 +491,11 @@ fn parse_field_boolean_expr(i: &str) -> IResult<&str, Filter> {
     ))
 }
 
-fn parse_filter_expr(i: &str) -> IResult<&str, Filter> {
+fn parse_filter_expr(i: &[u8]) -> ParseResult<Filter> {
     alt((parse_field_boolean_expr, parse_field_primary))(i)
 }
 
-fn parse_filter(i: &str) -> IResult<&str, Filter> {
+fn parse_filter(i: &[u8]) -> ParseResult<Filter> {
     ws(parse_filter_expr)(i)
 }
 
@@ -567,7 +504,7 @@ pub struct ParseFilterError;
 
 impl Filter {
     pub fn decode(s: &str) -> std::result::Result<Self, ParseFilterError> {
-        match all_consuming(parse_filter)(s).finish() {
+        match all_consuming(parse_filter)(s.as_bytes()).finish() {
             Ok((_, filter)) => Ok(filter),
             _ => Err(ParseFilterError),
         }
@@ -578,246 +515,285 @@ impl Filter {
 mod tests {
     use super::*;
 
+    use crate::test::TestResult;
+
     #[test]
-    fn test_parse_boolean_op() {
-        assert_eq!(parse_boolean_op("&&"), Ok(("", BooleanOp::And)));
-        assert_eq!(parse_boolean_op("||"), Ok(("", BooleanOp::Or)));
+    fn test_parse_boolean_op() -> TestResult {
+        assert_eq!(parse_boolean_op(b"&&")?.1, BooleanOp::And);
+        assert_eq!(parse_boolean_op(b"||")?.1, BooleanOp::Or);
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_comparison_op() {
-        assert_eq!(parse_comparison_op("=="), Ok(("", ComparisonOp::Eq)));
-        assert_eq!(parse_comparison_op("!="), Ok(("", ComparisonOp::Ne)));
-        assert_eq!(
-            parse_comparison_op("=^"),
-            Ok(("", ComparisonOp::StartsWith))
-        );
-        assert_eq!(parse_comparison_op("=$"), Ok(("", ComparisonOp::EndsWith)));
-        assert_eq!(parse_comparison_op("=~"), Ok(("", ComparisonOp::Re)));
+    fn test_parse_comparison_op() -> TestResult {
+        assert_eq!(parse_comparison_op(b"==")?.1, ComparisonOp::Eq);
+        assert_eq!(parse_comparison_op(b"!=")?.1, ComparisonOp::Ne);
+        assert_eq!(parse_comparison_op(b"=^")?.1, ComparisonOp::StartsWith);
+        assert_eq!(parse_comparison_op(b"=$")?.1, ComparisonOp::EndsWith);
+        assert_eq!(parse_comparison_op(b"=~")?.1, ComparisonOp::Re);
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_subfield_comparison() {
+    fn test_parse_subfield_comparison() -> TestResult {
         let filter = SubfieldFilter::Comparison(
-            '0',
+            vec!['0'],
             ComparisonOp::Eq,
-            vec!["123456789X".to_string()],
+            vec![BString::from("123456789X")],
         );
-        assert_eq!(
-            parse_subfield_comparison("0 == '123456789X'"),
-            Ok(("", filter))
-        );
+        assert_eq!(parse_subfield_comparison(b"0 == '123456789X'")?.1, filter);
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_subfield_regex() {
+    fn test_parse_subfield_regex() -> TestResult {
         assert_eq!(
-            parse_subfield_regex("0 =~ '^Tp[123]$'"),
-            Ok((
-                "",
-                SubfieldFilter::Comparison(
-                    '0',
-                    ComparisonOp::Re,
-                    vec!["^Tp[123]$".to_string()],
-                )
-            ))
+            parse_subfield_regex(b"0 =~ '^Tp[123]$'")?.1,
+            SubfieldFilter::Comparison(
+                vec!['0'],
+                ComparisonOp::Re,
+                vec![BString::from("^Tp[123]$")]
+            )
         );
 
-        assert!(parse_subfield_regex("0 =~ '^Tp[123]($'").is_err());
+        assert!(parse_subfield_regex(b"0 =~ '^Tp[123]($'").is_err());
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_subfield_in_op() {
+    fn test_parse_subfield_in_op() -> TestResult {
         let filter = SubfieldFilter::Comparison(
-            '0',
+            vec!['0'],
             ComparisonOp::In,
             vec![
-                "123456789X".to_string(),
-                "123456789Y".to_string(),
-                "123456789Z".to_string(),
+                BString::from("123456789X"),
+                BString::from("123456789Y"),
+                BString::from("123456789Z"),
             ],
         );
         assert_eq!(
             parse_subfield_in_expr(
-                "0 in ['123456789X', '123456789Y', '123456789Z']"
-            ),
-            Ok(("", filter))
+                b"0 in ['123456789X', '123456789Y', '123456789Z']"
+            )?
+            .1,
+            filter
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_subfield_exists() {
+    fn test_parse_subfield_exists() -> TestResult {
         assert_eq!(
-            parse_subfield_exists("0?"),
-            Ok(("", SubfieldFilter::Exists('0')))
+            parse_subfield_exists(b"0?")?.1,
+            SubfieldFilter::Exists(vec!['0'])
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_subfield_gorup() {
+    fn test_parse_subfield_gorup() -> TestResult {
         assert_eq!(
-            parse_subfield_group("((0?))"),
-            Ok((
-                "",
-                SubfieldFilter::Grouped(Box::new(SubfieldFilter::Grouped(
-                    Box::new(SubfieldFilter::Exists('0'))
-                ),))
-            ))
+            parse_subfield_group(b"((0?))")?.1,
+            SubfieldFilter::Grouped(Box::new(SubfieldFilter::Grouped(
+                Box::new(SubfieldFilter::Exists(vec!['0']))
+            )))
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_subfield_not_expr() {
+    fn test_subfield_not_expr() -> TestResult {
         assert_eq!(
-            parse_subfield_not_expr("!(!a?)"),
-            Ok((
-                "",
-                SubfieldFilter::Not(Box::new(SubfieldFilter::Grouped(
-                    Box::new(SubfieldFilter::Not(Box::new(
-                        SubfieldFilter::Exists('a')
-                    )))
-                )))
-            ))
+            parse_subfield_not_expr(b"!(!a?)")?.1,
+            SubfieldFilter::Not(Box::new(SubfieldFilter::Grouped(Box::new(
+                SubfieldFilter::Not(Box::new(SubfieldFilter::Exists(vec![
+                    'a'
+                ])))
+            ))))
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_subfield_boolean() {
+    fn test_parse_subfield_boolean() -> TestResult {
         assert_eq!(
-            parse_subfield_boolean_expr("0? && a?"),
-            Ok((
-                "",
-                SubfieldFilter::Boolean(
-                    Box::new(SubfieldFilter::Exists('0')),
-                    BooleanOp::And,
-                    Box::new(SubfieldFilter::Exists('a'))
-                )
-            ))
-        );
-
-        assert_eq!(
-            parse_subfield_boolean_expr("0? || a?"),
-            Ok((
-                "",
-                SubfieldFilter::Boolean(
-                    Box::new(SubfieldFilter::Exists('0')),
-                    BooleanOp::Or,
-                    Box::new(SubfieldFilter::Exists('a'))
-                )
-            ))
-        );
-    }
-
-    #[test]
-    fn test_parse_field_complex() {
-        let field_expr = Filter::Field(
-            "012A".to_string(),
-            OccurrenceMatcher::new("000").unwrap(),
+            parse_subfield_boolean_expr(b"0? && a?")?.1,
             SubfieldFilter::Boolean(
-                Box::new(SubfieldFilter::Exists('0')),
+                Box::new(SubfieldFilter::Exists(vec!['0'])),
+                BooleanOp::And,
+                Box::new(SubfieldFilter::Exists(vec!['a']))
+            )
+        );
+
+        assert_eq!(
+            parse_subfield_boolean_expr(b"0? || a?")?.1,
+            SubfieldFilter::Boolean(
+                Box::new(SubfieldFilter::Exists(vec!['0'])),
+                BooleanOp::Or,
+                Box::new(SubfieldFilter::Exists(vec!['a']))
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_field_complex() -> TestResult {
+        let field_expr = Filter::Field(
+            TagMatcher::new("012A")?,
+            OccurrenceMatcher::None,
+            SubfieldFilter::Boolean(
+                Box::new(SubfieldFilter::Exists(vec!['0'])),
                 BooleanOp::Or,
                 Box::new(SubfieldFilter::Comparison(
-                    'a',
+                    vec!['a'],
                     ComparisonOp::Eq,
-                    vec!["abc".to_string()],
+                    vec![BString::from("abc")],
                 )),
             ),
         );
 
         assert_eq!(
-            parse_field_complex("012A/000{0? || a == 'abc'}"),
-            Ok(("", field_expr))
+            parse_field_complex(b"012A/00{0? || a == 'abc'}")?.1,
+            field_expr
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_field_exists() {
+    fn test_parse_field_exists() -> TestResult {
         let field_expr = Filter::Exists(
-            "012A".to_string(),
-            OccurrenceMatcher::new("00").unwrap(),
+            TagMatcher::new("012A")?,
+            OccurrenceMatcher::new("01").unwrap(),
         );
-        assert_eq!(parse_field_exists("012A/00?"), Ok(("", field_expr)));
+        assert_eq!(parse_field_exists(b"012A/01?")?.1, field_expr);
 
         let field_expr =
-            Filter::Exists("012A".to_string(), OccurrenceMatcher::None);
-        assert_eq!(parse_field_exists("012A?"), Ok(("", field_expr)));
+            Filter::Exists(TagMatcher::new("012A")?, OccurrenceMatcher::None);
+        assert_eq!(parse_field_exists(b"012A?")?.1, field_expr);
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_field_simple() {
+    fn test_parse_field_simple() -> TestResult {
         let field_expr = Filter::Field(
-            "003@".to_string(),
+            TagMatcher::new("003@")?,
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
-                '0',
+                vec!['0'],
                 ComparisonOp::Eq,
-                vec!["abc".to_string()],
+                vec![BString::from("abc")],
             ),
         );
 
-        assert_eq!(parse_field_simple("003@.0 == 'abc'"), Ok(("", field_expr)));
+        assert_eq!(parse_field_simple(b"003@.0 == 'abc'")?.1, field_expr);
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_field_group() {
+    fn test_parse_not_expr() -> TestResult {
+        let field_expr = Filter::Not(Box::new(Filter::Exists(
+            TagMatcher::new("003@")?,
+            OccurrenceMatcher::None,
+        )));
+
+        assert_eq!(parse_field_not_expr(b"!003@?")?.1, field_expr);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_field_group() -> TestResult {
         let field_expr = Filter::Grouped(Box::new(Filter::Field(
-            "003@".to_string(),
+            TagMatcher::new("003@")?,
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
-                '0',
+                vec!['0'],
                 ComparisonOp::Eq,
-                vec!["abc".to_string()],
+                vec![BString::from("abc")],
             ),
         )));
 
-        assert_eq!(
-            parse_field_group("(003@.0 == 'abc')"),
-            Ok(("", field_expr))
-        );
+        assert_eq!(parse_field_group(b"(003@.0 == 'abc')")?.1, field_expr);
+
+        Ok(())
     }
 
     #[test]
-    fn test_parse_field_boolean_expr() {
+    fn test_parse_field_boolean_expr() -> TestResult {
         let filter_expr = Filter::Boolean(
             Box::new(Filter::Field(
-                "003@".to_string(),
+                TagMatcher::new("003@")?,
                 OccurrenceMatcher::None,
                 SubfieldFilter::Comparison(
-                    '0',
+                    vec!['0'],
                     ComparisonOp::Eq,
-                    vec!["abc".to_string()],
+                    vec![BString::from("abc")],
                 ),
             )),
             BooleanOp::And,
             Box::new(Filter::Field(
-                "012A".to_string(),
+                TagMatcher::new("012A")?,
                 OccurrenceMatcher::None,
                 SubfieldFilter::Boolean(
-                    Box::new(SubfieldFilter::Exists('a')),
+                    Box::new(SubfieldFilter::Exists(vec!['a'])),
                     BooleanOp::And,
-                    Box::new(SubfieldFilter::Exists('b')),
+                    Box::new(SubfieldFilter::Exists(vec!['b'])),
                 ),
             )),
         );
 
         assert_eq!(
-            parse_field_boolean_expr("003@.0 == 'abc' && 012A{a? && b?}"),
-            Ok(("", filter_expr))
+            parse_field_boolean_expr(b"003@.0 == 'abc' && 012A{a? && b?}")?.1,
+            filter_expr
         );
+
+        Ok(())
     }
 
     #[test]
-    fn test_decode() {
+    fn test_decode() -> TestResult {
         let expected = Filter::Field(
-            "003@".to_string(),
+            TagMatcher::new("003@")?,
             OccurrenceMatcher::None,
             SubfieldFilter::Comparison(
-                '0',
+                vec!['0'],
                 ComparisonOp::Eq,
-                vec!["123456789X".to_string()],
+                vec![BString::from("123456789X")],
             ),
         );
 
         assert_eq!(Filter::decode("003@.0 == '123456789X'").unwrap(), expected);
+
+        Ok(())
     }
 }
+
+// #[inline]
+// fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+//     let (i, (first, remainder)) = tuple((
+//         parse_subfield_matcher_primary,
+//         many0(pair(
+//             ws(parse_boolean_op),
+//             ws(parse_subfield_matcher_primary),
+//         )),
+//     ))(i)?;
+
+//     Ok((
+//         i,
+//         remainder.into_iter().fold(first, |prev, (op, next)| {
+//             SubfieldMatcher::Composite(Box::new(prev), op, Box::new(next))
+//         }),
+//     ))
+// }

@@ -1,105 +1,140 @@
-use crate::support::{CommandBuilder, MatchResult};
+use assert_cmd::Command;
+use predicates::prelude::*;
 use std::fs::read_to_string;
 use tempfile::Builder;
 
-#[test]
-fn json_single_record() -> MatchResult {
-    let expected = read_to_string("tests/data/1004916019.json").unwrap();
-
-    CommandBuilder::new("json")
-        .arg("tests/data/1004916019.dat")
-        .with_stdout(expected.trim_end())
-        .run()?;
-
-    Ok(())
-}
+use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
-fn json_write_output() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-json").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.json");
-
-    CommandBuilder::new("json")
-        .args(format!("--output {}", filename.to_str().unwrap()))
-        .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
+fn pica_json_single_record() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("json").arg("tests/data/1004916019.dat").assert();
 
     let expected = read_to_string("tests/data/1004916019.json").unwrap();
-    assert_eq!(expected.trim_end(), read_to_string(filename).unwrap());
+    assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
 }
 
 #[test]
-fn json_skip_invalid() -> MatchResult {
-    CommandBuilder::new("json")
+fn pica_json_multiple_records() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("json")
         .arg("--skip-invalid")
-        .arg("tests/data/invalid.dat")
-        .with_stdout("[]")
-        .run()?;
+        .arg("tests/data/dump.dat.gz")
+        .assert();
 
-    CommandBuilder::new("json")
-        .with_config(
-            r#"
-[global]
-skip-invalid = true
-"#,
-        )
-        .arg("tests/data/invalid.dat")
-        .with_stdout("[]")
-        .run()?;
-
-    CommandBuilder::new("json")
-        .with_config(
-            r#"
-[json]
-skip-invalid = true
-"#,
-        )
-        .arg("tests/data/invalid.dat")
-        .with_stdout("[]")
-        .run()?;
-
-    CommandBuilder::new("json")
-        .with_config(
-            r#"
-[global]
-skip-invalid = false
-
-[json]
-skip-invalid = true
-"#,
-        )
-        .arg("tests/data/invalid.dat")
-        .with_stdout("[]")
-        .run()?;
-
-    CommandBuilder::new("json")
-        .with_config(
-            r#"
-[global]
-skip-invalid = false
-
-[json]
-skip-invalid = false
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("tests/data/invalid.dat")
-        .with_stdout("[]")
-        .run()?;
+    let expected = read_to_string("tests/data/dump.json").unwrap();
+    assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
 }
 
 #[test]
-fn json_invalid_file() -> MatchResult {
-    CommandBuilder::new("json")
+fn pica_json_write_output() -> TestResult {
+    let filename = Builder::new().suffix(".json").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("json")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success();
+
+    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(expected.trim_end().to_string(), actual);
+
+    Ok(())
+}
+
+#[test]
+fn pica_json_skip_invalid() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("json")
+        .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
-        .run()?;
+        .assert();
+    assert.success().stdout(predicate::eq("[]"));
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("json").arg("tests/data/dump.dat.gz").assert();
+    assert
+        .failure()
+        .code(1)
+        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[json]
+skip-invalid = true
+"#,
+        )
+        .arg("json")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    assert.success().stdout(expected.trim_end().to_string());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("json")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    assert.success().stdout(expected.trim_end().to_string());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = false
+
+[json]
+skip-invalid = true
+"#,
+        )
+        .arg("json")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    assert.success().stdout(expected.trim_end().to_string());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = false
+
+[json]
+skip-invalid = false
+"#,
+        )
+        .arg("json")
+        .arg("--skip-invalid")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
 }

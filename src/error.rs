@@ -9,9 +9,15 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// An error that can occur when processing PICA+ data.
 #[derive(Debug)]
 pub enum Error {
-    InvalidSubfield(String),
+    InvalidTag(String),
+    InvalidTagMatcher(String),
     InvalidOccurrence(String),
+    InvalidOccurrenceMatcher(String),
+    InvalidSubfield(String),
+    InvalidSubfieldMatcher(String),
+    InvalidSubfieldsMatcher(String),
     InvalidField(String),
+    InvalidFieldMatcher(String),
     InvalidRecord(ParsePicaError),
     InvalidPath(ParsePathError),
     Utf8Error(std::str::Utf8Error),
@@ -23,9 +29,15 @@ impl error::Error for Error {}
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            Error::InvalidSubfield(ref m) => f.write_str(m),
-            Error::InvalidOccurrence(ref m) => f.write_str(m),
-            Error::InvalidField(ref m) => f.write_str(m),
+            Self::InvalidTag(ref m) => f.write_str(m),
+            Self::InvalidTagMatcher(ref m) => f.write_str(m),
+            Self::InvalidOccurrence(ref m) => f.write_str(m),
+            Self::InvalidOccurrenceMatcher(ref m) => f.write_str(m),
+            Self::InvalidSubfield(ref m) => f.write_str(m),
+            Self::InvalidSubfieldMatcher(ref m) => f.write_str(m),
+            Self::InvalidSubfieldsMatcher(ref m) => f.write_str(m),
+            Self::InvalidField(ref m) => f.write_str(m),
+            Self::InvalidFieldMatcher(ref m) => f.write_str(m),
             Error::InvalidRecord(ref e) => e.fmt(f),
             Error::InvalidPath(ref e) => e.fmt(f),
             Error::Utf8Error(ref e) => e.fmt(f),

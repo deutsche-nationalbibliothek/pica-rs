@@ -8,12 +8,12 @@ use std::fs::read_to_string;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct FilterConfig {
-    pub skip_invalid: Option<bool>,
-    pub gzip: Option<bool>,
+pub(crate) struct FilterConfig {
+    pub(crate) skip_invalid: Option<bool>,
+    pub(crate) gzip: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("filter")
         .about("Filter records by whether the given query matches.")
         .arg(
@@ -35,6 +35,12 @@ pub fn cli() -> App {
                 .short('v')
                 .long("invert-match")
                 .about("Filter only records that did not match."),
+        )
+        .arg(
+            Arg::new("ignore-case")
+                .short('i')
+                .long("--ignore-case")
+                .about("When this flag is provided, comparision operations will be search case insensitive."),
         )
         .arg(
             Arg::new("limit")
@@ -64,9 +70,10 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.filter, config.global);
     let gzip_compression = gzip_flag!(args, config.filter);
+    let ignore_case = args.is_present("ignore-case");
 
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
@@ -79,7 +86,6 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
-        .limit(limit)
         .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
@@ -102,9 +108,11 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     };
 
+    let mut count = 0;
+
     for result in reader.byte_records() {
         let record = result?;
-        let mut is_match = filter.matches(&record);
+        let mut is_match = filter.matches(&record, ignore_case);
 
         if args.is_present("invert-match") {
             is_match = !is_match;
@@ -112,6 +120,11 @@ pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
         if is_match {
             writer.write_byte_record(&record)?;
+            count += 1;
+        }
+
+        if limit > 0 && count >= limit {
+            break;
         }
     }
 

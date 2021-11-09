@@ -1,0 +1,28 @@
+name: Daily
+
+on:
+  schedule:
+    - cron: '52 6 * * *'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: abbbi/github-actions-tune@v1
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

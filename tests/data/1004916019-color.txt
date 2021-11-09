@@ -1,0 +1,23 @@
+[0m[35m001A [0m[31m$0[0m[37m8999:22-07-10
+[0m[35m001B [0m[31m$0[0m[37m1250:10-09-14[0m[31m$t[0m[37m08:28:16.000
+[0m[35m001D [0m[31m$0[0m[37m0384:27-07-10
+[0m[35m001U [0m[31m$0[0m[37mutf8
+[0m[35m001X [0m[31m$0[0m[37m0
+[0m[35m002@ [0m[31m$0[0m[37mTs1
+[0m[35m003@ [0m[31m$0[0m[37m1004916019
+[0m[35m003U [0m[31m$a[0m[37mhttp://d-nb.info/gnd/7710287-3
+[0m[35m004B [0m[31m$a[0m[37msip
+[0m[35m007K [0m[31m$a[0m[37mgnd[0m[31m$0[0m[37m7710287-3
+[0m[35m007N [0m[31m$a[0m[37mswd[0m[31m$0[0m[37m7710287-3[0m[31m$v[0m[37mzg
+[0m[35m008A [0m[31m$a[0m[37ms
+[0m[35m029R [0m[31m$9[0m[37m952570254[0m[31m$7[0m[37mTb1[0m[31m$V[0m[37mkiz[0m[31m$A[0m[37mgnd[0m[31m$0[0m[37m5263070-5[0m[31m$a[0m[37mChrysler Corporation[0m[31m$4[0m[37mhers
+[0m[35m041A [0m[31m$a[0m[37mPlymouth[0m[31m$g[0m[37mMarke
+[0m[35m041R [0m[31m$9[0m[37m041145135[0m[31m$7[0m[37mTs1[0m[31m$V[0m[37msaz[0m[31m$A[0m[37mgnd[0m[31m$0[0m[37m4114513-6[0m[31m$a[0m[37mMarkenname[0m[31m$4[0m[37mobin
+[0m[35m042A [0m[31m$a[0m[37m31.7
+[0m[35m047A/03 [0m[31m$e[0m[37mDE-210
+[0m[35m047A/03 [0m[31m$r[0m[37mDE-384
+[0m[35m047C [0m[31m$S[0m[37mswd[0m[31m$i[0m[37ms[0m[31m$a[0m[37mPlymouth <Marke>[0m[31m$0[0m[37m7710287-3
+[0m[35m050D [0m[31m$a[0m[37mKombiniere mit einer Produktgruppe, z.B. Personenkraftwagen
+[0m[35m050E [0m[31m$a[0m[37mWikipedia, Internet[0m[31m$u[0m[37mhttp://www.mobile.de/modellverzeichnis/plymouth/
+[0m[35m050H [0m[31m$a[0m[37mMarkenname
+
