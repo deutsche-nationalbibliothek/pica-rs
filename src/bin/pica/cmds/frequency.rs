@@ -12,11 +12,11 @@ use std::str::FromStr;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct FrequencyConfig {
-    pub skip_invalid: Option<bool>,
+pub(crate) struct FrequencyConfig {
+    pub(crate) skip_invalid: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("frequency")
         .about("Compute a frequency table of a subfield.")
         .arg(
@@ -70,7 +70,7 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
     })
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid =
         skip_invalid_flag!(args, config.frequency, config.global);
 

@@ -1,29 +1,34 @@
 [package]
 name = "pica"
-version = "0.4.0"
+version = "0.6.0"
 authors = ["Nico Wagner <nwagner84@protonmail.com>"]
 edition = "2018"
 license = "MIT OR Unlicense"
 default-run = "pica"
 
 [dependencies]
+atty = "0.2"
 bstr = "0.2.16"
-clap = "3.0.0-beta.2"
-clap_generate = "3.0.0-beta.2"
+clap = "3.0.0-beta.5"
+clap_generate = "3.0.0-beta.5"
 csv = "1.1"
-directories = "3.0"
+directories = "4.0"
 flate2 = "1.0"
-lazy_static = "1.4"
-nom = "6.1"
+nom = "7.0"
 rand = "0.8"
 regex = "1.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-sophia = "0.6.2"
-sophia_api = "0.6.2"
+sophia = "0.7.0"
+sophia_api = "0.7.0"
+termcolor = "1.1"
 toml = "0.5.8"
 
 [dev-dependencies]
+assert_cmd = "2.0"
+predicates = "2.0"
+quickcheck = "1.0.3"
+quickcheck_macros = "1.0.0"
 tempfile = "3.2"
 
 [lib]
@@ -38,7 +43,15 @@ name = "pica"
 path = "src/bin/gnd2skos/main.rs"
 name = "gnd2skos"
 
+[[example]]
+name = "parser"
+path = "examples/parser.rs"
+test = false
+
 [profile.release]
 codegen-units = 1
 panic = "abort"
 lto = true
+
+[profile.dev]
+debug = 0

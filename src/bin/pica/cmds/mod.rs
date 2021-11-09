@@ -1,19 +1,19 @@
-pub mod cat;
-pub mod completion;
-pub mod filter;
-pub mod frequency;
-pub mod invalid;
-pub mod json;
-pub mod partition;
-pub mod print;
-pub mod sample;
-pub mod select;
-pub mod slice;
-pub mod split;
+pub(crate) mod cat;
+pub(crate) mod completion;
+pub(crate) mod filter;
+pub(crate) mod frequency;
+pub(crate) mod invalid;
+pub(crate) mod json;
+pub(crate) mod partition;
+pub(crate) mod print;
+pub(crate) mod sample;
+pub(crate) mod select;
+pub(crate) mod slice;
+pub(crate) mod split;
 
 use crate::util::App;
 
-pub fn subcmds() -> Vec<App> {
+pub(crate) fn subcmds() -> Vec<App> {
     vec![
         cat::cli(),
         completion::cli(),

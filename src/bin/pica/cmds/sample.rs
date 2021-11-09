@@ -8,12 +8,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct SampleConfig {
-    pub skip_invalid: Option<bool>,
-    pub gzip: Option<bool>,
+pub(crate) struct SampleConfig {
+    pub(crate) skip_invalid: Option<bool>,
+    pub(crate) gzip: Option<bool>,
 }
 
-pub fn cli() -> App {
+pub(crate) fn cli() -> App {
     App::new("sample")
         .about("Selects a random permutation of records")
         .arg(
@@ -39,7 +39,7 @@ pub fn cli() -> App {
         .arg(Arg::new("filename"))
 }
 
-pub fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.sample, config.global);
     let gzip_compression = gzip_flag!(args, config.sample);
 

@@ -1,23 +1,23 @@
-001A $0 8999:22-07-10
-001B $0 1250:10-09-14 $t 08:28:16.000
-001D $0 0384:27-07-10
-001U $0 utf8
-001X $0 0
-002@ $0 Ts1
-003@ $0 1004916019
-003U $a http://d-nb.info/gnd/7710287-3
-004B $a sip
-007K $a gnd $0 7710287-3
-007N $a swd $0 7710287-3 $v zg
-008A $a s
-029R $9 952570254 $7 Tb1 $V kiz $A gnd $0 5263070-5 $a Chrysler Corporation $4 hers
-041A $a Plymouth $g Marke
-041R $9 041145135 $7 Ts1 $V saz $A gnd $0 4114513-6 $a Markenname $4 obin
-042A $a 31.7
-047A/03 $e DE-210
-047A/03 $r DE-384
-047C $S swd $i s $a Plymouth <Marke> $0 7710287-3
-050D $a Kombiniere mit einer Produktgruppe, z.B. Personenkraftwagen
-050E $a Wikipedia, Internet $u http://www.mobile.de/modellverzeichnis/plymouth/
-050H $a Markenname
+001A $08999:22-07-10
+001B $01250:10-09-14$t08:28:16.000
+001D $00384:27-07-10
+001U $0utf8
+001X $00
+002@ $0Ts1
+003@ $01004916019
+003U $ahttp://d-nb.info/gnd/7710287-3
+004B $asip
+007K $agnd$07710287-3
+007N $aswd$07710287-3$vzg
+008A $as
+029R $9952570254$7Tb1$Vkiz$Agnd$05263070-5$aChrysler Corporation$4hers
+041A $aPlymouth$gMarke
+041R $9041145135$7Ts1$Vsaz$Agnd$04114513-6$aMarkenname$4obin
+042A $a31.7
+047A/03 $eDE-210
+047A/03 $rDE-384
+047C $Sswd$is$aPlymouth <Marke>$07710287-3
+050D $aKombiniere mit einer Produktgruppe, z.B. Personenkraftwagen
+050E $aWikipedia, Internet$uhttp://www.mobile.de/modellverzeichnis/plymouth/
+050H $aMarkenname
 

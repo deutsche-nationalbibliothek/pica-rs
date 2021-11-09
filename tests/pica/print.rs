@@ -1,153 +1,295 @@
-use crate::support::{CommandBuilder, MatchResult};
+use assert_cmd::Command;
+use predicates::prelude::*;
 use std::fs::read_to_string;
 use tempfile::Builder;
 
+use crate::common::{CommandExt, TestContext, TestResult};
+
 #[test]
-fn print_single_record() -> MatchResult {
-    let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-    let exptected = if cfg!(windows) {
-        exptected.replace("\r", "")
+fn pica_print_stdout() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("print").arg("tests/data/1004916019.dat").assert();
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
     } else {
-        exptected
+        expected
     };
 
-    CommandBuilder::new("print")
-        .arg("tests/data/1004916019.dat")
-        .with_stdout(&exptected)
-        .run()?;
+    assert.success().stdout(expected);
 
     Ok(())
 }
 
 #[test]
-fn print_multiple_records() -> MatchResult {
-    let exptected = read_to_string("tests/data/dump.txt").unwrap();
-    let exptected = if cfg!(windows) {
-        exptected.replace("\r", "")
+fn pica_print_escape_dollar() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("print").arg("tests/data/dollar.dat").assert();
+
+    let expected = read_to_string("tests/data/dollar.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
     } else {
-        exptected
+        expected
     };
 
-    CommandBuilder::new("print")
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_print_multiple_records() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
         .arg("--skip-invalid")
         .arg("tests/data/dump.dat.gz")
-        .with_stdout(&exptected)
-        .run()?;
+        .assert();
 
-    Ok(())
-}
-
-#[test]
-fn print_gzip_file() -> MatchResult {
-    let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-    let exptected = if cfg!(windows) {
-        exptected.replace("\r", "")
+    let expected = read_to_string("tests/data/dump.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
     } else {
-        exptected
+        expected
     };
 
-    CommandBuilder::new("print")
-        .arg("tests/data/1004916019.dat.gz")
-        .with_stdout(&exptected)
-        .run()?;
+    assert.success().stdout(expected);
 
     Ok(())
 }
 
 #[test]
-fn print_write_output() -> MatchResult {
-    let tempdir = Builder::new().prefix("pica-print").tempdir().unwrap();
-    let filename = tempdir.path().join("sample.txt");
+fn pica_print_limit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--skip-invalid")
+        .arg("--limit")
+        .arg("1")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
 
-    CommandBuilder::new("print")
-        .args(format!("--output {}", filename.to_str().unwrap()))
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected);
+
+    // invalid limit
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--skip-invalid")
+        .arg("--limit")
+        .arg("abc")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::eq(
+            "error: Invalid limit value, expected unsigned integer.\n",
+        ));
+
+    Ok(())
+}
+
+#[test]
+fn pica_print_color() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--color")
+        .arg("always")
         .arg("tests/data/1004916019.dat")
-        .with_stdout_empty()
-        .run()?;
+        .assert();
 
-    let exptected = read_to_string("tests/data/1004916019.txt").unwrap();
-    let actual = read_to_string(filename).unwrap();
-
-    let exptected = if cfg!(windows) {
-        exptected.replace("\r", "")
+    let expected = read_to_string("tests/data/1004916019-color.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
     } else {
-        exptected
+        expected
     };
 
-    assert_eq!(actual, exptected);
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--color")
+        .arg("never")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
 
     Ok(())
 }
 
 #[test]
-fn print_skip_invalid() -> MatchResult {
-    CommandBuilder::new("print")
-        .arg("--skip-invalid")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
+fn pica_print_add_spaces() -> TestResult {
+    let expected = read_to_string("tests/data/1004916019-spaces.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
 
-    CommandBuilder::new("print")
+    // CLI flag
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--add-spaces")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected.to_owned());
+
+    // Config
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
         .with_config(
-            r#"
-[global]
-skip-invalid = true
+            &TestContext::new(),
+            r#"[print]
+add-spaces = true
 "#,
         )
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
+        .arg("print")
+        .arg("tests/data/1004916019.dat")
+        .assert();
 
-    CommandBuilder::new("print")
-        .with_config(
-            r#"
-[print]
-skip-invalid = true
-"#,
-        )
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("print")
-        .with_config(
-            r#"
-[global]
-skip-invalid = false
-
-[print]
-skip-invalid = true
-"#,
-        )
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
-
-    CommandBuilder::new("print")
-        .with_config(
-            r#"
-[global]
-skip-invalid = false
-
-[print]
-skip-invalid = false
-"#,
-        )
-        .arg("--skip-invalid")
-        .arg("tests/data/invalid.dat")
-        .with_stdout_empty()
-        .run()?;
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
 
     Ok(())
 }
 
 #[test]
-fn print_invalid_file() -> MatchResult {
-    CommandBuilder::new("print")
+fn pica_print_write_output() -> TestResult {
+    let filename = Builder::new().suffix(".txt").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(expected, actual);
+
+    Ok(())
+}
+
+#[test]
+fn pica_print_skip_invalid() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
-        .with_stderr("Pica Error: Invalid record on line 1.\n")
-        .with_status(1)
-        .run()?;
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("print").arg("tests/data/invalid.dat").assert();
+    assert
+        .failure()
+        .stderr(predicate::eq("Pica Error: Invalid record on line 1.\n"))
+        .stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = true
+"#,
+        )
+        .arg("print")
+        .arg("tests/data/invalid.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[print]
+skip-invalid = true
+"#,
+        )
+        .arg("print")
+        .arg("tests/data/invalid.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = false
+
+[print]
+skip-invalid = true
+"#,
+        )
+        .arg("print")
+        .arg("tests/data/invalid.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[global]
+skip-invalid = false
+
+[print]
+skip-invalid = false
+"#,
+        )
+        .arg("print")
+        .arg("--skip-invalid")
+        .arg("tests/data/invalid.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
 
     Ok(())
 }

@@ -14,17 +14,15 @@
 //! ```
 
 use crate::parser::{parse_path, ParsePathError};
-use crate::record::FIELD_TAG_RE;
-use crate::{Error, OccurrenceMatcher, Result};
+use crate::{Error, OccurrenceMatcher, Result, Tag, TagMatcher};
 
-use bstr::BString;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 pub struct Path {
-    pub(crate) tag: BString,
+    pub(crate) tag: TagMatcher,
     pub(crate) occurrence: OccurrenceMatcher,
-    pub(crate) code: char,
+    pub(crate) codes: Vec<char>,
 }
 
 impl Path {
@@ -33,39 +31,32 @@ impl Path {
     /// ```rust
     /// use pica::{OccurrenceMatcher, Path};
     ///
-    /// assert!(Path::new("003@", OccurrenceMatcher::None, '0').is_ok());
-    /// assert!(Path::new("012A", OccurrenceMatcher::Any, '0').is_ok());
-    /// assert!(Path::new("012!", OccurrenceMatcher::Any, '0').is_err());
-    /// assert!(Path::new("012A", OccurrenceMatcher::Any, '!').is_err());
+    /// assert!(Path::new("003@", OccurrenceMatcher::None, vec!['0']).is_ok());
+    /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['0']).is_ok());
+    /// assert!(Path::new("012!", OccurrenceMatcher::Any, vec!['0']).is_err());
+    /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['a', '!']).is_err());
     /// ```
     pub fn new<S>(
         tag: S,
         occurrence: OccurrenceMatcher,
-        code: char,
+        codes: Vec<char>,
     ) -> Result<Path>
     where
-        S: Into<BString>,
+        S: AsRef<str>,
     {
-        let tag = tag.into();
-
-        if !FIELD_TAG_RE.is_match(tag.as_slice()) {
-            return Err(Error::InvalidField(format!(
-                "Invalid field tag '{}' in path expression.",
-                tag
-            )));
-        }
-
-        if !code.is_ascii_alphanumeric() {
-            return Err(Error::InvalidSubfield(format!(
-                "Invalid subfield code '{}' in path expression.",
-                code
-            )));
+        for code in &codes {
+            if !code.is_ascii_alphanumeric() {
+                return Err(Error::InvalidSubfield(format!(
+                    "Invalid subfield code '{}' in path expression.",
+                    code
+                )));
+            }
         }
 
         Ok(Path {
-            tag,
+            tag: TagMatcher::Some(Tag::new(tag)?),
             occurrence,
-            code,
+            codes,
         })
     }
 
@@ -79,20 +70,29 @@ impl Path {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let path = Path::from_bytes("003@.0")?;
-    ///     assert_eq!(path, Path::new("003@", OccurrenceMatcher::None, '0')?);
+    ///     assert_eq!(
+    ///         path,
+    ///         Path::new("003@", OccurrenceMatcher::None, vec!['0'])?
+    ///     );
     ///
-    ///     let path = Path::from_bytes("012A/00.0")?;
+    ///     let path = Path::from_bytes("012A/01.0")?;
     ///     assert_eq!(
     ///         path,
     ///         Path::new(
     ///             "012A",
-    ///             OccurrenceMatcher::Occurrence(Occurrence::new("00")?),
-    ///             '0'
+    ///             OccurrenceMatcher::Some(Occurrence::new("01")?),
+    ///             vec!['0']
     ///         )?
     ///     );
     ///
     ///     let path = Path::from_bytes("012A/*.0")?;
-    ///     assert_eq!(path, Path::new("012A", OccurrenceMatcher::Any, '0')?);
+    ///     assert_eq!(path, Path::new("012A", OccurrenceMatcher::Any, vec!['0'])?);
+    ///
+    ///     let path = Path::from_bytes("012A/*.[abc]")?;
+    ///     assert_eq!(
+    ///         path,
+    ///         Path::new("012A", OccurrenceMatcher::Any, vec!['a', 'b', 'c'])?
+    ///     );
     ///
     ///     Ok(())
     /// }

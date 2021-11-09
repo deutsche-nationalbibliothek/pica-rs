@@ -1,28 +1,37 @@
-use crate::filter::{
-    parse_field_tag, parse_occurrence_matcher, parse_subfield_code,
-    parse_subfield_filter, ws, OccurrenceMatcher, SubfieldFilter,
-};
-
+use bstr::BString;
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
 use nom::combinator::{all_consuming, cut, map, opt};
 use nom::multi::separated_list1;
 use nom::sequence::{delimited, pair, preceded, terminated, tuple};
-use nom::{Finish, IResult};
-
-use bstr::BString;
+use nom::Finish;
 use std::default::Default;
 use std::ops::{Add, Deref, Mul};
 
+use crate::common::ParseResult;
+use crate::filter::{
+    parse_string, parse_subfield_code, parse_subfield_filter, ws,
+    SubfieldFilter,
+};
+use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
+use crate::tag::parse_tag_matcher;
+use crate::TagMatcher;
+
 #[derive(Debug, PartialEq)]
-pub struct Selector {
-    pub(crate) tag: String,
+pub struct FieldSelector {
+    pub(crate) tag: TagMatcher,
     pub(crate) occurrence: OccurrenceMatcher,
     pub(crate) filter: Option<SubfieldFilter>,
     pub(crate) subfields: Vec<char>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
+pub enum Selector {
+    Field(Box<FieldSelector>),
+    Value(String),
+}
+
+#[derive(Debug, Default)]
 pub struct Outcome(pub(crate) Vec<Vec<BString>>);
 
 impl Outcome {
@@ -36,12 +45,6 @@ impl Outcome {
 
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
-    }
-}
-
-impl Default for Outcome {
-    fn default() -> Outcome {
-        Outcome(Vec::<Vec<BString>>::new())
     }
 }
 
@@ -99,9 +102,9 @@ impl Add for Outcome {
     }
 }
 
-impl Selector {
+impl FieldSelector {
     pub fn new(
-        tag: String,
+        tag: TagMatcher,
         occurrence: OccurrenceMatcher,
         filter: Option<SubfieldFilter>,
         subfields: Vec<char>,
@@ -119,7 +122,7 @@ pub struct Selectors(Vec<Selector>);
 
 impl Selectors {
     pub fn decode(s: &str) -> Result<Self, String> {
-        match parse_selectors(s).finish() {
+        match parse_selectors(s.as_bytes()).finish() {
             Ok((_, selectors)) => Ok(selectors),
             _ => Err("invalid select statement".to_string()),
         }
@@ -134,26 +137,27 @@ impl Deref for Selectors {
     }
 }
 
-fn parse_selector(i: &str) -> IResult<&str, Selector> {
+fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
     alt((
+        map(ws(parse_string), Selector::Value),
         map(
             tuple((
-                parse_field_tag,
+                parse_tag_matcher,
                 parse_occurrence_matcher,
                 preceded(char('.'), cut(parse_subfield_code)),
             )),
             |(tag, occurrence, subfield)| {
-                Selector::new(
-                    String::from(tag),
+                Selector::Field(Box::new(FieldSelector::new(
+                    tag,
                     occurrence,
                     None,
                     vec![subfield],
-                )
+                )))
             },
         ),
         map(
             tuple((
-                parse_field_tag,
+                parse_tag_matcher,
                 parse_occurrence_matcher,
                 delimited(
                     ws(char('{')),
@@ -165,13 +169,15 @@ fn parse_selector(i: &str) -> IResult<&str, Selector> {
                 ),
             )),
             |(tag, occurrence, (filter, subfields))| {
-                Selector::new(String::from(tag), occurrence, filter, subfields)
+                Selector::Field(Box::new(FieldSelector::new(
+                    tag, occurrence, filter, subfields,
+                )))
             },
         ),
     ))(i)
 }
 
-fn parse_selectors(i: &str) -> IResult<&str, Selectors> {
+fn parse_selectors(i: &[u8]) -> ParseResult<Selectors> {
     all_consuming(map(
         delimited(
             multispace0,
@@ -186,76 +192,64 @@ fn parse_selectors(i: &str) -> IResult<&str, Selectors> {
 mod tests {
     use super::*;
     use crate::filter::ComparisonOp;
+    use crate::test::TestResult;
 
     #[test]
-    fn test_parse_selector() {
+    fn test_parse_selector() -> TestResult {
         assert_eq!(
-            parse_selector("003@.0"),
-            Ok((
-                "",
-                Selector::new(
-                    "003@".to_string(),
-                    OccurrenceMatcher::None,
-                    None,
-                    vec!['0']
-                )
-            ))
+            parse_selector(b"003@.0")?.1,
+            Selector::Field(Box::new(FieldSelector::new(
+                TagMatcher::new("003@")?,
+                OccurrenceMatcher::None,
+                None,
+                vec!['0']
+            )))
         );
 
         assert_eq!(
-            parse_selector("044H/*{ 9, E ,H}"),
-            Ok((
-                "",
-                Selector::new(
-                    "044H".to_string(),
-                    OccurrenceMatcher::Any,
-                    None,
-                    vec!['9', 'E', 'H']
-                )
-            ))
+            parse_selector(b"044H/*{ 9, E ,H}")?.1,
+            Selector::Field(Box::new(FieldSelector::new(
+                TagMatcher::new("044H")?,
+                OccurrenceMatcher::Any,
+                None,
+                vec!['9', 'E', 'H']
+            )))
         );
 
         assert_eq!(
-            parse_selector("044H/*{ E == 'm', 9, E , H }"),
-            Ok((
-                "",
-                Selector::new(
-                    "044H".to_string(),
-                    OccurrenceMatcher::Any,
-                    Some(SubfieldFilter::Comparison(
-                        'E',
-                        ComparisonOp::Eq,
-                        vec!["m".to_string()]
-                    )),
-                    vec!['9', 'E', 'H']
-                )
-            ))
+            parse_selector(b"044H/*{ E == 'm', 9, E , H }")?.1,
+            Selector::Field(Box::new(FieldSelector::new(
+                TagMatcher::new("044H")?,
+                OccurrenceMatcher::Any,
+                Some(SubfieldFilter::Comparison(
+                    vec!['E'],
+                    ComparisonOp::Eq,
+                    vec![BString::from("m")]
+                )),
+                vec!['9', 'E', 'H']
+            )))
         );
 
         assert_eq!(
-            parse_selector("012A/*.a"),
-            Ok((
-                "",
-                Selector::new(
-                    "012A".to_string(),
-                    OccurrenceMatcher::Any,
-                    None,
-                    vec!['a']
-                )
-            ))
+            parse_selector(b"012A/*.a")?.1,
+            Selector::Field(Box::new(FieldSelector::new(
+                TagMatcher::new("012A")?,
+                OccurrenceMatcher::Any,
+                None,
+                vec!['a']
+            )))
         );
 
         assert_eq!(
-            parse_selector("012A/01.a"),
-            Ok((
-                "",
-                Selector::new(
-                    "012A".to_string(),
-                    OccurrenceMatcher::new("01").unwrap(),
-                    None,
-                    vec!['a']
-                )
-            ))
+            parse_selector(b"012A/01.a")?.1,
+            Selector::Field(Box::new(FieldSelector::new(
+                TagMatcher::new("012A")?,
+                OccurrenceMatcher::new("01").unwrap(),
+                None,
+                vec!['a']
+            )))
         );
+
+        Ok(())
     }
 }

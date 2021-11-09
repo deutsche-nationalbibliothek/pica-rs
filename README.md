@@ -3,15 +3,16 @@
 [![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/workflows/CI/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions?query=workflow%3ACI+branch%3Amain)
 [![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/)
 [![Coverage Status](https://coveralls.io/repos/github/deutsche-nationalbibliothek/pica-rs/badge.svg?branch=main)](https://coveralls.io/github/deutsche-nationalbibliothek/pica-rs?branch=main)
+[![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 ## About
 
 This repository provides a collection of tools to work with bibliographic
-records encoded in Pica+, the internal format of the OCLC Cataloging
+records encoded in PICA+, the internal format of the OCLC Cataloging
 system. The development of this tool was motivated by the wish to have a fast
-and efficient way to transform Pica+ records to a data format, which can be
+and efficient way to transform PICA+ records to a data format, which can be
 easily processed Python's [pandas](https://git.io/v7Qt8) library.
 
 Most of the commands are inspired by the [xsv](https://git.io/JIoJG) toolkit.
@@ -26,7 +27,7 @@ language with the `cargo` package manager.
 To install the latest stable release:
 
 ```bash
-$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.4.0
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.6.0 pica
 ```
 
 ## Commands
@@ -44,6 +45,9 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 * [split](#split) — split a list of records into chunks
 
 ## Usage
+
+PICA+ data is read from input file(s) or standard input in normalized PICA+
+serialization. Compressed `.gz` archives are decompressed.
 
 ### Cat
 
@@ -114,7 +118,6 @@ $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
     "fields": [
       {
         "name": "003@",
-        "occurrence": null,
         "subfields": [
           {
             "name": "0",
@@ -149,12 +152,12 @@ outdir
 
 ### Print
 
-The `print` command is used to print records in a human-readable format. The
-format is similar to PICA3.
+The `print` command is used to print records in humand-readable
+[PICA Plain](http://format.gbv.de/pica/plain) format.
 
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
-003@ $0 123456789 $a b
+003@ $0123456789$ab
 ```
 
 ### Sample
@@ -175,16 +178,20 @@ $ pica filter -s "002@.0 =~ '^Tp[1z]'" | pica sample 100 -o samples.dat
 
 This command selects subfields of a record and print them as CSV data. A select
 expression consists of a non-empty list of selectors. A selector references a
-field and a list of subfields. If a selector's field or any subfield is
-repeatable, the rows are "multiplied". For example, if the first selector
-returns one row, the second selector two rows and a third selecor 3 rows, the
-result will contain `1 * 2 * 3 = 6` rows. Non-existing fields or subfields
-results in an empty column.
+field and a list of subfields or an static value enclosed in single quotes. If
+a selector's field or any subfield is repeatable, the rows are
+"multiplied". For example, if the first selector returns one row, the second
+selector two rows and a third selecor 3 rows, the result will contain `1 * 2 *
+3 = 6` rows. Non-existing fields or subfields results in an empty column.
 
 ```bash
 $ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
 123456789X,a,b,c
 123456789X,d,e,f
+
+$ pica select -s "003@.0, 'foo', 'bar'" DUMP.dat.gz
+123456789X,foo,bar
+123456789X,foo,bar
 ```
 
 To filter for fields matching a subfield filter, the first part of a complex
@@ -237,12 +244,13 @@ outdir
 
 ## Related Projects
 
-- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) - Catmandu modules for working with PICA+ data.
-- [Metafacture](https://github.com/metafacture) - Tool suite for metadata processing.
-- [PICA::Data](https://github.com/gbv/PICA-Data) -  Perl module to handle PICA+ data.
-- [PICA::Record](https://github.com/gbv/PICA-Record) -  Perl module to handle PICA+ records (deprecated).
-- [luapica](http://jakobvoss.de/luapica/) - Handle PICA+ data in Lua.
-- [picaplus](https://github.com/FID-Judaica/picaplus)  tooling for working with pica+
+- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) - Catmandu modules for working with PICA+ data
+- [PICA::Data](https://github.com/gbv/PICA-Data) -  Perl module and command line tool to handle PICA+ data
+- [Metafacture](https://github.com/metafacture) - Tool suite for metadata processing
+- [pica-data-js](https://github.com/gbv/pica-data-js) - Handle PICA+ data in JavaScript
+- [luapica](http://jakobvoss.de/luapica/) - Handle PICA+ data in Lua
+- [picaplus](https://github.com/FID-Judaica/picaplus) - tooling for working with PICA+
+- [PICA::Record](https://github.com/gbv/PICA-Record) -  Perl module to handle PICA+ records (deprecated)
 
 ## License
 

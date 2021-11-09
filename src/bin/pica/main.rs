@@ -3,6 +3,7 @@ extern crate clap;
 extern crate csv;
 extern crate regex;
 extern crate serde;
+extern crate termcolor;
 
 mod cli;
 mod cmds;
@@ -45,12 +46,12 @@ fn main() {
         Err(CliError::Io(ref err))
             if err.kind() == io::ErrorKind::BrokenPipe =>
         {
-            process::exit(0);
+            process::exit(0); // no-coverage
         }
         Err(CliError::Pica(pica::Error::Io(ref err)))
             if err.kind() == io::ErrorKind::BrokenPipe =>
         {
-            process::exit(0);
+            process::exit(0); // no-coverage
         }
         Err(CliError::Pica(err)) => {
             eprintln!("Pica Error: {}", err);
