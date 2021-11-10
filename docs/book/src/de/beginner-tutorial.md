@@ -9,10 +9,26 @@ Das Tool kann mit extrem großen Dateien umgehen, weil es diese sequentiell ausl
 pica.rs läuft unter Windows, Linux und Mac OS.
 
 ## Installation
-#TODO
-Download
-Entpacken
-Pica Registrieren
+
+Es ist möglich, die Quelldateien herunterzuladen und direkt auf dem eigenen Rechner von RUST zu einem lauffähigen Programm kompilieren zu lassen.
+
+Für die gängigen Windows-, Apple- oder Linux-Systeme, stehen aber fertige Programmpakete unter (https://github.com/deutsche-nationalbibliothek/pica-rs/releases) zur Verfügung.
+
+Entpacken Sie das Paket und legen es in einen beliebigen Ordner, z. B. unter Programme.
+
+In der Konfigurationsdatei Ihres Terminals müssen Sie dann noch den Pfad angeben, in dem Sie das Programm abgelegt haben.
+
+Beispiel: ZSH unter Linux oder MacOS
+
+Die versteckte Datei `.zshrc` liegt üblicherweise im Homeverzeichnis des aktuellen Benutzers. Dort fügen Sie an beliebiger Stelle folgende Zeile hinzu:
+
+```bash
+export PATH="/PFADZUMPROGRAMM:$PATH"
+```
+
+wobei `PFADZUMPROGRAMM` natürlich durch Ihren tatsächlichen Pfad ersetzt werden muss.
+
+Nach einem Neustart des Terminals sollte jetzt der neue Befehl `pica` zur Verfügung stehen. Mit `pica -V` können Sie testen, welche Version sie haben.
 
 ## Kommandozeile
 pica.rs ist auch deswegen sehr schnell, weil es kein grafisches Interface hat. Man sollte deshalb einige Basics der Kommandozeilen (auch Terminal oder Shell genannt) des jeweiligen Betriebssystems kennen. Alle Befehle werden hier in der Fassung für gängige Linux-und Mac OS-Terminals gezeigt, abweichende Befehle der Windows Power Shell werden meistens in Klammern erwähnt.
