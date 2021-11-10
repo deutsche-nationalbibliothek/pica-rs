@@ -109,11 +109,21 @@ Achtung: Dateien werden ohne Rückfrage überschrieben und werden nicht im Papie
 
 Der Filterausdruck in den doppelten Anführungszeichen ist das mächtigste Werkzeug von pica.rs. Mehrere Ausdrücke können zu komplexen Suchfiltern kombiniert werden.
 
-Jeder Filterausdruck besteht immer aus einer Feldbezeichnung wie `002@` und einem Unterfeldfilter wie `.0`. Felder können auch nummerierte Okkurrenzen haben wie `/01`. Okkurrenzen lassen sich nach ihrem Wert filtern oder alle Okkurrenzen können mit `/*` durchsucht werden. Bereiche von Okkurrenzen könnten ebenfalls eingegrenzt werden: `047A/01-03`
+Jeder Filterausdruck besteht immer aus einem Feld wie `002@`, einem Unterfeldfilter wie `.0`, einem Operator, der angibt, wie der Inhalt des Feldes gefiltert werden soll, wie z. B. `==` und einem Wert, mit dem das Feld verglichen werden soll.
 
-Um z. B. Unterfeld `9` aller Okkurrenzen von Feld `041A` zu filtern, müsste der Feldausdruck so lauten: `041A/*.9`.
+### Felder
 
-Unterfeld `a` aus Feld `010@` wird so gefiltert: `010@.a`
+Felder können in der einfachsten Form direkt benannt werden: `002@`
+
+Felder können auch nummerierte Okkurrenzen haben wie `/01`. Okkurrenzen lassen sich nach ihrem Wert filtern oder alle Okkurrenzen können mit `/*` durchsucht werden. Bereiche von Okkurrenzen können ebenfalls eingegrenzt werden: `047A/01-03`
+
+### Unterfelder
+
+Unterfelder werden mit einem Punkt und ohne Dollarzeichen angehängt: `002@.9` meint Unterfeld `$9` von Feld `002@`.
+
+Um z. B. Unterfeld `9` aller Okkurrenzen von Feld `041A` zu filtern, müsste der Feldausdruck lauten: `041A/*.9`.
+
+### Operatoren
 
 Werte können über folgende Vergleichsoperatoren gesucht werden.
 
@@ -131,7 +141,7 @@ Die Operatoren können in runden Klammern gruppiert und mit den boolschen Operat
 
 #TODO Beispiele und Erklärung aller Operatoren
 
-### == und ===
+#### == und ===
 
 Der ==-Operator prüft, ob es ein Unterfeld gibt, dass einem Wert entspricht. `pica filter "012A.a == 'abc'"` liest sich wie folgt: Es existiert ein Feld `012A` mit *einem* Unterfeld `a` das gleich `abc` ist. Es könnten noch weitere Unterfelder `a` existieren, die nicht `abc` sind.
 
@@ -139,25 +149,25 @@ Im Gegensatz dazu stellt der ===-Operator sicher, dass *alle* Unterfelder `a` gl
 
 Bei beiden Varianten ist es nicht ausgeschlossen, dass es noch ein weiteres Feld `012A` gibt, dass kein Unterfeld `a` enthält.
 
-### !=
+#### !=
 
 Das Gegenstück zu `==`. Prüft, ob ein Unterfeld nicht einem Wert entspricht.
 
-### =^
+#### =^
 
 Prüft, ob ein Unterfeld mit einem bestimmten Prefix beginnt.
 
-### =$
+#### =$
 
 Prüft, ob ein Unterfeld mit einem bestimmten Suffix endet.
 
-### =~
+#### =~
 
 Prüft ob ein Feld einem regulären Ausdruck entspricht. Die Auswertung dieses Operators benötigt die meiste Rechenkapazität. Er sollte deshalb nur dann verwendet werden, wenn er wirklich absolut notwendig ist. Es ist z. B. schneller, nach einer Kombination von `=^` und `=$` zu suchen als nach einem regulären Ausdruck.
 
 Tipp: ein empfehlenswertes Tool, um reguläre Ausdrücke zu schreiben und zu testen, ist (regex101.com)[https://regex101.com].
 
-### in und not in
+#### in und not in
 
 Prüft, ob ein Unterfeld in einer Liste von Werten enthalten ist. Die Werte stehen in eckigen Klammern und sind durch Kommas getrennt. `not in` ist die Umkehrung dazu und prüft, ob Unterfeld nicht in der Werteliste enthalten ist.
 
@@ -166,7 +176,7 @@ Beispiel:
 ```bash
 pica filter -s "0100.a in ['ger', 'eng']" testdaten.dat
 ```
-### ?
+#### ?
 
 Prüft. ob ein Feld oder ein Unterfeld überhaupt existiert.
 
@@ -174,7 +184,38 @@ Prüft. ob ein Feld oder ein Unterfeld überhaupt existiert.
 pica filter -s "012A/00?" testdaten.dat
 pica filter -s "002@.0?" testdaten.dat
 pica filter -s "002@{0?}" testdaten.dat
-````
+```
+### mehrere Felder adressieren
+
+Es kommt öfters vor, dass sich ein Wert vom gleichen Typ in unterschiedlichen Feldern befindet. Z. B. befindet sich im Feld `028A.9` die "Person, Familie - 1. geistiger Schöpfer" und im Feld `029A.9` "Person, Familie - weitere geistige Schöpfer". Um Datensätze zu filtern, die entweder einen 1. geistigen Schöpfer oder einen weiteren geistigen Schöpfer haben, könnte man schreiben:
+
+```bash
+pica filter "028A.9? || 029A.9?" testdaten.dat
+```
+
+Der Ausdruck lässt sich vereinfachen zu:
+
+```bash
+pica filter "02[89]A.9?" testdaten.dat
+```
+
+An jeder Position in einem Feld kann eine Liste der gültigen Werte angegeben werden. Es wird dann jede mögliche Kombination ausprobiert, um einen Match zu finden. Bsp. `0[12][34]A` führt zu der Liste `013A`, `014A`, `023A` und `024A`.
+
+### mehrere Unterfelder adressieren
+
+So ähnlich können auch mehrere Unterfelder adressiert werden. Beispiel: Im Feld `045E` befindet sich die Sachgruppe der Deutschen Nationabibliografie. Im Unterfeld `$e` die Hauptsachgruppe (HSG) und im Feld `$f` die Nebensachgruppen (NSG). Ist man an allen Datensätzen interessiert, die zur HSG 100 oder zur NSG 100 gehören, könnte man folgenden Filter schreiben:
+
+```bash
+pica filter "045E.e == '100' || 045E.f == '100'" testdaten.dat
+```
+
+Der Ausdruck lässt sich verkürzen zu:
+
+```bash
+pica filter "045E.[ef] == '100'" testdaten.dat
+```
+
+Beide Verfahren sind kombinierbar: `0[12]3[AB].[xyz]` ist ein gültiger Ausdruck.
 
 ## Select
 
@@ -217,8 +258,6 @@ pica select -H "idn, autor-idn, autor-vorname, autor-nachname" "003@.0, 028A{4 =
 Die doppelte Filtermöglichkeit einmal mit dem Filter-Tool und einmal im select-Tool verwirrt auf den ersten Blick etwas. `filter` prüft eine oder mehrere Felder oder Unterfelder auf Bedingungen und gibt den gesamten Datensatz aus, wenn die Bedingung wahr ist. `select` prüft ebenfalls auf Bedingungen und selektiert dann die benötigten Teildaten.
 
 Man könnte auch sagen: mit `filter` wird die Zahl der Datensätze reduziert und mit `select` werden die einzelnen Datenpunkte ausgelesen. 
-
-
 
 ## Arbeit mit großen Datenabzügen
 
