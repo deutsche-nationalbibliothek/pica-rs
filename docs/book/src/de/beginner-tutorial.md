@@ -12,7 +12,7 @@ pica.rs läuft unter Windows, Linux und Mac OS.
 
 Es ist möglich, die Quelldateien herunterzuladen und direkt auf dem eigenen Rechner von RUST zu einem lauffähigen Programm kompilieren zu lassen.
 
-Für die gängigen Windows-, Apple- oder Linux-Systeme, stehen aber fertige Programmpakete unter (https://github.com/deutsche-nationalbibliothek/pica-rs/releases) zur Verfügung.
+Für die gängigen Windows-, Apple- oder Linux-Systeme, stehen aber fertige Programmpakete unter [https://github.com/deutsche-nationalbibliothek/pica-rs/releases](https://github.com/deutsche-nationalbibliothek/pica-rs/releases) zur Verfügung.
 
 Entpacken Sie das Paket und legen es in einen beliebigen Ordner, z. B. unter Programme.
 
@@ -33,7 +33,7 @@ Nach einem Neustart des Terminals sollte jetzt der neue Befehl `pica` zur Verfü
 ## Kommandozeile
 pica.rs ist auch deswegen sehr schnell, weil es kein grafisches Interface hat. Man sollte deshalb einige Basics der Kommandozeilen (auch Terminal oder Shell genannt) des jeweiligen Betriebssystems kennen. Alle Befehle werden hier in der Fassung für gängige Linux-und Mac OS-Terminals gezeigt, abweichende Befehle der Windows Power Shell werden meistens in Klammern erwähnt.
 
-Zum Testen steht unter [testdaten.dat] ein Testdatenpaket mit 1.000 zufällig ausgewählten Datensätzen aus dem Bestand der Deutschen Nationalbibliothek bereit. Der Test-Datensatz enthält sowohl Titeldaten als auch GND-Normdatensätze.
+Zum Testen steht unter [https://github.com/a-wendler/pica-rs/blob/tutorial/docs/book/src/de/testdaten.dat](https://github.com/a-wendler/pica-rs/blob/tutorial/docs/book/src/de/testdaten.dat) ein Testdatenpaket mit 1.000 zufällig ausgewählten Datensätzen aus dem Bestand der Deutschen Nationalbibliothek bereit. Der Test-Datensatz enthält sowohl Titeldaten als auch GND-Normdatensätze.
 
 ## Pipes
 Um das Tool optimal nutzen zu können, sollten Sie verstehen, was __Pipes__ sind. Im Terminal wird die Ausgabe ausgeführter Programme oder Befehle üblicherweise in die sogenannte __Standardausgabe__ (`stdout`) geschrieben. Normalerweise ist das die Bildschirmausgabe des Terminals selbst. Wenn sie z. B. den Inhalt des aktuellen Ordners mit `ls` (Windows: `dir`) auslesen, wird eine Liste aller Dateien und Ordner direkt im Terminal ausgegeben.
