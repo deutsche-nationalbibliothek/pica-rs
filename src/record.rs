@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::{Field, Path};
+use crate::{Field, MatcherFlags, Path};
 
 use bstr::BString;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
@@ -242,8 +242,8 @@ impl ByteRecord {
         self.fields
             .iter()
             .filter(|field| {
-                field.tag == path.tag
-                    && field.occurrence == path.occurrence
+                path.tag.is_match(field.tag())
+                    && path.occurrence.is_match(field.occurrence())
                     && path.codes.iter().any(|x| field.contains_code(*x))
             })
             .flat_map(|field| {
@@ -263,11 +263,14 @@ impl ByteRecord {
             Selector::Field(selector) => {
                 let result = self
                     .iter()
-                    .filter(|field| selector.tag == field.tag)
-                    .filter(|field| field.occurrence == selector.occurrence)
+                    .filter(|field| selector.tag.is_match(field.tag()))
+                    .filter(|field| {
+                        selector.occurrence.is_match(field.occurrence())
+                    })
                     .filter(|field| {
                         if let Some(filter) = &selector.filter {
-                            filter.matches(field, ignore_case)
+                            filter
+                                .is_match(field, &MatcherFlags { ignore_case })
                         } else {
                             true
                         }

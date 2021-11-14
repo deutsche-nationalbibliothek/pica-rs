@@ -1,7 +1,7 @@
 //! Common parser types and functions.
 
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag};
+use nom::bytes::complete::is_not;
 use nom::character::complete::{char, multispace0, multispace1};
 use nom::combinator::{map, map_res, value, verify};
 use nom::error::ParseError;
@@ -15,40 +15,6 @@ pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 #[derive(Debug)]
 pub struct MatcherFlags {
     pub ignore_case: bool,
-}
-
-/// A comparison operator.
-#[derive(Debug, Clone, PartialEq)]
-pub enum ComparisonOp {
-    Eq,         // ==
-    Ne,         // !=
-    Re,         // !~
-    StartsWith, // =^
-    EndsWith,   // =$
-    In,         // in
-}
-
-pub(crate) fn parse_comparison_op(i: &[u8]) -> ParseResult<ComparisonOp> {
-    alt((
-        value(ComparisonOp::Eq, tag("==")),
-        value(ComparisonOp::Ne, tag("!=")),
-        value(ComparisonOp::StartsWith, tag("=^")),
-        value(ComparisonOp::EndsWith, tag("=$")),
-    ))(i)
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum BooleanOp {
-    And,
-    Or,
-}
-
-/// Parses a boolean operator (AND (&&) or OR (||)) operator, if possible.
-pub(crate) fn parse_boolean_op(i: &[u8]) -> ParseResult<BooleanOp> {
-    alt((
-        value(BooleanOp::And, tag("&&")),
-        value(BooleanOp::Or, tag("||")),
-    ))(i)
 }
 
 /// Strip whitespaces from the beginning and end.
