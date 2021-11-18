@@ -75,7 +75,10 @@ parentheses and combined with boolean connectives (ex. `(0 == 'abc' ||
 0 == 'def')`).
 
 There is also a special existence operator to check if a given field
-(`012A/00?`) or a subfield (`002@.0?` or `002@{0?}`) exists.
+(`012A/00?`) or a subfield (`002@.0?` or `002@{0?}`) exists. In order
+to test for the number of occurrence of a field or subfield use the
+cardinality operator `#` (`#010@ == 1` or `010@{ #a == 1 && a ==
+'ger'}`).
 
 **Examples**
 

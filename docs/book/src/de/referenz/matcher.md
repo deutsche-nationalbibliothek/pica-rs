@@ -120,7 +120,8 @@ TBD
 > &nbsp;&nbsp; &nbsp;&nbsp; [_SubfieldListMatcherGroup_]\
 > &nbsp;&nbsp; | [_SubfieldListMatcherNot_]\
 > &nbsp;&nbsp; | [_SubfieldListMatcherComposite_]\
-> &nbsp;&nbsp; | [_SubfieldListMatcherSingleton_]
+> &nbsp;&nbsp; | [_SubfieldListMatcherSingleton_]\
+> &nbsp;&nbsp; | [_SubfieldListMatcherCardinality_]
 
 ## Subfield List Matcher Singleton
 
@@ -171,6 +172,15 @@ TBD
 > &nbsp;&nbsp; | [_SubfieldListMatcherSingleton_]\
 > &nbsp;&nbsp; | [_SubfieldListMatcherNot_]
 
+## Subfield List Matcher Cardinality
+
+> **<sup>Syntax</sup>**\
+> _SubfieldListMatcherCardinality_ : [_SubfieldCode_] [_ComparisonOp_]<sup>*</sup> _Value_\
+>\
+> _Value_: [0-9]+
+
+<sup>*</sup> `=^` and `=$` are not allowed
+
 
 # Subfield Matcher
 
@@ -184,7 +194,9 @@ TBD
 ## Subfield Matcher Comparison
 
 > **<sup>Syntax</sup>**\
-> _SubfieldMatcherComparison_ : [_SubfieldCodes_] [_ComparisonOp_] [_StringLiteral_]
+> _SubfieldMatcherComparison_ : [_SubfieldCodes_] [_ComparisonOp_]<sup>*</sup> [_StringLiteral_]
+
+<sup>*</sup> `<`, `<=`, `>=`, `>` not allowed
 
 ## Subfield Matcher Regex
 
@@ -210,7 +222,7 @@ TBD
 # Comparison Operators
 
 > **<sup>Syntax</sup>**\
-> _ComparisonOp_ : `==` | `!=` | `=^` | `=$`
+> _ComparisonOp_ : `==` | `!=` | `>=` | `>` | `<=` | `<` | `=^` | `=$`
 
 # Boolean Operators
 
@@ -239,6 +251,7 @@ TBD
 [_SubfieldListMatcherComposite_]: #subfield-list-matcher-composite
 [_SubfieldListMatcherGroup_]: #subfield-list-matcher-group
 [_SubfieldListMatcherNot_]: #subfield-list-matcher-not
+[_SubfieldListMatcherCardinality_]: #subfield-list-matcher-cardinality
 
 [_TagMatcher_]: #tag-matcher
 [_Tag_]: tag.md#tag
@@ -247,6 +260,10 @@ TBD
 [_OccurrenceDigits_]: occurrence.md#occurrence-digits
 
 [_SubfieldMatcher_]: #subfield-matcher
+[_SubfieldMatcherComparison_]: #subfield-matcher-comparison
+[_SubfieldMatcherRegex_]: #subfield-matcher-regex
+[_SubfieldMatcherIn_]: #subfield-matcher-in
+[_SubfieldMatcherExists_]: #subfield-matcher-exists
 [_SubfieldCode_]: subfield.md#subfield-code
 [_SubfieldCodes_]: subfield.md#subfield-codes
 
