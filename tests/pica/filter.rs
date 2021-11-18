@@ -1332,3 +1332,88 @@ skip-invalid = false
 
     Ok(())
 }
+
+#[test]
+fn pica_filter_cardinality_op() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("#047C == 2")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("#047C == 1")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("#047C > 1")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("#047C < 4")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("008A{ #a == 2 }")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("008A{ #a < 2 }")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("008A{ #a > 2 }")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    Ok(())
+}
