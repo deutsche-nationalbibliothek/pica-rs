@@ -7,8 +7,10 @@ use regex::Regex;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, one_of};
-use nom::combinator::{all_consuming, cut, map, opt, success, value, verify};
+use nom::character::complete::{char, digit1, one_of};
+use nom::combinator::{
+    all_consuming, cut, map, map_res, opt, success, value, verify,
+};
 use nom::error::ParseError;
 use nom::multi::{many0, many1, separated_list1};
 use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
@@ -30,17 +32,33 @@ pub struct MatcherFlags {
 pub enum ComparisonOp {
     Eq,
     Ne,
+    Gt,
+    Ge,
+    Lt,
+    Le,
     StartsWith,
     EndsWith,
 }
 
-/// Parses a comparison operator.
-fn parse_comparison_op(i: &[u8]) -> ParseResult<ComparisonOp> {
+/// Parses comparison operator for byte strings.
+fn parse_comparison_op_bstring(i: &[u8]) -> ParseResult<ComparisonOp> {
     alt((
         value(ComparisonOp::Eq, tag("==")),
         value(ComparisonOp::Ne, tag("!=")),
         value(ComparisonOp::StartsWith, tag("=^")),
         value(ComparisonOp::EndsWith, tag("=$")),
+    ))(i)
+}
+
+/// Parses comparison operator for usize.
+fn parse_comparison_op_usize(i: &[u8]) -> ParseResult<ComparisonOp> {
+    alt((
+        value(ComparisonOp::Eq, tag("==")),
+        value(ComparisonOp::Ne, tag("!=")),
+        value(ComparisonOp::Ge, tag(">=")),
+        value(ComparisonOp::Gt, tag(">")),
+        value(ComparisonOp::Le, tag("<=")),
+        value(ComparisonOp::Lt, tag("<")),
     ))(i)
 }
 
@@ -55,9 +73,9 @@ pub enum BooleanOp {
 #[derive(Debug, PartialEq)]
 pub enum SubfieldMatcher {
     Comparison(Vec<char>, ComparisonOp, BString),
-    Regex(Vec<char>, String, bool),
-    In(Vec<char>, Vec<BString>, bool),
     Exists(Vec<char>),
+    In(Vec<char>, Vec<BString>, bool),
+    Regex(Vec<char>, String, bool),
 }
 
 impl SubfieldMatcher {
@@ -107,6 +125,7 @@ impl SubfieldMatcher {
                         subfield.value().ends_with(value)
                     }
             }
+            Self::Comparison(_, _, _) => unreachable!(),
             Self::Regex(codes, regex, invert) => {
                 let re = RegexBuilder::new(regex)
                     .case_insensitive(flags.ignore_case)
@@ -153,7 +172,7 @@ fn parse_subfield_matcher_comparison(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
         tuple((
             ws(parse_subfield_codes),
-            ws(parse_comparison_op),
+            ws(parse_comparison_op_bstring),
             ws(parse_string),
         )),
         |(codes, op, value)| {
@@ -221,6 +240,7 @@ pub enum SubfieldListMatcher {
         BooleanOp,
         Box<SubfieldListMatcher>,
     ),
+    Cardinality(char, ComparisonOp, usize),
 }
 
 impl SubfieldListMatcher {
@@ -240,6 +260,20 @@ impl SubfieldListMatcher {
             }
             Self::Composite(lhs, BooleanOp::Or, rhs) => {
                 lhs.is_match(subfields, flags) || rhs.is_match(subfields, flags)
+            }
+            Self::Cardinality(code, op, value) => {
+                let cardinality =
+                    subfields.iter().filter(|s| s.code() == *code).count();
+
+                match op {
+                    ComparisonOp::Eq => cardinality == *value,
+                    ComparisonOp::Ne => cardinality != *value,
+                    ComparisonOp::Gt => cardinality > *value,
+                    ComparisonOp::Ge => cardinality >= *value,
+                    ComparisonOp::Lt => cardinality < *value,
+                    ComparisonOp::Le => cardinality <= *value,
+                    _ => unreachable!(),
+                }
             }
         }
     }
@@ -273,6 +307,24 @@ fn parse_subfield_list_matcher_singleton(
     i: &[u8],
 ) -> ParseResult<SubfieldListMatcher> {
     map(ws(parse_subfield_matcher), SubfieldListMatcher::Singleton)(i)
+}
+
+fn parse_subfield_list_matcher_cardinality(
+    i: &[u8],
+) -> ParseResult<SubfieldListMatcher> {
+    map(
+        preceded(
+            char('#'),
+            cut(tuple((
+                ws(parse_subfield_code),
+                ws(parse_comparison_op_usize),
+                map_res(digit1, |s| {
+                    std::str::from_utf8(s).unwrap().parse::<usize>()
+                }),
+            ))),
+        ),
+        |(code, op, value)| SubfieldListMatcher::Cardinality(code, op, value),
+    )(i)
 }
 
 fn parse_subfield_list_matcher_group(
@@ -380,6 +432,7 @@ pub(crate) fn parse_subfield_list_matcher(
         parse_subfield_list_matcher_not,
         parse_subfield_list_matcher_composite,
         parse_subfield_list_matcher_singleton,
+        parse_subfield_list_matcher_cardinality,
     ))(i)
 }
 
@@ -557,6 +610,7 @@ pub enum RecordMatcher {
     Group(Box<RecordMatcher>),
     Not(Box<RecordMatcher>),
     Composite(Box<RecordMatcher>, BooleanOp, Box<RecordMatcher>),
+    Cardinality(TagMatcher, OccurrenceMatcher, ComparisonOp, usize),
     True,
 }
 
@@ -573,6 +627,25 @@ impl RecordMatcher {
             }
             Self::Composite(lhs, BooleanOp::Or, rhs) => {
                 lhs.is_match(record, flags) || rhs.is_match(record, flags)
+            }
+            Self::Cardinality(tag, occurrence, op, value) => {
+                let cardinality = record
+                    .iter()
+                    .filter(|field| {
+                        tag.is_match(field.tag())
+                            && occurrence.is_match(field.occurrence())
+                    })
+                    .count();
+
+                match op {
+                    ComparisonOp::Eq => cardinality == *value,
+                    ComparisonOp::Ne => cardinality != *value,
+                    ComparisonOp::Gt => cardinality > *value,
+                    ComparisonOp::Ge => cardinality >= *value,
+                    ComparisonOp::Lt => cardinality < *value,
+                    ComparisonOp::Le => cardinality <= *value,
+                    _ => unreachable!(),
+                }
             }
             Self::True => true,
         }
@@ -713,12 +786,30 @@ fn parse_record_matcher_composite(i: &[u8]) -> ParseResult<RecordMatcher> {
     ))(i)
 }
 
+fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
+    map(
+        preceded(
+            ws(char('#')),
+            cut(tuple((
+                ws(parse_tag_matcher),
+                parse_occurrence_matcher,
+                ws(parse_comparison_op_usize),
+                map_res(digit1, |s| {
+                    std::str::from_utf8(s).unwrap().parse::<usize>()
+                }),
+            ))),
+        ),
+        |(t, o, op, value)| RecordMatcher::Cardinality(t, o, op, value),
+    )(i)
+}
+
 fn parse_record_matcher(i: &[u8]) -> ParseResult<RecordMatcher> {
     alt((
         ws(parse_record_matcher_group),
         ws(parse_record_matcher_not),
         ws(parse_record_matcher_composite),
         ws(parse_record_matcher_singleton),
+        ws(parse_record_matcher_cardinality),
     ))(i)
 }
 
@@ -729,10 +820,23 @@ mod tests {
 
     #[test]
     fn test_parse_comparison_op() -> TestResult {
-        assert_eq!(parse_comparison_op(b"==")?.1, ComparisonOp::Eq);
-        assert_eq!(parse_comparison_op(b"!=")?.1, ComparisonOp::Ne);
-        assert_eq!(parse_comparison_op(b"=^")?.1, ComparisonOp::StartsWith);
-        assert_eq!(parse_comparison_op(b"=$")?.1, ComparisonOp::EndsWith);
+        assert_eq!(parse_comparison_op_bstring(b"==")?.1, ComparisonOp::Eq);
+        assert_eq!(parse_comparison_op_bstring(b"!=")?.1, ComparisonOp::Ne);
+        assert_eq!(
+            parse_comparison_op_bstring(b"=^")?.1,
+            ComparisonOp::StartsWith
+        );
+        assert_eq!(
+            parse_comparison_op_bstring(b"=$")?.1,
+            ComparisonOp::EndsWith
+        );
+
+        assert_eq!(parse_comparison_op_usize(b"==")?.1, ComparisonOp::Eq);
+        assert_eq!(parse_comparison_op_usize(b"!=")?.1, ComparisonOp::Ne);
+        assert_eq!(parse_comparison_op_usize(b">=")?.1, ComparisonOp::Ge);
+        assert_eq!(parse_comparison_op_usize(b">")?.1, ComparisonOp::Gt);
+        assert_eq!(parse_comparison_op_usize(b"<=")?.1, ComparisonOp::Le);
+        assert_eq!(parse_comparison_op_usize(b"<")?.1, ComparisonOp::Lt);
 
         Ok(())
     }
