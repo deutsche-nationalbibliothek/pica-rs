@@ -83,7 +83,10 @@ fn main() -> CliResult<()> {
         },
     };
 
-    let flags = MatcherFlags { ignore_case };
+    let flags = MatcherFlags {
+        ignore_case,
+        strsim_threshold: 0.0,
+    };
 
     for result in reader.records() {
         let record = result?;

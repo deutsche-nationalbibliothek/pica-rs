@@ -269,8 +269,13 @@ impl ByteRecord {
                     })
                     .filter(|field| {
                         if let Some(filter) = &selector.filter {
-                            filter
-                                .is_match(field, &MatcherFlags { ignore_case })
+                            filter.is_match(
+                                field,
+                                &MatcherFlags {
+                                    ignore_case,
+                                    strsim_threshold: 0.0,
+                                },
+                            )
                         } else {
                             true
                         }

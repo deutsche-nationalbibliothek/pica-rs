@@ -179,7 +179,7 @@ TBD
 >\
 > _Value_: [0-9]+
 
-<sup>*</sup> `=^` and `=$` are not allowed
+<sup>*</sup> `=^`, `=$` and `=*` not allowed
 
 
 # Subfield Matcher
@@ -222,7 +222,7 @@ TBD
 # Comparison Operators
 
 > **<sup>Syntax</sup>**\
-> _ComparisonOp_ : `==` | `!=` | `>=` | `>` | `<=` | `<` | `=^` | `=$`
+> _ComparisonOp_ : `==` | `!=` | `>=` | `>` | `<=` | `<` | `=^` | `=$` | `=*`
 
 # Boolean Operators
 

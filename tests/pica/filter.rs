@@ -1417,3 +1417,81 @@ fn pica_filter_cardinality_op() -> TestResult {
 
     Ok(())
 }
+
+#[test]
+fn pica_filter_strsim() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("028A.d =* 'Heike'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("028A.d =* 'Heiko'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--strsim-threshold")
+        .arg("0.99")
+        .arg("028A.d =* 'Heiko'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--strsim-threshold")
+        .arg("1.1")
+        .arg("028A.d =* 'Heiko'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected = predicate::eq(
+        "error: expected threshold between 0.0 and 1.0, got 1.1.\n",
+    );
+
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::str::is_empty())
+        .stderr(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--strsim-threshold")
+        .arg("abc")
+        .arg("028A.d =* 'Heiko'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::eq("error: expected threshold to be a f64, got \'abc\'.\n");
+
+    assert
+        .failure()
+        .code(1)
+        .stdout(predicate::str::is_empty())
+        .stderr(expected);
+
+    Ok(())
+}
