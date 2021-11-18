@@ -1,7 +1,6 @@
 //! This module contains data structures and functions related to
 //! PICA+ tags.
 
-use std::convert::From;
 use std::fmt;
 use std::ops::Deref;
 
@@ -16,7 +15,6 @@ use nom::Finish;
 
 use crate::common::ParseResult;
 use crate::error::Error;
-use crate::parser::parse_character_class;
 
 /// A PICA+ tag.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -135,78 +133,6 @@ impl quickcheck::Arbitrary for Tag {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub enum TagMatcher {
-    Some(Tag),
-    Pattern(Vec<char>, Vec<char>, Vec<char>, Vec<char>),
-}
-
-/// Parses a `TagMatcher`
-///
-/// ```ebnf
-/// <tag-matcher> ::= <tag> | <tag-pattern>
-/// <tag-pattern> ::= ([0-2]  | '[' [0-2]+  ']')
-///                   ([0-9]  | '[' [0-9]+  ']')
-///                   ([0-9]  | '[' [0-9]+  ']')
-///                   ([A-Z@] | '[' [A-Z@]+ ']')
-/// ```
-#[inline]
-pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
-    alt((
-        map(parse_tag, TagMatcher::Some),
-        map(
-            tuple((
-                parse_character_class("012"),
-                parse_character_class("0123456789"),
-                parse_character_class("0123456789"),
-                parse_character_class("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-            )),
-            |(p1, p2, p3, p4)| TagMatcher::Pattern(p1, p2, p3, p4),
-        ),
-    ))(i)
-}
-
-impl TagMatcher {
-    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
-        let data = data.as_ref();
-
-        match all_consuming(parse_tag_matcher)(data.as_bytes()).finish() {
-            Ok((_, tag)) => Ok(tag),
-            Err(_) => Err(Error::InvalidTagMatcher(
-                "Invalid tag matcher!".to_string(),
-            )),
-        }
-    }
-}
-
-impl From<Tag> for TagMatcher {
-    #[inline]
-    fn from(tag: Tag) -> Self {
-        Self::Some(tag)
-    }
-}
-
-impl PartialEq<TagMatcher> for Tag {
-    fn eq(&self, other: &TagMatcher) -> bool {
-        match other {
-            TagMatcher::Some(tag) => self == tag,
-            TagMatcher::Pattern(p0, p1, p2, p3) => {
-                p0.contains(&(self[0] as char))
-                    && p1.contains(&(self[1] as char))
-                    && p2.contains(&(self[2] as char))
-                    && p3.contains(&(self[3] as char))
-            }
-        }
-    }
-}
-
-impl PartialEq<Tag> for TagMatcher {
-    #[inline]
-    fn eq(&self, other: &Tag) -> bool {
-        *other == *self
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -254,73 +180,5 @@ mod tests {
     #[quickcheck]
     fn tag_from_string_representation_is_identity(tag: Tag) -> bool {
         tag == Tag::new(tag.to_string()).unwrap()
-    }
-
-    #[test]
-    fn test_parse_tag_matcher() -> TestResult {
-        assert_eq!(
-            parse_tag_matcher(b"003@").unwrap().1,
-            TagMatcher::Some(Tag::new("003@")?)
-        );
-        assert_eq!(
-            parse_tag_matcher(b"[012][23][456][AZ@]").unwrap().1,
-            TagMatcher::Pattern(
-                vec!['0', '1', '2'],
-                vec!['2', '3'],
-                vec!['4', '5', '6'],
-                vec!['A', 'Z', '@']
-            ),
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_tag_matcher_new() -> TestResult {
-        assert_eq!(
-            TagMatcher::new("003@")?,
-            TagMatcher::Some(Tag::new("003@")?)
-        );
-
-        assert_eq!(
-            TagMatcher::new("0[12]3A")?,
-            TagMatcher::Pattern(
-                vec!['0'],
-                vec!['1', '2'],
-                vec!['3'],
-                vec!['A'],
-            )
-        );
-
-        assert!(TagMatcher::new("0[123A]4A").is_err());
-        assert!(TagMatcher::new("003@ ").is_err());
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_tag_matcher_from_tag() -> TestResult {
-        assert_eq!(
-            TagMatcher::from(Tag::new("003@")?),
-            TagMatcher::new("003@")?
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_tag_eq_tag_matcher() -> TestResult {
-        assert_eq!(Tag::new("012A")?, TagMatcher::new("012A")?);
-        assert_eq!(Tag::new("012A")?, TagMatcher::new("[012]12A")?);
-        assert_eq!(Tag::new("012A")?, TagMatcher::new("0[012]2A")?);
-        assert_eq!(Tag::new("012A")?, TagMatcher::new("01[012]A")?);
-        assert_eq!(Tag::new("012A")?, TagMatcher::new("012[BA@]")?);
-        Ok(())
-    }
-
-    #[test]
-    fn test_tag_matcher_eq_tag() -> TestResult {
-        assert_eq!(TagMatcher::new("012A")?, Tag::new("012A")?);
-        assert_eq!(TagMatcher::new("012[BA@]")?, Tag::new("012A")?);
-        Ok(())
     }
 }

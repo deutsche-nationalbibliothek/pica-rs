@@ -12,22 +12,16 @@ use serde::ser::{Serialize, SerializeStruct, Serializer};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map, success, value};
+use nom::combinator::{all_consuming, map, success, value};
 use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
-use crate::common::{ws, MatcherFlags, ParseResult};
+use crate::common::ParseResult;
 use crate::error::{Error, Result};
-use crate::occurrence::{
-    parse_occurrence, parse_occurrence_matcher, Occurrence,
-};
-use crate::subfield::{
-    parse_subfield, parse_subfields_matcher, parse_subfields_matcher_simple,
-    Subfield,
-};
-use crate::tag::{parse_tag, parse_tag_matcher, Tag};
-use crate::{OccurrenceMatcher, SubfieldsMatcher, TagMatcher};
+use crate::occurrence::{parse_occurrence, Occurrence};
+use crate::subfield::{parse_subfield, Subfield};
+use crate::tag::{parse_tag, Tag};
 
 const RS: char = '\x1E';
 const SP: char = '\x20';
@@ -139,7 +133,7 @@ impl Field {
     ///     Ok(())
     /// }
     /// ```
-    pub fn subfields(&self) -> &[Subfield] {
+    pub fn subfields(&self) -> &Vec<Subfield> {
         &self.subfields
     }
 
@@ -470,48 +464,6 @@ impl FromStr for Field {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub struct FieldMatcher(TagMatcher, OccurrenceMatcher, SubfieldsMatcher);
-
-impl FieldMatcher {
-    pub fn is_match(&self, field: &Field, flags: &MatcherFlags) -> bool {
-        field.tag() == &self.0
-            && field.occurrence() == self.1
-            && self.2.is_match(field.subfields(), flags)
-    }
-}
-
-#[inline]
-fn parse_field_matcher(i: &[u8]) -> ParseResult<FieldMatcher> {
-    map(
-        tuple((
-            parse_tag_matcher,
-            parse_occurrence_matcher,
-            alt((
-                preceded(char('.'), cut(parse_subfields_matcher_simple)),
-                preceded(
-                    ws(char('{')),
-                    cut(terminated(parse_subfields_matcher, ws(char('}')))),
-                ),
-            )),
-        )),
-        |(tag, occurrence, subfields)| FieldMatcher(tag, occurrence, subfields),
-    )(i)
-}
-
-impl FromStr for FieldMatcher {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        match all_consuming(parse_field_matcher)(s.as_bytes()).finish() {
-            Ok((_, matcher)) => Ok(matcher),
-            Err(_) => Err(Error::InvalidFieldMatcher(
-                "invalid field matcher!".to_string(),
-            )),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -565,95 +517,6 @@ mod tests {
             parse_field(b"012A \x1e")?.1,
             Field::new(Tag::new("012A")?, None, vec![])
         );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_field_matcher() -> TestResult {
-        assert_eq!(
-            parse_field_matcher(b"003@.0 == 'abc'")?.1,
-            FieldMatcher(
-                TagMatcher::Some(Tag::new("003@")?),
-                OccurrenceMatcher::None,
-                SubfieldsMatcher::from_str("0 == 'abc'")?,
-            )
-        );
-
-        assert_eq!(
-            parse_field_matcher(b"003@{0 == 'abc'}")?.1,
-            FieldMatcher(
-                TagMatcher::Some(Tag::new("003@")?),
-                OccurrenceMatcher::None,
-                SubfieldsMatcher::from_str("0 == 'abc'")?,
-            )
-        );
-
-        assert_eq!(
-            parse_field_matcher(b"003@{0? && 0 == 'abc'}")?.1,
-            FieldMatcher(
-                TagMatcher::Some(Tag::new("003@")?),
-                OccurrenceMatcher::None,
-                SubfieldsMatcher::from_str("0? && 0 == 'abc'")?,
-            )
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_field_matcher_from_str() -> TestResult {
-        assert_eq!(
-            FieldMatcher::from_str("003@.0 == 'abc'")?,
-            FieldMatcher(
-                TagMatcher::Some(Tag::new("003@")?),
-                OccurrenceMatcher::None,
-                SubfieldsMatcher::from_str("0 == 'abc'")?
-            )
-        );
-
-        assert!(FieldMatcher::from_str("003@.0 == 'abc").is_err());
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_field_matcher_is_match() -> TestResult {
-        let field = Field::from_str("003@ \x1f0123456789X\x1e")?;
-
-        let matcher = FieldMatcher::from_str("003@.0 == '123456789X'")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&field, &flags));
-
-        let matcher = FieldMatcher::from_str("003@{ 0 == '123456789X' }")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&field, &flags));
-
-        let field = Field::from_str("012A/01 \x1faabc\x1e")?;
-
-        let matcher = FieldMatcher::from_str("012A/*.a == 'abc'")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&field, &flags));
-
-        let matcher = FieldMatcher::from_str("012A/*{a == 'abc'}")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&field, &flags));
-
-        let matcher = FieldMatcher::from_str("012A/01.a == 'abc'")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&field, &flags));
-
-        let matcher = FieldMatcher::from_str("012A/01{a == 'abc'}")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(matcher.is_match(&field, &flags));
-
-        let matcher = FieldMatcher::from_str("012A.a == 'abc'")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(!matcher.is_match(&field, &flags));
-
-        let matcher = FieldMatcher::from_str("012A{a == 'abc'}")?;
-        let flags = MatcherFlags { ignore_case: false };
-        assert!(!matcher.is_match(&field, &flags));
 
         Ok(())
     }

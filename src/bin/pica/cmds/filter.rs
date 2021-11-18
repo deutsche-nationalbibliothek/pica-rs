@@ -2,9 +2,12 @@ use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
-use pica::{Filter, PicaWriter, ReaderBuilder, WriterBuilder};
+use pica::{
+    MatcherFlags, PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder,
+};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
+use std::str::FromStr;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -98,7 +101,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         args.value_of("filter").unwrap().to_owned()
     };
 
-    let filter = match Filter::decode(&filter_str) {
+    let filter = match RecordMatcher::from_str(&filter_str) {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
@@ -109,10 +112,11 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     let mut count = 0;
+    let flags = MatcherFlags { ignore_case };
 
     for result in reader.byte_records() {
         let record = result?;
-        let mut is_match = filter.matches(&record, ignore_case);
+        let mut is_match = filter.is_match(&record, &flags);
 
         if args.is_present("invert-match") {
             is_match = !is_match;
