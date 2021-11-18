@@ -112,10 +112,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     let mut count = 0;
-
-    let flags = MatcherFlags {
-        ignore_case: ignore_case,
-    };
+    let flags = MatcherFlags { ignore_case };
 
     for result in reader.byte_records() {
         let record = result?;

@@ -12,11 +12,6 @@ use nom::IResult;
 /// Parser result.
 pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 
-#[derive(Debug)]
-pub struct MatcherFlags {
-    pub ignore_case: bool,
-}
-
 /// Strip whitespaces from the beginning and end.
 pub(crate) fn ws<'a, F: 'a, O, E: ParseError<&'a [u8]>>(
     inner: F,

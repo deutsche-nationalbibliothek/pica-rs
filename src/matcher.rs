@@ -108,7 +108,7 @@ impl SubfieldMatcher {
                     }
             }
             Self::Regex(codes, regex, invert) => {
-                let re = RegexBuilder::new(&regex)
+                let re = RegexBuilder::new(regex)
                     .case_insensitive(flags.ignore_case)
                     .build()
                     .unwrap();
