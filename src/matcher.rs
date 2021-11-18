@@ -145,6 +145,11 @@ fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
             char('['),
             cut(terminated(many1(parse_subfield_code), char(']'))),
         ),
+        map(char('*'), |_| {
+            "0123456789abcdefghijklmnopqrstuvwxyz"
+                .chars()
+                .collect::<Vec<char>>()
+        }),
         map(parse_subfield_code, |x| vec![x]),
     ))(i)
 }
