@@ -53,10 +53,15 @@ fn pica_partition_by_bbg() -> TestResult {
 
 #[test]
 fn pica_partition_filename_template() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("partition")
         .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir)
         .arg("--template")
         .arg("BBG_{}.dat")
         .arg("002@.0")
@@ -65,7 +70,7 @@ fn pica_partition_filename_template() -> TestResult {
     assert.success();
 
     // Tb1
-    let actual = read_to_string("BBG_Tb1.dat").unwrap();
+    let actual = read_to_string(tempdir.join("BBG_Tb1.dat")).unwrap();
 
     let mut expected = String::new();
     expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
@@ -74,32 +79,32 @@ fn pica_partition_filename_template() -> TestResult {
     expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
-    remove_file("BBG_Tb1.dat").unwrap();
 
     // Tp1
-    let actual = read_to_string("BBG_Tp1.dat").unwrap();
+    let actual = read_to_string(tempdir.join("BBG_Tp1.dat")).unwrap();
 
     let mut expected = String::new();
     expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
     expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
-    remove_file("BBG_Tp1.dat").unwrap();
 
     // Ts1
-    let actual = read_to_string("BBG_Ts1.dat").unwrap();
+    let actual = read_to_string(tempdir.join("BBG_Ts1.dat")).unwrap();
 
     let mut expected = String::new();
     expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
 
     assert_eq!(expected, actual);
-    remove_file("BBG_Ts1.dat").unwrap();
 
     Ok(())
 }
 
 #[test]
 fn pica_partition_filename_template_config() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .with_config(
@@ -110,13 +115,15 @@ template = "bbg_{}.dat"
         )
         .arg("partition")
         .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir)
         .arg("002@.0")
         .arg("tests/data/dump.dat.gz")
         .assert();
     assert.success();
 
     // Tb1
-    let actual = read_to_string("bbg_Tb1.dat").unwrap();
+    let actual = read_to_string(tempdir.join("bbg_Tb1.dat")).unwrap();
 
     let mut expected = String::new();
     expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
@@ -125,26 +132,23 @@ template = "bbg_{}.dat"
     expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
-    remove_file("bbg_Tb1.dat").unwrap();
 
     // Tp1
-    let actual = read_to_string("bbg_Tp1.dat").unwrap();
+    let actual = read_to_string(tempdir.join("bbg_Tp1.dat")).unwrap();
 
     let mut expected = String::new();
     expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
     expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
-    remove_file("bbg_Tp1.dat").unwrap();
 
     // Ts1
-    let actual = read_to_string("bbg_Ts1.dat").unwrap();
+    let actual = read_to_string(tempdir.join("bbg_Ts1.dat")).unwrap();
 
     let mut expected = String::new();
     expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
 
     assert_eq!(expected, actual);
-    remove_file("bbg_Ts1.dat").unwrap();
 
     Ok(())
 }
