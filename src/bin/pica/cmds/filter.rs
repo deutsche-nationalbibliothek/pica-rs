@@ -2,9 +2,12 @@ use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
-use pica::{Filter, PicaWriter, ReaderBuilder, WriterBuilder};
+use pica::{
+    MatcherFlags, PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder,
+};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
+use std::str::FromStr;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -41,6 +44,12 @@ pub(crate) fn cli() -> App {
                 .short('i')
                 .long("--ignore-case")
                 .about("When this flag is provided, comparision operations will be search case insensitive."),
+        )
+        .arg(
+            Arg::new("strsim-threshold")
+                .long("--strsim-threshold")
+                .default_value("0.75")
+                .about("The minimum score for string similarity comparisons (range from 0.0..1.0).")
         )
         .arg(
             Arg::new("limit")
@@ -92,13 +101,30 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         .gzip(gzip_compression)
         .from_path_or_stdout(args.value_of("output"))?;
 
+    let strsim_threshold = args.value_of("strsim-threshold").unwrap();
+    let strsim_threshold = match strsim_threshold.parse::<f64>() {
+        Err(_) => {
+            return Err(CliError::Other(format!(
+                "expected threshold to be a f64, got '{}'.",
+                strsim_threshold,
+            )));
+        }
+        Ok(t) if !(0.0..=1.0).contains(&t) => {
+            return Err(CliError::Other(format!(
+                "expected threshold between 0.0 and 1.0, got {}.",
+                strsim_threshold,
+            )));
+        }
+        Ok(threshold) => threshold,
+    };
+
     let filter_str = if let Some(filename) = args.value_of("expr-file") {
         read_to_string(filename).unwrap()
     } else {
         args.value_of("filter").unwrap().to_owned()
     };
 
-    let filter = match Filter::decode(&filter_str) {
+    let filter = match RecordMatcher::from_str(&filter_str) {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
@@ -109,10 +135,14 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     let mut count = 0;
+    let flags = MatcherFlags {
+        ignore_case,
+        strsim_threshold,
+    };
 
     for result in reader.byte_records() {
         let record = result?;
-        let mut is_match = filter.matches(&record, ignore_case);
+        let mut is_match = filter.is_match(&record, &flags);
 
         if args.is_present("invert-match") {
             is_match = !is_match;

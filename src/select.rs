@@ -8,20 +8,19 @@ use nom::Finish;
 use std::default::Default;
 use std::ops::{Add, Deref, Mul};
 
-use crate::common::ParseResult;
-use crate::filter::{
-    parse_string, parse_subfield_code, parse_subfield_filter, ws,
-    SubfieldFilter,
+use crate::common::{parse_string, ws, ParseResult};
+use crate::matcher::{
+    parse_occurrence_matcher, parse_subfield_list_matcher, parse_tag_matcher,
+    OccurrenceMatcher, SubfieldListMatcher,
 };
-use crate::occurrence::{parse_occurrence_matcher, OccurrenceMatcher};
-use crate::tag::parse_tag_matcher;
+use crate::subfield::parse_subfield_code;
 use crate::TagMatcher;
 
 #[derive(Debug, PartialEq)]
 pub struct FieldSelector {
     pub(crate) tag: TagMatcher,
     pub(crate) occurrence: OccurrenceMatcher,
-    pub(crate) filter: Option<SubfieldFilter>,
+    pub(crate) filter: Option<SubfieldListMatcher>,
     pub(crate) subfields: Vec<char>,
 }
 
@@ -106,7 +105,7 @@ impl FieldSelector {
     pub fn new(
         tag: TagMatcher,
         occurrence: OccurrenceMatcher,
-        filter: Option<SubfieldFilter>,
+        filter: Option<SubfieldListMatcher>,
         subfields: Vec<char>,
     ) -> Self {
         Self {
@@ -162,7 +161,10 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
                 delimited(
                     ws(char('{')),
                     pair(
-                        opt(terminated(parse_subfield_filter, ws(char(',')))),
+                        opt(terminated(
+                            parse_subfield_list_matcher,
+                            ws(char(',')),
+                        )),
                         separated_list1(ws(char(',')), ws(parse_subfield_code)),
                     ),
                     ws(char('}')),
@@ -191,15 +193,16 @@ fn parse_selectors(i: &[u8]) -> ParseResult<Selectors> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::filter::ComparisonOp;
+    use crate::matcher::{ComparisonOp, SubfieldMatcher};
     use crate::test::TestResult;
+    use crate::{Occurrence, Tag};
 
     #[test]
     fn test_parse_selector() -> TestResult {
         assert_eq!(
             parse_selector(b"003@.0")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::new("003@")?,
+                TagMatcher::Some(Tag::new("003@")?),
                 OccurrenceMatcher::None,
                 None,
                 vec!['0']
@@ -209,7 +212,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"044H/*{ 9, E ,H}")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::new("044H")?,
+                TagMatcher::Some(Tag::new("044H")?),
                 OccurrenceMatcher::Any,
                 None,
                 vec!['9', 'E', 'H']
@@ -219,12 +222,14 @@ mod tests {
         assert_eq!(
             parse_selector(b"044H/*{ E == 'm', 9, E , H }")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::new("044H")?,
+                TagMatcher::Some(Tag::new("044H")?),
                 OccurrenceMatcher::Any,
-                Some(SubfieldFilter::Comparison(
-                    vec!['E'],
-                    ComparisonOp::Eq,
-                    vec![BString::from("m")]
+                Some(SubfieldListMatcher::Singleton(
+                    SubfieldMatcher::Comparison(
+                        vec!['E'],
+                        ComparisonOp::Eq,
+                        BString::from("m")
+                    )
                 )),
                 vec!['9', 'E', 'H']
             )))
@@ -233,7 +238,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"012A/*.a")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::new("012A")?,
+                TagMatcher::Some(Tag::new("012A")?),
                 OccurrenceMatcher::Any,
                 None,
                 vec!['a']
@@ -243,8 +248,8 @@ mod tests {
         assert_eq!(
             parse_selector(b"012A/01.a")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::new("012A")?,
-                OccurrenceMatcher::new("01").unwrap(),
+                TagMatcher::Some(Tag::new("012A")?),
+                OccurrenceMatcher::Some(Occurrence::new("01")?),
                 None,
                 vec!['a']
             )))
