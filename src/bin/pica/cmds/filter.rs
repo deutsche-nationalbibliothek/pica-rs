@@ -1,3 +1,4 @@
+use crate::common::FilterList;
 use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
@@ -50,6 +51,18 @@ pub(crate) fn cli() -> App {
                 .long("--strsim-threshold")
                 .default_value("0.75")
                 .about("The minimum score for string similarity comparisons (range from 0.0..1.0).")
+        )
+        .arg(
+            Arg::new("allow-list")
+                .long("--allow-list")
+                .takes_value(true)
+                .multiple_occurrences(true)
+        )
+        .arg(
+            Arg::new("deny-list")
+                .long("--deny-list")
+                .takes_value(true)
+                .multiple_occurrences(true)
         )
         .arg(
             Arg::new("limit")
@@ -124,7 +137,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         args.value_of("filter").unwrap().to_owned()
     };
 
-    let filter = match RecordMatcher::from_str(&filter_str) {
+    let mut filter = match RecordMatcher::from_str(&filter_str) {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
@@ -133,6 +146,22 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             )))
         }
     };
+
+    if let Some(allow_lists) = args.values_of("allow-list") {
+        let allow_list =
+            FilterList::new(allow_lists.collect::<Vec<&str>>(), false)?;
+        let matcher = RecordMatcher::from(allow_list);
+
+        filter = matcher & filter;
+    }
+
+    if let Some(deny_lists) = args.values_of("deny-list") {
+        let deny_list =
+            FilterList::new(deny_lists.collect::<Vec<&str>>(), true)?;
+        let matcher = RecordMatcher::from(deny_list);
+
+        filter = matcher & filter;
+    }
 
     let mut count = 0;
     let flags = MatcherFlags {

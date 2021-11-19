@@ -1519,3 +1519,38 @@ fn pica_filter_strsim() -> TestResult {
 
     Ok(())
 }
+
+#[test]
+fn pica_filter_allow_deny_listing() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("--allow-list")
+        .arg("tests/data/allow_list.csv")
+        .arg("003@.0 not in ['000008672', '119232022']")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("--allow-list")
+        .arg("tests/data/allow_list.csv")
+        .arg("--deny-list")
+        .arg("tests/data/deny_list.csv")
+        .arg("003@.0?")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}

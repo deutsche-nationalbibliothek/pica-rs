@@ -7,6 +7,7 @@ extern crate termcolor;
 
 mod cli;
 mod cmds;
+mod common;
 mod config;
 mod macros;
 mod util;
