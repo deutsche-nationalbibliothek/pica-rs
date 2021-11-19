@@ -21,9 +21,10 @@ mod work;
 
 use clap::ArgMatches;
 use ignore_list::IgnoreList;
-use pica::{Filter, ReaderBuilder};
+use pica::{MatcherFlags, ReaderBuilder, RecordMatcher};
 use std::fs::File;
 use std::io::{self, Write};
+use std::str::FromStr;
 
 use sophia::graph::inmem::LightGraph;
 use sophia::serializer::nt::NtSerializer;
@@ -69,10 +70,10 @@ fn main() -> CliResult<()> {
         .skip_invalid(args.is_present("skip-invalid"))
         .from_path_or_stdin(args.value_of("filename"))?;
 
-    let filter = match args.value_of("filter") {
-        None => Filter::True,
-        Some(filter_str) => match Filter::decode(filter_str) {
-            Ok(filter) => filter,
+    let matcher = match args.value_of("filter") {
+        None => RecordMatcher::True,
+        Some(filter_str) => match RecordMatcher::from_str(filter_str) {
+            Ok(matcher) => matcher,
             Err(_) => {
                 return Err(CliError::Other(format!(
                     "invalid filter: {}",
@@ -82,10 +83,15 @@ fn main() -> CliResult<()> {
         },
     };
 
+    let flags = MatcherFlags {
+        ignore_case,
+        strsim_threshold: 0.0,
+    };
+
     for result in reader.records() {
         let record = result?;
 
-        if !filter.matches(&record, ignore_case) {
+        if !matcher.is_match(&record, &flags) {
             continue;
         }
 

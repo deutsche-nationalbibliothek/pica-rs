@@ -1,41 +1,18 @@
-//! This module provides functions to parse PICA+ records.
-
 use std::fmt;
 
 use nom::branch::alt;
-use nom::character::complete::{char, multispace0, one_of};
-use nom::combinator::{all_consuming, cut, map, opt};
-use nom::error::ParseError;
+use nom::character::complete::{char, multispace0};
+use nom::combinator::{all_consuming, map, opt};
 use nom::multi::many1;
 use nom::sequence::{delimited, preceded, terminated, tuple};
-use nom::{AsChar, FindToken, IResult, InputIter, InputLength, Slice};
-use std::ops::RangeFrom;
 
 use crate::common::ParseResult;
 use crate::field::{parse_field, Field};
-use crate::occurrence::parse_occurrence_matcher;
+use crate::matcher::{parse_occurrence_matcher, parse_tag_matcher};
 use crate::subfield::parse_subfield_code;
-use crate::tag::parse_tag_matcher;
 use crate::Path;
 
 const NL: char = '\x0A';
-
-pub(crate) fn parse_character_class<I, T, E: ParseError<I>>(
-    list: T,
-) -> impl FnMut(I) -> IResult<I, Vec<char>, E>
-where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar + Copy,
-    T: FindToken<<I as InputIter>::Item> + Clone,
-{
-    alt((
-        preceded(
-            char('['),
-            cut(terminated(many1(one_of(list.clone())), char(']'))),
-        ),
-        map(one_of(list), |x| vec![x]),
-    ))
-}
 
 /// An error that can occur when parsing PICA+ records.
 #[derive(Debug, PartialEq)]
@@ -137,8 +114,12 @@ mod tests {
         );
         assert_eq!(
             parse_path(b"012A/01.0")?.1,
-            Path::new("012A", OccurrenceMatcher::new("01").unwrap(), vec!['0'])
-                .unwrap()
+            Path::new(
+                "012A",
+                OccurrenceMatcher::Some(Occurrence::new("01")?),
+                vec!['0']
+            )
+            .unwrap()
         );
         assert_eq!(
             parse_path(b"012A/*.[ab]")?.1,
