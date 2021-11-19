@@ -14,7 +14,15 @@ Es ist möglich, die Quelldateien herunterzuladen und direkt auf dem eigenen Rec
 
 Für die gängigen Windows-, Apple- oder Linux-Systeme, stehen aber fertige Programmpakete unter [https://github.com/deutsche-nationalbibliothek/pica-rs/releases](https://github.com/deutsche-nationalbibliothek/pica-rs/releases) zur Verfügung.
 
-Entpacken Sie das Paket und legen es in einen beliebigen Ordner, z. B. unter Programme.
+### Windows
+
+Legen Sie die Datei `pica.exe` im Verzeichnis `C:\Users\<IHR USERNAME>\AppData\Local\Microsoft\WindowsApps` ab.
+
+Starten Sie die `Windows Power Shell`, indem Sie auf den Windows Startbutton klicken und dann `Power` tippen. Ihnen wird das Programm jetzt angezeigt. Tippen Sie `pica` ein. Sie erhalten jetzt zwar den Fehler `error: 'pica.exe' requires a subcommand, but one was not provided`, wissen aber, dass das Programm korrekt installiert ist.
+
+### Linux/Mac OS
+
+Entpacken Sie das Paket und legen es in einen beliebigen Ordner.
 
 In der Konfigurationsdatei Ihres Terminals müssen Sie dann noch den Pfad angeben, in dem Sie das Programm abgelegt haben.
 
@@ -23,10 +31,10 @@ Beispiel: ZSH unter Linux oder MacOS
 Die versteckte Datei `.zshrc` liegt üblicherweise im Homeverzeichnis des aktuellen Benutzers. Dort fügen Sie an beliebiger Stelle folgende Zeile hinzu:
 
 ```bash
-export PATH="/PFADZUMPROGRAMM:$PATH"
+export PATH="/<PFADZUMPROGRAMM>:$PATH"
 ```
 
-wobei `PFADZUMPROGRAMM` natürlich durch Ihren tatsächlichen Pfad ersetzt werden muss.
+wobei `<PFADZUMPROGRAMM>` natürlich durch Ihren tatsächlichen Pfad ersetzt werden muss.
 
 Nach einem Neustart des Terminals sollte jetzt der neue Befehl `pica` zur Verfügung stehen. Mit `pica -V` können Sie testen, welche Version sie haben.
 
