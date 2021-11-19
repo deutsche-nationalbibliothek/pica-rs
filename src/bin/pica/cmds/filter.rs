@@ -1,9 +1,10 @@
+use crate::common::FilterList;
 use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{
-    MatcherFlags, PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder,
+    MatcherFlags, Path, PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder,
 };
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
@@ -52,6 +53,18 @@ pub(crate) fn cli() -> App {
                 .about("The minimum score for string similarity comparisons (range from 0.0..1.0).")
         )
         .arg(
+            Arg::new("allow-list")
+                .long("--allow-list")
+                .takes_value(true)
+                .multiple_occurrences(true)
+        )
+        .arg(
+            Arg::new("deny-list")
+                .long("--deny-list")
+                .takes_value(true)
+                .multiple_occurrences(true)
+        )
+        .arg(
             Arg::new("limit")
                 .short('l')
                 .long("--limit")
@@ -83,6 +96,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.filter, config.global);
     let gzip_compression = gzip_flag!(args, config.filter);
     let ignore_case = args.is_present("ignore-case");
+
+    let allow_list = FilterList::new(args.values_of("allow-list"))?;
+    let deny_list = FilterList::new(args.values_of("deny-list"))?;
 
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
@@ -135,6 +151,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     let mut count = 0;
+    let idn_path = Path::from_str("003@.0")?;
     let flags = MatcherFlags {
         ignore_case,
         strsim_threshold,
@@ -143,6 +160,17 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     for result in reader.byte_records() {
         let record = result?;
         let mut is_match = filter.is_match(&record, &flags);
+
+        let idns = record.path(&idn_path);
+        let idn = idns.get(0).expect("field 003@.0");
+
+        if !allow_list.is_empty() && !allow_list.contains(idn) {
+            continue;
+        }
+
+        if deny_list.contains(idn) {
+            continue;
+        }
 
         if args.is_present("invert-match") {
             is_match = !is_match;

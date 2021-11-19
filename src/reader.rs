@@ -83,10 +83,10 @@ impl ReaderBuilder {
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_path<P: AsRef<Path>>(
-        &self,
-        path: P,
-    ) -> Result<Reader<Box<dyn Read>>> {
+    pub fn from_path<P>(&self, path: P) -> Result<Reader<Box<dyn Read>>>
+    where
+        P: AsRef<Path>,
+    {
         let filename = path.as_ref();
 
         let reader: Box<dyn Read> =
