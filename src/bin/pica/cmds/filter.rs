@@ -4,7 +4,7 @@ use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{
-    MatcherFlags, Path, PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder,
+    MatcherFlags, PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder,
 };
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
@@ -97,9 +97,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let gzip_compression = gzip_flag!(args, config.filter);
     let ignore_case = args.is_present("ignore-case");
 
-    let allow_list = FilterList::new(args.values_of("allow-list"))?;
-    let deny_list = FilterList::new(args.values_of("deny-list"))?;
-
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
         Err(_) => {
@@ -140,7 +137,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         args.value_of("filter").unwrap().to_owned()
     };
 
-    let filter = match RecordMatcher::from_str(&filter_str) {
+    let mut filter = match RecordMatcher::from_str(&filter_str) {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
@@ -150,8 +147,23 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     };
 
+    if let Some(allow_lists) = args.values_of("allow-list") {
+        let allow_list =
+            FilterList::new(allow_lists.collect::<Vec<&str>>(), false)?;
+        let matcher = RecordMatcher::from(allow_list);
+
+        filter = matcher & filter;
+    }
+
+    if let Some(deny_lists) = args.values_of("deny-list") {
+        let deny_list =
+            FilterList::new(deny_lists.collect::<Vec<&str>>(), true)?;
+        let matcher = RecordMatcher::from(deny_list);
+
+        filter = matcher & filter;
+    }
+
     let mut count = 0;
-    let idn_path = Path::from_str("003@.0")?;
     let flags = MatcherFlags {
         ignore_case,
         strsim_threshold,
@@ -160,17 +172,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     for result in reader.byte_records() {
         let record = result?;
         let mut is_match = filter.is_match(&record, &flags);
-
-        let idns = record.path(&idn_path);
-        let idn = idns.get(0).expect("field 003@.0");
-
-        if !allow_list.is_empty() && !allow_list.contains(idn) {
-            continue;
-        }
-
-        if deny_list.contains(idn) {
-            continue;
-        }
 
         if args.is_present("invert-match") {
             is_match = !is_match;
