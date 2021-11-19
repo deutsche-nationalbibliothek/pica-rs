@@ -15,6 +15,7 @@ use nom::error::ParseError;
 use nom::multi::{many0, many1, separated_list1};
 use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
 use nom::{AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice};
+use strsim::normalized_levenshtein;
 
 use crate::common::{parse_string, ws, ParseResult};
 use crate::occurrence::{parse_occurrence_digits, Occurrence};
@@ -22,9 +23,20 @@ use crate::subfield::{parse_subfield_code, Subfield};
 use crate::tag::{parse_tag, Tag};
 use crate::{ByteRecord, Field};
 
+macro_rules! maybe_lowercase {
+    ($value:expr, $flag:expr) => {
+        if $flag {
+            $value.to_lowercase()
+        } else {
+            $value
+        }
+    };
+}
+
 #[derive(Debug)]
 pub struct MatcherFlags {
     pub ignore_case: bool,
+    pub strsim_threshold: f64,
 }
 
 /// Comparison Operators
@@ -38,6 +50,7 @@ pub enum ComparisonOp {
     Le,
     StartsWith,
     EndsWith,
+    Similar,
 }
 
 /// Parses comparison operator for byte strings.
@@ -47,6 +60,7 @@ fn parse_comparison_op_bstring(i: &[u8]) -> ParseResult<ComparisonOp> {
         value(ComparisonOp::Ne, tag("!=")),
         value(ComparisonOp::StartsWith, tag("=^")),
         value(ComparisonOp::EndsWith, tag("=$")),
+        value(ComparisonOp::Similar, tag("=*")),
     ))(i)
 }
 
@@ -124,6 +138,22 @@ impl SubfieldMatcher {
                     } else {
                         subfield.value().ends_with(value)
                     }
+            }
+            Self::Comparison(codes, ComparisonOp::Similar, value) => {
+                if codes.contains(&subfield.code()) {
+                    let flag = flags.ignore_case;
+                    let lhs = maybe_lowercase!(subfield.value().to_vec(), flag);
+                    let rhs = maybe_lowercase!(value.to_vec(), flag);
+
+                    let score = normalized_levenshtein(
+                        &lhs.to_str_lossy(),
+                        &rhs.to_str_lossy(),
+                    );
+
+                    score > flags.strsim_threshold
+                } else {
+                    false
+                }
             }
             Self::Comparison(_, _, _) => unreachable!(),
             Self::Regex(codes, regex, invert) => {
