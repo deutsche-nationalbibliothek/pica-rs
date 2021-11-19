@@ -1,16 +1,16 @@
-# pica.rs Anfänger-Tutorial
-## Was ist pica.rs?
+# pica-rs Anfänger-Tutorial
+## Was ist pica-rs?
 
-pica.rs ist ein Set von Kommandozeilen-Tools zur Arbeit mit PICA+-Bibliothekskatalog-Daten. Wenn Sie nicht wissen, was PICA-Daten sind, brauchen Sie diese Tools nicht. 😉 Große Datenabzüge bis hin zu Gesamtabzügen können schnell gefiltert werden und es können die Daten einzelner Felder und Unterfelder in CSV-Dateien exportiert werden, Häufigkeitsverteilungen des Inhalts einzelner Unterfeldern erfasst werden und vieles mehr.
+pica-rs ist ein Set von Kommandozeilen-Tools zur Arbeit mit PICA+-Bibliothekskatalog-Daten. Wenn Sie nicht wissen, was PICA-Daten sind, brauchen Sie diese Tools nicht. 😉 Große Datenabzüge bis hin zu Gesamtabzügen können schnell gefiltert werden und es können die Daten einzelner Felder und Unterfelder in CSV-Dateien exportiert werden, Häufigkeitsverteilungen des Inhalts einzelner Unterfeldern erfasst werden und vieles mehr.
 
-## Wie funktioniert pica.rs?
+## Wie funktioniert pica-rs?
 Das Tool kann mit extrem großen Dateien umgehen, weil es diese sequentiell ausliest und prozessiert. Die Dateien werden nicht geöffnet und in den Arbeitsspeicher geladen, sondern ›häppchenweise‹ ausgewertet. Es ist deswegen kein Rechner mit besonders viel Arbeitsspeicher notwendig. Es empfiehlt sich aber, die Ausgangsdaten auf möglichst schnellen lokalen Laufwerken abzulegen. Netzlaufwerke sind weniger geeignet und verlangsamen das Tool unnötig.
 
-pica.rs läuft unter Windows, Linux und Mac OS.
+pica-rs läuft unter Windows, Linux und Mac OS.
 
 ## Installation
 
-Es ist möglich, die Quelldateien herunterzuladen und direkt auf dem eigenen Rechner von RUST zu einem lauffähigen Programm kompilieren zu lassen.
+Es ist möglich, die Quelldateien herunterzuladen und direkt auf dem eigenen Rechner von Rust zu einem lauffähigen Programm kompilieren zu lassen.
 
 Für die gängigen Windows-, Apple- oder Linux-Systeme, stehen aber fertige Programmpakete unter [https://github.com/deutsche-nationalbibliothek/pica-rs/releases](https://github.com/deutsche-nationalbibliothek/pica-rs/releases) zur Verfügung.
 
@@ -39,7 +39,7 @@ wobei `<PFADZUMPROGRAMM>` natürlich durch Ihren tatsächlichen Pfad ersetzt wer
 Nach einem Neustart des Terminals sollte jetzt der neue Befehl `pica` zur Verfügung stehen. Mit `pica -V` können Sie testen, welche Version sie haben.
 
 ## Kommandozeile
-pica.rs ist auch deswegen sehr schnell, weil es kein grafisches Interface hat. Man sollte deshalb einige Basics der Kommandozeilen (auch Terminal oder Shell genannt) des jeweiligen Betriebssystems kennen. Alle Befehle werden hier in der Fassung für gängige Linux-und Mac OS-Terminals gezeigt, abweichende Befehle der Windows Power Shell werden meistens in Klammern erwähnt.
+pica-rs ist auch deswegen sehr schnell, weil es kein grafisches Interface hat. Man sollte deshalb einige Basics der Kommandozeilen (auch Terminal oder Shell genannt) des jeweiligen Betriebssystems kennen. Alle Befehle werden hier in der Fassung für gängige Linux-und Mac OS-Terminals gezeigt, abweichende Befehle der Windows Power Shell werden meistens in Klammern erwähnt.
 
 Zum Testen steht unter [https://github.com/a-wendler/pica-rs/blob/tutorial/docs/book/src/de/testdaten.dat](https://github.com/a-wendler/pica-rs/blob/tutorial/docs/book/src/de/testdaten.dat) ein Testdatenpaket mit 1.000 zufällig ausgewählten Datensätzen aus dem Bestand der Deutschen Nationalbibliothek bereit. Der Test-Datensatz enthält sowohl Titeldaten als auch GND-Normdatensätze.
 
@@ -68,7 +68,7 @@ Der `>`-Operator leitet den Inhalt in eine Datei weiter und ist eine Art Sonderf
 
 Man könnte die Ausgabe mit einer weiteren Pipe auch an noch einen weiteren Befehl übergeben.
 
-Mit Pipes lassen sich die einzelnen pica.rs-Tools (select, filter, frequency usw.) miteinander verknüpfen. Die Ausgabe des einen Tools kann entweder zum nächsten Tool, in eine Datei oder einfach auf den Bildschirm geleitet werden. Alle Tools (außer cat und ?) schreiben immer in die Standardausgabe. Will man die Ausgabe anders erhalten, muss man das dem Befehl mitteilen.
+Mit Pipes lassen sich die einzelnen pica-rs-Tools (select, filter, frequency usw.) miteinander verknüpfen. Die Ausgabe des einen Tools kann entweder zum nächsten Tool, in eine Datei oder einfach auf den Bildschirm geleitet werden. Alle Tools schreiben immer in die Standardausgabe. Will man die Ausgabe anders erhalten, muss man das dem Befehl mitteilen.
 
 ## Los geht’s
 Navigieren Sie im Terminal zu dem Ordner, in dem das Testdatenpaket liegt. Wir gehen davon aus, dass Sie im Hauptverzeichnis Ihres aktuellen Benutzers (unter Linux und Mac OS über das Kürzel `~` zu erreichen) im Verzeichnis `pica-test` arbeiten. Das Testdatenpaket heißt `testdaten.dat`.
@@ -131,7 +131,7 @@ Achtung: Dateien werden ohne Rückfrage überschrieben und werden nicht im Papie
 
 ### Filter-Ausdrücke
 
-Der Filterausdruck in den doppelten Anführungszeichen ist das mächtigste Werkzeug von pica.rs. Mehrere Ausdrücke können zu komplexen Suchfiltern kombiniert werden.
+Der Filterausdruck in den doppelten Anführungszeichen ist das mächtigste Werkzeug von pica-rs. Mehrere Ausdrücke können zu komplexen Suchfiltern kombiniert werden.
 
 Jeder Filterausdruck besteht immer aus einem Feld wie `002@`, einem Unterfeldfilter wie `.0`, einem Operator, der angibt, wie der Inhalt des Feldes gefiltert werden soll, wie z. B. `==` und einem Wert, mit dem das Feld verglichen werden soll.
 
@@ -152,7 +152,6 @@ Um z. B. Unterfeld `9` aller Okkurrenzen von Feld `041A` zu filtern, müsste der
 Werte können über folgende Vergleichsoperatoren gesucht werden.
 
 - gleich `==` 
-- strict equal `===`
 - ungleich `!=`
 - beginnt mit Prefix `=^`
 - endet mit Suffix `=$`
@@ -163,15 +162,9 @@ Werte können über folgende Vergleichsoperatoren gesucht werden.
 
 Die Operatoren können in runden Klammern gruppiert und mit den boolschen Operatoren UND `&&` sowie ODER `||` verbunden werden.
 
-#TODO Beispiele und Erklärung aller Operatoren
-
-#### == und ===
+#### ==
 
 Der ==-Operator prüft, ob es ein Unterfeld gibt, dass einem Wert entspricht. `pica filter "012A.a == 'abc'"` liest sich wie folgt: Es existiert ein Feld `012A` mit *einem* Unterfeld `a` das gleich `abc` ist. Es könnten noch weitere Unterfelder `a` existieren, die nicht `abc` sind.
-
-Im Gegensatz dazu stellt der ===-Operator sicher, dass *alle* Unterfelder `a` gleich `abc` sind. `pica filter "012A.a == 'abc'"` liest sich wie folgt: Es existiert ein Feld `012A` bei dem *alle* Unterfelder `a` gleich `abc` sind.
-
-Bei beiden Varianten ist es nicht ausgeschlossen, dass es noch ein weiteres Feld `012A` gibt, dass kein Unterfeld `a` enthält.
 
 #### !=
 
@@ -278,18 +271,15 @@ pica select -H "idn, autor-idn, autor-vorname, autor-nachname" "003@.0, 028A{4 =
 ```
 
 ## Warum zwei Filtermöglichkeiten?
-#TODO
+
 Die doppelte Filtermöglichkeit einmal mit dem Filter-Tool und einmal im select-Tool verwirrt auf den ersten Blick etwas. `filter` prüft eine oder mehrere Felder oder Unterfelder auf Bedingungen und gibt den gesamten Datensatz aus, wenn die Bedingung wahr ist. `select` prüft ebenfalls auf Bedingungen und selektiert dann die benötigten Teildaten.
 
-Man könnte auch sagen: mit `filter` wird die Zahl der Datensätze reduziert und mit `select` werden die einzelnen Datenpunkte ausgelesen. 
+Man könnte auch sagen: `filter` arbeitet auf Datensatzebene und `select` auf Feldebene. 
 
 ## Arbeit mit großen Datenabzügen
 
-pica.rs parst immer den kompletten Datenbestand, auch wenn man nur wenige Ergebnisse erwartet. Deshalb ist es manchmal sinnvoll, die Ausgangsdatei in kleinere Dateien zu teilen, die dann viel schneller verarbeitet werden können.
+pica-rs parst immer den kompletten Datenbestand, auch wenn man nur wenige Ergebnisse erwartet. Deshalb ist es manchmal sinnvoll, die Ausgangsdatei in kleinere Dateien zu teilen, die dann viel schneller verarbeitet werden können.
 
 In unseren Testdaten haben wir Titeldaten und Normdaten zusammen. Es könnte z.B. sinnvoll sein, die Normdaten zu extrahieren, wenn man keine Titeldaten braucht oder nur eine bestimmte Satzart zu extrahieren, wenn man nur innerhalb dieser Satzart suchen will.
 
-#TODO
-- partition
-- slice
-- split
+#Todo
