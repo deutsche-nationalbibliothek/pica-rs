@@ -53,7 +53,6 @@ jobs:
             target: i686-pc-windows-msvc
     steps:
       - uses: actions/checkout@v1
-      - uses: abbbi/github-actions-tune@v1
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
