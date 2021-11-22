@@ -645,7 +645,13 @@ pub enum RecordMatcher {
     Group(Box<RecordMatcher>),
     Not(Box<RecordMatcher>),
     Composite(Box<RecordMatcher>, BooleanOp, Box<RecordMatcher>),
-    Cardinality(TagMatcher, OccurrenceMatcher, ComparisonOp, usize),
+    Cardinality(
+        TagMatcher,
+        OccurrenceMatcher,
+        Option<Box<SubfieldListMatcher>>,
+        ComparisonOp,
+        usize,
+    ),
     True,
 }
 
@@ -663,14 +669,22 @@ impl RecordMatcher {
             Self::Composite(lhs, BooleanOp::Or, rhs) => {
                 lhs.is_match(record, flags) || rhs.is_match(record, flags)
             }
-            Self::Cardinality(tag, occurrence, op, value) => {
-                let cardinality = record
+            Self::Cardinality(tag, occurrence, subfields, op, value) => {
+                let fields = record
                     .iter()
                     .filter(|field| {
                         tag.is_match(field.tag())
                             && occurrence.is_match(field.occurrence())
                     })
-                    .count();
+                    .filter(|field| {
+                        if let Some(matcher) = subfields {
+                            matcher.is_match(field.subfields(), flags)
+                        } else {
+                            true
+                        }
+                    });
+
+                let cardinality = fields.count();
 
                 match op {
                     ComparisonOp::Eq => cardinality == *value,
@@ -828,13 +842,19 @@ fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
             cut(tuple((
                 ws(parse_tag_matcher),
                 parse_occurrence_matcher,
+                opt(preceded(
+                    ws(char('{')),
+                    cut(terminated(parse_subfield_list_matcher, ws(char('}')))),
+                )),
                 ws(parse_comparison_op_usize),
                 map_res(digit1, |s| {
                     std::str::from_utf8(s).unwrap().parse::<usize>()
                 }),
             ))),
         ),
-        |(t, o, op, value)| RecordMatcher::Cardinality(t, o, op, value),
+        |(t, o, s, op, value)| {
+            RecordMatcher::Cardinality(t, o, s.map(Box::new), op, value)
+        },
     )(i)
 }
 

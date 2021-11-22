@@ -1362,6 +1362,17 @@ fn pica_filter_cardinality_op() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
+        .arg("#007N{ a == 'pnd' && v == 'zg'} == 2")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
         .arg("#047C == 2")
         .arg("tests/data/121169502.dat")
         .assert();

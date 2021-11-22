@@ -6,6 +6,7 @@
 > &nbsp;&nbsp; | [_RecordMatcherGroup_]\
 > &nbsp;&nbsp; | [_RecordMatcherNot_]\
 > &nbsp;&nbsp; | [_RecordMatcherComposite_]\
+> &nbsp;&nbsp; | [_RecordMatcherCardinality_]\
 > &nbsp;&nbsp; | [_RecordMatcherTrue_]
 
 ## Record Matcher Singleton
@@ -56,6 +57,14 @@
 > &nbsp;&nbsp; | [_RecordMatcherSingleton_]\
 > &nbsp;&nbsp; | [_RecordMatcherNot_]\
 > &nbsp;&nbsp; | [_RecordMatcherGroup_]
+
+## Record Matcher Cardinality
+
+> **<sup>Syntax</sup>**\
+> _RecordMatcherCardinality_ :\
+> &nbsp;&nbsp; [_TagMatcher_] [_OccurrenceMatcher_] [_SubfieldListMatcher_]? [_ComparisonOp_]<sup>*</sup> [0-9]+
+
+<sup>*</sup> `=^`, `=$` and `=*` not allowed
 
 ## Record Matcher True
 
@@ -240,7 +249,9 @@ TBD
 [_RecordMatcherGroup_]: #record-matcher-group
 [_RecordMatcherNot_]: #record-matcher-not
 [_RecordMatcherComposite_]: #record-matcher-composite
+[_RecordMatcherCardinality_]: #record-matcher-cardinality
 [_RecordMatcherTrue_]: #record-matcher-true
+
 
 [_FieldMatcher_]: #field-matcher
 [_FieldMatcherSubfield_]: #field-matcher-subfield
