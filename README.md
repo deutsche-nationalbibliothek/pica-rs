@@ -32,17 +32,19 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 
 ## Commands
 
-* [cat](#cat) — concatenate records from multiple files
-* completion — generate a completions file for bash, fish or zsh
-* [filter](#filter) — filter records by query expressions
-* [frequency](#frequency) — compute a frequency table of a subfield
-* invalid — filter out invalid records
-* [partition](#partition) — partition a list of records based on subfield values
-* [print](#print) — print records in human readable format
-* [sample](#sample) — selects a random permutation of records
-* [select](#select) — write subfields to a CSV file
-* [slice](#slice) — return records withing a range (half-open interval)
-* [split](#split) — split a list of records into chunks
+| Command                 | Stability | Desciption                                           |
+|-------------------------|-----------|------------------------------------------------------|
+| [cat](#cat)             | beta      | concatenate records from multiple files              |
+| completion              | beta      | generate a completions file for bash, fish or zsh    |
+| [filter](#filter)       | beta      | filter records by query expressions                  |
+| [frequency](#frequency) | beta      | compute a frequency table of a subfield              |
+| invalid                 | beta      | filter out invalid records                           |
+| [partition](#partition) | beta      | partition a list of records based on subfield values |
+| [print](#print)         | beta      | print records in human readable format               |
+| [sample](#sample)       | beta      | selects a random permutation of records              |
+| [select](#select)       | beta      | write subfields to a CSV file                        |
+| [slice](#slice)         | beta      | return records withing a range (half-open interval)  |
+| [split](#split)         | beta      | split a list of records into chunks                  |
 
 ## Usage
 
