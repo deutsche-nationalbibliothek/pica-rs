@@ -1,4 +1,4 @@
-use std::ops::{BitAnd, BitOr, RangeFrom};
+use std::ops::{BitAnd, BitOr};
 use std::str::FromStr;
 
 use bstr::{BString, ByteSlice};
@@ -7,21 +7,21 @@ use regex::Regex;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, digit1, one_of};
+use nom::character::complete::{char, digit1};
 use nom::combinator::{
     all_consuming, cut, map, map_res, opt, success, value, verify,
 };
-use nom::error::ParseError;
 use nom::multi::{many0, many1, separated_list1};
 use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
-use nom::{AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice};
+use nom::Finish;
 use strsim::normalized_levenshtein;
 
 use crate::common::{parse_string, ws, ParseResult};
 use crate::occurrence::{parse_occurrence_digits, Occurrence};
 use crate::subfield::{parse_subfield_code, Subfield};
-use crate::tag::{parse_tag, Tag};
 use crate::{ByteRecord, Field};
+
+use crate::matcher::{parse_tag_matcher, TagMatcher};
 
 macro_rules! maybe_lowercase {
     ($value:expr, $flag:expr) => {
@@ -468,58 +468,6 @@ pub(crate) fn parse_subfield_list_matcher(
         parse_subfield_list_matcher_composite,
         parse_subfield_list_matcher_singleton,
         parse_subfield_list_matcher_cardinality,
-    ))(i)
-}
-
-#[derive(Debug, PartialEq)]
-pub enum TagMatcher {
-    Some(Tag),
-    Pattern(Vec<char>, Vec<char>, Vec<char>, Vec<char>),
-}
-
-impl TagMatcher {
-    pub fn is_match(&self, tag: &Tag) -> bool {
-        match self {
-            TagMatcher::Some(lhs) => lhs == tag,
-            TagMatcher::Pattern(p0, p1, p2, p3) => {
-                p0.contains(&(tag[0] as char))
-                    && p1.contains(&(tag[1] as char))
-                    && p2.contains(&(tag[2] as char))
-                    && p3.contains(&(tag[3] as char))
-            }
-        }
-    }
-}
-
-fn parse_character_class<I, T, E: ParseError<I>>(
-    list: T,
-) -> impl FnMut(I) -> IResult<I, Vec<char>, E>
-where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar + Copy,
-    T: FindToken<<I as InputIter>::Item> + Clone,
-{
-    alt((
-        preceded(
-            char('['),
-            cut(terminated(many1(one_of(list.clone())), char(']'))),
-        ),
-        map(one_of(list), |x| vec![x]),
-    ))
-}
-
-pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
-    alt((
-        map(parse_tag, TagMatcher::Some),
-        map(
-            tuple((
-                parse_character_class("012"),
-                parse_character_class("0123456789"),
-                parse_character_class("0123456789"),
-                parse_character_class("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
-            )),
-            |(p1, p2, p3, p4)| TagMatcher::Pattern(p1, p2, p3, p4),
-        ),
     ))(i)
 }
 

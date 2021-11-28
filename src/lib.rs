@@ -6,9 +6,9 @@ extern crate quickcheck_macros;
 
 pub use self::error::{Error, Result};
 pub use self::field::Field;
-pub use self::matcher::{
+pub use self::matcher_old::{
     ComparisonOp, FieldMatcher, MatcherFlags, OccurrenceMatcher, RecordMatcher,
-    SubfieldListMatcher, SubfieldMatcher, TagMatcher,
+    SubfieldListMatcher, SubfieldMatcher,
 };
 pub use self::occurrence::Occurrence;
 pub use self::parser::{ParsePathError, ParsePicaError};
@@ -23,7 +23,8 @@ pub use self::writer::{GzipWriter, PicaWriter, PlainWriter, WriterBuilder};
 mod common;
 mod error;
 mod field;
-mod matcher;
+pub mod matcher;
+mod matcher_old;
 mod occurrence;
 mod parser;
 mod path;

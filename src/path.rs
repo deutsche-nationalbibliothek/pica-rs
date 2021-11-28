@@ -13,8 +13,9 @@
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
 
+use crate::matcher::TagMatcher;
 use crate::parser::{parse_path, ParsePathError};
-use crate::{Error, OccurrenceMatcher, Result, Tag, TagMatcher};
+use crate::{Error, OccurrenceMatcher, Result, Tag};
 
 use std::str::FromStr;
 
