@@ -8,8 +8,7 @@ use nom::sequence::{delimited, preceded, terminated, tuple};
 
 use crate::common::ParseResult;
 use crate::field::{parse_field, Field};
-use crate::matcher::parse_tag_matcher;
-use crate::matcher_old::parse_occurrence_matcher;
+use crate::matcher::{parse_occurrence_matcher, parse_tag_matcher};
 use crate::subfield::parse_subfield_code;
 use crate::Path;
 
@@ -75,8 +74,9 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::matcher::OccurrenceMatcher;
     use crate::test::TestResult;
-    use crate::{Occurrence, OccurrenceMatcher, Subfield, Tag};
+    use crate::{Occurrence, Subfield, Tag};
 
     #[test]
     fn test_parse_fields() -> TestResult {

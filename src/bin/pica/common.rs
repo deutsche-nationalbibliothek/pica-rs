@@ -3,10 +3,9 @@ use std::ops::Deref;
 use crate::util::CliResult;
 use bstr::BString;
 use csv::ReaderBuilder;
-use pica::matcher::TagMatcher;
+use pica::matcher::{OccurrenceMatcher, TagMatcher};
 use pica::{
-    FieldMatcher, OccurrenceMatcher, RecordMatcher, SubfieldListMatcher,
-    SubfieldMatcher, Tag,
+    FieldMatcher, RecordMatcher, SubfieldListMatcher, SubfieldMatcher, Tag,
 };
 
 #[derive(Debug, Default)]

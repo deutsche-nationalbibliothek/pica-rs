@@ -9,11 +9,10 @@ use std::default::Default;
 use std::ops::{Add, Deref, Mul};
 
 use crate::common::{parse_string, ws, ParseResult};
-use crate::matcher::{parse_tag_matcher, TagMatcher};
-use crate::matcher_old::{
-    parse_occurrence_matcher, parse_subfield_list_matcher, OccurrenceMatcher,
-    SubfieldListMatcher,
+use crate::matcher::{
+    parse_occurrence_matcher, parse_tag_matcher, OccurrenceMatcher, TagMatcher,
 };
+use crate::matcher_old::{parse_subfield_list_matcher, SubfieldListMatcher};
 use crate::subfield::parse_subfield_code;
 
 #[derive(Debug, PartialEq)]

@@ -13,9 +13,9 @@
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
 
-use crate::matcher::TagMatcher;
+use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_path, ParsePathError};
-use crate::{Error, OccurrenceMatcher, Result, Tag};
+use crate::{Error, Result, Tag};
 
 use std::str::FromStr;
 
@@ -30,7 +30,8 @@ impl Path {
     /// Creates a new path
     ///
     /// ```rust
-    /// use pica::{OccurrenceMatcher, Path};
+    /// use pica::matcher::OccurrenceMatcher;
+    /// use pica::Path;
     ///
     /// assert!(Path::new("003@", OccurrenceMatcher::None, vec!['0']).is_ok());
     /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['0']).is_ok());
@@ -66,7 +67,8 @@ impl Path {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Occurrence, OccurrenceMatcher, Path};
+    /// use pica::matcher::OccurrenceMatcher;
+    /// use pica::{Occurrence, Path};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {

@@ -140,7 +140,7 @@ mod tests {
     }
 
     #[quickcheck]
-    fn tag_matcher_from_tag_matches_against_tag(tag: Tag) -> bool {
+    fn tag_matcher_quickcheck(tag: Tag) -> bool {
         TagMatcher::from(tag.clone()).is_match(&tag)
     }
 }

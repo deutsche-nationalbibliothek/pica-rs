@@ -8,20 +8,18 @@ use regex::Regex;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, digit1};
-use nom::combinator::{
-    all_consuming, cut, map, map_res, opt, success, value, verify,
-};
+use nom::combinator::{all_consuming, cut, map, map_res, opt, value, verify};
 use nom::multi::{many0, many1, separated_list1};
-use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
+use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Finish;
 use strsim::normalized_levenshtein;
 
 use crate::common::{parse_string, ws, ParseResult};
-use crate::occurrence::{parse_occurrence_digits, Occurrence};
+use crate::matcher::{
+    parse_occurrence_matcher, parse_tag_matcher, OccurrenceMatcher, TagMatcher,
+};
 use crate::subfield::{parse_subfield_code, Subfield};
 use crate::{ByteRecord, Field};
-
-use crate::matcher::{parse_tag_matcher, TagMatcher};
 
 macro_rules! maybe_lowercase {
     ($value:expr, $flag:expr) => {
@@ -468,67 +466,6 @@ pub(crate) fn parse_subfield_list_matcher(
         parse_subfield_list_matcher_composite,
         parse_subfield_list_matcher_singleton,
         parse_subfield_list_matcher_cardinality,
-    ))(i)
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum OccurrenceMatcher {
-    Some(Occurrence),
-    Range(Occurrence, Occurrence),
-    Any,
-    None,
-}
-
-impl OccurrenceMatcher {
-    pub fn is_match(&self, occurrence: Option<&Occurrence>) -> bool {
-        match occurrence {
-            Some(occurrence) => match self {
-                OccurrenceMatcher::Any => true,
-                OccurrenceMatcher::None => occurrence == "00",
-                OccurrenceMatcher::Some(rhs) => occurrence == rhs,
-                OccurrenceMatcher::Range(min, max) => {
-                    (occurrence >= min) && (occurrence <= max)
-                }
-            },
-            None => {
-                matches!(self, OccurrenceMatcher::Any | OccurrenceMatcher::None)
-            }
-        }
-    }
-}
-
-pub(crate) fn parse_occurrence_matcher(
-    i: &[u8],
-) -> ParseResult<OccurrenceMatcher> {
-    alt((
-        preceded(
-            char('/'),
-            cut(alt((
-                map(
-                    verify(
-                        separated_pair(
-                            parse_occurrence_digits,
-                            char('-'),
-                            parse_occurrence_digits,
-                        ),
-                        |(min, max)| min.len() == max.len() && min < max,
-                    ),
-                    |(min, max)| {
-                        OccurrenceMatcher::Range(
-                            Occurrence::from_unchecked(min),
-                            Occurrence::from_unchecked(max),
-                        )
-                    },
-                ),
-                map(
-                    verify(parse_occurrence_digits, |x: &[u8]| x != b"00"),
-                    |x| OccurrenceMatcher::Some(Occurrence::from_unchecked(x)),
-                ),
-                value(OccurrenceMatcher::None, tag("00")),
-                value(OccurrenceMatcher::Any, char('*')),
-            ))),
-        ),
-        success(OccurrenceMatcher::None),
     ))(i)
 }
 

@@ -7,7 +7,7 @@ extern crate quickcheck_macros;
 pub use self::error::{Error, Result};
 pub use self::field::Field;
 pub use self::matcher_old::{
-    ComparisonOp, FieldMatcher, MatcherFlags, OccurrenceMatcher, RecordMatcher,
+    ComparisonOp, FieldMatcher, MatcherFlags, RecordMatcher,
     SubfieldListMatcher, SubfieldMatcher,
 };
 pub use self::occurrence::Occurrence;
