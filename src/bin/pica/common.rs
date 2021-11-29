@@ -4,9 +4,10 @@ use crate::util::CliResult;
 use bstr::BString;
 use csv::ReaderBuilder;
 use pica::matcher::{
-    FieldMatcher, OccurrenceMatcher, SubfieldListMatcher, SubfieldMatcher, TagMatcher,
+    FieldMatcher, OccurrenceMatcher, RecordMatcher, SubfieldListMatcher, SubfieldMatcher,
+    TagMatcher,
 };
-use pica::{RecordMatcher, Tag};
+use pica::Tag;
 
 #[derive(Debug, Default)]
 pub struct FilterList(Vec<BString>, bool);

@@ -6,7 +6,6 @@ extern crate quickcheck_macros;
 
 pub use self::error::{Error, Result};
 pub use self::field::Field;
-pub use self::matcher_old::RecordMatcher;
 pub use self::occurrence::Occurrence;
 pub use self::parser::{ParsePathError, ParsePicaError};
 pub use self::path::Path;
@@ -21,7 +20,6 @@ mod common;
 mod error;
 mod field;
 pub mod matcher;
-mod matcher_old;
 mod occurrence;
 mod parser;
 mod path;

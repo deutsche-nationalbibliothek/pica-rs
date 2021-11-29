@@ -24,13 +24,7 @@ impl TopicalTerm {
 
         if field.contains_code('a') {
             push_value!(label, field.first('a'));
-            push_list!(
-                label,
-                field.all('g').unwrap_or_default(),
-                ", ",
-                " (",
-                ")"
-            );
+            push_list!(label, field.all('g').unwrap_or_default(), ", ", " (", ")");
             push_list!(label, field.all('x').unwrap_or_default(), " / ", " / ");
         }
 

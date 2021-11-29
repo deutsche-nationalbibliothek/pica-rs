@@ -3,8 +3,8 @@ use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
-use pica::matcher::MatcherFlags;
-use pica::{PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder};
+use pica::matcher::{MatcherFlags, RecordMatcher};
+use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
 use std::str::FromStr;
@@ -147,16 +147,14 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     if let Some(allow_lists) = args.values_of("allow-list") {
-        let allow_list =
-            FilterList::new(allow_lists.collect::<Vec<&str>>(), false)?;
+        let allow_list = FilterList::new(allow_lists.collect::<Vec<&str>>(), false)?;
         let matcher = RecordMatcher::from(allow_list);
 
         filter = matcher & filter;
     }
 
     if let Some(deny_lists) = args.values_of("deny-list") {
-        let deny_list =
-            FilterList::new(deny_lists.collect::<Vec<&str>>(), true)?;
+        let deny_list = FilterList::new(deny_lists.collect::<Vec<&str>>(), true)?;
         let matcher = RecordMatcher::from(deny_list);
 
         filter = matcher & filter;

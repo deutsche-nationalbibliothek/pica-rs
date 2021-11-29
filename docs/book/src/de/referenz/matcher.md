@@ -27,6 +27,7 @@
 > &nbsp;&nbsp; &nbsp;&nbsp; [_RecordMatcherGroup_]\
 > &nbsp;&nbsp; | _RecordMatcherCompositeAnd_\
 > &nbsp;&nbsp; | [_RecordMatcherSingleton_]\
+> &nbsp;&nbsp; | [_RecordMatcherCardinality_]\
 > &nbsp;&nbsp; | [_RecordMatcherNot_]
 >\
 > _RecordMatcherCompositeAnd_ : AndOperand `&&` AndOperand\
@@ -34,6 +35,7 @@
 > _AndOperand_ :\
 > &nbsp;&nbsp; &nbsp;&nbsp; [_RecordMatcherGroup_]\
 > &nbsp;&nbsp; | [_RecordMatcherSingleton_]\
+> &nbsp;&nbsp; | [_RecordMatcherCardinality_]\
 > &nbsp;&nbsp; | [_RecordMatcherNot_]
 
 ## Record Matcher Group
