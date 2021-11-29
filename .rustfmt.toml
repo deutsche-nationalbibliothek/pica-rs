@@ -1,6 +1,6 @@
 edition = "2018"
 format_code_in_doc_comments = true
-max_width = 80
+max_width = 90
 imports_granularity="Module"
 newline_style = "Unix"
 normalize_comments = true

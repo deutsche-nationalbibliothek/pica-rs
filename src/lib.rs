@@ -6,7 +6,7 @@ extern crate quickcheck_macros;
 
 pub use self::error::{Error, Result};
 pub use self::field::Field;
-pub use self::matcher_old::{FieldMatcher, RecordMatcher, SubfieldListMatcher};
+pub use self::matcher_old::{FieldMatcher, RecordMatcher};
 pub use self::occurrence::Occurrence;
 pub use self::parser::{ParsePathError, ParsePicaError};
 pub use self::path::Path;

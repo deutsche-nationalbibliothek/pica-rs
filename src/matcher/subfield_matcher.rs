@@ -94,12 +94,10 @@ impl SubfieldMatcher {
 
         match self {
             Self::Comparison(codes, ComparisonOp::Eq, value) => {
-                codes.contains(&subfield.code())
-                    && case_cmp(subfield.value(), value)
+                codes.contains(&subfield.code()) && case_cmp(subfield.value(), value)
             }
             Self::Comparison(codes, ComparisonOp::Ne, value) => {
-                !codes.contains(&subfield.code())
-                    || !case_cmp(subfield.value(), value)
+                !codes.contains(&subfield.code()) || !case_cmp(subfield.value(), value)
             }
             Self::Comparison(codes, ComparisonOp::StartsWith, value) => {
                 codes.contains(&subfield.code())
@@ -129,10 +127,8 @@ impl SubfieldMatcher {
                     let lhs = maybe_lowercase!(subfield.value().to_vec(), flag);
                     let rhs = maybe_lowercase!(value.to_vec(), flag);
 
-                    let score = normalized_levenshtein(
-                        &lhs.to_str_lossy(),
-                        &rhs.to_str_lossy(),
-                    );
+                    let score =
+                        normalized_levenshtein(&lhs.to_str_lossy(), &rhs.to_str_lossy());
 
                     score > flags.strsim_threshold
                 } else {
@@ -146,8 +142,8 @@ impl SubfieldMatcher {
                     .build()
                     .unwrap();
 
-                let mut result = codes.contains(&subfield.code())
-                    && re.is_match(subfield.value());
+                let mut result =
+                    codes.contains(&subfield.code()) && re.is_match(subfield.value());
 
                 if *invert {
                     result = !result;
@@ -194,9 +190,7 @@ fn parse_subfield_matcher_comparison(i: &[u8]) -> ParseResult<SubfieldMatcher> {
             ws(parse_comparison_op_bstring),
             ws(parse_string),
         )),
-        |(codes, op, value)| {
-            SubfieldMatcher::Comparison(codes, op, BString::from(value))
-        },
+        |(codes, op, value)| SubfieldMatcher::Comparison(codes, op, BString::from(value)),
     )(i)
 }
 
@@ -220,21 +214,16 @@ fn parse_subfield_matcher_in(i: &[u8]) -> ParseResult<SubfieldMatcher> {
             preceded(
                 ws(char('[')),
                 cut(terminated(
-                    separated_list1(
-                        ws(char(',')),
-                        map(parse_string, BString::from),
-                    ),
+                    separated_list1(ws(char(',')), map(parse_string, BString::from)),
                     ws(char(']')),
                 )),
             ),
         )),
-        |(codes, invert, _, values)| {
-            SubfieldMatcher::In(codes, values, invert.is_some())
-        },
+        |(codes, invert, _, values)| SubfieldMatcher::In(codes, values, invert.is_some()),
     )(i)
 }
 
-fn parse_subfield_matcher_exists(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+pub(crate) fn parse_subfield_matcher_exists(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     map(
         terminated(ws(parse_subfield_codes), char('?')),
         SubfieldMatcher::Exists,
@@ -295,8 +284,7 @@ mod tests {
         assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 == 'ABC'")?;
-        assert!(matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
 
         Ok(())
     }
@@ -320,8 +308,7 @@ mod tests {
         assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 != 'ABC'")?;
-        assert!(!matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
 
         Ok(())
     }
@@ -345,8 +332,7 @@ mod tests {
         assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =^ 'AB'")?;
-        assert!(matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
 
         Ok(())
     }
@@ -365,8 +351,7 @@ mod tests {
         assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =$ 'BC'")?;
-        assert!(matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
 
         Ok(())
     }
