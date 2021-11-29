@@ -1373,7 +1373,7 @@ fn pica_filter_cardinality_op() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
-        .arg("#047C == 2")
+        .arg("#047C == 2 && 003@.0?")
         .arg("tests/data/121169502.dat")
         .assert();
 
