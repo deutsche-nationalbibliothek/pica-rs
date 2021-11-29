@@ -21,7 +21,8 @@ mod work;
 
 use clap::ArgMatches;
 use ignore_list::IgnoreList;
-use pica::{MatcherFlags, ReaderBuilder, RecordMatcher};
+use pica::matcher::MatcherFlags;
+use pica::{ReaderBuilder, RecordMatcher};
 use std::fs::File;
 use std::io::{self, Write};
 use std::str::FromStr;

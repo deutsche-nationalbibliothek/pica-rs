@@ -192,7 +192,7 @@ fn parse_selectors(i: &[u8]) -> ParseResult<Selectors> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::matcher_old::{ComparisonOp, SubfieldMatcher};
+    use crate::matcher::{ComparisonOp, SubfieldMatcher};
     use crate::test::TestResult;
     use crate::{Occurrence, Tag};
 

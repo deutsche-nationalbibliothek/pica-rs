@@ -1,7 +1,8 @@
 use crate::error::Result;
+use crate::matcher::MatcherFlags;
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::{Field, MatcherFlags, Path};
+use crate::{Field, Path};
 
 use bstr::BString;
 use serde::ser::{Serialize, SerializeStruct, Serializer};

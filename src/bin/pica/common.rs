@@ -3,10 +3,8 @@ use std::ops::Deref;
 use crate::util::CliResult;
 use bstr::BString;
 use csv::ReaderBuilder;
-use pica::matcher::{OccurrenceMatcher, TagMatcher};
-use pica::{
-    FieldMatcher, RecordMatcher, SubfieldListMatcher, SubfieldMatcher, Tag,
-};
+use pica::matcher::{OccurrenceMatcher, SubfieldMatcher, TagMatcher};
+use pica::{FieldMatcher, RecordMatcher, SubfieldListMatcher, Tag};
 
 #[derive(Debug, Default)]
 pub struct FilterList(Vec<BString>, bool);
