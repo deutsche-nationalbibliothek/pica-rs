@@ -128,7 +128,7 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield, WriterBuilder, Occurrence, ByteRecord, Tag};
+    /// use pica::{ByteRecord, Field, Occurrence, Subfield, Tag, WriterBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     /// # use std::fs::read_to_string;
@@ -139,12 +139,16 @@ impl ByteRecord {
     ///     # let path = tempfile.path().to_owned();
     ///
     ///     let record = ByteRecord::new(vec![
-    ///         Field::new(Tag::new("012A")?, Some(Occurrence::new("001")?), vec![
-    ///             Subfield::new('0', "123456789X")?,
-    ///         ]),
-    ///         Field::new(Tag::new("012A")?, Some(Occurrence::new("002")?), vec![
-    ///             Subfield::new('0', "123456789X")?,
-    ///         ]),
+    ///         Field::new(
+    ///             Tag::new("012A")?,
+    ///             Some(Occurrence::new("001")?),
+    ///             vec![Subfield::new('0', "123456789X")?],
+    ///         ),
+    ///         Field::new(
+    ///             Tag::new("012A")?,
+    ///             Some(Occurrence::new("002")?),
+    ///             vec![Subfield::new('0', "123456789X")?],
+    ///         ),
     ///     ]);
     ///
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
@@ -201,22 +205,13 @@ impl ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("012A \x1fa123\x1e012A \x1fa456\x1e")?;
+    ///     let record = ByteRecord::from_bytes("012A \x1fa123\x1e012A \x1fa456\x1e")?;
     ///
     ///     assert_eq!(
     ///         record.all("012A"),
     ///         Some(vec![
-    ///             &Field::new(
-    ///                 Tag::new("012A")?,
-    ///                 None,
-    ///                 vec![Subfield::new('a', "123")?]
-    ///             ),
-    ///             &Field::new(
-    ///                 Tag::new("012A")?,
-    ///                 None,
-    ///                 vec![Subfield::new('a', "456")?]
-    ///             ),
+    ///             &Field::new(Tag::new("012A")?, None, vec![Subfield::new('a', "123")?]),
+    ///             &Field::new(Tag::new("012A")?, None, vec![Subfield::new('a', "456")?]),
     ///         ])
     ///     );
     ///
@@ -265,9 +260,7 @@ impl ByteRecord {
                 let result = self
                     .iter()
                     .filter(|field| selector.tag.is_match(field.tag()))
-                    .filter(|field| {
-                        selector.occurrence.is_match(field.occurrence())
-                    })
+                    .filter(|field| selector.occurrence.is_match(field.occurrence()))
                     .filter(|field| {
                         if let Some(filter) = &selector.filter {
                             filter.is_match(
@@ -290,9 +283,7 @@ impl ByteRecord {
                                 subfields
                                     .iter()
                                     .filter(|subfield| subfield.code == *code)
-                                    .map(|subfield| {
-                                        vec![subfield.value().to_owned()]
-                                    })
+                                    .map(|subfield| vec![subfield.value().to_owned()])
                                     .collect::<Vec<Vec<BString>>>()
                             })
                             .map(|x| {
@@ -332,9 +323,8 @@ impl fmt::Display for ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record = ByteRecord::from_bytes(
-    ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
-    ///     )?;
+    ///     let record =
+    ///         ByteRecord::from_bytes("003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e")?;
     ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
     ///
     ///     Ok(())
@@ -384,12 +374,10 @@ impl StringRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
+    ///     let record = ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
     ///     assert!(StringRecord::from_byte_record(record).is_ok());
     ///
-    ///     let record =
-    ///         ByteRecord::from_bytes(b"003@ \x1ffoo\xffbar\x1e".to_vec())?;
+    ///     let record = ByteRecord::from_bytes(b"003@ \x1ffoo\xffbar\x1e".to_vec())?;
     ///     assert!(StringRecord::from_byte_record(record).is_err());
     ///
     ///     Ok(())
@@ -434,9 +422,8 @@ impl fmt::Display for StringRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record = StringRecord::from_bytes(
-    ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
-    ///     )?;
+    ///     let record =
+    ///         StringRecord::from_bytes("003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e")?;
     ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
     ///
     ///     Ok(())
@@ -449,10 +436,7 @@ impl fmt::Display for StringRecord {
 }
 
 impl Serialize for StringRecord {
-    fn serialize<S>(
-        &self,
-        serializer: S,
-    ) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {

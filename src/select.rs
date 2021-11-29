@@ -160,10 +160,7 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
                 delimited(
                     ws(char('{')),
                     pair(
-                        opt(terminated(
-                            parse_subfield_list_matcher,
-                            ws(char(',')),
-                        )),
+                        opt(terminated(parse_subfield_list_matcher, ws(char(',')))),
                         separated_list1(ws(char(',')), ws(parse_subfield_code)),
                     ),
                     ws(char('}')),
@@ -223,13 +220,11 @@ mod tests {
             Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::Some(Tag::new("044H")?),
                 OccurrenceMatcher::Any,
-                Some(SubfieldListMatcher::Singleton(
-                    SubfieldMatcher::Comparison(
-                        vec!['E'],
-                        ComparisonOp::Eq,
-                        BString::from("m")
-                    )
-                )),
+                Some(SubfieldListMatcher::Singleton(SubfieldMatcher::Comparison(
+                    vec!['E'],
+                    ComparisonOp::Eq,
+                    BString::from("m")
+                ))),
                 vec!['9', 'E', 'H']
             )))
         );

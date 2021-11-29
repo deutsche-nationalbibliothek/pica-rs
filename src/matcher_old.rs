@@ -6,72 +6,16 @@ use nom::bytes::complete::tag;
 use nom::character::complete::{char, digit1};
 use nom::combinator::{all_consuming, cut, map, map_res, opt};
 use nom::multi::many0;
-use nom::sequence::{pair, preceded, terminated, tuple};
+use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
 use crate::common::{ws, ParseResult};
 use crate::matcher::{
-    parse_comparison_op_usize, parse_occurrence_matcher,
-    parse_subfield_list_matcher, parse_subfield_list_matcher_singleton,
-    parse_tag_matcher, BooleanOp, ComparisonOp, MatcherFlags,
-    OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
+    parse_comparison_op_usize, parse_field_matcher, parse_occurrence_matcher,
+    parse_subfield_list_matcher, parse_tag_matcher, BooleanOp, ComparisonOp,
+    FieldMatcher, MatcherFlags, OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
 };
-use crate::{ByteRecord, Field};
-
-#[derive(Debug, PartialEq)]
-pub enum FieldMatcher {
-    Subield(TagMatcher, OccurrenceMatcher, SubfieldListMatcher),
-    Exists(TagMatcher, OccurrenceMatcher),
-}
-
-impl FieldMatcher {
-    pub fn is_match(&self, field: &Field, flags: &MatcherFlags) -> bool {
-        match self {
-            Self::Subield(tag, occurrence, subfield) => {
-                tag.is_match(field.tag())
-                    && occurrence.is_match(field.occurrence())
-                    && subfield.is_match(field.subfields(), flags)
-            }
-            Self::Exists(tag, occurrence) => {
-                tag.is_match(field.tag())
-                    && occurrence.is_match(field.occurrence())
-            }
-        }
-    }
-}
-
-fn parse_field_matcher_subfield(i: &[u8]) -> ParseResult<FieldMatcher> {
-    map(
-        tuple((
-            parse_tag_matcher,
-            parse_occurrence_matcher,
-            alt((
-                preceded(char('.'), cut(parse_subfield_list_matcher_singleton)),
-                preceded(
-                    ws(char('{')),
-                    cut(terminated(parse_subfield_list_matcher, ws(char('}')))),
-                ),
-            )),
-        )),
-        |(tag, occurrence, subfields)| {
-            FieldMatcher::Subield(tag, occurrence, subfields)
-        },
-    )(i)
-}
-
-fn parse_field_matcher_exists(i: &[u8]) -> ParseResult<FieldMatcher> {
-    map(
-        terminated(
-            pair(ws(parse_tag_matcher), parse_occurrence_matcher),
-            ws(char('?')),
-        ),
-        |(t, o)| FieldMatcher::Exists(t, o),
-    )(i)
-}
-
-fn parse_field_matcher(i: &[u8]) -> ParseResult<FieldMatcher> {
-    alt((parse_field_matcher_subfield, parse_field_matcher_exists))(i)
-}
+use crate::ByteRecord;
 
 #[derive(Debug, PartialEq)]
 pub enum RecordMatcher {
@@ -281,9 +225,7 @@ fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
                     cut(terminated(parse_subfield_list_matcher, ws(char('}')))),
                 )),
                 ws(parse_comparison_op_usize),
-                map_res(digit1, |s| {
-                    std::str::from_utf8(s).unwrap().parse::<usize>()
-                }),
+                map_res(digit1, |s| std::str::from_utf8(s).unwrap().parse::<usize>()),
             ))),
         ),
         |(t, o, s, op, value)| {

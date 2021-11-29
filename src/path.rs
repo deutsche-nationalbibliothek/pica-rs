@@ -38,11 +38,7 @@ impl Path {
     /// assert!(Path::new("012!", OccurrenceMatcher::Any, vec!['0']).is_err());
     /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['a', '!']).is_err());
     /// ```
-    pub fn new<S>(
-        tag: S,
-        occurrence: OccurrenceMatcher,
-        codes: Vec<char>,
-    ) -> Result<Path>
+    pub fn new<S>(tag: S, occurrence: OccurrenceMatcher, codes: Vec<char>) -> Result<Path>
     where
         S: AsRef<str>,
     {
@@ -73,10 +69,7 @@ impl Path {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let path = Path::from_bytes("003@.0")?;
-    ///     assert_eq!(
-    ///         path,
-    ///         Path::new("003@", OccurrenceMatcher::None, vec!['0'])?
-    ///     );
+    ///     assert_eq!(path, Path::new("003@", OccurrenceMatcher::None, vec!['0'])?);
     ///
     ///     let path = Path::from_bytes("012A/01.0")?;
     ///     assert_eq!(
@@ -105,9 +98,7 @@ impl Path {
         T: Into<Vec<u8>>,
     {
         match parse_path(&data.into()) {
-            Err(_) => {
-                Err(ParsePathError(String::from("Invalid path expression")))
-            }
+            Err(_) => Err(ParsePathError(String::from("Invalid path expression"))),
             Ok((_, path)) => Ok(path),
         }
     }

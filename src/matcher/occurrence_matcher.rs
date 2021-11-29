@@ -39,8 +39,7 @@ impl OccurrenceMatcher {
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
         let data = data.as_ref();
 
-        match all_consuming(parse_occurrence_matcher)(data.as_bytes()).finish()
-        {
+        match all_consuming(parse_occurrence_matcher)(data.as_bytes()).finish() {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
                 "Expected valid occurrence matcher, got '{}'",
@@ -88,9 +87,7 @@ impl From<Occurrence> for OccurrenceMatcher {
     }
 }
 
-pub(crate) fn parse_occurrence_matcher(
-    i: &[u8],
-) -> ParseResult<OccurrenceMatcher> {
+pub(crate) fn parse_occurrence_matcher(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
     alt((
         preceded(
             char('/'),
