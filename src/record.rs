@@ -205,13 +205,22 @@ impl ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record = ByteRecord::from_bytes("012A \x1fa123\x1e012A \x1fa456\x1e")?;
+    ///     let record =
+    ///         ByteRecord::from_bytes("012A \x1fa123\x1e012A \x1fa456\x1e")?;
     ///
     ///     assert_eq!(
     ///         record.all("012A"),
     ///         Some(vec![
-    ///             &Field::new(Tag::new("012A")?, None, vec![Subfield::new('a', "123")?]),
-    ///             &Field::new(Tag::new("012A")?, None, vec![Subfield::new('a', "456")?]),
+    ///             &Field::new(
+    ///                 Tag::new("012A")?,
+    ///                 None,
+    ///                 vec![Subfield::new('a', "123")?]
+    ///             ),
+    ///             &Field::new(
+    ///                 Tag::new("012A")?,
+    ///                 None,
+    ///                 vec![Subfield::new('a', "456")?]
+    ///             ),
     ///         ])
     ///     );
     ///
@@ -260,7 +269,9 @@ impl ByteRecord {
                 let result = self
                     .iter()
                     .filter(|field| selector.tag.is_match(field.tag()))
-                    .filter(|field| selector.occurrence.is_match(field.occurrence()))
+                    .filter(|field| {
+                        selector.occurrence.is_match(field.occurrence())
+                    })
                     .filter(|field| {
                         if let Some(filter) = &selector.filter {
                             filter.is_match(
@@ -283,7 +294,9 @@ impl ByteRecord {
                                 subfields
                                     .iter()
                                     .filter(|subfield| subfield.code == *code)
-                                    .map(|subfield| vec![subfield.value().to_owned()])
+                                    .map(|subfield| {
+                                        vec![subfield.value().to_owned()]
+                                    })
                                     .collect::<Vec<Vec<BString>>>()
                             })
                             .map(|x| {
@@ -323,8 +336,9 @@ impl fmt::Display for ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e")?;
+    ///     let record = ByteRecord::from_bytes(
+    ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
+    ///     )?;
     ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
     ///
     ///     Ok(())
@@ -374,10 +388,12 @@ impl StringRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record = ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
+    ///     let record =
+    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
     ///     assert!(StringRecord::from_byte_record(record).is_ok());
     ///
-    ///     let record = ByteRecord::from_bytes(b"003@ \x1ffoo\xffbar\x1e".to_vec())?;
+    ///     let record =
+    ///         ByteRecord::from_bytes(b"003@ \x1ffoo\xffbar\x1e".to_vec())?;
     ///     assert!(StringRecord::from_byte_record(record).is_err());
     ///
     ///     Ok(())
@@ -422,8 +438,9 @@ impl fmt::Display for StringRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record =
-    ///         StringRecord::from_bytes("003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e")?;
+    ///     let record = StringRecord::from_bytes(
+    ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
+    ///     )?;
     ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
     ///
     ///     Ok(())
@@ -436,7 +453,10 @@ impl fmt::Display for StringRecord {
 }
 
 impl Serialize for StringRecord {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {

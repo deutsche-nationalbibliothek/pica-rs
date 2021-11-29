@@ -296,7 +296,9 @@ fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
                     cut(terminated(parse_subfield_list_matcher, ws(char('}')))),
                 )),
                 ws(parse_comparison_op_usize),
-                map_res(digit1, |s| std::str::from_utf8(s).unwrap().parse::<usize>()),
+                map_res(digit1, |s| {
+                    std::str::from_utf8(s).unwrap().parse::<usize>()
+                }),
             ))),
         ),
         |(t, o, s, op, value)| {
@@ -336,7 +338,8 @@ mod tests {
     #[test]
     fn test_record_matcher_group() -> TestResult {
         // composite
-        let matcher = RecordMatcher::new("(#003@ == 1 && 003@.0 == '123456789X')")?;
+        let matcher =
+            RecordMatcher::new("(#003@ == 1 && 003@.0 == '123456789X')")?;
         let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 

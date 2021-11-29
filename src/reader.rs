@@ -70,11 +70,13 @@ impl ReaderBuilder {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let mut reader = ReaderBuilder::new().from_path("tests/data/119232022.dat")?;
+    ///     let mut reader =
+    ///         ReaderBuilder::new().from_path("tests/data/119232022.dat")?;
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
-    ///     let mut reader = ReaderBuilder::new().from_path("tests/data/119232022.dat.gz")?;
+    ///     let mut reader =
+    ///         ReaderBuilder::new().from_path("tests/data/119232022.dat.gz")?;
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
@@ -87,11 +89,12 @@ impl ReaderBuilder {
     {
         let filename = path.as_ref();
 
-        let reader: Box<dyn Read> = if filename.extension() == Some(OsStr::new("gz")) {
-            Box::new(GzDecoder::new(File::open(filename)?))
-        } else {
-            Box::new(File::open(filename)?)
-        };
+        let reader: Box<dyn Read> =
+            if filename.extension() == Some(OsStr::new("gz")) {
+                Box::new(GzDecoder::new(File::open(filename)?))
+            } else {
+                Box::new(File::open(filename)?)
+            };
 
         Ok(self.from_reader(reader))
     }
@@ -222,7 +225,8 @@ impl ReaderBuilder {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let cursor = Cursor::new(b"003@ \x1f0123456789\x1e");
-    ///     let mut reader = ReaderBuilder::new().buffer_size(2048).from_reader(cursor);
+    ///     let mut reader =
+    ///         ReaderBuilder::new().buffer_size(2048).from_reader(cursor);
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
@@ -245,7 +249,8 @@ impl ReaderBuilder {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let cursor = Cursor::new(b"003@ \x1f0123456789\x1e\n003@ \x1f0123456789\x1e\n");
+    ///     let cursor =
+    ///         Cursor::new(b"003@ \x1f0123456789\x1e\n003@ \x1f0123456789\x1e\n");
     ///
     ///     let mut reader = ReaderBuilder::new().limit(1).from_reader(cursor);
     ///     let mut records = reader.records();
@@ -415,7 +420,10 @@ impl<'r, R: Read> Iterator for ByteRecordsIter<'r, R> {
                         // error message of an invalid record can be enriched
                         // by the line number.
                         Error::InvalidRecord(ParsePicaError {
-                            message: format!("Invalid record on line {}.", self.line),
+                            message: format!(
+                                "Invalid record on line {}.",
+                                self.line
+                            ),
                             data: e.data,
                         })
                     }))

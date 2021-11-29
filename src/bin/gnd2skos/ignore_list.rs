@@ -14,7 +14,9 @@ struct Record {
 }
 
 impl IgnoreList {
-    pub(crate) fn from_path<P: AsRef<Path>>(path: P) -> Result<Self, std::io::Error> {
+    pub(crate) fn from_path<P: AsRef<Path>>(
+        path: P,
+    ) -> Result<Self, std::io::Error> {
         let mut list = HashSet::new();
         let mut reader = csv::Reader::from_path(path)?;
         for result in reader.deserialize() {

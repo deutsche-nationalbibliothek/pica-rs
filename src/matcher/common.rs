@@ -26,7 +26,9 @@ pub enum ComparisonOp {
 }
 
 /// Parses comparison operator for byte strings.
-pub(crate) fn parse_comparison_op_bstring(i: &[u8]) -> ParseResult<ComparisonOp> {
+pub(crate) fn parse_comparison_op_bstring(
+    i: &[u8],
+) -> ParseResult<ComparisonOp> {
     alt((
         value(ComparisonOp::Eq, tag("==")),
         value(ComparisonOp::Ne, tag("!=")),

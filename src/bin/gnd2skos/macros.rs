@@ -33,7 +33,9 @@ macro_rules! push_list {
             $label.push_str($prefix);
             // SAFETY: It's not necessary, because we are working on
             // `StringRecord`s.
-            $label.push_str(unsafe { bstr::join($sep, $values).to_str_unchecked() });
+            $label.push_str(unsafe {
+                bstr::join($sep, $values).to_str_unchecked()
+            });
             $label.push_str($suffix);
         }
     };
@@ -42,7 +44,9 @@ macro_rules! push_list {
             $label.push_str($prefix);
             // SAFETY: It's not necessary, because we are working on
             // `StringRecord`s.
-            $label.push_str(unsafe { bstr::join($sep, $values).to_str_unchecked() });
+            $label.push_str(unsafe {
+                bstr::join($sep, $values).to_str_unchecked()
+            });
         }
     };
 }

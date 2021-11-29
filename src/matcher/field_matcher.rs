@@ -72,7 +72,8 @@ impl FieldMatcher {
                     && subfield.is_match(field.subfields(), flags)
             }
             Self::Exists(tag, occurrence) => {
-                tag.is_match(field.tag()) && occurrence.is_match(field.occurrence())
+                tag.is_match(field.tag())
+                    && occurrence.is_match(field.occurrence())
             }
         }
     }
@@ -91,11 +92,15 @@ fn parse_field_matcher_subfield(i: &[u8]) -> ParseResult<FieldMatcher> {
                 ),
             )),
         )),
-        |(tag, occurrence, subfields)| FieldMatcher::Subield(tag, occurrence, subfields),
+        |(tag, occurrence, subfields)| {
+            FieldMatcher::Subield(tag, occurrence, subfields)
+        },
     )(i)
 }
 
-pub(crate) fn parse_field_matcher_exists(i: &[u8]) -> ParseResult<FieldMatcher> {
+pub(crate) fn parse_field_matcher_exists(
+    i: &[u8],
+) -> ParseResult<FieldMatcher> {
     map(
         terminated(
             pair(ws(parse_tag_matcher), parse_occurrence_matcher),

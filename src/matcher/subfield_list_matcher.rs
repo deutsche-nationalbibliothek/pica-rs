@@ -51,7 +51,9 @@ impl SubfieldListMatcher {
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
         let data = data.as_ref();
 
-        match all_consuming(parse_subfield_list_matcher)(data.as_bytes()).finish() {
+        match all_consuming(parse_subfield_list_matcher)(data.as_bytes())
+            .finish()
+        {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
                 "Expected valid subfield list matcher, got '{}'",
@@ -77,7 +79,11 @@ impl SubfieldListMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn is_match(&self, subfields: &[Subfield], flags: &MatcherFlags) -> bool {
+    pub fn is_match(
+        &self,
+        subfields: &[Subfield],
+        flags: &MatcherFlags,
+    ) -> bool {
         match self {
             Self::Singleton(matcher) => {
                 subfields.iter().any(|s| matcher.is_match(s, flags))
@@ -91,7 +97,8 @@ impl SubfieldListMatcher {
                 lhs.is_match(subfields, flags) || rhs.is_match(subfields, flags)
             }
             Self::Cardinality(code, op, value) => {
-                let cardinality = subfields.iter().filter(|s| s.code() == *code).count();
+                let cardinality =
+                    subfields.iter().filter(|s| s.code() == *code).count();
 
                 match op {
                     ComparisonOp::Eq => cardinality == *value,
@@ -111,7 +118,11 @@ impl BitAnd for SubfieldListMatcher {
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
-        SubfieldListMatcher::Composite(Box::new(self), BooleanOp::And, Box::new(rhs))
+        SubfieldListMatcher::Composite(
+            Box::new(self),
+            BooleanOp::And,
+            Box::new(rhs),
+        )
     }
 }
 
@@ -119,7 +130,11 @@ impl BitOr for SubfieldListMatcher {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        SubfieldListMatcher::Composite(Box::new(self), BooleanOp::Or, Box::new(rhs))
+        SubfieldListMatcher::Composite(
+            Box::new(self),
+            BooleanOp::Or,
+            Box::new(rhs),
+        )
     }
 }
 
@@ -138,21 +153,27 @@ pub(crate) fn parse_subfield_list_matcher_exists(
     )(i)
 }
 
-fn parse_subfield_list_matcher_cardinality(i: &[u8]) -> ParseResult<SubfieldListMatcher> {
+fn parse_subfield_list_matcher_cardinality(
+    i: &[u8],
+) -> ParseResult<SubfieldListMatcher> {
     map(
         preceded(
             char('#'),
             cut(tuple((
                 ws(parse_subfield_code),
                 ws(parse_comparison_op_usize),
-                map_res(digit1, |s| std::str::from_utf8(s).unwrap().parse::<usize>()),
+                map_res(digit1, |s| {
+                    std::str::from_utf8(s).unwrap().parse::<usize>()
+                }),
             ))),
         ),
         |(code, op, value)| SubfieldListMatcher::Cardinality(code, op, value),
     )(i)
 }
 
-fn parse_subfield_list_matcher_group(i: &[u8]) -> ParseResult<SubfieldListMatcher> {
+fn parse_subfield_list_matcher_group(
+    i: &[u8],
+) -> ParseResult<SubfieldListMatcher> {
     map(
         preceded(
             ws(char('(')),
@@ -170,7 +191,9 @@ fn parse_subfield_list_matcher_group(i: &[u8]) -> ParseResult<SubfieldListMatche
     )(i)
 }
 
-fn parse_subfield_list_matcher_not(i: &[u8]) -> ParseResult<SubfieldListMatcher> {
+fn parse_subfield_list_matcher_not(
+    i: &[u8],
+) -> ParseResult<SubfieldListMatcher> {
     map(
         preceded(
             ws(char('!')),
@@ -236,14 +259,18 @@ fn parse_subfield_list_matcher_composite_or(
     ))
 }
 
-fn parse_subfield_list_matcher_composite(i: &[u8]) -> ParseResult<SubfieldListMatcher> {
+fn parse_subfield_list_matcher_composite(
+    i: &[u8],
+) -> ParseResult<SubfieldListMatcher> {
     alt((
         parse_subfield_list_matcher_composite_or,
         parse_subfield_list_matcher_composite_and,
     ))(i)
 }
 
-pub(crate) fn parse_subfield_list_matcher(i: &[u8]) -> ParseResult<SubfieldListMatcher> {
+pub(crate) fn parse_subfield_list_matcher(
+    i: &[u8],
+) -> ParseResult<SubfieldListMatcher> {
     alt((
         parse_subfield_list_matcher_group,
         parse_subfield_list_matcher_not,
@@ -273,7 +300,8 @@ mod tests {
 
     #[test]
     fn test_subfield_list_matcher_cardinality() -> TestResult {
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
 
         let matcher = SubfieldListMatcher::new("#0 == 2")?;
         assert!(matcher.is_match(&subfields, &MatcherFlags::default()));
@@ -305,19 +333,23 @@ mod tests {
         let flags = MatcherFlags::default();
 
         let matcher = SubfieldListMatcher::new("(0? && 0 == 'abc')")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("(0 == 'abc')")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("(!9?)")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("((0 == 'def'))")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         assert!(SubfieldListMatcher::new("((0 == 'abc')").is_err());
@@ -330,15 +362,18 @@ mod tests {
         let flags = MatcherFlags::default();
 
         let matcher = SubfieldListMatcher::new("!(0? && 0 == 'hij')")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("!9?")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("!!(0? && 0 == 'abc')")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         Ok(())
@@ -348,36 +383,48 @@ mod tests {
     fn test_subfield_list_matcher_composite() -> TestResult {
         let flags = MatcherFlags::default();
 
-        let matcher = SubfieldListMatcher::new("0? && 0 == 'abc' && 0 == 'def'")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let matcher =
+            SubfieldListMatcher::new("0? && 0 == 'abc' && 0 == 'def'")?;
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
         assert!(!matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
-        let subfields = [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
         assert!(!matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
-        let subfields = [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
+        let subfields =
+            [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
-        let matcher = SubfieldListMatcher::new("9? || 0 == 'abc' && 0 == 'def'")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let matcher =
+            SubfieldListMatcher::new("9? || 0 == 'abc' && 0 == 'def'")?;
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
-        let matcher = SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'def'")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let matcher =
+            SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'def'")?;
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
-        let matcher = SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'hij'")?;
-        let subfields = [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let matcher =
+            SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'hij'")?;
+        let subfields =
+            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(!matcher.is_match(&subfields, &flags));
 
         Ok(())

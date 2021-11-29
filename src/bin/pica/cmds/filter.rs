@@ -147,14 +147,16 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     if let Some(allow_lists) = args.values_of("allow-list") {
-        let allow_list = FilterList::new(allow_lists.collect::<Vec<&str>>(), false)?;
+        let allow_list =
+            FilterList::new(allow_lists.collect::<Vec<&str>>(), false)?;
         let matcher = RecordMatcher::from(allow_list);
 
         filter = matcher & filter;
     }
 
     if let Some(deny_lists) = args.values_of("deny-list") {
-        let deny_list = FilterList::new(deny_lists.collect::<Vec<&str>>(), true)?;
+        let deny_list =
+            FilterList::new(deny_lists.collect::<Vec<&str>>(), true)?;
         let matcher = RecordMatcher::from(deny_list);
 
         filter = matcher & filter;

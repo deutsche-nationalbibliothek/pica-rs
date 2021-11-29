@@ -188,7 +188,10 @@ impl Subfield {
     ///     Ok(())
     /// }
     /// ```
-    pub fn write(&self, writer: &mut dyn std::io::Write) -> crate::error::Result<()> {
+    pub fn write(
+        &self,
+        writer: &mut dyn std::io::Write,
+    ) -> crate::error::Result<()> {
         write!(writer, "\x1f{}{}", self.code, self.value)?;
         Ok(())
     }
@@ -202,7 +205,10 @@ impl fmt::Display for Subfield {
 }
 
 impl Serialize for Subfield {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {

@@ -57,7 +57,9 @@ impl Occurrence {
 
         match parser(data.as_ref().as_bytes()).finish() {
             Ok((_, occurrence)) => Ok(occurrence),
-            Err(_) => Err(Error::InvalidOccurrence("Invalid occurrence".to_string())),
+            Err(_) => {
+                Err(Error::InvalidOccurrence("Invalid occurrence".to_string()))
+            }
         }
     }
 
@@ -121,7 +123,10 @@ mod tests {
 
     #[test]
     fn test_parse_occurrence() -> TestResult {
-        assert_eq!(parse_occurrence(b"/00")?.1, Occurrence(BString::from("00")));
+        assert_eq!(
+            parse_occurrence(b"/00")?.1,
+            Occurrence(BString::from("00"))
+        );
         assert_eq!(
             parse_occurrence(b"/001")?.1,
             Occurrence(BString::from("001"))

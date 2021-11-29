@@ -16,8 +16,12 @@ pub use subfield_list_matcher::SubfieldListMatcher;
 pub use subfield_matcher::SubfieldMatcher;
 pub use tag_matcher::TagMatcher;
 
-pub(crate) use common::{parse_comparison_op_bstring, parse_comparison_op_usize};
-pub(crate) use field_matcher::{parse_field_matcher, parse_field_matcher_exists};
+pub(crate) use common::{
+    parse_comparison_op_bstring, parse_comparison_op_usize,
+};
+pub(crate) use field_matcher::{
+    parse_field_matcher, parse_field_matcher_exists,
+};
 pub(crate) use occurrence_matcher::parse_occurrence_matcher;
 pub(crate) use subfield_list_matcher::{
     parse_subfield_list_matcher, parse_subfield_list_matcher_singleton,

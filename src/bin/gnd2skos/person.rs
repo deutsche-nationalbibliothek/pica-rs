@@ -60,9 +60,9 @@ impl Person {
         let mut time_data = String::new();
 
         let field = self.iter().find(|field| {
-            field
-                .iter()
-                .any(|subfield| subfield.code() == '4' && subfield.value() == "datl")
+            field.iter().any(|subfield| {
+                subfield.code() == '4' && subfield.value() == "datl"
+            })
         });
 
         if let Some(field) = field {
@@ -70,7 +70,11 @@ impl Person {
             let to = field.first('b');
 
             if from.is_some() && to.is_some() {
-                time_data.push_str(&format!(" ({}-{})", &from.unwrap(), &to.unwrap()));
+                time_data.push_str(&format!(
+                    " ({}-{})",
+                    &from.unwrap(),
+                    &to.unwrap()
+                ));
             } else if let Some(time) = field.first('c') {
                 time_data.push_str(&format!(" ({})", &time));
             } else if let Some(time) = field.first('d') {
@@ -99,8 +103,11 @@ impl Concept for Person {
         // skos:prefLabel
         if let Some(label) = Self::get_label(self.first("028A").unwrap()) {
             let label = if let Some(time_data) = self.get_time_data() {
-                StrLiteral::new_lang(format!("{}{}", label.txt(), time_data), "de")
-                    .unwrap()
+                StrLiteral::new_lang(
+                    format!("{}{}", label.txt(), time_data),
+                    "de",
+                )
+                .unwrap()
             } else {
                 label
             };

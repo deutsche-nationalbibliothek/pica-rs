@@ -76,7 +76,10 @@ fn main() -> CliResult<()> {
         Some(filter_str) => match RecordMatcher::from_str(filter_str) {
             Ok(matcher) => matcher,
             Err(_) => {
-                return Err(CliError::Other(format!("invalid filter: {}", filter_str)))
+                return Err(CliError::Other(format!(
+                    "invalid filter: {}",
+                    filter_str
+                )))
             }
         },
     };

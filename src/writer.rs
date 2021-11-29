@@ -38,7 +38,8 @@ impl WriterBuilder {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
+    ///     let record =
+    ///         ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
     ///
     ///     let mut tempfile = Builder::new().rand_bytes(5).tempfile()?;
     ///     let path = tempfile.path().to_owned();
@@ -86,7 +87,10 @@ impl WriterBuilder {
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_path<P: AsRef<Path>>(&self, path: P) -> Result<Box<dyn PicaWriter>> {
+    pub fn from_path<P: AsRef<Path>>(
+        &self,
+        path: P,
+    ) -> Result<Box<dyn PicaWriter>> {
         let path = path.as_ref();
 
         if self.gzip || path.extension() == Some(OsStr::new("gz")) {
@@ -125,7 +129,10 @@ impl WriterBuilder {
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_writer<W: Write + 'static>(&self, writer: W) -> Box<dyn PicaWriter> {
+    pub fn from_writer<W: Write + 'static>(
+        &self,
+        writer: W,
+    ) -> Box<dyn PicaWriter> {
         if self.gzip {
             Box::new(GzipWriter::new(writer))
         } else {
@@ -145,13 +152,16 @@ impl WriterBuilder {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
+    ///     let record =
+    ///         ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
     ///
     ///     let mut tempfile = Builder::new().rand_bytes(5).tempfile()?;
-    ///     let mut writer = WriterBuilder::new().from_path_or_stdout(Some(&tempfile.path()));
+    ///     let mut writer =
+    ///         WriterBuilder::new().from_path_or_stdout(Some(&tempfile.path()));
     ///     assert!(writer.is_ok());
     ///
-    ///     let mut writer = WriterBuilder::new().from_path_or_stdout(None::<String>);
+    ///     let mut writer =
+    ///         WriterBuilder::new().from_path_or_stdout(None::<String>);
     ///     assert!(writer.is_ok());
     ///
     ///     Ok(())
@@ -243,7 +253,10 @@ impl<W: Write> PlainWriter<W> {
 
 impl<W: Write> Write for PlainWriter<W> {
     #[inline]
-    fn write(&mut self, buf: &[u8]) -> std::result::Result<usize, std::io::Error> {
+    fn write(
+        &mut self,
+        buf: &[u8],
+    ) -> std::result::Result<usize, std::io::Error> {
         self.inner.write(buf)
     }
 
@@ -316,7 +329,10 @@ impl<W: Write> GzipWriter<W> {
 
 impl<W: Write> Write for GzipWriter<W> {
     #[inline]
-    fn write(&mut self, buf: &[u8]) -> std::result::Result<usize, std::io::Error> {
+    fn write(
+        &mut self,
+        buf: &[u8],
+    ) -> std::result::Result<usize, std::io::Error> {
         self.inner.write(buf)
     }
 

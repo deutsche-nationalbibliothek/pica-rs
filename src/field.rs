@@ -105,7 +105,8 @@ impl Field {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let field = Field::new(Tag::new("012A")?, Some(Occurrence::new("00")?), vec![]);
+    ///     let field =
+    ///         Field::new(Tag::new("012A")?, Some(Occurrence::new("00")?), vec![]);
     ///     assert_eq!(field.occurrence(), Some(&Occurrence::new("00")?));
     ///     Ok(())
     /// }
@@ -408,7 +409,10 @@ impl fmt::Display for Field {
 }
 
 impl Serialize for Field {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -418,7 +422,10 @@ impl Serialize for Field {
         unsafe {
             state.serialize_field("tag", &self.tag.to_str_unchecked())?;
             if let Some(occurrence) = self.occurrence() {
-                state.serialize_field("occurrence", occurrence.to_str_unchecked())?;
+                state.serialize_field(
+                    "occurrence",
+                    occurrence.to_str_unchecked(),
+                )?;
             }
         }
 
@@ -499,7 +506,11 @@ mod tests {
 
         assert_eq!(
             parse_field(b"012A/00 \x1f0abc\x1e")?.1,
-            Field::new(Tag::new("012A")?, None, vec![Subfield::new('0', "abc")?])
+            Field::new(
+                Tag::new("012A")?,
+                None,
+                vec![Subfield::new('0', "abc")?]
+            )
         );
 
         assert_eq!(
