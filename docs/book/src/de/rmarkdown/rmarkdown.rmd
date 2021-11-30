@@ -146,4 +146,4 @@ github-Repository des Toolkits pica-rs die
 [.rmd-Quelldatei](https://github.com/deutsche-nationalbibliothek/pica-rs/blob/main/docs/book/src/de/rmarkdown/rmarkdown.rmd)
 sowie ein 
 [Testdatensatz im PICA+ Format](https://github.com/deutsche-nationalbibliothek/pica-rs/blob/main/docs/book/src/de/testdaten.dat) 
-für dieses Tutorial zur Verfügung. 
+für dieses Tutorial zum Download zur Verfügung. 
