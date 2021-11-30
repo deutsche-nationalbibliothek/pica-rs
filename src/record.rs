@@ -1,7 +1,8 @@
 use crate::error::Result;
+use crate::matcher::MatcherFlags;
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::{Field, MatcherFlags, Path};
+use crate::{Field, Path};
 
 use bstr::BString;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
@@ -127,7 +128,7 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield, WriterBuilder, Occurrence, ByteRecord, Tag};
+    /// use pica::{ByteRecord, Field, Occurrence, Subfield, Tag, WriterBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     /// # use std::fs::read_to_string;
@@ -138,12 +139,16 @@ impl ByteRecord {
     ///     # let path = tempfile.path().to_owned();
     ///
     ///     let record = ByteRecord::new(vec![
-    ///         Field::new(Tag::new("012A")?, Some(Occurrence::new("001")?), vec![
-    ///             Subfield::new('0', "123456789X")?,
-    ///         ]),
-    ///         Field::new(Tag::new("012A")?, Some(Occurrence::new("002")?), vec![
-    ///             Subfield::new('0', "123456789X")?,
-    ///         ]),
+    ///         Field::new(
+    ///             Tag::new("012A")?,
+    ///             Some(Occurrence::new("001")?),
+    ///             vec![Subfield::new('0', "123456789X")?],
+    ///         ),
+    ///         Field::new(
+    ///             Tag::new("012A")?,
+    ///             Some(Occurrence::new("002")?),
+    ///             vec![Subfield::new('0', "123456789X")?],
+    ///         ),
     ///     ]);
     ///
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);

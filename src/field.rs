@@ -322,7 +322,7 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield, WriterBuilder, Occurrence, Tag};
+    /// use pica::{Field, Occurrence, Subfield, Tag, WriterBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     /// # use std::fs::read_to_string;
@@ -335,7 +335,7 @@ impl Field {
     ///     let subfield = Subfield::new('0', "123456789X")?;
     ///     let occurrence = Occurrence::new("001")?;
     ///     let field = Field::new(Tag::new("012A")?, Some(occurrence), vec![subfield]);
-    ///     
+    ///
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
     ///     field.write(&mut writer)?;
     ///     writer.finish()?;

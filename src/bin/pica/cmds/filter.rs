@@ -3,9 +3,8 @@ use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
-use pica::{
-    MatcherFlags, PicaWriter, ReaderBuilder, RecordMatcher, WriterBuilder,
-};
+use pica::matcher::{MatcherFlags, RecordMatcher};
+use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
 use std::str::FromStr;

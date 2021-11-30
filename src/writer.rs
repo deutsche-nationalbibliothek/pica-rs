@@ -72,8 +72,7 @@ impl WriterBuilder {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
+    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
     ///
     ///     let mut tempfile = Builder::new().rand_bytes(5).tempfile()?;
     ///
@@ -114,8 +113,7 @@ impl WriterBuilder {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
+    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
     ///
     ///     let mut tempfile = Builder::new().tempfile()?;
     ///     # let filename = tempfile.path().to_owned();
@@ -223,15 +221,14 @@ impl<W: Write> PlainWriter<W> {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, PlainWriter, PicaWriter, WriterBuilder};
+    /// use pica::{ByteRecord, PicaWriter, PlainWriter, WriterBuilder};
     /// # use pica::{ReaderBuilder, StringRecord};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
+    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
     ///
     ///     let mut tempfile = Builder::new().tempfile()?;
     ///     # let filename = tempfile.path().to_owned();
@@ -274,15 +271,14 @@ impl<W: Write> PicaWriter for PlainWriter<W> {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, PlainWriter, PicaWriter, WriterBuilder};
+    /// use pica::{ByteRecord, PicaWriter, PlainWriter, WriterBuilder};
     /// # use pica::{ReaderBuilder, StringRecord};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
+    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
     ///
     ///     let mut tempfile = Builder::new().tempfile()?;
     ///     # let filename = tempfile.path().to_owned();

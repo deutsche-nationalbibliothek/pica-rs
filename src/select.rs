@@ -11,10 +11,9 @@ use std::ops::{Add, Deref, Mul};
 use crate::common::{parse_string, ws, ParseResult};
 use crate::matcher::{
     parse_occurrence_matcher, parse_subfield_list_matcher, parse_tag_matcher,
-    OccurrenceMatcher, SubfieldListMatcher,
+    OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
 };
 use crate::subfield::parse_subfield_code;
-use crate::TagMatcher;
 
 #[derive(Debug, PartialEq)]
 pub struct FieldSelector {

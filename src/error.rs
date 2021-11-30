@@ -10,7 +10,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     InvalidTag(String),
-    InvalidTagMatcher(String),
     InvalidOccurrence(String),
     InvalidOccurrenceMatcher(String),
     InvalidSubfield(String),
@@ -20,6 +19,7 @@ pub enum Error {
     InvalidFieldMatcher(String),
     InvalidRecord(ParsePicaError),
     InvalidPath(ParsePathError),
+    InvalidMatcher(String),
     Utf8Error(std::str::Utf8Error),
     Io(io::Error),
 }
@@ -30,7 +30,6 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             Self::InvalidTag(ref m) => f.write_str(m),
-            Self::InvalidTagMatcher(ref m) => f.write_str(m),
             Self::InvalidOccurrence(ref m) => f.write_str(m),
             Self::InvalidOccurrenceMatcher(ref m) => f.write_str(m),
             Self::InvalidSubfield(ref m) => f.write_str(m),
@@ -38,6 +37,7 @@ impl Display for Error {
             Self::InvalidSubfieldsMatcher(ref m) => f.write_str(m),
             Self::InvalidField(ref m) => f.write_str(m),
             Self::InvalidFieldMatcher(ref m) => f.write_str(m),
+            Self::InvalidMatcher(ref m) => f.write_str(m),
             Error::InvalidRecord(ref e) => e.fmt(f),
             Error::InvalidPath(ref e) => e.fmt(f),
             Error::Utf8Error(ref e) => e.fmt(f),
