@@ -313,6 +313,32 @@ fn pica_select_ignore_case() -> TestResult {
 }
 
 #[test]
+fn pica_select_unique() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("003@.0,028[A@].d")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert
+        .success()
+        .stdout("121169502,Heike\n121169502,Heike\n");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("--unique")
+        .arg("003@.0,028[A@].d")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert.success().stdout("121169502,Heike\n");
+
+    Ok(())
+}
+
+#[test]
 fn pica_select_write_output() -> TestResult {
     let filename = Builder::new().suffix(".csv").tempfile()?;
     let filename_str = filename.path();

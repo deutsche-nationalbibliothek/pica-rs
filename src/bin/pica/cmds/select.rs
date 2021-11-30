@@ -1,11 +1,15 @@
-use crate::config::Config;
-use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliError, CliResult};
 use clap::Arg;
 use pica::{Outcome, ReaderBuilder, Selectors};
 use serde::{Deserialize, Serialize};
+use std::collections::hash_map::DefaultHasher;
+use std::collections::BTreeSet;
 use std::fs::File;
+use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
+
+use crate::config::Config;
+use crate::skip_invalid_flag;
+use crate::util::{App, CliArgs, CliError, CliResult};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -26,6 +30,12 @@ pub(crate) fn cli() -> App {
             Arg::new("no-empty-columns")
                 .long("no-empty-columns")
                 .about("disallow empty columns"),
+        )
+        .arg(
+            Arg::new("unique")
+                .long("unique")
+                .short('u')
+                .about("When this flag is provided, duplicate rows will be skipped."),
         )
         .arg(
             Arg::new("ignore-case")
@@ -68,6 +78,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
     let no_empty_columns = args.is_present("no-empty-columns");
     let ignore_case = args.is_present("ignore-case");
+    let unique = args.is_present("unique");
+    let mut seen = BTreeSet::new();
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)
@@ -102,6 +114,18 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         for row in outcome.iter() {
             if no_empty_columns && row.iter().any(|column| column.is_empty()) {
                 continue;
+            }
+
+            if unique {
+                let mut hasher = DefaultHasher::new();
+                row.hash(&mut hasher);
+                let hash = hasher.finish();
+
+                if seen.contains(&hash) {
+                    continue;
+                }
+
+                seen.insert(hash);
             }
 
             if !row.iter().all(|col| col.is_empty()) {
