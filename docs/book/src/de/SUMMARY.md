@@ -1,7 +1,7 @@
 # Summary
 
 - [Beginner Tutorial](./beginner-tutorial.md)
-- [Verwendung in RMarkdown](./using-pica-rs-with-rmarkdown/using-pica-rs-with-rmarkdown.md)
+- [Verwendung in RMarkdown](./using-pica-rs-with-rmarkdown/rmarkdown.md)
 - [Referenz](./referenz/index.md)
   - [Matcher](./referenz/matcher.md)
   - [Occurrence](./referenz/occurrence.md)
