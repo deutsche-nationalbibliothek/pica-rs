@@ -747,6 +747,30 @@ fn pica_filter_multiple_subfields() -> TestResult {
     let assert = cmd
         .arg("filter")
         .arg("--skip-invalid")
+        .arg("028[A@].abd == 'Heike'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("028[A@] $abd == 'Heike'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
         .arg("028[A@].* == 'Heike'")
         .arg("tests/data/121169502.dat")
         .assert();

@@ -183,6 +183,7 @@ fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
                 .chars()
                 .collect::<Vec<char>>()
         }),
+        many1(parse_subfield_code),
         map(parse_subfield_code, |x| vec![x]),
     ))(i)
 }
@@ -260,6 +261,7 @@ mod tests {
     #[test]
     fn test_parse_subfield_codes() -> TestResult {
         assert_eq!(parse_subfield_codes(b"[abc]")?.1, vec!['a', 'b', 'c']);
+        assert_eq!(parse_subfield_codes(b"abc")?.1, vec!['a', 'b', 'c']);
         assert_eq!(parse_subfield_codes(b"a")?.1, vec!['a']);
         Ok(())
     }
