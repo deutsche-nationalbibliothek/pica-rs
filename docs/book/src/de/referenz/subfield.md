@@ -8,7 +8,7 @@
 ## Subfield Codes
 
 > **<sup>Syntax</sup>**\
-> _SubfieldCodes_ : [_SubfieldCode_] | `[` [_SubfieldCode_]+ `]` | `*`
+> _SubfieldCodes_ : [_SubfieldCode_] | `[` [_SubfieldCode_]+ `]` | [_SubfieldCode_]+ | `*`
 
 
 [_SubfieldCode_]: #subfield-code
