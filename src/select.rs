@@ -142,7 +142,10 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
             tuple((
                 parse_tag_matcher,
                 parse_occurrence_matcher,
-                preceded(char('.'), cut(parse_subfield_code)),
+                preceded(
+                    alt((char('.'), ws(char('$')))),
+                    cut(parse_subfield_code),
+                ),
             )),
             |(tag, occurrence, subfield)| {
                 Selector::Field(Box::new(FieldSelector::new(
@@ -200,6 +203,26 @@ mod tests {
     fn test_parse_selector() -> TestResult {
         assert_eq!(
             parse_selector(b"003@.0")?.1,
+            Selector::Field(Box::new(FieldSelector::new(
+                TagMatcher::Some(Tag::new("003@")?),
+                OccurrenceMatcher::None,
+                None,
+                vec!['0']
+            )))
+        );
+
+        assert_eq!(
+            parse_selector(b"003@$0")?.1,
+            Selector::Field(Box::new(FieldSelector::new(
+                TagMatcher::Some(Tag::new("003@")?),
+                OccurrenceMatcher::None,
+                None,
+                vec!['0']
+            )))
+        );
+
+        assert_eq!(
+            parse_selector(b"003@ $0")?.1,
             Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::Some(Tag::new("003@")?),
                 OccurrenceMatcher::None,

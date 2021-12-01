@@ -82,9 +82,10 @@ TBD
 ## Field Matcher Subfield
 
 > **<sup>Syntax</sup>**\
-> _FieldMatcherSubfield_ : [_TagMatcher_] [_OccurrenceMatcher_] (_DotExpr_ | _BracketExpr_)\
+> _FieldMatcherSubfield_ : [_TagMatcher_] [_OccurrenceMatcher_] (_DotExpr_ | | _DollarExpr_ | _BracketExpr_)\
 >\
 > _DotExpr_ : `.` [_SubfieldListMatcherSingleton_]\
+> _DollarExpr_ : ws? `$` [_SubfieldListMatcherSingleton_]\
 > _BracketExpr_: `{` [_SubfieldListMatcher_] `}`
 
 ## Field Matcher Exists
