@@ -7,16 +7,17 @@ use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
 fn pica_select_one_column() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("select")
-        .arg("--skip-invalid")
-        .arg("003@.0")
-        .arg("tests/data/dump.dat.gz")
-        .assert();
+    for selector in ["003@.0", "003@$0", "003@ $0"] {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("select")
+            .arg("--skip-invalid")
+            .arg(selector)
+            .arg("tests/data/dump.dat.gz")
+            .assert();
 
-    assert.success().stdout(
-        r#"1004916019
+        assert.success().stdout(
+            r#"1004916019
 119232022
 000008672
 000016586
@@ -24,7 +25,8 @@ fn pica_select_one_column() -> TestResult {
 000009229
 121169502
 "#,
-    );
+        );
+    }
 
     Ok(())
 }
