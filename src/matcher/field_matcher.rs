@@ -85,10 +85,7 @@ fn parse_field_matcher_subfield(i: &[u8]) -> ParseResult<FieldMatcher> {
             parse_tag_matcher,
             parse_occurrence_matcher,
             alt((
-                preceded(
-                    alt((char('.'), ws(char('$')))),
-                    cut(parse_subfield_list_matcher_singleton),
-                ),
+                preceded(char('.'), cut(parse_subfield_list_matcher_singleton)),
                 preceded(
                     ws(char('{')),
                     cut(terminated(parse_subfield_list_matcher, ws(char('}')))),
@@ -150,7 +147,7 @@ mod tests {
     }
 
     #[test]
-    fn test_field_matcher_subfield_dot() -> TestResult {
+    fn test_field_matcher_subfield() -> TestResult {
         let matcher = FieldMatcher::new("012A.0 == 'abc'")?;
         let field = Field::from_str("012A \x1f0abc\x1e")?;
         assert!(matcher.is_match(&field, &MatcherFlags::default()));
@@ -165,19 +162,6 @@ mod tests {
 
         let matcher = FieldMatcher::new("012A{0 == 'abc' && 9?}")?;
         let field = Field::from_str("012A \x1f0abc\x1f9123\x1e")?;
-        assert!(matcher.is_match(&field, &MatcherFlags::default()));
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_field_matcher_subfield_dollar() -> TestResult {
-        let matcher = FieldMatcher::new("012A$0 == 'abc'")?;
-        let field = Field::from_str("012A \x1f0abc\x1e")?;
-        assert!(matcher.is_match(&field, &MatcherFlags::default()));
-
-        let matcher = FieldMatcher::new("012A $0 != 'def'")?;
-        let field = Field::from_str("012A \x1f0abc\x1e")?;
         assert!(matcher.is_match(&field, &MatcherFlags::default()));
 
         Ok(())

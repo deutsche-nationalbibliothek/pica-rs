@@ -26,30 +26,6 @@ fn pica_filter_equal_operator() -> TestResult {
     let assert = cmd
         .arg("filter")
         .arg("--skip-invalid")
-        .arg("003@$0 == '121169502'")
-        .arg("tests/data/dump.dat.gz")
-        .assert();
-
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
-    assert.success().stdout(expected);
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("filter")
-        .arg("--skip-invalid")
-        .arg("003@ $0 == '121169502'")
-        .arg("tests/data/dump.dat.gz")
-        .assert();
-
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
-    assert.success().stdout(expected);
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("filter")
-        .arg("--skip-invalid")
         .arg("003@{0 == '121169502'}")
         .arg("tests/data/dump.dat.gz")
         .assert();
