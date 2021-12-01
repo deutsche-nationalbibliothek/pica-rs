@@ -2,7 +2,7 @@ use std::ops::RangeFrom;
 
 use nom::branch::alt;
 use nom::character::complete::{char, one_of};
-use nom::combinator::{all_consuming, cut, map};
+use nom::combinator::{all_consuming, cut, map, value};
 use nom::error::ParseError;
 use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
@@ -106,10 +106,25 @@ pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
         map(parse_tag, TagMatcher::Some),
         map(
             tuple((
-                parse_character_class("012"),
-                parse_character_class("0123456789"),
-                parse_character_class("0123456789"),
-                parse_character_class("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
+                alt((
+                    value("012".chars().collect(), char('.')),
+                    parse_character_class("012"),
+                )),
+                alt((
+                    value("0123456789".chars().collect(), char('.')),
+                    parse_character_class("0123456789"),
+                )),
+                alt((
+                    value("0123456789".chars().collect(), char('.')),
+                    parse_character_class("0123456789"),
+                )),
+                alt((
+                    value(
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ@".chars().collect(),
+                        char('.'),
+                    ),
+                    parse_character_class("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
+                )),
             )),
             |(p1, p2, p3, p4)| TagMatcher::Pattern(p1, p2, p3, p4),
         ),
@@ -130,6 +145,45 @@ mod tests {
         let matcher = TagMatcher::new("[01][34][56][AB]")?;
         assert!(matcher.is_match(&Tag::new("035A")?));
         assert!(matcher.is_match(&Tag::new("146B")?));
+
+        let matcher = TagMatcher::new(".12A")?;
+        assert!(matcher.is_match(&Tag::new("012A")?));
+        assert!(matcher.is_match(&Tag::new("112A")?));
+        assert!(matcher.is_match(&Tag::new("212A")?));
+
+        let matcher = TagMatcher::new("0.2A")?;
+        assert!(matcher.is_match(&Tag::new("002A")?));
+        assert!(matcher.is_match(&Tag::new("012A")?));
+        assert!(matcher.is_match(&Tag::new("022A")?));
+        assert!(matcher.is_match(&Tag::new("032A")?));
+        assert!(matcher.is_match(&Tag::new("042A")?));
+        assert!(matcher.is_match(&Tag::new("052A")?));
+        assert!(matcher.is_match(&Tag::new("062A")?));
+        assert!(matcher.is_match(&Tag::new("072A")?));
+        assert!(matcher.is_match(&Tag::new("082A")?));
+        assert!(matcher.is_match(&Tag::new("092A")?));
+
+        let matcher = TagMatcher::new("01.A")?;
+        assert!(matcher.is_match(&Tag::new("010A")?));
+        assert!(matcher.is_match(&Tag::new("011A")?));
+        assert!(matcher.is_match(&Tag::new("012A")?));
+        assert!(matcher.is_match(&Tag::new("013A")?));
+        assert!(matcher.is_match(&Tag::new("014A")?));
+        assert!(matcher.is_match(&Tag::new("015A")?));
+        assert!(matcher.is_match(&Tag::new("016A")?));
+        assert!(matcher.is_match(&Tag::new("017A")?));
+        assert!(matcher.is_match(&Tag::new("018A")?));
+        assert!(matcher.is_match(&Tag::new("019A")?));
+
+        let matcher = TagMatcher::new("012.")?;
+        assert!(matcher.is_match(&Tag::new("012A")?));
+        assert!(matcher.is_match(&Tag::new("012B")?));
+        assert!(matcher.is_match(&Tag::new("012C")?));
+        assert!(matcher.is_match(&Tag::new("012@")?));
+
+        let matcher = TagMatcher::new("0...")?;
+        assert!(matcher.is_match(&Tag::new("012A")?));
+        assert!(matcher.is_match(&Tag::new("023B")?));
 
         assert!(TagMatcher::new("412A").is_err());
         assert!(TagMatcher::new("0A2A").is_err());
