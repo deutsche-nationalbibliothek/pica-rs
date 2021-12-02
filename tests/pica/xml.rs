@@ -11,6 +11,12 @@ fn pica_xml_single_record() -> TestResult {
     let assert = cmd.arg("xml").arg("tests/data/1004916019.dat").assert();
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
@@ -26,6 +32,12 @@ fn pica_xml_multiple_records() -> TestResult {
         .assert();
 
     let expected = read_to_string("tests/data/dump.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
@@ -46,6 +58,12 @@ fn pica_xml_write_output() -> TestResult {
     assert.success();
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     let actual = read_to_string(filename_str).unwrap();
     assert_eq!(expected.trim_end().to_string(), actual);
 
@@ -60,7 +78,15 @@ fn pica_xml_skip_invalid() -> TestResult {
         .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
         .assert();
-    assert.success().stdout(predicate::eq("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<collection xmlns=\"info:srw/schema/5/picaXML-v1.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"info:srw/schema/5/picaXML-v1.0\" />"));
+
+    let expected = read_to_string("tests/data/invalid.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected.trim_end().to_string());
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("xml").arg("tests/data/dump.dat.gz").assert();
@@ -82,6 +108,12 @@ skip-invalid = true
         .assert();
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     assert.success().stdout(expected.trim_end().to_string());
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -97,6 +129,12 @@ skip-invalid = true
         .assert();
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     assert.success().stdout(expected.trim_end().to_string());
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -115,6 +153,12 @@ skip-invalid = true
         .assert();
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     assert.success().stdout(expected.trim_end().to_string());
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -134,6 +178,12 @@ skip-invalid = false
         .assert();
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace("\r", "")
+    } else {
+        expected
+    };
+
     assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
