@@ -37,6 +37,7 @@ fn run() -> CliResult<()> {
         "select" => cmds::select::run(args, &config),
         "slice" => cmds::slice::run(args, &config),
         "split" => cmds::split::run(args, &config),
+        "xml" => cmds::xml::run(args, &config),
         _ => unreachable!(),
     }
 }
@@ -64,6 +65,10 @@ fn main() {
         }
         Err(CliError::Csv(err)) => {
             eprintln!("CSV Error: {}", err);
+            process::exit(1);
+        }
+        Err(CliError::Xml(err)) => {
+            eprintln!("XML Error: {}", err);
             process::exit(1);
         }
         Err(CliError::Other(err)) => {

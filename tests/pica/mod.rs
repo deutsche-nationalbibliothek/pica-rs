@@ -14,6 +14,7 @@ mod sample;
 mod select;
 mod slice;
 mod split;
+mod xml;
 
 #[test]
 fn pica_io_error() -> TestResult {
