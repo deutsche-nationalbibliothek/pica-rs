@@ -147,6 +147,12 @@ impl FromStr for RecordMatcher {
     }
 }
 
+impl From<FieldMatcher> for RecordMatcher {
+    fn from(matcher: FieldMatcher) -> Self {
+        RecordMatcher::Singleton(Box::new(matcher))
+    }
+}
+
 impl BitAnd for RecordMatcher {
     type Output = Self;
 

@@ -138,6 +138,12 @@ impl BitOr for SubfieldListMatcher {
     }
 }
 
+impl From<SubfieldMatcher> for SubfieldListMatcher {
+    fn from(matcher: SubfieldMatcher) -> Self {
+        SubfieldListMatcher::Singleton(matcher)
+    }
+}
+
 pub(crate) fn parse_subfield_list_matcher_singleton(
     i: &[u8],
 ) -> ParseResult<SubfieldListMatcher> {
