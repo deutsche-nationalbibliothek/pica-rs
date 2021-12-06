@@ -45,14 +45,14 @@ impl FilterList {
 
 impl From<FilterList> for RecordMatcher {
     fn from(list: FilterList) -> Self {
-        Self::Singleton(Box::new(FieldMatcher::Subield(
-            TagMatcher::Some(Tag::new("003@").unwrap()),
+        RecordMatcher::from(FieldMatcher::Subield(
+            TagMatcher::from(Tag::new("003@").unwrap()),
             OccurrenceMatcher::None,
-            SubfieldListMatcher::Singleton(SubfieldMatcher::In(
+            SubfieldListMatcher::from(SubfieldMatcher::In(
                 vec!['0'],
                 list.0,
                 list.1,
             )),
-        )))
+        ))
     }
 }
