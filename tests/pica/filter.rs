@@ -1422,7 +1422,7 @@ fn pica_filter_cardinality_op() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
-        .arg("#007N{ a == 'pnd' && v == 'zg'} == 2")
+        .arg("#007N{ a == 'pnd' && v == 'zg'} == 2 && 003@.0?")
         .arg("tests/data/121169502.dat")
         .assert();
 
@@ -1430,28 +1430,32 @@ fn pica_filter_cardinality_op() -> TestResult {
         predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
     assert.success().stdout(expected);
 
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("filter")
-        .arg("#047C == 2 && 003@.0?")
-        .arg("tests/data/121169502.dat")
-        .assert();
+    for filter_expr in ["#047C <= 2", "#047C == 2", "#047C >= 2"] {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("filter")
+            .arg(filter_expr)
+            .arg("tests/data/121169502.dat")
+            .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
-    assert.success().stdout(expected);
+        let expected =
+            predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+        assert.success().stdout(expected);
+    }
 
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("filter")
-        .arg("#047C == 1")
-        .arg("tests/data/121169502.dat")
-        .assert();
+    for filter_expr in ["#047C < 2", "#047C == 1", "#048C > 2"] {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("filter")
+            .arg(filter_expr)
+            .arg("tests/data/121169502.dat")
+            .assert();
 
-    assert
-        .success()
-        .stdout(predicate::str::is_empty())
-        .stderr(predicate::str::is_empty());
+        assert
+            .success()
+            .stdout(predicate::str::is_empty())
+            .stderr(predicate::str::is_empty());
+    }
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
