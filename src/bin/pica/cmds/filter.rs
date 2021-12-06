@@ -7,7 +7,6 @@ use pica::matcher::{MatcherFlags, RecordMatcher};
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
-use std::str::FromStr;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -136,7 +135,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         args.value_of("filter").unwrap().to_owned()
     };
 
-    let mut filter = match RecordMatcher::from_str(&filter_str) {
+    let mut filter = match RecordMatcher::new(&filter_str) {
         Ok(f) => f,
         _ => {
             return Err(CliError::Other(format!(
