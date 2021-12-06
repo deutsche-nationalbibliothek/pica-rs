@@ -31,6 +31,7 @@ impl FieldMatcher {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     assert!(FieldMatcher::new("012A/*{0? && 0 == 'abc'}").is_ok());
+    ///     assert!(FieldMatcher::new("012A/!{0 == 'abc'}").is_err());
     ///     Ok(())
     /// }
     /// ```
@@ -125,6 +126,12 @@ mod tests {
     use crate::test::TestResult;
 
     #[test]
+    fn test_field_matcher_invalid() -> TestResult {
+        assert!(FieldMatcher::new("012A§?").is_err());
+        Ok(())
+    }
+
+    #[test]
     fn test_field_matcher_exists() -> TestResult {
         let matcher = FieldMatcher::new("012A?")?;
         let field = Field::from_str("012A \x1f0abc\x1e")?;
@@ -166,6 +173,8 @@ mod tests {
         let matcher = FieldMatcher::new("012A{0 == 'abc' && 9?}")?;
         let field = Field::from_str("012A \x1f0abc\x1f9123\x1e")?;
         assert!(matcher.is_match(&field, &MatcherFlags::default()));
+
+        assert!(FieldMatcher::new("012A .0 == 'abc'").is_err());
 
         Ok(())
     }

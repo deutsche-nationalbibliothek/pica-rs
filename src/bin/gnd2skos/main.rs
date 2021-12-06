@@ -25,7 +25,6 @@ use pica::matcher::{MatcherFlags, RecordMatcher};
 use pica::ReaderBuilder;
 use std::fs::File;
 use std::io::{self, Write};
-use std::str::FromStr;
 
 use sophia::graph::inmem::LightGraph;
 use sophia::serializer::nt::NtSerializer;
@@ -73,7 +72,7 @@ fn main() -> CliResult<()> {
 
     let matcher = match args.value_of("filter") {
         None => RecordMatcher::True,
-        Some(filter_str) => match RecordMatcher::from_str(filter_str) {
+        Some(filter_str) => match RecordMatcher::new(filter_str) {
             Ok(matcher) => matcher,
             Err(_) => {
                 return Err(CliError::Other(format!(

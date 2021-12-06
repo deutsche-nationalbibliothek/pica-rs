@@ -1,5 +1,4 @@
 use std::ops::{BitAnd, BitOr};
-use std::str::FromStr;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -44,6 +43,7 @@ impl RecordMatcher {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     assert!(RecordMatcher::new("013A? && 012A/*{0? && 0 == 'abc'}").is_ok());
+    ///     assert!(RecordMatcher::new("013!?").is_err());
     ///     Ok(())
     /// }
     /// ```
@@ -118,31 +118,6 @@ impl RecordMatcher {
                 }
             }
             Self::True => true,
-        }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct ParseRecordMatcherError(String);
-
-impl std::fmt::Display for ParseRecordMatcherError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(&self.0)
-    }
-}
-
-impl std::error::Error for ParseRecordMatcherError {}
-
-impl FromStr for RecordMatcher {
-    type Err = ParseRecordMatcherError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match all_consuming(parse_record_matcher)(s.as_bytes()).finish() {
-            Ok((_, matcher)) => Ok(matcher),
-            Err(_) => Err(ParseRecordMatcherError(format!(
-                "expected valid matcher expression, got '{}'",
-                s
-            ))),
         }
     }
 }
@@ -327,6 +302,12 @@ pub(crate) fn parse_record_matcher(i: &[u8]) -> ParseResult<RecordMatcher> {
 mod tests {
     use super::*;
     use crate::test::TestResult;
+
+    #[test]
+    fn test_record_matcher_invalid() -> TestResult {
+        assert!(RecordMatcher::new("003@ .0 == '123456789X'").is_err());
+        Ok(())
+    }
 
     #[test]
     fn test_record_matcher_singleton() -> TestResult {

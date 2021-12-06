@@ -281,6 +281,14 @@ mod tests {
     }
 
     #[test]
+    fn test_subfield_matcher_invalid() -> TestResult {
+        assert!(SubfieldMatcher::new("[aä] == 'abc'").is_err());
+        assert!(SubfieldMatcher::new("! == 'abc'").is_err());
+        assert!(SubfieldMatcher::new("! == 'abc").is_err());
+        Ok(())
+    }
+
+    #[test]
     fn test_subfield_matcher_eq() -> TestResult {
         let flags = MatcherFlags::new();
 
