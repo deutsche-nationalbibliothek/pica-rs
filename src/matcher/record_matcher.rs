@@ -44,6 +44,7 @@ impl RecordMatcher {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     assert!(RecordMatcher::new("013A? && 012A/*{0? && 0 == 'abc'}").is_ok());
+    ///     assert!(RecordMatcher::new("013!?").is_err());
     ///     Ok(())
     /// }
     /// ```
@@ -321,6 +322,12 @@ pub(crate) fn parse_record_matcher(i: &[u8]) -> ParseResult<RecordMatcher> {
 mod tests {
     use super::*;
     use crate::test::TestResult;
+
+    #[test]
+    fn test_record_matcher_invalid() -> TestResult {
+        assert!(RecordMatcher::new("003@ .0 == '123456789X'").is_err());
+        Ok(())
+    }
 
     #[test]
     fn test_record_matcher_singleton() -> TestResult {
