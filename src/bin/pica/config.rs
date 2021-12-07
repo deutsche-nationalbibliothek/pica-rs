@@ -24,6 +24,7 @@ pub(crate) struct Config {
     pub(crate) select: Option<crate::cmds::select::SelectConfig>,
     pub(crate) slice: Option<crate::cmds::slice::SliceConfig>,
     pub(crate) split: Option<crate::cmds::split::SplitConfig>,
+    pub(crate) xml: Option<crate::cmds::xml::XmlConfig>,
 }
 
 impl Config {

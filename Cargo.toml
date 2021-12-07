@@ -24,6 +24,7 @@ sophia_api = "0.7"
 strsim = "0.10"
 termcolor = "1.1"
 toml = "0.5"
+xml-rs = "0.8"
 
 [dev-dependencies]
 assert_cmd = "2.0"

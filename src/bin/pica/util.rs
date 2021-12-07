@@ -9,6 +9,7 @@ pub(crate) type CliResult<T> = Result<T, CliError>;
 pub(crate) enum CliError {
     Io(io::Error),
     Csv(csv::Error),
+    Xml(xml::writer::Error),
     Pica(pica::Error),
     Other(String),
 }
@@ -17,6 +18,7 @@ impl fmt::Display for CliError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             CliError::Csv(ref e) => e.fmt(f),
+            CliError::Xml(ref e) => e.fmt(f),
             CliError::Io(ref e) => e.fmt(f),
             CliError::Pica(ref e) => e.fmt(f),
             CliError::Other(ref s) => f.write_str(&**s),
@@ -39,5 +41,11 @@ impl From<io::Error> for CliError {
 impl From<csv::Error> for CliError {
     fn from(err: csv::Error) -> CliError {
         CliError::Csv(err)
+    }
+}
+
+impl From<xml::writer::Error> for CliError {
+    fn from(err: xml::writer::Error) -> CliError {
+        CliError::Xml(err)
     }
 }

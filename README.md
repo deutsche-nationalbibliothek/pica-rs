@@ -32,19 +32,20 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 
 ## Commands
 
-| Command                 | Stability | Desciption                                           |
-|-------------------------|-----------|------------------------------------------------------|
-| [cat](#cat)             | beta      | concatenate records from multiple files              |
-| completion              | beta      | generate a completions file for bash, fish or zsh    |
-| [filter](#filter)       | beta      | filter records by query expressions                  |
-| [frequency](#frequency) | beta      | compute a frequency table of a subfield              |
-| invalid                 | beta      | filter out invalid records                           |
-| [partition](#partition) | beta      | partition a list of records based on subfield values |
-| [print](#print)         | beta      | print records in human readable format               |
-| [sample](#sample)       | beta      | selects a random permutation of records              |
-| [select](#select)       | beta      | write subfields to a CSV file                        |
-| [slice](#slice)         | beta      | return records withing a range (half-open interval)  |
-| [split](#split)         | beta      | split a list of records into chunks                  |
+| Command                 | Stability | Desciption                                                        |
+|-------------------------|-----------|-------------------------------------------------------------------|
+| [cat](#cat)             | beta      | concatenate records from multiple files                           |
+| completion              | beta      | generate a completions file for bash, fish or zsh                 |
+| [filter](#filter)       | beta      | filter records by query expressions                               |
+| [frequency](#frequency) | beta      | compute a frequency table of a subfield                           |
+| invalid                 | beta      | filter out invalid records                                        |
+| [partition](#partition) | beta      | partition a list of records based on subfield values              |
+| [print](#print)         | beta      | print records in human readable format                            |
+| [sample](#sample)       | beta      | selects a random permutation of records                           |
+| [select](#select)       | beta      | write subfields to a CSV file                                     |
+| [slice](#slice)         | beta      | return records withing a range (half-open interval)               |
+| [split](#split)         | beta      | split a list of records into chunks                               |
+| [xml](#xml)             | unstable  | serialize records into [PICA XML](https://format.gbv.de/pica/xml) |
 
 ## Usage
 
@@ -245,6 +246,23 @@ outdir
 ├── CHUNK_0.dat
 ├── CHUNK_10.dat
 ├── ...
+```
+
+### XML
+
+The `xml` command converts records into the [PICA XML](https://format.gbv.de/pica/xml) format.
+More information can be found in the [GBV Wiki](https://verbundwiki.gbv.de/display/VZG/PICA+XML+Version+1.0).
+
+```
+$ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica xml
+<?xml version="1.0" encoding="utf-8"?>
+<collection xmlns="info:srw/schema/5/picaXML-v1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="info:srw/schema/5/picaXML-v1.0">
+  <record>
+    <datafield tag="003@">
+      <subfield code="0">123456789</subfield>
+    </datafield>
+  </record>
+</collection>
 ```
 
 ## Related Projects

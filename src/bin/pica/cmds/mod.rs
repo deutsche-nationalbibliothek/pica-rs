@@ -10,6 +10,7 @@ pub(crate) mod sample;
 pub(crate) mod select;
 pub(crate) mod slice;
 pub(crate) mod split;
+pub(crate) mod xml;
 
 use crate::util::App;
 
@@ -27,5 +28,6 @@ pub(crate) fn subcmds() -> Vec<App> {
         select::cli(),
         slice::cli(),
         split::cli(),
+        xml::cli(),
     ]
 }

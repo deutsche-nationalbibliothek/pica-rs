@@ -1,0 +1,1060 @@
+<?xml version="1.0" encoding="utf-8"?>
+<collection xmlns="info:srw/schema/5/picaXML-v1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="info:srw/schema/5/picaXML-v1.0">
+  <record>
+    <datafield tag="001A">
+      <subfield code="0">8999:22-07-10</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">1250:10-09-14</subfield>
+      <subfield code="t">08:28:16.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">0384:27-07-10</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Ts1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">1004916019</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/7710287-3</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">sip</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">7710287-3</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">7710287-3</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">s</subfield>
+    </datafield>
+    <datafield tag="029R">
+      <subfield code="9">952570254</subfield>
+      <subfield code="7">Tb1</subfield>
+      <subfield code="V">kiz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">5263070-5</subfield>
+      <subfield code="a">Chrysler Corporation</subfield>
+      <subfield code="4">hers</subfield>
+    </datafield>
+    <datafield tag="041A">
+      <subfield code="a">Plymouth</subfield>
+      <subfield code="g">Marke</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">041145135</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="V">saz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4114513-6</subfield>
+      <subfield code="a">Markenname</subfield>
+      <subfield code="4">obin</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">31.7</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-210</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-384</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">swd</subfield>
+      <subfield code="i">s</subfield>
+      <subfield code="a">Plymouth &lt;Marke></subfield>
+      <subfield code="0">7710287-3</subfield>
+    </datafield>
+    <datafield tag="050D">
+      <subfield code="a">Kombiniere mit einer Produktgruppe, z.B. Personenkraftwagen</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">Wikipedia, Internet</subfield>
+      <subfield code="u">http://www.mobile.de/modellverzeichnis/plymouth/</subfield>
+    </datafield>
+    <datafield tag="050H">
+      <subfield code="a">Markenname</subfield>
+    </datafield>
+  </record>
+  <record>
+    <datafield tag="001A">
+      <subfield code="0">0386:16-03-95</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">8999:20-07-20</subfield>
+      <subfield code="t">13:19:49.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">9999:06-04-08</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Tp1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">119232022</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/119232022</subfield>
+      <subfield code="z">http://d-nb.info/gnd/172642531</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">pik</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">119232022</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">172642531</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">pnd</subfield>
+      <subfield code="0">172642531</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">pnd</subfield>
+      <subfield code="0">119232022</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">4370325-2</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">s</subfield>
+      <subfield code="a">z</subfield>
+      <subfield code="a">f</subfield>
+    </datafield>
+    <datafield tag="008B">
+      <subfield code="a">w</subfield>
+      <subfield code="a">k</subfield>
+      <subfield code="a">v</subfield>
+    </datafield>
+    <datafield tag="010E">
+      <subfield code="e">rda</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada K.</subfield>
+      <subfield code="c">of</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Augusta Ada</subfield>
+      <subfield code="c">of</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada Augusta</subfield>
+      <subfield code="c">of</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada</subfield>
+      <subfield code="a">Byron</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Augusta Ada</subfield>
+      <subfield code="a">Byron King</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Augusta Ada</subfield>
+      <subfield code="a">King</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada</subfield>
+      <subfield code="a">King</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada Augusta</subfield>
+      <subfield code="a">Byron</subfield>
+      <subfield code="4">nafr</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Augusta Ada</subfield>
+      <subfield code="a">Byron</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada</subfield>
+      <subfield code="a">Byron Lovelace</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Ada King, Countess of</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Augusta Ada King</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Augusta Ada</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028A">
+      <subfield code="d">Ada King</subfield>
+      <subfield code="c">of</subfield>
+      <subfield code="a">Lovelace</subfield>
+    </datafield>
+    <datafield tag="028R">
+      <subfield code="9">118518208</subfield>
+      <subfield code="7">Tp1</subfield>
+      <subfield code="V">piz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">118518208</subfield>
+      <subfield code="E">1788</subfield>
+      <subfield code="G">1824</subfield>
+      <subfield code="d">George Gordon Byron</subfield>
+      <subfield code="a">Byron</subfield>
+      <subfield code="l">Baron</subfield>
+      <subfield code="4">bezf</subfield>
+      <subfield code="v">Vater</subfield>
+    </datafield>
+    <datafield tag="028R">
+      <subfield code="9">118638130</subfield>
+      <subfield code="7">Tp1</subfield>
+      <subfield code="V">piz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">118638130</subfield>
+      <subfield code="E">1792</subfield>
+      <subfield code="G">1860</subfield>
+      <subfield code="d">Anne Isabella Milbanke Byron</subfield>
+      <subfield code="a">Byron</subfield>
+      <subfield code="4">bezf</subfield>
+      <subfield code="v">Mutter</subfield>
+    </datafield>
+    <datafield tag="028R">
+      <subfield code="9">119389991</subfield>
+      <subfield code="7">Tp1</subfield>
+      <subfield code="V">piz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">119389991</subfield>
+      <subfield code="E">1837</subfield>
+      <subfield code="G">1917</subfield>
+      <subfield code="d">Anne Isabella</subfield>
+      <subfield code="a">Blunt</subfield>
+      <subfield code="4">bezf</subfield>
+      <subfield code="v">Tochter</subfield>
+    </datafield>
+    <datafield tag="028R">
+      <subfield code="d">william</subfield>
+      <subfield code="a">king</subfield>
+      <subfield code="4">bezf</subfield>
+    </datafield>
+    <datafield tag="032T">
+      <subfield code="a">f</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">042527880</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="V">saz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4252788-0</subfield>
+      <subfield code="a">Mathematikerin</subfield>
+      <subfield code="4">berc</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">28p</subfield>
+      <subfield code="a">9.5p</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XA-GB</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-386</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-576</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">pnd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">Lovelace, Ada King /of</subfield>
+      <subfield code="0">119232022</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">pnd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">Lovelace, Ada K. /of</subfield>
+      <subfield code="0">172642531</subfield>
+    </datafield>
+    <datafield tag="050C">
+      <subfield code="a">Der Ehemann Baron William King (1805-1893) wurde 1838 zum 1. Earl of Lovelace erhoben.</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">LoC-Na gegen Modern Engl. biogr.</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">https://de.wikipedia.org/wiki/Ada_Lovelace</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">LCAuth, (OGND)</subfield>
+    </datafield>
+    <datafield tag="050G">
+      <subfield code="b">Brit. Mathematikerin; Countess of Lovelace</subfield>
+    </datafield>
+    <datafield tag="050G">
+      <subfield code="b">Informatikerin, Mathematikerin, Grossbritannien</subfield>
+    </datafield>
+    <datafield tag="060R">
+      <subfield code="a">10.12.1815</subfield>
+      <subfield code="b">27.12.1852</subfield>
+      <subfield code="4">datx</subfield>
+    </datafield>
+    <datafield tag="060R">
+      <subfield code="a">1815</subfield>
+      <subfield code="b">1852</subfield>
+      <subfield code="4">datl</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040743357</subfield>
+      <subfield code="7">Tgz</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4074335-4</subfield>
+      <subfield code="a">London</subfield>
+      <subfield code="4">ortg</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040743357</subfield>
+      <subfield code="7">Tgz</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4074335-4</subfield>
+      <subfield code="a">London</subfield>
+      <subfield code="4">orts</subfield>
+    </datafield>
+    <datafield tag="070A" occurrence="03">
+      <subfield code="0">(DE-588)119232022</subfield>
+    </datafield>
+  </record>
+  <record>
+    <datafield tag="001@">
+      <subfield code="0">-</subfield>
+    </datafield>
+    <datafield tag="001A">
+      <subfield code="0">9002:18-04-89</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">9999:27-09-17</subfield>
+      <subfield code="t">00:43:48.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">9999:23-04-10</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Tb1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">000008672</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/867-9</subfield>
+      <subfield code="z">http://d-nb.info/gnd/7538748-7</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">kiz</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">867-9</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">7538748-7</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">1085295990</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">7538748-7</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gkd</subfield>
+      <subfield code="0">867-9</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">f</subfield>
+      <subfield code="a">s</subfield>
+    </datafield>
+    <datafield tag="008B">
+      <subfield code="a">z</subfield>
+      <subfield code="a">v</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Vacuum Society</subfield>
+      <subfield code="g">USA</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">AVS</subfield>
+      <subfield code="4">abku</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Committee on Vacuum Techniques</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">CVT</subfield>
+      <subfield code="4">abku</subfield>
+    </datafield>
+    <datafield tag="029A">
+      <subfield code="a">American Vacuum Society</subfield>
+    </datafield>
+    <datafield tag="029R">
+      <subfield code="9">984002073</subfield>
+      <subfield code="7">Tb1</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">10168051-X</subfield>
+      <subfield code="a">AVS, the Science and Technology Society</subfield>
+      <subfield code="4">nach</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">040622665</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4062266-6</subfield>
+      <subfield code="a">Vakuum</subfield>
+      <subfield code="4">them</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">04066581X</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="V">saz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4066581-1</subfield>
+      <subfield code="a">Wissenschaftliche Gesellschaft</subfield>
+      <subfield code="4">obin</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">6.5</subfield>
+      <subfield code="a">9.3c</subfield>
+      <subfield code="a">21.5</subfield>
+      <subfield code="a">31.1b</subfield>
+      <subfield code="a">31.9a</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XD-US</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XD-US</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-1</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-1</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">gkd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">American Vacuum Society</subfield>
+      <subfield code="0">867-9</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">swd</subfield>
+      <subfield code="i">k</subfield>
+      <subfield code="a">American Vacuum Society</subfield>
+      <subfield code="0">7538748-7</subfield>
+    </datafield>
+    <datafield tag="050C">
+      <subfield code="a">MMi</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">GKD</subfield>
+    </datafield>
+    <datafield tag="050H">
+      <subfield code="a">1953 gegr. wiss. Ges., die sich mit Problemen des Vakuums und vor allem seiner Anwendung in der Technik beschäftigt</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040787044</subfield>
+      <subfield code="7">Tgz</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4078704-7</subfield>
+      <subfield code="a">USA</subfield>
+      <subfield code="4">geow</subfield>
+    </datafield>
+  </record>
+  <record>
+    <datafield tag="001@">
+      <subfield code="0">-</subfield>
+    </datafield>
+    <datafield tag="001A">
+      <subfield code="0">9002:18-04-89</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">1240:19-04-17</subfield>
+      <subfield code="t">14:37:25.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">9999:23-04-10</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Tb1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">000016586</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/1658-5</subfield>
+      <subfield code="z">http://d-nb.info/gnd/4318278-1</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">kiz</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">1658-5</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">4318278-1</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">4318278-1</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gkd</subfield>
+      <subfield code="0">16291087-3</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gkd</subfield>
+      <subfield code="0">1658-5</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">f</subfield>
+      <subfield code="a">s</subfield>
+    </datafield>
+    <datafield tag="008B">
+      <subfield code="a">z</subfield>
+      <subfield code="a">v</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Univ. of Minnesota, Minneapolis</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Universidad de Minnesota</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">U of M</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">UM</subfield>
+      <subfield code="4">abku</subfield>
+    </datafield>
+    <datafield tag="029A">
+      <subfield code="a">University of Minnesota</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">6.6</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XD-US</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-1</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-1</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">gkd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">University of Minnesota &lt;Minneapolis, Minn.></subfield>
+      <subfield code="0">1658-5</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">swd</subfield>
+      <subfield code="i">c</subfield>
+      <subfield code="a">Minneapolis &lt;Minn.> / University of Minnesota</subfield>
+      <subfield code="0">4318278-1</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">Homepage</subfield>
+      <subfield code="b">Stand: 19.04.2017</subfield>
+      <subfield code="u">http://www.umn.edu</subfield>
+    </datafield>
+    <datafield tag="060R">
+      <subfield code="a">1851</subfield>
+      <subfield code="4">datb</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040394972</subfield>
+      <subfield code="7">Tg1</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4039497-9</subfield>
+      <subfield code="a">Minneapolis, Minn.</subfield>
+      <subfield code="4">orta</subfield>
+    </datafield>
+    <datafield tag="070A" occurrence="03">
+      <subfield code="S">IDS</subfield>
+      <subfield code="0">320104243</subfield>
+    </datafield>
+  </record>
+  <record>
+    <datafield tag="001@">
+      <subfield code="0">-</subfield>
+    </datafield>
+    <datafield tag="001A">
+      <subfield code="0">9002:18-04-89</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">1601:26-11-19</subfield>
+      <subfield code="t">10:50:14.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">9999:23-04-10</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Tb1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">000016756</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/1675-5</subfield>
+      <subfield code="z">http://d-nb.info/gnd/1088210104</subfield>
+      <subfield code="z">http://d-nb.info/gnd/7542287-6</subfield>
+      <subfield code="z">http://d-nb.info/gnd/1086256751</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">kiz</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">1675-5</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">1086256751</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">7542287-6</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">7542287-6</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">1088210104</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gkd</subfield>
+      <subfield code="0">1675-5</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">f</subfield>
+      <subfield code="a">s</subfield>
+    </datafield>
+    <datafield tag="008B">
+      <subfield code="a">v</subfield>
+      <subfield code="a">z</subfield>
+    </datafield>
+    <datafield tag="010E">
+      <subfield code="b">ger</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Institut International de Philosophie</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Internationales Institut für Philosophie</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Instituto Internacional de Filosofia</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Institute of Philosophy</subfield>
+      <subfield code="g">International Institute of Philosophie</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Institut für Philosophie</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">IIP</subfield>
+      <subfield code="4">abku</subfield>
+    </datafield>
+    <datafield tag="029A">
+      <subfield code="a">International Institute of Philosophy</subfield>
+    </datafield>
+    <datafield tag="029R">
+      <subfield code="9">000261246</subfield>
+      <subfield code="7">Tb1</subfield>
+      <subfield code="V">kiz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">26124-5</subfield>
+      <subfield code="a">Institut International de Collaboration Philosophique</subfield>
+      <subfield code="g">Paris</subfield>
+      <subfield code="4">vorg</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">041900944</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4190094-7</subfield>
+      <subfield code="a">Wissenschaftliche Einrichtung</subfield>
+      <subfield code="4">obin</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">6.5</subfield>
+      <subfield code="a">4.1</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XP</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-1</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-1</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">gkd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">International Institute of Philosophy</subfield>
+      <subfield code="0">1675-5</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">swd</subfield>
+      <subfield code="i">c</subfield>
+      <subfield code="a">Paris / Internationales Institut für Philosophie</subfield>
+      <subfield code="0">7542287-6</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">Yearb. 1995</subfield>
+    </datafield>
+    <datafield tag="060R">
+      <subfield code="a">1937</subfield>
+      <subfield code="4">datb</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040181456</subfield>
+      <subfield code="7">Tgz</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4018145-5</subfield>
+      <subfield code="a">Frankreich</subfield>
+      <subfield code="4">geow</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040446603</subfield>
+      <subfield code="7">Tgz</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4044660-8</subfield>
+      <subfield code="a">Paris</subfield>
+      <subfield code="4">orta</subfield>
+    </datafield>
+    <datafield tag="070A" occurrence="03">
+      <subfield code="S">IDS</subfield>
+      <subfield code="0">000000307</subfield>
+    </datafield>
+  </record>
+  <record>
+    <datafield tag="001@">
+      <subfield code="0">-</subfield>
+    </datafield>
+    <datafield tag="001A">
+      <subfield code="0">9002:18-04-89</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">9999:05-06-20</subfield>
+      <subfield code="t">05:40:04.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">9999:23-04-10</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Tb1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">000009229</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/922-2</subfield>
+      <subfield code="z">http://d-nb.info/gnd/4499175-7</subfield>
+      <subfield code="z">http://d-nb.info/gnd/1090453043</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">kiz</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">922-2</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">1090453043</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">4499175-7</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">4499175-7</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gkd</subfield>
+      <subfield code="0">922-2</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">f</subfield>
+      <subfield code="a">s</subfield>
+    </datafield>
+    <datafield tag="008B">
+      <subfield code="a">z</subfield>
+      <subfield code="a">v</subfield>
+      <subfield code="a">w</subfield>
+      <subfield code="a">e</subfield>
+    </datafield>
+    <datafield tag="010E">
+      <subfield code="b">ger</subfield>
+      <subfield code="e">rda</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Cancer Society</subfield>
+      <subfield code="g">USA</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">ACS</subfield>
+      <subfield code="4">abku</subfield>
+    </datafield>
+    <datafield tag="029A">
+      <subfield code="a">American Cancer Society</subfield>
+    </datafield>
+    <datafield tag="029R">
+      <subfield code="9">005078091</subfield>
+      <subfield code="7">Tb1</subfield>
+      <subfield code="V">kiz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">507809-X</subfield>
+      <subfield code="a">American Society for the Control of Cancer</subfield>
+      <subfield code="4">vorg</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">27.4</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XD-US</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-1</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-1</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">gkd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">American Cancer Society</subfield>
+      <subfield code="0">922-2</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">swd</subfield>
+      <subfield code="i">k</subfield>
+      <subfield code="a">American Cancer Society</subfield>
+      <subfield code="0">4499175-7</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">GKD</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">Homepage</subfield>
+      <subfield code="b">Stand: 08.10.2018</subfield>
+      <subfield code="u">https://www.cancer.org</subfield>
+    </datafield>
+    <datafield tag="060R">
+      <subfield code="a">1945</subfield>
+      <subfield code="4">datb</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040787044</subfield>
+      <subfield code="7">Tgz</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4078704-7</subfield>
+      <subfield code="a">USA</subfield>
+      <subfield code="4">geow</subfield>
+    </datafield>
+    <datafield tag="070A" occurrence="03">
+      <subfield code="0">(DE-588)922-2</subfield>
+    </datafield>
+  </record>
+  <record>
+    <datafield tag="001@">
+      <subfield code="0">-</subfield>
+    </datafield>
+    <datafield tag="001A">
+      <subfield code="0">0386:17-06-99</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">9999:17-10-16</subfield>
+      <subfield code="t">17:00:44.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">9999:06-04-08</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Tp1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">121169502</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/121169502</subfield>
+      <subfield code="z">http://d-nb.info/gnd/183361946</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">piz</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">121169502</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">183361946</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">pnd</subfield>
+      <subfield code="0">183361946</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">pnd</subfield>
+      <subfield code="0">121169502</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">4549141-0</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">s</subfield>
+      <subfield code="a">f</subfield>
+    </datafield>
+    <datafield tag="008B">
+      <subfield code="a">v</subfield>
+      <subfield code="a">w</subfield>
+    </datafield>
+    <datafield tag="028@">
+      <subfield code="d">Heike</subfield>
+      <subfield code="a">Klußmann</subfield>
+    </datafield>
+    <datafield tag="028A">
+      <subfield code="d">Heike</subfield>
+      <subfield code="a">Klussmann</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="a">Installationskünstlerin</subfield>
+      <subfield code="4">berc</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="a">Photographin</subfield>
+      <subfield code="4">beru</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">13.7p</subfield>
+      <subfield code="a">13.5p</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XA-DE</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-386</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-576</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">pnd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">Klussmann, Heike</subfield>
+      <subfield code="0">121169502</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">pnd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">Klussmann, Heike</subfield>
+      <subfield code="0">183361946</subfield>
+    </datafield>
+    <datafield tag="050C">
+      <subfield code="a">NDSBIO</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">Internet</subfield>
+    </datafield>
+    <datafield tag="060R">
+      <subfield code="a">1968</subfield>
+      <subfield code="4">datl</subfield>
+    </datafield>
+  </record>
+</collection>

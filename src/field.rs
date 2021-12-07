@@ -349,7 +349,7 @@ impl Field {
         writer.write_all(self.tag.as_slice())?;
 
         if let Some(ref occurrence) = self.occurrence {
-            write!(writer, "{}", occurrence)?;
+            write!(writer, "/{}", occurrence)?;
         }
 
         writer.write_all(&[b' '])?;
@@ -391,7 +391,7 @@ impl fmt::Display for Field {
         write!(f, "{}", self.tag)?;
 
         if let Some(ref occurrence) = self.occurrence {
-            write!(f, "{}", occurrence)?;
+            write!(f, "/{}", occurrence)?;
         }
 
         if !self.is_empty() {
