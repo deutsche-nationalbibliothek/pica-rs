@@ -16,7 +16,7 @@ fn pica_select_one_column() -> TestResult {
             .arg("tests/data/dump.dat.gz")
             .assert();
 
-        assert.success().stdout(
+        assert.success().stderr(predicate::str::is_empty()).stdout(
             r#"1004916019
 119232022
 000008672
@@ -27,6 +27,25 @@ fn pica_select_one_column() -> TestResult {
 "#,
         );
     }
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("--skip-invalid")
+        .arg("003@0")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert.success().stderr("Don\'t use lazy syntax!\n").stdout(
+        r#"1004916019
+119232022
+000008672
+000016586
+000016756
+000009229
+121169502
+"#,
+    );
 
     Ok(())
 }

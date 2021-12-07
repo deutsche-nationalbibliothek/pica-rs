@@ -1,6 +1,6 @@
 use nom::branch::alt;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map};
+use nom::combinator::{all_consuming, cut, map, opt};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Finish;
 
@@ -86,9 +86,18 @@ fn parse_field_matcher_subfield(i: &[u8]) -> ParseResult<FieldMatcher> {
             parse_tag_matcher,
             parse_occurrence_matcher,
             alt((
-                preceded(
-                    alt((char('.'), ws(char('$')))),
-                    cut(parse_subfield_list_matcher_singleton),
+                map(
+                    pair(
+                        opt(alt((char('.'), ws(char('$'))))),
+                        parse_subfield_list_matcher_singleton,
+                    ),
+                    |(prefix, matcher)| {
+                        if prefix.is_none() {
+                            eprintln!("Don't use lazy syntax!");
+                        }
+
+                        matcher
+                    },
                 ),
                 preceded(
                     ws(char('{')),
@@ -186,6 +195,19 @@ mod tests {
         assert!(matcher.is_match(&field, &MatcherFlags::default()));
 
         let matcher = FieldMatcher::new("012A $0 != 'def'")?;
+        let field = Field::from_str("012A \x1f0abc\x1e")?;
+        assert!(matcher.is_match(&field, &MatcherFlags::default()));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_field_matcher_subfield_lazy() -> TestResult {
+        let matcher = FieldMatcher::new("012A0 == 'abc'")?;
+        let field = Field::from_str("012A \x1f0abc\x1e")?;
+        assert!(matcher.is_match(&field, &MatcherFlags::default()));
+
+        let matcher = FieldMatcher::new("012Aa0 == 'abc'")?;
         let field = Field::from_str("012A \x1f0abc\x1e")?;
         assert!(matcher.is_match(&field, &MatcherFlags::default()));
 

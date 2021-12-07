@@ -1,9 +1,9 @@
 use bstr::BString;
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
-use nom::combinator::{all_consuming, cut, map, opt};
+use nom::combinator::{all_consuming, map, opt};
 use nom::multi::separated_list1;
-use nom::sequence::{delimited, pair, preceded, terminated, tuple};
+use nom::sequence::{delimited, pair, terminated, tuple};
 use nom::Finish;
 use std::default::Default;
 use std::ops::{Add, Deref, Mul};
@@ -142,12 +142,13 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
             tuple((
                 parse_tag_matcher,
                 parse_occurrence_matcher,
-                preceded(
-                    alt((char('.'), ws(char('$')))),
-                    cut(parse_subfield_code),
-                ),
+                pair(opt(alt((char('.'), ws(char('$'))))), parse_subfield_code),
             )),
-            |(tag, occurrence, subfield)| {
+            |(tag, occurrence, (prefix, subfield))| {
+                if prefix.is_none() {
+                    eprintln!("Don't use lazy syntax!");
+                }
+
                 Selector::Field(Box::new(FieldSelector::new(
                     tag,
                     occurrence,
