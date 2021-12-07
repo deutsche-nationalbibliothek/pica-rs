@@ -113,7 +113,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
                 // OCCURRENCE
                 if let Some(occurrence) = field.occurrence() {
-                    write!(&mut stdout, "{}", occurrence)?;
+                    write!(&mut stdout, "/{}", occurrence)?;
                 }
 
                 if !add_spaces {

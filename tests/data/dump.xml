@@ -66,10 +66,10 @@
     <datafield tag="042A">
       <subfield code="a">31.7</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-210</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-384</subfield>
     </datafield>
     <datafield tag="047C">
@@ -284,10 +284,10 @@
     <datafield tag="042B">
       <subfield code="a">XA-GB</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-386</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-576</subfield>
     </datafield>
     <datafield tag="047C">
@@ -348,7 +348,7 @@
       <subfield code="a">London</subfield>
       <subfield code="4">orts</subfield>
     </datafield>
-    <datafield tag="070A">
+    <datafield tag="070A" occurrence="03">
       <subfield code="0">(DE-588)119232022</subfield>
     </datafield>
   </record>
@@ -471,10 +471,10 @@
     <datafield tag="042B">
       <subfield code="a">XD-US</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-1</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-1</subfield>
     </datafield>
     <datafield tag="047C">
@@ -593,10 +593,10 @@
     <datafield tag="042B">
       <subfield code="a">XD-US</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-1</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-1</subfield>
     </datafield>
     <datafield tag="047C">
@@ -629,7 +629,7 @@
       <subfield code="a">Minneapolis, Minn.</subfield>
       <subfield code="4">orta</subfield>
     </datafield>
-    <datafield tag="070A">
+    <datafield tag="070A" occurrence="03">
       <subfield code="S">IDS</subfield>
       <subfield code="0">320104243</subfield>
     </datafield>
@@ -754,10 +754,10 @@
     <datafield tag="042B">
       <subfield code="a">XP</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-1</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-1</subfield>
     </datafield>
     <datafield tag="047C">
@@ -797,7 +797,7 @@
       <subfield code="a">Paris</subfield>
       <subfield code="4">orta</subfield>
     </datafield>
-    <datafield tag="070A">
+    <datafield tag="070A" occurrence="03">
       <subfield code="S">IDS</subfield>
       <subfield code="0">000000307</subfield>
     </datafield>
@@ -898,10 +898,10 @@
     <datafield tag="042B">
       <subfield code="a">XD-US</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-1</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-1</subfield>
     </datafield>
     <datafield tag="047C">
@@ -937,7 +937,7 @@
       <subfield code="a">USA</subfield>
       <subfield code="4">geow</subfield>
     </datafield>
-    <datafield tag="070A">
+    <datafield tag="070A" occurrence="03">
       <subfield code="0">(DE-588)922-2</subfield>
     </datafield>
   </record>
@@ -1028,10 +1028,10 @@
     <datafield tag="042B">
       <subfield code="a">XA-DE</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-386</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-576</subfield>
     </datafield>
     <datafield tag="047C">

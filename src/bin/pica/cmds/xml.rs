@@ -69,10 +69,18 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         )?;
 
         for field in record.iter() {
-            xml_writer.write(
-                XmlEvent::start_element("datafield")
-                    .attr("tag", &field.tag().to_string()),
-            )?;
+            if let Some(occurrence) = field.occurrence() {
+                xml_writer.write(
+                    XmlEvent::start_element("datafield")
+                        .attr("tag", &field.tag().to_string())
+                        .attr("occurrence", &occurrence.to_string()),
+                )?;
+            } else {
+                xml_writer.write(
+                    XmlEvent::start_element("datafield")
+                        .attr("tag", &field.tag().to_string()),
+                )?;
+            }
 
             for subfield in field.iter() {
                 xml_writer.write(

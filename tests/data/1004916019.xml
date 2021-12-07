@@ -66,10 +66,10 @@
     <datafield tag="042A">
       <subfield code="a">31.7</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="e">DE-210</subfield>
     </datafield>
-    <datafield tag="047A">
+    <datafield tag="047A" occurrence="03">
       <subfield code="r">DE-384</subfield>
     </datafield>
     <datafield tag="047C">
