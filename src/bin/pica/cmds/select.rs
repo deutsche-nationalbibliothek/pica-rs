@@ -24,44 +24,44 @@ pub(crate) fn cli() -> App {
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
-                .about("skip invalid records"),
+                .help("skip invalid records"),
         )
         .arg(
             Arg::new("no-empty-columns")
                 .long("no-empty-columns")
-                .about("disallow empty columns"),
+                .help("disallow empty columns"),
         )
         .arg(
             Arg::new("unique")
                 .long("unique")
                 .short('u')
-                .about("When this flag is provided, duplicate rows will be skipped."),
+                .help("When this flag is provided, duplicate rows will be skipped."),
         )
         .arg(
             Arg::new("ignore-case")
                 .short('i')
                 .long("--ignore-case")
-                .about("When this flag is provided, comparision operations will be search case insensitive."),
+                .help("When this flag is provided, comparision operations will be search case insensitive."),
         )
         .arg(
             Arg::new("tsv")
                 .short('t')
                 .long("tsv")
-                .about("use tabs as field delimiter"),
+                .help("use tabs as field delimiter"),
         )
         .arg(
             Arg::new("header")
                 .short('H')
                 .long("--header")
                 .value_name("header")
-                .about("Comma-separated list of column names."),
+                .help("Comma-separated list of column names."),
         )
         .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("selectors").required(true))
         .arg(Arg::new("filename"))

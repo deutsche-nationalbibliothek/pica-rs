@@ -23,14 +23,14 @@ pub(crate) fn cli() -> App {
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
-                .about("skip invalid records"),
+                .help("skip invalid records"),
         )
         .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("filename"))
 }
