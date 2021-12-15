@@ -12,7 +12,7 @@ fn pica_xml_single_record() -> TestResult {
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -33,7 +33,7 @@ fn pica_xml_multiple_records() -> TestResult {
 
     let expected = read_to_string("tests/data/dump.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -59,7 +59,7 @@ fn pica_xml_write_output() -> TestResult {
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -81,7 +81,7 @@ fn pica_xml_skip_invalid() -> TestResult {
 
     let expected = read_to_string("tests/data/invalid.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -109,7 +109,7 @@ skip-invalid = true
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -130,7 +130,7 @@ skip-invalid = true
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -154,7 +154,7 @@ skip-invalid = true
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -179,7 +179,7 @@ skip-invalid = false
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
