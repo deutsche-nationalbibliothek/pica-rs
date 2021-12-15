@@ -12,7 +12,7 @@ fn pica_print_stdout() -> TestResult {
 
     let expected = read_to_string("tests/data/1004916019.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -29,7 +29,7 @@ fn pica_print_escape_dollar() -> TestResult {
 
     let expected = read_to_string("tests/data/dollar.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -50,7 +50,7 @@ fn pica_print_multiple_records() -> TestResult {
 
     let expected = read_to_string("tests/data/dump.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -73,7 +73,7 @@ fn pica_print_limit() -> TestResult {
 
     let expected = read_to_string("tests/data/1004916019.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -112,7 +112,7 @@ fn pica_print_color() -> TestResult {
 
     let expected = read_to_string("tests/data/1004916019-color.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -132,7 +132,7 @@ fn pica_print_color() -> TestResult {
 
     let expected = read_to_string("tests/data/1004916019.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -149,7 +149,7 @@ fn pica_print_color() -> TestResult {
 fn pica_print_add_spaces() -> TestResult {
     let expected = read_to_string("tests/data/1004916019-spaces.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };
@@ -204,7 +204,7 @@ fn pica_print_write_output() -> TestResult {
 
     let expected = read_to_string("tests/data/1004916019.txt").unwrap();
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };

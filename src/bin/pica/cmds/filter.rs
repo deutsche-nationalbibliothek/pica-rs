@@ -22,33 +22,33 @@ pub(crate) fn cli() -> App {
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
-                .about("skip invalid records"),
+                .help("skip invalid records"),
         )
         .arg(
             Arg::new("expr-file")
                 .short('f')
                 .long("file")
                 .value_name("file")
-                .about("Take filter expressions from file.")
+                .help("Take filter expressions from file.")
                 .takes_value(true),
         )
         .arg(
             Arg::new("invert-match")
                 .short('v')
                 .long("invert-match")
-                .about("Filter only records that did not match."),
+                .help("Filter only records that did not match."),
         )
         .arg(
             Arg::new("ignore-case")
                 .short('i')
                 .long("--ignore-case")
-                .about("When this flag is provided, comparision operations will be search case insensitive."),
+                .help("When this flag is provided, comparision operations will be search case insensitive."),
         )
         .arg(
             Arg::new("strsim-threshold")
                 .long("--strsim-threshold")
                 .default_value("0.75")
-                .about("The minimum score for string similarity comparisons (range from 0.0..1.0).")
+                .help("The minimum score for string similarity comparisons (range from 0.0..1.0).")
         )
         .arg(
             Arg::new("allow-list")
@@ -67,24 +67,24 @@ pub(crate) fn cli() -> App {
                 .short('l')
                 .long("--limit")
                 .value_name("n")
-                .about("Limit the result to first <n> records."),
+                .help("Limit the result to first <n> records."),
         )
         .arg(
             Arg::new("gzip")
                 .short('g')
                 .long("gzip")
-                .about("compress output with gzip"),
+                .help("compress output with gzip"),
         )
         .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
         .arg(
             Arg::new("filter")
-                .about("A filter expression used for searching.")
+                .help("A filter expression used for searching.")
                 .required(true),
         )
         .arg(Arg::new("filename"))

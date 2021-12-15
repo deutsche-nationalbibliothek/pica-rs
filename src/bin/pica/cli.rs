@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg};
+use clap::{crate_version, App, AppSettings, Arg};
 
 pub(crate) fn build_cli() -> App<'static> {
     App::new("pica")

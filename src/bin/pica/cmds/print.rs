@@ -21,7 +21,7 @@ pub(crate) fn cli() -> App {
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
-                .about("skip invalid records"),
+                .help("skip invalid records"),
         )
         .arg(
             Arg::new("color")
@@ -32,21 +32,21 @@ pub(crate) fn cli() -> App {
         .arg(
             Arg::new("add-spaces")
                 .long("add-spaces")
-                .about("add single space before and after subfield codes."),
+                .help("add single space before and after subfield codes."),
         )
         .arg(
             Arg::new("limit")
                 .short('l')
                 .long("--limit")
                 .value_name("n")
-                .about("Limit the result to first <n> records."),
+                .help("Limit the result to first <n> records."),
         )
         .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("filename"))
 }
@@ -136,7 +136,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     )?;
 
                     let mut value: String = subfield.value().to_string();
-                    value = value.replace("$", "$$");
+                    value = value.replace('$', "$$");
 
                     write!(&mut stdout, "{}", value)?;
                 }
