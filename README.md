@@ -45,6 +45,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [select](#select)       | beta      | write subfields to a CSV file                                     |
 | [slice](#slice)         | beta      | return records withing a range (half-open interval)               |
 | [split](#split)         | beta      | split a list of records into chunks                               |
+| [json](#json)           | beta      | serialize records in JSON                                         |
 | [xml](#xml)             | unstable  | serialize records into [PICA XML](https://format.gbv.de/pica/xml) |
 
 ## Usage
@@ -111,33 +112,6 @@ $ pica filter --skip-invalid "002@.0 =~ '^A.*'" DUMP.dat.gz \
 ger,2888445
 eng,347171
 ...
-```
-
-### JSON
-
-To serialize a record to JSON, just run the following command:
-
-```bash
-$ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
-[
-  {
-    "fields": [
-      {
-        "name": "003@",
-        "subfields": [
-          {
-            "name": "0",
-            "value": "123456789"
-          },
-          {
-            "name": "a",
-            "value": "b"
-          }
-        ]
-      }
-    ]
-  }
-]
 ```
 
 ### Partition
@@ -247,6 +221,37 @@ outdir
 ├── CHUNK_10.dat
 ├── ...
 ```
+
+### JSON
+
+This command serializes the internal representation of record to JSON:
+
+```bash
+$ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
+[
+  {
+    "fields": [
+      {
+        "name": "003@",
+        "subfields": [
+          {
+            "name": "0",
+            "value": "123456789"
+          },
+          {
+            "name": "a",
+            "value": "b"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+The result can be processed with other tools and programming languages. To get [PICA JSON](http://format.gbv.de/pica/json) format you can pipe the result to this [jq](https://stedolan.github.io/jq/) command:
+
+    jq -c '.[]|.fields|map([.tag,.occurrence]+(.subfields|map(.tag,.value)))'
 
 ### XML
 
