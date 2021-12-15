@@ -1538,6 +1538,17 @@ fn pica_filter_cardinality_op() -> TestResult {
         .stdout(predicate::str::is_empty())
         .stderr(predicate::str::is_empty());
 
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("008[AB]{ #a == 2 && a == 'f'}")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
     Ok(())
 }
 
