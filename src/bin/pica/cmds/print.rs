@@ -136,7 +136,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     )?;
 
                     let mut value: String = subfield.value().to_string();
-                    value = value.replace("$", "$$");
+                    value = value.replace('$', "$$");
 
                     write!(&mut stdout, "{}", value)?;
                 }
