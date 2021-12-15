@@ -220,6 +220,7 @@ fn parse_subfield_list_matcher_composite_and(
         alt((
             ws(parse_subfield_list_matcher_group),
             ws(parse_subfield_list_matcher_singleton),
+            ws(parse_subfield_list_matcher_cardinality),
             ws(parse_subfield_list_matcher_not),
         )),
         many0(preceded(
@@ -227,6 +228,7 @@ fn parse_subfield_list_matcher_composite_and(
             alt((
                 ws(parse_subfield_list_matcher_group),
                 ws(parse_subfield_list_matcher_singleton),
+                ws(parse_subfield_list_matcher_cardinality),
                 ws(parse_subfield_list_matcher_not),
             )),
         )),
@@ -246,6 +248,7 @@ fn parse_subfield_list_matcher_composite_or(
             ws(parse_subfield_list_matcher_group),
             ws(parse_subfield_list_matcher_composite_and),
             ws(parse_subfield_list_matcher_singleton),
+            ws(parse_subfield_list_matcher_cardinality),
             ws(parse_subfield_list_matcher_not),
         )),
         many0(preceded(
@@ -254,6 +257,7 @@ fn parse_subfield_list_matcher_composite_or(
                 ws(parse_subfield_list_matcher_group),
                 ws(parse_subfield_list_matcher_composite_and),
                 ws(parse_subfield_list_matcher_singleton),
+                ws(parse_subfield_list_matcher_cardinality),
                 ws(parse_subfield_list_matcher_not),
             ))),
         )),

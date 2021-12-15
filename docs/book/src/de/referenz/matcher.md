@@ -176,6 +176,7 @@ TBD
 > &nbsp;&nbsp; &nbsp;&nbsp; [_SubfieldListMatcherGroup_]\
 > &nbsp;&nbsp; | _SubfieldListMatcherCompositeAnd_\
 > &nbsp;&nbsp; | [_SubfieldListMatcherSingleton_]\
+> &nbsp;&nbsp; | [_SubfieldListMatcherCardinality_]\
 > &nbsp;&nbsp; | [_SubfieldListMatcherNot_]\
 >\
 > _SubfieldListMatcherCompositeAnd_ : AndOperand `&&` AndOperand\
@@ -183,6 +184,7 @@ TBD
 > _AndOperand_ :\
 > &nbsp;&nbsp; &nbsp;&nbsp; [_SubfieldListMatcherGroup_]\
 > &nbsp;&nbsp; | [_SubfieldListMatcherSingleton_]\
+> &nbsp;&nbsp; | [_SubfieldListMatcherCardinality_]\
 > &nbsp;&nbsp; | [_SubfieldListMatcherNot_]
 
 ## Subfield List Matcher Cardinality
