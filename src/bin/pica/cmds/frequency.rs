@@ -23,41 +23,41 @@ pub(crate) fn cli() -> App {
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
-                .about("skip invalid records"),
+                .help("skip invalid records"),
         )
         .arg(
             Arg::new("reverse")
                 .short('r')
                 .long("reverse")
-                .about("Sort results in reverse order."),
+                .help("Sort results in reverse order."),
         )
         .arg(
             Arg::new("limit")
                 .short('l')
                 .long("--limit")
                 .value_name("n")
-                .about("Limit the result to the <n> most common items."),
+                .help("Limit the result to the <n> most common items."),
         )
         .arg(
             Arg::new("threshold")
                 .short('t')
                 .long("--threshold")
                 .value_name("t")
-                .about("Ignore rows with a frequency ≤ <t>."),
+                .help("Ignore rows with a frequency ≤ <t>."),
         )
         .arg(
             Arg::new("header")
                 .short('H')
                 .long("--header")
                 .value_name("header")
-                .about("Comma-separated list of column names."),
+                .help("Comma-separated list of column names."),
         )
         .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("path").required(true))
         .arg(Arg::new("filename"))

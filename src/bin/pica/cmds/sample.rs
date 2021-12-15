@@ -20,20 +20,20 @@ pub(crate) fn cli() -> App {
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
-                .about("skip invalid records"),
+                .help("skip invalid records"),
         )
         .arg(
             Arg::new("gzip")
                 .short('g')
                 .long("gzip")
-                .about("compress output with gzip"),
+                .help("compress output with gzip"),
         )
         .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("sample-size").required(true))
         .arg(Arg::new("filename"))

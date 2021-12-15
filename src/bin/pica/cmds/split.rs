@@ -22,13 +22,13 @@ pub(crate) fn cli() -> App {
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
-                .about("skip invalid records"),
+                .help("skip invalid records"),
         )
         .arg(
             Arg::new("gzip")
                 .short('g')
                 .long("gzip")
-                .about("compress output with gzip"),
+                .help("compress output with gzip"),
         )
         .arg(
             Arg::new("outdir")

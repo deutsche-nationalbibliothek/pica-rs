@@ -12,7 +12,7 @@ pub(crate) fn cli() -> App {
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("filename"))
 }

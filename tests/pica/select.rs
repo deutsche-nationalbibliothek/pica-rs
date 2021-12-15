@@ -377,7 +377,7 @@ fn pica_select_write_output() -> TestResult {
 
     let expected = read_to_string("tests/data/dump.csv")?;
     let expected = if cfg!(windows) {
-        expected.replace("\r", "")
+        expected.replace('\r', "")
     } else {
         expected
     };

@@ -7,6 +7,7 @@ use std::io::{self, Write};
 
 pub(crate) fn cli() -> App {
     App::new("completion")
+        .about("Generate a completions file for Bash, Fish or ZSH shell.")
         .arg(
             Arg::new("shell")
                 .possible_values(&["fish", "bash", "zsh"])
@@ -17,9 +18,8 @@ pub(crate) fn cli() -> App {
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .about("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout."),
         )
-        .about("Generate a completions file for Bash, Fish or ZSH shell.")
 }
 
 pub(crate) fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {
