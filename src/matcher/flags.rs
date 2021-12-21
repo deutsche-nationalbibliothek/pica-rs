@@ -18,11 +18,13 @@ impl MatcherFlags {
         MatcherFlags::default()
     }
 
+    #[must_use]
     pub fn ignore_case(mut self, yes: bool) -> Self {
         self.ignore_case = yes;
         self
     }
 
+    #[must_use]
     pub fn strsim_threshold(mut self, threshold: f64) -> Self {
         self.strsim_threshold = threshold;
         self

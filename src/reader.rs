@@ -206,6 +206,7 @@ impl ReaderBuilder {
     ///     Ok(())
     /// }
     /// ```
+    #[must_use]
     pub fn skip_invalid(mut self, yes: bool) -> Self {
         self.skip_invalid = yes;
         self
@@ -233,6 +234,7 @@ impl ReaderBuilder {
     ///     Ok(())
     /// }
     /// ```
+    #[must_use]
     pub fn buffer_size(mut self, buffer_size: usize) -> Self {
         self.buffer_size = buffer_size;
         self
@@ -263,6 +265,7 @@ impl ReaderBuilder {
     ///     Ok(())
     /// }
     /// ```
+    #[must_use]
     pub fn limit(mut self, buffer_size: usize) -> Self {
         self.limit = buffer_size;
         self
