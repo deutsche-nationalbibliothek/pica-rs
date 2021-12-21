@@ -184,6 +184,7 @@ impl WriterBuilder {
         }
     }
 
+    #[must_use]
     pub fn gzip(mut self, yes: bool) -> Self {
         self.gzip = yes;
         self
