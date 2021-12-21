@@ -151,10 +151,7 @@ fn pica_filter_not_equal_operator() -> TestResult {
         .arg("tests/data/121169502.dat")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
-    assert.success().stdout(expected);
-
+    assert.success().stdout(predicate::str::is_empty());
     Ok(())
 }
 
