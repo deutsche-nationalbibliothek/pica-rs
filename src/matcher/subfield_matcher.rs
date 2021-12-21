@@ -98,8 +98,8 @@ impl SubfieldMatcher {
                     && case_cmp(subfield.value(), value)
             }
             Self::Comparison(codes, ComparisonOp::Ne, value) => {
-                !codes.contains(&subfield.code())
-                    || !case_cmp(subfield.value(), value)
+                codes.contains(&subfield.code())
+                    && !case_cmp(subfield.value(), value)
             }
             Self::Comparison(codes, ComparisonOp::StartsWith, value) => {
                 codes.contains(&subfield.code())
@@ -319,7 +319,7 @@ mod tests {
 
         let matcher = SubfieldMatcher::new("0 != 'abc'")?;
         assert!(matcher.is_match(&Subfield::new('0', "def")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('1', "def")?, &flags));
+        assert!(!matcher.is_match(&Subfield::new('1', "def")?, &flags));
 
         let matcher = SubfieldMatcher::new("[01] != 'abc'")?;
         assert!(matcher.is_match(&Subfield::new('0', "def")?, &flags));
