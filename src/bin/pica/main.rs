@@ -27,6 +27,7 @@ fn run() -> CliResult<()> {
     match name {
         "cat" => cmds::cat::run(args, &config),
         "completion" => cmds::completion::run(args, &mut app),
+        "count" => cmds::count::run(args, &config),
         "filter" => cmds::filter::run(args, &config),
         "frequency" => cmds::frequency::run(args, &config),
         "invalid" => cmds::invalid::run(args),

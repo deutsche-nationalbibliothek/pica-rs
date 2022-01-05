@@ -15,6 +15,7 @@ pub(crate) struct Config {
     pub(crate) path: Option<PathBuf>,
     pub(crate) global: Option<GlobalConfig>,
     pub(crate) cat: Option<crate::cmds::cat::CatConfig>,
+    pub(crate) count: Option<crate::cmds::count::CountConfig>,
     pub(crate) filter: Option<crate::cmds::filter::FilterConfig>,
     pub(crate) frequency: Option<crate::cmds::frequency::FrequencyConfig>,
     pub(crate) json: Option<crate::cmds::json::JsonConfig>,
