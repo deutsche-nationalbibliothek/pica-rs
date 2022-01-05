@@ -1,7 +1,6 @@
 use crate::util::{App, CliArgs, CliResult};
 use clap::Arg;
-use clap_generate::generate;
-use clap_generate::generators::{Bash, Fish, Zsh};
+use clap_complete::{generate, Shell};
 use std::fs::File;
 use std::io::{self, Write};
 
@@ -29,9 +28,9 @@ pub(crate) fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {
     };
 
     match args.value_of("shell").unwrap() {
-        "bash" => generate(Bash, cli, "pica", &mut writer),
-        "fish" => generate(Fish, cli, "pica", &mut writer),
-        "zsh" => generate(Zsh, cli, "pica", &mut writer),
+        "bash" => generate(Shell::Bash, cli, "pica", &mut writer),
+        "fish" => generate(Shell::Fish, cli, "pica", &mut writer),
+        "zsh" => generate(Shell::Zsh, cli, "pica", &mut writer),
         _ => unreachable!(),
     }
 
