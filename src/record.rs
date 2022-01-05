@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::matcher::MatcherFlags;
+use crate::matcher::{MatcherFlags, TagMatcher};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
 use crate::{Field, Path};
@@ -322,6 +322,20 @@ impl ByteRecord {
                     result
                 }
             }
+        }
+    }
+
+    pub fn reduce(&mut self, matchers: &[TagMatcher]) {
+        debug_assert!(!matchers.is_empty());
+
+        if !matchers.is_empty() {
+            self.raw_data = None;
+            self.fields = self
+                .fields
+                .clone()
+                .into_iter()
+                .filter(|field| matchers.iter().any(|m| m.is_match(&field.tag)))
+                .collect();
         }
     }
 }

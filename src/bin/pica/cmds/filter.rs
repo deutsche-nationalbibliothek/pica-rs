@@ -3,7 +3,7 @@ use crate::config::Config;
 use crate::util::{App, CliArgs, CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
-use pica::matcher::{MatcherFlags, RecordMatcher};
+use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
@@ -49,6 +49,12 @@ pub(crate) fn cli() -> App {
                 .long("--strsim-threshold")
                 .default_value("0.75")
                 .help("The minimum score for string similarity comparisons (range from 0.0..1.0).")
+        )
+        .arg(
+            Arg::new("reduce")
+                .long("reduce")
+                .help("Reduce the record to the following fields.")
+                .takes_value(true),
         )
         .arg(
             Arg::new("allow-list")
@@ -135,6 +141,13 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         args.value_of("filter").unwrap().to_owned()
     };
 
+    let reducers = args
+        .value_of("reduce")
+        .unwrap_or_default()
+        .split(',')
+        .map(TagMatcher::new)
+        .collect::<Result<Vec<_>, _>>()?;
+
     let mut filter = match RecordMatcher::new(&filter_str) {
         Ok(f) => f,
         _ => {
@@ -168,7 +181,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     for result in reader.byte_records() {
-        let record = result?;
+        let mut record = result?;
         let mut is_match = filter.is_match(&record, &flags);
 
         if args.is_present("invert-match") {
@@ -176,6 +189,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
 
         if is_match {
+            record.reduce(&reducers);
             writer.write_byte_record(&record)?;
             count += 1;
         }
