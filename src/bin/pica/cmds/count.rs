@@ -46,7 +46,7 @@ pub(crate) fn cli() -> App {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.filter, config.global);
+    let skip_invalid = skip_invalid_flag!(args, config.count, config.global);
 
     let mut reader = ReaderBuilder::new()
         .skip_invalid(skip_invalid)

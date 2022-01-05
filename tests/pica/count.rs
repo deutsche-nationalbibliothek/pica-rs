@@ -1,10 +1,6 @@
 use assert_cmd::Command;
-use flate2::read::GzDecoder;
 use predicates::prelude::*;
-use std::fs::{read_to_string, File};
-use std::io::Read;
-use std::path::Path;
-use tempfile::Builder;
+use std::fs::read_to_string;
 
 use crate::common::{CommandExt, TestContext, TestResult};
 
@@ -17,8 +13,13 @@ fn pica_count() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/dump_cnt.txt"));
+    let expected = read_to_string("tests/data/dump_cnt.txt")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
     assert
         .success()
         .stderr(predicate::str::is_empty())
@@ -32,8 +33,12 @@ fn pica_count() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/dump_cnt.tsv"));
+    let expected = read_to_string("tests/data/dump_cnt.tsv")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
     assert
         .success()
         .stderr(predicate::str::is_empty())
@@ -47,8 +52,13 @@ fn pica_count() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/dump_cnt.csv"));
+    let expected = read_to_string("tests/data/dump_cnt.csv")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
     assert
         .success()
         .stderr(predicate::str::is_empty())
@@ -61,13 +71,18 @@ fn pica_count() -> TestResult {
 fn pica_count_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
-        .arg("filter")
+        .arg("count")
         .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/invalid_cnt.txt"));
+    let expected = read_to_string("tests/data/invalid_cnt.txt")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
     assert
         .success()
         .stderr(predicate::str::is_empty())
@@ -87,12 +102,19 @@ fn pica_count_skip_invalid() -> TestResult {
         .with_config(
             &TestContext::new(),
             r#"[count]
-skip-invalid = true
-"#,
+    skip-invalid = true
+    "#,
         )
         .arg("count")
         .arg("tests/data/invalid.dat")
         .assert();
+
+    let expected = read_to_string("tests/data/invalid_cnt.txt")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
 
     assert
         .success()
@@ -104,12 +126,19 @@ skip-invalid = true
         .with_config(
             &TestContext::new(),
             r#"[global]
-skip-invalid = true
-"#,
+    skip-invalid = true
+    "#,
         )
         .arg("count")
         .arg("tests/data/invalid.dat")
         .assert();
+
+    let expected = read_to_string("tests/data/invalid_cnt.txt")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
 
     assert
         .success()
@@ -121,14 +150,21 @@ skip-invalid = true
         .with_config(
             &TestContext::new(),
             r#"[global]
-skip-invalid = false
-[count]
-skip-invalid = true
-"#,
+    skip-invalid = false
+    [count]
+    skip-invalid = true
+    "#,
         )
         .arg("count")
         .arg("tests/data/invalid.dat")
         .assert();
+
+    let expected = read_to_string("tests/data/invalid_cnt.txt")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
 
     assert
         .success()
@@ -140,15 +176,22 @@ skip-invalid = true
         .with_config(
             &TestContext::new(),
             r#"[global]
-skip-invalid = false
-[count]
-skip-invalid = false
-"#,
+    skip-invalid = false
+    [count]
+    skip-invalid = false
+    "#,
         )
         .arg("count")
         .arg("--skip-invalid")
         .arg("tests/data/invalid.dat")
         .assert();
+
+    let expected = read_to_string("tests/data/invalid_cnt.txt")?;
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
 
     assert
         .success()
