@@ -1,6 +1,7 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs::read_to_string;
+use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
 
@@ -63,6 +64,38 @@ fn pica_count() -> TestResult {
         .success()
         .stderr(predicate::str::is_empty())
         .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_print_write_output() -> TestResult {
+    let filename = Builder::new().suffix(".txt").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--skip-invalid")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let expected = read_to_string("tests/data/dump_cnt.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(expected, actual);
 
     Ok(())
 }
