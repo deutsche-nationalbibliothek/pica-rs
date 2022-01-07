@@ -42,7 +42,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [partition](#partition) | beta      | partition a list of records based on subfield values              |
 | [print](#print)         | beta      | print records in human readable format                            |
 | [sample](#sample)       | beta      | selects a random permutation of records                           |
-| [select](#select)       | beta      | write subfields to a CSV file                                     |
+| [select](#select)       | beta      | select subfield values from records                               |
 | [slice](#slice)         | beta      | return records withing a range (half-open interval)               |
 | [split](#split)         | beta      | split a list of records into chunks                               |
 | [json](#json)           | beta      | serialize records in JSON                                         |
@@ -156,13 +156,13 @@ $ pica filter -s "002@.0 =~ '^Tp[1z]'" | pica sample 100 -o samples.dat
 
 ### Select
 
-This command selects subfields of a record and print them as CSV data. A select
-expression consists of a non-empty list of selectors. A selector references a
-field and a list of subfields or an static value enclosed in single quotes. If
-a selector's field or any subfield is repeatable, the rows are
-"multiplied". For example, if the first selector returns one row, the second
-selector two rows and a third selecor 3 rows, the result will contain `1 * 2 *
-3 = 6` rows. Non-existing fields or subfields results in an empty column.
+This command selects subfield values of a record and emits them in CSV format.
+A select expression consists of a non-empty list of selectors. A selector
+references a field and a list of subfields or an static value enclosed in
+single quotes. If a selector's field or any subfield is repeatable, the rows
+are "multiplied". For example, if the first selector returns one row, the
+second selector two rows and a third selecor 3 rows, the result will contain
+`1 * 2 * 3 = 6` rows. Non-existing fields or subfields results in empty columns.
 
 ```bash
 $ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
