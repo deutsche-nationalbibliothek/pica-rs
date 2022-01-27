@@ -19,7 +19,7 @@ pub(crate) struct SelectConfig {
 
 pub(crate) fn cli() -> App {
     App::new("select")
-        .about("Select fields from a record.")
+        .about("Select subfield values from records.")
         .arg(
             Arg::new("skip-invalid")
                 .short('s')
