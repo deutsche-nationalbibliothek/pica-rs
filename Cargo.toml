@@ -19,8 +19,6 @@ rand = "0.8"
 regex = "1.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-sophia = "0.7"
-sophia_api = "0.7"
 strsim = "0.10"
 termcolor = "1.1"
 toml = "0.5"
@@ -40,10 +38,6 @@ name = "pica"
 [[bin]]
 path = "src/bin/pica/main.rs"
 name = "pica"
-
-[[bin]]
-path = "src/bin/gnd2skos/main.rs"
-name = "gnd2skos"
 
 [[example]]
 name = "parser"
