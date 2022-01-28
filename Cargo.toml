@@ -13,7 +13,6 @@ clap = { version = "3.0", features = ["cargo"] }
 clap_complete = "3.0"
 csv = "1.1"
 directories = "4.0"
-oxiri = "=0.1.1"
 flate2 = "1.0"
 nom = "7.1"
 rand = "0.8"
