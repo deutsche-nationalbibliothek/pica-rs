@@ -91,12 +91,12 @@ $ pica filter -s "002@.0 =~ '^O[^a].*$' && 010@{a == 'ger' || a == 'eng'}" DUMP.
 $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
 $ pica filter -s "010@{a == 'ger' || a == 'eng'}" DUMP.dat
 $ pica filter -s "041A/*.9 in ['123', '456']" DUMP.dat
-$ pica filter -s "0100.a in ['ger', 'eng']" DUMP.dat
-$ pica filter -s "0100.a not in ['ger', 'eng']" DUMP.dat
+$ pica filter -s "010@.a in ['ger', 'eng']" DUMP.dat
+$ pica filter -s "010@.a not in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
-$ pica filter -s "012AB/00?" DUMP.dat
+$ pica filter -s "012[AB]/00?" DUMP.dat
 ```
 
 ### Frequency
