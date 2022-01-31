@@ -109,7 +109,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     .set_color(ColorSpec::new().set_fg(Some(Color::Magenta)))?;
 
                 // TAG
-                write!(&mut stdout, "{}", field.tag())?;
+                write!(stdout, "{}", field.tag())?;
 
                 // OCCURRENCE
                 if let Some(occurrence) = field.occurrence() {
