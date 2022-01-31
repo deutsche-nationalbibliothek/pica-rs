@@ -113,11 +113,11 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
                 // OCCURRENCE
                 if let Some(occurrence) = field.occurrence() {
-                    write!(&mut stdout, "/{}", occurrence)?;
+                    write!(stdout, "/{}", occurrence)?;
                 }
 
                 if !add_spaces {
-                    write!(&mut stdout, " ")?;
+                    write!(stdout, " ")?;
                 }
 
                 // SUBFIELDS
@@ -126,9 +126,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                         .set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
 
                     if add_spaces {
-                        write!(&mut stdout, " ${} ", subfield.code())?;
+                        write!(stdout, " ${} ", subfield.code())?;
                     } else {
-                        write!(&mut stdout, "${}", subfield.code())?;
+                        write!(stdout, "${}", subfield.code())?;
                     }
 
                     stdout.set_color(
@@ -138,12 +138,12 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     let mut value: String = subfield.value().to_string();
                     value = value.replace('$', "$$");
 
-                    write!(&mut stdout, "{}", value)?;
+                    write!(stdout, "{}", value)?;
                 }
 
-                writeln!(&mut stdout)?;
+                writeln!(stdout)?;
             }
-            writeln!(&mut stdout)?;
+            writeln!(stdout)?;
         }
 
         stdout.flush()?;
