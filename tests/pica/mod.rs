@@ -4,6 +4,7 @@ use predicates::prelude::*;
 
 mod cat;
 mod completion;
+mod count;
 mod filter;
 mod frequency;
 mod invalid;

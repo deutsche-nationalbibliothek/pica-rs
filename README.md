@@ -36,6 +36,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 |-------------------------|-----------|-------------------------------------------------------------------|
 | [cat](#cat)             | beta      | concatenate records from multiple files                           |
 | completion              | beta      | generate a completions file for bash, fish or zsh                 |
+| [count](#count)         | unstable  | count records, fields and subfields                               |
 | [filter](#filter)       | beta      | filter records by query expressions                               |
 | [frequency](#frequency) | beta      | compute a frequency table of a subfield                           |
 | invalid                 | beta      | filter out invalid records                                        |
@@ -59,6 +60,17 @@ Multiple pica dumps can be concatenated to a single stream of records:
 
 ```bash
 $ pica cat -s -o DUMP12.dat DUMP1.dat DUMP2.dat.gz
+```
+
+### Count
+
+To count the number of records, fields and subfields use the following command:
+
+```bash
+$ pica count -s dump.dat.gz
+records 7
+fields 247
+subfields 549
 ```
 
 ### Filter
