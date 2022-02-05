@@ -36,13 +36,14 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 |-------------------------|-----------|-------------------------------------------------------------------|
 | [cat](#cat)             | beta      | concatenate records from multiple files                           |
 | completion              | beta      | generate a completions file for bash, fish or zsh                 |
+| [count](#count)         | unstable  | count records, fields and subfields                               |
 | [filter](#filter)       | beta      | filter records by query expressions                               |
 | [frequency](#frequency) | beta      | compute a frequency table of a subfield                           |
 | invalid                 | beta      | filter out invalid records                                        |
 | [partition](#partition) | beta      | partition a list of records based on subfield values              |
 | [print](#print)         | beta      | print records in human readable format                            |
 | [sample](#sample)       | beta      | selects a random permutation of records                           |
-| [select](#select)       | beta      | write subfields to a CSV file                                     |
+| [select](#select)       | beta      | select subfield values from records                               |
 | [slice](#slice)         | beta      | return records withing a range (half-open interval)               |
 | [split](#split)         | beta      | split a list of records into chunks                               |
 | [json](#json)           | beta      | serialize records in JSON                                         |
@@ -59,6 +60,17 @@ Multiple pica dumps can be concatenated to a single stream of records:
 
 ```bash
 $ pica cat -s -o DUMP12.dat DUMP1.dat DUMP2.dat.gz
+```
+
+### Count
+
+To count the number of records, fields and subfields use the following command:
+
+```bash
+$ pica count -s dump.dat.gz
+records 7
+fields 247
+subfields 549
 ```
 
 ### Filter
@@ -91,12 +103,12 @@ $ pica filter -s "002@.0 =~ '^O[^a].*$' && 010@{a == 'ger' || a == 'eng'}" DUMP.
 $ pica filter -s "002@.0 =~ '^O.*' && 044H{9? && b == 'GND'}" DUMP.dat
 $ pica filter -s "010@{a == 'ger' || a == 'eng'}" DUMP.dat
 $ pica filter -s "041A/*.9 in ['123', '456']" DUMP.dat
-$ pica filter -s "0100.a in ['ger', 'eng']" DUMP.dat
-$ pica filter -s "0100.a not in ['ger', 'eng']" DUMP.dat
+$ pica filter -s "010@.a in ['ger', 'eng']" DUMP.dat
+$ pica filter -s "010@.a not in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
-$ pica filter -s "012AB/00?" DUMP.dat
+$ pica filter -s "012[AB]/00?" DUMP.dat
 ```
 
 ### Frequency
@@ -156,13 +168,13 @@ $ pica filter -s "002@.0 =~ '^Tp[1z]'" | pica sample 100 -o samples.dat
 
 ### Select
 
-This command selects subfields of a record and print them as CSV data. A select
-expression consists of a non-empty list of selectors. A selector references a
-field and a list of subfields or an static value enclosed in single quotes. If
-a selector's field or any subfield is repeatable, the rows are
-"multiplied". For example, if the first selector returns one row, the second
-selector two rows and a third selecor 3 rows, the result will contain `1 * 2 *
-3 = 6` rows. Non-existing fields or subfields results in an empty column.
+This command selects subfield values of a record and emits them in CSV format.
+A select expression consists of a non-empty list of selectors. A selector
+references a field and a list of subfields or an static value enclosed in
+single quotes. If a selector's field or any subfield is repeatable, the rows
+are "multiplied". For example, if the first selector returns one row, the
+second selector two rows and a third selecor 3 rows, the result will contain
+`1 * 2 * 3 = 6` rows. Non-existing fields or subfields results in empty columns.
 
 ```bash
 $ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
