@@ -141,12 +141,14 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         args.value_of("filter").unwrap().to_owned()
     };
 
-    let reducers = args
-        .value_of("reduce")
-        .unwrap_or_default()
-        .split(',')
-        .map(TagMatcher::new)
-        .collect::<Result<Vec<_>, _>>()?;
+    let mut reducers = vec![];
+    if let Some(reduce_expr) = args.value_of("reduce") {
+        reducers = reduce_expr
+            .split(',')
+            .map(TagMatcher::new)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| CliError::Other("invalid reduce value".to_string()))?;
+    }
 
     let mut filter = match RecordMatcher::new(&filter_str) {
         Ok(f) => f,
@@ -189,7 +191,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
 
         if is_match {
-            record.reduce(&reducers);
+            if !reducers.is_empty() {
+                record.reduce(&reducers);
+            }
+
             writer.write_byte_record(&record)?;
             count += 1;
         }

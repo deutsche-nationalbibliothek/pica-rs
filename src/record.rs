@@ -325,9 +325,34 @@ impl ByteRecord {
         }
     }
 
+    /// Reduce the record to the given fields.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::matcher::TagMatcher;
+    /// use pica::{ByteRecord, Field, Subfield, Tag};
+    /// use std::str::FromStr;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let mut record =
+    ///         ByteRecord::from_bytes("012A \x1fa123\x1e013A \x1fa456\x1e")?;
+    ///     record.reduce(&[TagMatcher::new("003@")?, TagMatcher::new("012A")?]);
+    ///
+    ///     assert_eq!(
+    ///         record,
+    ///         ByteRecord::new(vec![Field::new(
+    ///             Tag::new("012A")?,
+    ///             None,
+    ///             vec![Subfield::new('a', "123")?],
+    ///         )])
+    ///     );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn reduce(&mut self, matchers: &[TagMatcher]) {
-        debug_assert!(!matchers.is_empty());
-
         if !matchers.is_empty() {
             self.raw_data = None;
             self.fields = self
