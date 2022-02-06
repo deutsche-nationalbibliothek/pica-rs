@@ -5,7 +5,7 @@ use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::{ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -105,8 +105,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             let record = result?;
 
             for field in record.iter() {
-                stdout
-                    .set_color(ColorSpec::new().set_fg(Some(Color::Magenta)))?;
+                stdout.set_color(ColorSpec::new().set_bold(true))?;
 
                 // TAG
                 write!(stdout, "{}", field.tag())?;
@@ -122,8 +121,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
                 // SUBFIELDS
                 for subfield in field.iter() {
-                    stdout
-                        .set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
+                    stdout.set_color(ColorSpec::new().set_bold(true))?;
 
                     if add_spaces {
                         write!(stdout, " ${} ", subfield.code())?;
@@ -131,9 +129,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                         write!(stdout, "${}", subfield.code())?;
                     }
 
-                    stdout.set_color(
-                        ColorSpec::new().set_fg(Some(Color::White)),
-                    )?;
+                    stdout.set_color(ColorSpec::new().set_bold(false))?;
 
                     let mut value: String = subfield.value().to_string();
                     value = value.replace('$', "$$");
