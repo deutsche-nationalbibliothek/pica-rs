@@ -19,10 +19,11 @@ Most of the commands are inspired by the [xsv](https://git.io/JIoJG) toolkit.
 
 ## Installation
 
-In order to install the pica tools a [Rust](https://www.rust-lang.org/)
-installation is required.  Just follow the [installation
-guide](https://www.rust-lang.org/learn/get-started) to get the Rust programming
-language with the `cargo` package manager.
+Binaries for Windows, Linux and macOS are available from [GitHub](https://github.com/deutsche-nationalbibliothek/pica-rs/releases).
+
+In order to install the tools from source a [Rust](https://www.rust-lang.org/) installation is required. Just follow the [installation
+guide](https://www.rust-lang.org/learn/get-started) to get the Rust programming language with the `cargo` package manager. To build
+this project from source a Rust 1.58.1 or newer is required.
 
 To install the latest stable release:
 
