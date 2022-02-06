@@ -23,7 +23,7 @@ Binaries for Windows, Linux and macOS are available from [GitHub](https://github
 
 In order to install the tools from source a [Rust](https://www.rust-lang.org/) installation is required. Just follow the [installation
 guide](https://www.rust-lang.org/learn/get-started) to get the Rust programming language with the `cargo` package manager. To build
-this project from source a Rust 1.58.1 or newer is required.
+this project from source Rust 1.58.1 or newer is required.
 
 To install the latest stable release:
 
