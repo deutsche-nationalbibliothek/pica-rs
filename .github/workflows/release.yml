@@ -113,7 +113,7 @@ jobs:
         with:
           command: build
           args: --release
-      - uses: kentik/pkg@v1
+      - uses: kentik/pkg@master
         id: build_deb
         with:
           name: pica-rs
@@ -144,7 +144,7 @@ jobs:
         with:
           command: build
           args: --release
-      - uses: kentik/pkg@v1
+      - uses: kentik/pkg@master
         id: build_rpm
         with:
           name: pica-rs
