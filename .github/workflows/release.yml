@@ -100,4 +100,65 @@ jobs:
           asset_path: ${{ env.ASSET }}
           asset_name: ${{ env.ASSET }}
   
-        
+  build-deb:
+    name: Build DEB
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: kentik/pkg@v1
+        id: build_deb
+        with:
+          name: pica-rs
+          version: ${{ needs.create_release.outputs.version }}
+          arch: x86_64
+          format: rpm
+          package: .github/actions-rs/package.yaml
+      - name: Upload DEB
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_content_type: application/octet-stream
+          asset_path: ${{ steps.build_deb.outputs.package }}
+          asset_name: ${{ steps.build_deb.outputs.package }}
+
+  build-rpm:
+    name: Build RPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: kentik/pkg@v1
+        id: build_rpm
+        with:
+          name: pica-rs
+          version: ${{ needs.create_release.outputs.version }}
+          arch: x86_64
+          format: rpm
+          package: .github/actions-rs/package.yaml
+      - name: Upload RPM
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_content_type: application/octet-stream
+          asset_path: ${{ steps.build_rpm.outputs.package }}
+          asset_name: ${{ steps.build_rpm.outputs.package }}
+
