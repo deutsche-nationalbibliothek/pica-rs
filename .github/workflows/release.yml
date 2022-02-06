@@ -149,7 +149,7 @@ jobs:
       - uses: kentik/pkg@master
         id: build_rpm
         with:
-          name: pica-rs
+          name: pica
           version: ${{ needs.create_release.outputs.version }}
           arch: x86_64
           format: rpm
