@@ -120,7 +120,7 @@ jobs:
           name: pica
           version: ${{ needs.create_release.outputs.version }}
           arch: x86_64
-          format: rpm
+          format: deb
           package: .github/actions-rs/package.yaml
       - name: Upload DEB
         uses: actions/upload-release-asset@v1.0.1
