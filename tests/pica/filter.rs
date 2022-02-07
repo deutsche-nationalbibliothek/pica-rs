@@ -944,6 +944,41 @@ fn pica_filter_invert_match() -> TestResult {
 }
 
 #[test]
+fn pica_filter_reduce() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("--reduce")
+        .arg("003@,04[78]A")
+        .arg("003@.0 == '1004916019'")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019_reduced.dat",
+    ));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("--reduce")
+        .arg("003@,04[78]!")
+        .arg("003@.0 == '1004916019'")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .failure()
+        .stderr(predicate::str::starts_with("error: invalid reduce value"))
+        .stdout(predicate::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 fn pica_filter_read_gzip() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
