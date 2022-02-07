@@ -5,7 +5,7 @@ use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use termcolor::{ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -129,11 +129,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                         write!(stdout, "${}", subfield.code())?;
                     }
 
-                    stdout.set_color(ColorSpec::new().set_bold(false))?;
-
                     let mut value: String = subfield.value().to_string();
                     value = value.replace('$', "$$");
 
+                    stdout.set_color(ColorSpec::new().set_intense(true))?;
                     write!(stdout, "{}", value)?;
                 }
 
@@ -142,6 +141,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             writeln!(stdout)?;
         }
 
+        stdout.reset()?;
         stdout.flush()?;
     }
 
