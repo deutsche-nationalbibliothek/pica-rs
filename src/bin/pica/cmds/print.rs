@@ -5,14 +5,26 @@ use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::{ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct PrintConfig {
     pub(crate) skip_invalid: Option<bool>,
     pub(crate) add_spaces: Option<bool>,
+    pub(crate) field_color: Option<PrintColorSpec>,
+    pub(crate) code_color: Option<PrintColorSpec>,
+    pub(crate) value_color: Option<PrintColorSpec>,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) struct PrintColorSpec {
+    pub(crate) color: Option<String>,
+    pub(crate) intense: bool,
+    pub(crate) bold: bool,
+}
+
 
 pub(crate) fn cli() -> App {
     App::new("print")
