@@ -1,0 +1,10 @@
+meta:
+  description: "Tools to work with bibliographic records encoded in PICA+."
+  vendor: Deutschen Nationalbibliothek, Referat AEN
+  maintainer: Nico Wagner <n.wagner@dnb.de>
+
+files:
+  "/usr/bin/pica":
+    file: pica
+    mode: "0755"
+    user: "root"

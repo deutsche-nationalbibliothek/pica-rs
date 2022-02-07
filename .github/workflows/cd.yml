@@ -1,0 +1,417 @@
+name: CD
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUSTUP_MAX_RETRIES: 10
+  RUSTFLAGS: -D warnings -W unreachable-pub -W rust-2021-compatibility
+
+jobs:
+  create-release:
+    name: Create Draft Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.draft_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get release version from the tag
+        id: get_version
+        run: |
+          echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v/}
+      - name: Draft release
+        id: draft_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ steps.get_version.outputs.version }}"
+          release_name: Pica ${{ steps.get_version.outputs.version }}
+          draft: true
+
+  linux-release:
+    needs: create-release
+    name: Binary Release Linux
+    runs-on: ubuntu-latest
+    outputs:
+      release_archive: ${{ steps.build-archive.outputs.filename }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-unknown-linux-gnu
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release
+      - name: Strip release binary
+        run: strip "target/release/pica"
+      - name: Build archive
+        id: build-archive
+        shell: bash
+        run: |
+          staging="pica-${{ needs.create-release.outputs.version }}-x86_64-unknown-linux-gnu"
+          mkdir "$staging"
+          cp README.md LICENSE UNLICENSE "$staging/"
+          cp "target/release/pica" "$staging/"
+          tar cfvz "$staging.tar.gz" "$staging/"
+          echo "ASSET_PATH=$staging.tar.gz" >> $GITHUB_ENV
+          echo "::set-output name=filename::$staging.tar.gz"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ASSET_PATH }}
+          path: ${{ env.ASSET_PATH }}
+          retention-days: 5
+
+  linux-glibc217-release:
+    needs: create-release
+    name: Binary Release Linux (glibc 2.17)
+    runs-on: ubuntu-latest
+    outputs:
+      release_archive: ${{ steps.build-archive.outputs.filename }}
+    container:
+      image: centos:centos7
+    steps:
+      - name: CentOS7 Info
+        run: |
+          cat /etc/centos-release
+          ldd --version
+      - name: Install Dependencies
+        run: |
+          yum install gcc -y
+      - uses: actions/checkout@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release
+      - name: Strip release binary
+        run: strip "target/release/pica"
+      - name: Build archive
+        id: build-archive
+        shell: bash
+        run: |
+          staging="pica-${{ needs.create-release.outputs.version }}-glibc-2.17-x86_64-unknown-linux-gnu"
+          mkdir "$staging"
+          cp README.md LICENSE UNLICENSE "$staging/"
+          cp "target/release/pica" "$staging/"
+          tar cfvz "$staging.tar.gz" "$staging/"
+          echo "ASSET_PATH=$staging.tar.gz" >> $GITHUB_ENV
+          echo "::set-output name=filename::$staging.tar.gz"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ASSET_PATH }}
+          path: ${{ env.ASSET_PATH }}
+          retention-days: 5
+
+  macos-release:
+    name: Binary Release macOS
+    needs: create-release
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-apple-darwin
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release
+      - name: Strip release binary
+        run: strip "target/release/pica"
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="pica-${{ needs.create-release.outputs.version }}-x86_64-apple-darwin"
+          mkdir "$staging"
+          cp README.md LICENSE UNLICENSE "$staging/"
+          cp "target/release/pica" "$staging/"
+          tar cfvz "$staging.tar.gz" "$staging/"
+          echo "ASSET_PATH=$staging.tar.gz" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ASSET_PATH }}
+          path: ${{ env.ASSET_PATH }}
+          retention-days: 5
+
+  windows-gnu-release:
+    name: Binary Release Windows (GNU)
+    needs: create-release
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-pc-windows-gnu
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="pica-${{ needs.create-release.outputs.version }}-x86_64-pc-windows-gnu"
+          mkdir "$staging"
+          cp README.md LICENSE UNLICENSE "$staging/"
+          cp "target/release/pica.exe" "$staging/"
+          7z a "$staging.zip" "$staging"
+          echo "ASSET_PATH=$staging.zip" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ASSET_PATH }}
+          path: ${{ env.ASSET_PATH }}
+          retention-days: 5
+
+  windows-msvc-release:
+    name: Binary Release Windows (MSVC)
+    needs: create-release
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: i686-pc-windows-msvc
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="pica-${{ needs.create-release.outputs.version }}-i686-pc-windows-msvc"
+          mkdir "$staging"
+          cp README.md LICENSE UNLICENSE "$staging/"
+          cp "target/release/pica.exe" "$staging/"
+          7z a "$staging.zip" "$staging"
+          echo "ASSET_PATH=$staging.zip" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ASSET_PATH }}
+          path: ${{ env.ASSET_PATH }}
+          retention-days: 5
+
+  rpm-package:
+    name: RPM Package
+    needs: [linux-release, create-release]
+    runs-on: ubuntu-latest
+    outputs:
+      filename: ${{ steps.build_rpm.outputs.package }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download binary release
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ needs.linux-release.outputs.release_archive }}
+      - name: Extract binary release
+        run: |
+          tar xfvz ${{ needs.linux-release.outputs.release_archive }} --strip-components=1
+      - name: Build package
+        uses: kentik/pkg@master
+        id: build_rpm
+        with:
+          name: pica
+          version: ${{ needs.create-release.outputs.version }}
+          arch: x86_64
+          format: rpm
+          package: .github/actions-rs/package.yaml
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.build_rpm.outputs.package }}
+          path: ${{ steps.build_rpm.outputs.package }}
+          retention-days: 5
+
+  rpm-package-glibc217:
+    name: RPM Package (glibc 2.7)
+    needs: [linux-glibc217-release, create-release]
+    runs-on: ubuntu-latest
+    outputs:
+      filename: ${{ steps.build_rpm.outputs.package }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download binary release
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ needs.linux-glibc217-release.outputs.release_archive }}
+      - name: Extract binary release
+        run: |
+          tar xfvz ${{ needs.linux-glibc217-release.outputs.release_archive }} --strip-components=1
+      - name: Build package
+        uses: kentik/pkg@master
+        id: build_rpm
+        with:
+          name: pica
+          version: ${{ needs.create-release.outputs.version }}-glibc2.17
+          arch: x86_64
+          format: rpm
+          package: .github/actions-rs/package.yaml
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.build_rpm.outputs.package }}
+          path: ${{ steps.build_rpm.outputs.package }}
+          retention-days: 5
+
+  deb-package:
+    name: DEB Package
+    needs: [linux-release, create-release]
+    runs-on: ubuntu-latest
+    outputs:
+      filename: ${{ steps.build_deb.outputs.package }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download binary release
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ needs.linux-release.outputs.release_archive }}
+      - name: Extract binary release
+        run: |
+          tar xfvz ${{ needs.linux-release.outputs.release_archive }} --strip-components=1
+      - name: Build package
+        uses: kentik/pkg@master
+        id: build_deb
+        with:
+          name: pica
+          version: ${{ needs.create-release.outputs.version }}
+          arch: x86_64
+          format: deb
+          package: .github/actions-rs/package.yaml
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.build_deb.outputs.package }}
+          path: ${{ steps.build_deb.outputs.package }}
+          retention-days: 5
+
+  test-packages:
+    name: Test Packages (${{ matrix.name }})
+    needs: [rpm-package, rpm-package-glibc217, deb-package]
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      matrix:
+        include:
+          - name: Debian 11
+            image: debian:11
+            package: ${{ needs.deb-package.outputs.filename }}
+          - name: Debian 10
+            image: debian:10
+            package: ${{ needs.deb-package.outputs.filename }}
+          - name: Ubuntu 18.04
+            image: ubuntu:18.04
+            package: ${{ needs.deb-package.outputs.filename }}
+          - name: Ubuntu 20.04
+            image: ubuntu:20.04
+            package: ${{ needs.deb-package.outputs.filename }}
+          - name: Ubuntu 21.10
+            image: ubuntu:21.10
+            package: ${{ needs.deb-package.outputs.filename }}
+          - name: CentOS 7
+            image: centos:7
+            package: ${{ needs.rpm-package-glibc217.outputs.filename }}
+          - name: CentOS 8
+            image: centos:8
+            package: ${{ needs.rpm-package.outputs.filename }}
+    steps:
+      - name: Download Binary Release
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.package }}
+      - name: Fix CentoOS8
+        if: matrix.image == 'centos:8'
+        run: |
+          cd /etc/yum.repos.d/
+          sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+          sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+          yum update -y
+          cd
+      - name: Install Pica (Ubuntu / Debian)
+        if: startsWith(matrix.image, 'ubuntu:') || startsWith(matrix.image, 'debian:')
+        run: dpkg -i ${{ matrix.package }}
+      - name: Install Pica (CentOS)
+        if: startsWith(matrix.image, 'centos:')
+        run: yum -y install ${{ matrix.package }}
+      - name: Fix CentoOS8
+        if: matrix.image == 'centos:8'
+        run: |
+          sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+          sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+          yum update -y
+      - name: Pica Version
+        run: |
+          pica --version
+
+  upload-artifacts:
+    name: Upload Artifacts
+    runs-on: ubuntu-latest
+    needs:
+      - create-release
+      - test-packages
+      - macos-release
+      - windows-gnu-release
+      - windows-msvc-release
+    steps:
+      - name: Download binary release
+        uses: actions/download-artifact@v2
+      - name: Assemble data
+        run: |
+          mkdir uploads/
+          mv pica-*/*.tar.gz uploads/
+          mv pica-*/*.rpm uploads/
+          mv pica_*/*.deb uploads/
+          mv pica-*/*.zip uploads/
+          tree uploads/
+
+          cd uploads/
+          sha256sum * > CHECKSUMS
+          cd ..
+      - uses: xresloader/upload-to-github-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "uploads/*"
+          release_id: ${{ needs.create-release.outputs.id }}
+          overwrite: true
+          verbose: true
+
