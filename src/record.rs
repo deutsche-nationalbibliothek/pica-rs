@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::matcher::MatcherFlags;
+use crate::matcher::{MatcherFlags, TagMatcher};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
 use crate::{Field, Path};
@@ -322,6 +322,45 @@ impl ByteRecord {
                     result
                 }
             }
+        }
+    }
+
+    /// Reduce the record to the given fields.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::matcher::TagMatcher;
+    /// use pica::{ByteRecord, Field, Subfield, Tag};
+    /// use std::str::FromStr;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let mut record =
+    ///         ByteRecord::from_bytes("012A \x1fa123\x1e013A \x1fa456\x1e")?;
+    ///     record.reduce(&[TagMatcher::new("003@")?, TagMatcher::new("012A")?]);
+    ///
+    ///     assert_eq!(
+    ///         record,
+    ///         ByteRecord::new(vec![Field::new(
+    ///             Tag::new("012A")?,
+    ///             None,
+    ///             vec![Subfield::new('a', "123")?],
+    ///         )])
+    ///     );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn reduce(&mut self, matchers: &[TagMatcher]) {
+        if !matchers.is_empty() {
+            self.raw_data = None;
+            self.fields = self
+                .fields
+                .clone()
+                .into_iter()
+                .filter(|field| matchers.iter().any(|m| m.is_match(&field.tag)))
+                .collect();
         }
     }
 }

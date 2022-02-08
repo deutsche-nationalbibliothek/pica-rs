@@ -27,7 +27,7 @@ const RS: char = '\x1E';
 const SP: char = '\x20';
 
 /// A PICA+ field, that may contian invalid UTF-8 data.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Field {
     pub(crate) tag: Tag,
     pub(crate) occurrence: Option<Occurrence>,
