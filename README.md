@@ -28,7 +28,7 @@ this project from source Rust 1.58.1 or newer is required.
 To install the latest stable release:
 
 ```bash
-$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.9.1 pica
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.10.0 pica
 ```
 
 ## Commands
