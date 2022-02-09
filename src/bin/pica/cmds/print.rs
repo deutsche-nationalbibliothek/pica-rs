@@ -5,13 +5,64 @@ use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use std::io::Write;
+use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields)]
 pub(crate) struct PrintConfig {
     pub(crate) skip_invalid: Option<bool>,
     pub(crate) add_spaces: Option<bool>,
+    pub(crate) field_color: Option<PrintColorSpec>,
+    pub(crate) occurrence_color: Option<PrintColorSpec>,
+    pub(crate) code_color: Option<PrintColorSpec>,
+    pub(crate) value_color: Option<PrintColorSpec>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields)]
+pub(crate) struct PrintColorSpec {
+    pub(crate) color: Option<String>,
+    #[serde(default)]
+    pub(crate) bold: bool,
+    #[serde(default)]
+    pub(crate) italic: bool,
+    #[serde(default)]
+    pub(crate) underline: bool,
+    #[serde(default)]
+    pub(crate) intense: bool,
+    #[serde(default)]
+    pub(crate) dimmed: bool,
+}
+
+impl TryFrom<&PrintColorSpec> for ColorSpec {
+    type Error = CliError;
+
+    fn try_from(value: &PrintColorSpec) -> Result<Self, Self::Error> {
+        let fg_color = if let Some(fg_color_str) = &value.color {
+            if let Ok(c) = Color::from_str(fg_color_str) {
+                Some(c)
+            } else {
+                return Err(CliError::Other(format!(
+                    "invalid color '{}'",
+                    fg_color_str
+                )));
+            }
+        } else {
+            None
+        };
+
+        Ok(ColorSpec::new()
+            .set_fg(fg_color)
+            .set_bold(value.bold)
+            .set_italic(value.italic)
+            .set_underline(value.underline)
+            .set_intense(value.intense)
+            .set_dimmed(value.dimmed)
+            .clone())
+    }
 }
 
 pub(crate) fn cli() -> App {
@@ -100,19 +151,43 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         };
 
         let mut stdout = StandardStream::stdout(color_choice);
+        let mut field_color = ColorSpec::new();
+        field_color.set_bold(true);
+
+        let mut occurrence_color = ColorSpec::new();
+        occurrence_color.set_bold(true);
+
+        let mut code_color = ColorSpec::new();
+        code_color.set_bold(true);
+
+        let mut value_color = ColorSpec::new();
+
+        if let Some(config) = &config.print {
+            if let Some(spec) = &config.field_color {
+                field_color = ColorSpec::try_from(spec)?;
+            }
+            if let Some(spec) = &config.occurrence_color {
+                occurrence_color = ColorSpec::try_from(spec)?;
+            }
+            if let Some(spec) = &config.code_color {
+                code_color = ColorSpec::try_from(spec)?;
+            }
+            if let Some(spec) = &config.value_color {
+                value_color = ColorSpec::try_from(spec)?;
+            }
+        }
 
         for result in reader.records() {
             let record = result?;
 
             for field in record.iter() {
-                stdout
-                    .set_color(ColorSpec::new().set_fg(Some(Color::Magenta)))?;
-
                 // TAG
+                stdout.set_color(&field_color)?;
                 write!(stdout, "{}", field.tag())?;
 
                 // OCCURRENCE
                 if let Some(occurrence) = field.occurrence() {
+                    stdout.set_color(&occurrence_color)?;
                     write!(stdout, "/{}", occurrence)?;
                 }
 
@@ -122,8 +197,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
                 // SUBFIELDS
                 for subfield in field.iter() {
-                    stdout
-                        .set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
+                    stdout.set_color(&code_color)?;
 
                     if add_spaces {
                         write!(stdout, " ${} ", subfield.code())?;
@@ -131,13 +205,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                         write!(stdout, "${}", subfield.code())?;
                     }
 
-                    stdout.set_color(
-                        ColorSpec::new().set_fg(Some(Color::White)),
-                    )?;
-
                     let mut value: String = subfield.value().to_string();
                     value = value.replace('$', "$$");
 
+                    stdout.set_color(&value_color)?;
                     write!(stdout, "{}", value)?;
                 }
 
@@ -146,6 +217,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             writeln!(stdout)?;
         }
 
+        stdout.reset()?;
         stdout.flush()?;
     }
 
