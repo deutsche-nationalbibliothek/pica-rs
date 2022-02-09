@@ -19,7 +19,7 @@ Most of the commands are inspired by the [xsv](https://git.io/JIoJG) toolkit.
 
 ## Installation
 
-Binaries for Windows, Linux and macOS are available from [GitHub](https://github.com/deutsche-nationalbibliothek/pica-rs/releases).
+Binaries for Windows, Linux and macOS as well as `RPM` and `DEB` packages are available from [GitHub](https://github.com/deutsche-nationalbibliothek/pica-rs/releases).
 
 In order to install the tools from source a [Rust](https://www.rust-lang.org/) installation is required. Just follow the [installation
 guide](https://www.rust-lang.org/learn/get-started) to get the Rust programming language with the `cargo` package manager. To build
