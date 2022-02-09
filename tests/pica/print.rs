@@ -110,7 +110,36 @@ fn pica_print_color() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/1004916019-color.txt").unwrap();
+    let expected = read_to_string("tests/data/1004916019-color1.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .with_config(
+            &TestContext::new(),
+            r#"[print]
+    field-color = { color = "red", bold = true, intense = true }
+    occurrence-color = { color = "blue", underline = true }
+    code-color = { color = "165,42,42", italic = false }
+    value-color = { color = "95", dimmed = true }
+    "#,
+        )
+        .arg("print")
+        .arg("--color")
+        .arg("always")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019-color2.txt").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {

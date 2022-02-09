@@ -14,10 +14,11 @@
 [0m[1m041A [0m[1m$a[0mPlymouth[0m[1m$g[0mMarke
 [0m[1m041R [0m[1m$9[0m041145135[0m[1m$7[0mTs1[0m[1m$V[0msaz[0m[1m$A[0mgnd[0m[1m$0[0m4114513-6[0m[1m$a[0mMarkenname[0m[1m$4[0mobin
 [0m[1m042A [0m[1m$a[0m31.7
-[0m[1m047A/03 [0m[1m$e[0mDE-210
-[0m[1m047A/03 [0m[1m$r[0mDE-384
+[0m[1m047A[0m[1m/03 [0m[1m$e[0mDE-210
+[0m[1m047A[0m[1m/03 [0m[1m$r[0mDE-384
 [0m[1m047C [0m[1m$S[0mswd[0m[1m$i[0ms[0m[1m$a[0mPlymouth <Marke>[0m[1m$0[0m7710287-3
 [0m[1m050D [0m[1m$a[0mKombiniere mit einer Produktgruppe, z.B. Personenkraftwagen
 [0m[1m050E [0m[1m$a[0mWikipedia, Internet[0m[1m$u[0mhttp://www.mobile.de/modellverzeichnis/plymouth/
 [0m[1m050H [0m[1m$a[0mMarkenname
 
+[0m
