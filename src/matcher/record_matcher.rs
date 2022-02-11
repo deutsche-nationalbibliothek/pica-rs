@@ -401,6 +401,10 @@ mod tests {
         let matcher = RecordMatcher::new("003@? && 003@.0 == '123456789X'")?;
         let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
+
+        let matcher = RecordMatcher::new("!012A? && 003@.0 == '123456789X'")?;
+        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        assert!(matcher.is_match(&record, &MatcherFlags::default()));
         Ok(())
     }
 
