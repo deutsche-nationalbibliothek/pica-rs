@@ -1,3 +1,5 @@
+use std::fmt;
+
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -15,6 +17,17 @@ pub enum OccurrenceMatcher {
     Range(Occurrence, Occurrence),
     Any,
     None,
+}
+
+impl fmt::Display for OccurrenceMatcher {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Some(o) => write!(f, "/{}", o),
+            Self::Range(from, to) => write!(f, "/{}-{}", from, to),
+            Self::Any => write!(f, "/*"),
+            Self::None => write!(f, ""),
+        }
+    }
 }
 
 impl OccurrenceMatcher {
@@ -164,6 +177,16 @@ mod tests {
         assert!(OccurrenceMatcher::new("/05-05").is_err());
         assert!(OccurrenceMatcher::new("/05-0A").is_err());
         assert!(OccurrenceMatcher::new("/A").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_occurrence_matcher_to_string() -> TestResult {
+        assert_eq!(OccurrenceMatcher::new("/01")?.to_string(), "/01");
+        assert_eq!(OccurrenceMatcher::new("/01-04")?.to_string(), "/01-04");
+        assert_eq!(OccurrenceMatcher::new("/*")?.to_string(), "/*");
+        assert_eq!(OccurrenceMatcher::new("")?.to_string(), "");
 
         Ok(())
     }

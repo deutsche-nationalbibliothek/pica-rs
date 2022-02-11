@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::{BitAnd, BitOr};
 
 use nom::branch::alt;
@@ -28,6 +29,27 @@ pub enum RecordMatcher {
         usize,
     ),
     True,
+}
+
+impl fmt::Display for RecordMatcher {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Singleton(expr) => expr.fmt(f),
+            Self::Group(expr) => write!(f, "({})", expr),
+            Self::Not(expr) => write!(f, "!{}", expr),
+            Self::Composite(lhs, op, rhs) => {
+                write!(f, "{} {} {}", lhs, op, rhs)
+            }
+            Self::Cardinality(tm, om, sm, op, value) => {
+                if let Some(sm) = sm {
+                    write!(f, "#{}{}{{{}}} {} {}", tm, om, sm, op, value)
+                } else {
+                    write!(f, "#{}{} {} {}", tm, om, op, value)
+                }
+            }
+            Self::True => write!(f, "True"),
+        }
+    }
 }
 
 impl RecordMatcher {
@@ -213,6 +235,7 @@ fn parse_record_matcher_composite_and(i: &[u8]) -> ParseResult<RecordMatcher> {
             ws(parse_record_matcher_cardinality),
             ws(parse_record_matcher_singleton),
             ws(parse_record_matcher_not),
+            ws(parse_record_matcher_exists),
         )),
         many0(preceded(
             ws(tag("&&")),
@@ -221,6 +244,7 @@ fn parse_record_matcher_composite_and(i: &[u8]) -> ParseResult<RecordMatcher> {
                 ws(parse_record_matcher_cardinality),
                 ws(parse_record_matcher_singleton),
                 ws(parse_record_matcher_not),
+                ws(parse_record_matcher_exists),
             )),
         )),
     ))(i)?;
@@ -381,6 +405,25 @@ mod tests {
         let matcher = RecordMatcher::new("!012A? && 003@.0 == '123456789X'")?;
         let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
+        Ok(())
+    }
+
+    #[test]
+    fn test_record_matcher_to_string() -> TestResult {
+        let values = vec![
+            ("003@.0  ==  '0123456789'", "003@.0 == '0123456789'"),
+            ("( 003@.0  ==  '0123456789')", "(003@.0 == '0123456789')"),
+            ("!012A.0?", "!012A.0?"),
+            ("!012A.0? && 013A.a == 'abc'", "!012A.0? && 013A.a == 'abc'"),
+            ("!012A.0? || 013A.a == 'abc'", "!012A.0? || 013A.a == 'abc'"),
+            ("#012A{ a? && b == '1'} >= 2", "#012A{a? && b == '1'} >= 2"),
+            ("#012A >= 2", "#012A >= 2"),
+        ];
+
+        for (matcher, expected) in values {
+            assert_eq!(RecordMatcher::new(matcher)?.to_string(), expected);
+        }
+
         Ok(())
     }
 }
