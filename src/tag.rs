@@ -164,6 +164,12 @@ mod tests {
     }
 
     #[test]
+    fn test_tag_to_string() -> TestResult {
+        assert_eq!(Tag::from_unchecked("003@").to_string(), "003@");
+        Ok(())
+    }
+
+    #[test]
     fn test_tag_level() -> TestResult {
         assert_eq!(Tag::new("003@")?.level(), Level::Main);
         assert_eq!(Tag::new("123A")?.level(), Level::Local);
