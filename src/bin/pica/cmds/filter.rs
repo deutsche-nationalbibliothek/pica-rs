@@ -167,14 +167,15 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     };
 
     if args.is_present("and") {
-        let ands = args
+        let predicates = args
             .values_of("and")
             .unwrap()
             .map(RecordMatcher::new)
             .collect::<Result<Vec<_>, _>>()?;
 
-        for expr in ands.into_iter() {
-            filter = filter & expr;
+        for expr in predicates.into_iter() {
+            filter = RecordMatcher::Group(Box::new(filter))
+                & RecordMatcher::Group(Box::new(expr));
         }
     }
 

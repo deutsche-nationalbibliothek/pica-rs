@@ -1,3 +1,5 @@
+use std::fmt;
+
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{all_consuming, cut, map, opt};
@@ -16,6 +18,18 @@ use crate::{Error, Field};
 pub enum FieldMatcher {
     Subield(TagMatcher, OccurrenceMatcher, SubfieldListMatcher),
     Exists(TagMatcher, OccurrenceMatcher),
+}
+
+impl fmt::Display for FieldMatcher {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Subield(t, o, SubfieldListMatcher::Singleton(s)) => {
+                write!(f, "{}{}.{}", t, o, s)
+            }
+            Self::Subield(t, o, s) => write!(f, "{}{}{{{}}}", t, o, s),
+            Self::Exists(t, o) => write!(f, "{}{}?", t, o),
+        }
+    }
 }
 
 impl FieldMatcher {
@@ -210,6 +224,25 @@ mod tests {
         let matcher = FieldMatcher::new("012Aa0 == 'abc'")?;
         let field = Field::from_str("012A \x1f0abc\x1e")?;
         assert!(matcher.is_match(&field, &MatcherFlags::default()));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_field_matcher_to_string() -> TestResult {
+        let values = vec![
+            ("012A.a == 'abc'", "012A.a == 'abc'"),
+            ("012A/*{a == 'abc'}", "012A/*.a == 'abc'"),
+            (
+                "012A/01-03{ a == 'abc' && b == 'def' }",
+                "012A/01-03{a == 'abc' && b == 'def'}",
+            ),
+            ("012A?", "012A?"),
+        ];
+
+        for (matcher, expected) in values {
+            assert_eq!(FieldMatcher::new(matcher)?.to_string(), expected);
+        }
 
         Ok(())
     }

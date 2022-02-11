@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::{BitAnd, BitOr};
 
 use nom::branch::alt;
@@ -29,6 +30,22 @@ pub enum SubfieldListMatcher {
         Box<SubfieldListMatcher>,
     ),
     Cardinality(char, ComparisonOp, usize),
+}
+
+impl fmt::Display for SubfieldListMatcher {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Singleton(expr) => write!(f, "{}", expr),
+            Self::Group(expr) => write!(f, "({})", expr),
+            Self::Not(expr) => write!(f, "!{}", expr),
+            Self::Composite(lhs, op, rhs) => {
+                write!(f, "{} {} {}", lhs, op, rhs)
+            }
+            Self::Cardinality(code, op, value) => {
+                write!(f, "#{} {} {}", code, op, value)
+            }
+        }
+    }
 }
 
 impl SubfieldListMatcher {
@@ -436,6 +453,33 @@ mod tests {
         let subfields =
             [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(!matcher.is_match(&subfields, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_list_matcher_to_string() -> TestResult {
+        let values = vec![
+            ("0 == 'abc'", "0 == 'abc'"),
+            ("( a == 'abc' )", "(a == 'abc')"),
+            ("!( a == 'abc' )", "!(a == 'abc')"),
+            (
+                "a == 'a'  && b == 'b'  && c == 'c' ",
+                "a == 'a' && b == 'b' && c == 'c'",
+            ),
+            (
+                "a == 'a'  || b == 'b'  || c == 'c' ",
+                "a == 'a' || b == 'b' || c == 'c'",
+            ),
+            ("#a  >=  3", "#a >= 3"),
+        ];
+
+        for (matcher, expected) in values {
+            assert_eq!(
+                SubfieldListMatcher::new(matcher)?.to_string(),
+                expected
+            );
+        }
 
         Ok(())
     }

@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::RangeFrom;
 
 use nom::branch::alt;
@@ -16,6 +17,32 @@ use crate::Error;
 pub enum TagMatcher {
     Some(Tag),
     Pattern(Vec<char>, Vec<char>, Vec<char>, Vec<char>),
+}
+
+impl fmt::Display for TagMatcher {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Some(tag) => write!(f, "{}", tag),
+            Self::Pattern(ref p1, ref p2, ref p3, ref p4) => {
+                let fmt_p = |p: &Vec<char>| -> String {
+                    if p.len() > 1 {
+                        format!("[{}]", String::from_iter(p))
+                    } else {
+                        String::from_iter(p)
+                    }
+                };
+
+                write!(
+                    f,
+                    "{}{}{}{}",
+                    fmt_p(p1),
+                    fmt_p(p2),
+                    fmt_p(p3),
+                    fmt_p(p4)
+                )
+            }
+        }
+    }
 }
 
 impl TagMatcher {
@@ -190,6 +217,14 @@ mod tests {
         assert!(TagMatcher::new("01AA").is_err());
         assert!(TagMatcher::new("0123").is_err());
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_tag_matcher_to_string() -> TestResult {
+        assert_eq!(TagMatcher::new("012A")?.to_string(), "012A");
+        assert_eq!(TagMatcher::new("[01]12A")?.to_string(), "[01]12A");
+        assert_eq!(TagMatcher::new("[0]12A")?.to_string(), "012A");
         Ok(())
     }
 
