@@ -291,8 +291,8 @@ fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
 pub(crate) fn parse_record_matcher(i: &[u8]) -> ParseResult<RecordMatcher> {
     alt((
         ws(parse_record_matcher_group),
-        ws(parse_record_matcher_not),
         ws(parse_record_matcher_composite),
+        ws(parse_record_matcher_not),
         ws(parse_record_matcher_singleton),
         ws(parse_record_matcher_cardinality),
     ))(i)
@@ -375,6 +375,10 @@ mod tests {
     #[test]
     fn test_record_matcher_composite() -> TestResult {
         let matcher = RecordMatcher::new("003@? && 003@.0 == '123456789X'")?;
+        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        assert!(matcher.is_match(&record, &MatcherFlags::default()));
+
+        let matcher = RecordMatcher::new("!012A? && 003@.0 == '123456789X'")?;
         let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
         Ok(())
