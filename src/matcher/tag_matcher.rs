@@ -28,7 +28,7 @@ impl fmt::Display for TagMatcher {
                     if p.len() > 1 {
                         format!("[{}]", String::from_iter(p))
                     } else {
-                        format!("{}", String::from_iter(p))
+                        String::from_iter(p)
                     }
                 };
 
