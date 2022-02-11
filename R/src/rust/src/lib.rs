@@ -1,6 +1,7 @@
 use extendr_api::prelude::*;
 use libR_sys::Rf_error;
 use pica::{Outcome, ReaderBuilder, Selectors};
+use std::collections::HashMap;
 use std::io::Cursor;
 use std::os::raw;
 
@@ -26,8 +27,10 @@ where
 fn pica_select(
     filename: &str,
     selectors: &str,
-    header: Option<String>,
+    args: HashMap<String, Robj>,
 ) -> Robj {
+    println!("args = {:?}", args);
+
     let mut reader = unwrap_result(
         ReaderBuilder::new().skip_invalid(true).from_path(filename),
     );
@@ -35,7 +38,9 @@ fn pica_select(
     let selectors = unwrap_result(Selectors::decode(selectors));
 
     let mut wtr = csv::Writer::from_writer(Cursor::new(Vec::new()));
-    println!("header = {:?}", header);
+    // if let Some(header) = args.get("header") {
+    //     println!("header = {:?}", header);
+    // }
 
     for result in reader.records() {
         let record = unwrap_result(result);

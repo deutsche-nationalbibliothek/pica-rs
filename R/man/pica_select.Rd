@@ -4,7 +4,7 @@
 \alias{pica_select}
 \title{Return string \code{"Hello world!"} to R.}
 \usage{
-pica_select(filename, selectors, header)
+pica_select(filename, selectors, args)
 }
 \description{
 Return string \code{"Hello world!"} to R.

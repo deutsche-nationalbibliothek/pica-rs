@@ -10,5 +10,5 @@ NULL
 
 #' Return string `"Hello world!"` to R.
 #' @export
-pica_select <- function(filename, selectors, header) .Call(wrap__pica_select, filename, selectors, header)
+pica_select <- function(filename, selectors, args) .Call(wrap__pica_select, filename, selectors, args)
 
