@@ -53,6 +53,40 @@ fn pica_json_write_output() -> TestResult {
 }
 
 #[test]
+fn pica_json_translit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("json")
+        .arg("tests/data/004732650-reduced.dat.gz")
+        .assert();
+
+    let expected = read_to_string("tests/data/004732650-nfd.json").unwrap();
+    assert.success().stdout(expected.trim_end().to_string());
+
+    let expected = vec![
+        ("nfd", "tests/data/004732650-nfd.json"),
+        ("nfkd", "tests/data/004732650-nfd.json"),
+        ("nfc", "tests/data/004732650-nfc.json"),
+        ("nfkc", "tests/data/004732650-nfc.json"),
+    ];
+
+    for (translit, output) in expected {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("json")
+            .arg("--translit")
+            .arg(translit)
+            .arg("tests/data/004732650-reduced.dat.gz")
+            .assert();
+
+        let expected = read_to_string(output).unwrap();
+        assert.success().stdout(expected.trim_end().to_string());
+    }
+
+    Ok(())
+}
+
+#[test]
 fn pica_json_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
