@@ -259,7 +259,7 @@ fn pica_print_translit() -> TestResult {
         expected
     };
 
-    assert.success().stdout(expected.to_string());
+    assert.success().stdout(expected);
 
     let expected = vec![
         ("nfd", "tests/data/004732650-nfd.txt"),
@@ -284,7 +284,7 @@ fn pica_print_translit() -> TestResult {
             expected
         };
 
-        assert.success().stdout(expected.to_string());
+        assert.success().stdout(expected);
     }
 
     let expected = vec![
