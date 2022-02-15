@@ -389,6 +389,69 @@ fn pica_select_write_output() -> TestResult {
 }
 
 #[test]
+fn pica_select_translit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("029A.a")
+        .arg("tests/data/004732650.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("Goethe-Universita\u{308}t Frankfurt am Main\n");
+
+    let expected = vec![
+        ("nfd", "Goethe-Universita\u{308}t Frankfurt am Main\n"),
+        ("nfkd", "Goethe-Universita\u{308}t Frankfurt am Main\n"),
+        ("nfc", "Goethe-Universität Frankfurt am Main\n"),
+        ("nfkc", "Goethe-Universität Frankfurt am Main\n"),
+    ];
+
+    for (translit, output) in expected {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("select")
+            .arg("--translit")
+            .arg(translit)
+            .arg("029A.a")
+            .arg("tests/data/004732650.dat.gz")
+            .assert();
+
+        assert
+            .success()
+            .stderr(predicate::str::is_empty())
+            .stdout(output);
+    }
+
+    let expected = vec![
+        ("nfd", "Goethe-Universita\u{308}t Frankfurt am Main\n"),
+        ("nfkd", "Goethe-Universita\u{308}t Frankfurt am Main\n"),
+        ("nfc", "Goethe-Universität Frankfurt am Main\n"),
+        ("nfkc", "Goethe-Universität Frankfurt am Main\n"),
+    ];
+
+    for (translit, output) in expected {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("select")
+            .arg("--translit")
+            .arg(translit)
+            .arg("029A.a")
+            .arg("tests/data/004732650-nfc.dat.gz")
+            .assert();
+
+        assert
+            .success()
+            .stderr(predicate::str::is_empty())
+            .stdout(output);
+    }
+
+    Ok(())
+}
+
+#[test]
 fn pica_select_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

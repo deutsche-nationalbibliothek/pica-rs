@@ -1,11 +1,13 @@
-use clap::Arg;
-use pica::{Outcome, ReaderBuilder, Selectors};
-use serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeSet;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
+
+use clap::Arg;
+use pica::{Outcome, ReaderBuilder, Selectors};
+use serde::{Deserialize, Serialize};
+use unicode_normalization::UnicodeNormalization;
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
@@ -48,6 +50,13 @@ pub(crate) fn cli() -> App {
                 .short('t')
                 .long("tsv")
                 .help("use tabs as field delimiter"),
+        )
+        .arg(
+            Arg::new("translit")
+                .long("--translit")
+                .value_name("translit")
+                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
+                .help("Comma-separated list of column names."),
         )
         .arg(
             Arg::new("header")
@@ -129,7 +138,21 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             }
 
             if !row.iter().all(|col| col.is_empty()) {
-                writer.write_record(row)?;
+                if let Some(translit) = args.value_of("translit") {
+                    writer.write_record(
+                        row.iter().map(ToString::to_string).map(|s| {
+                            match translit {
+                                "nfc" => s.nfc().collect::<String>(),
+                                "nfkc" => s.nfkc().collect::<String>(),
+                                "nfd" => s.nfd().collect::<String>(),
+                                "nfkd" => s.nfkd().collect::<String>(),
+                                _ => unreachable!(),
+                            }
+                        }),
+                    )?;
+                } else {
+                    writer.write_record(row)?;
+                };
             }
         }
     }
