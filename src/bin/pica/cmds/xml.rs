@@ -1,13 +1,16 @@
-use crate::config::Config;
-use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliResult};
+use std::fs::File;
+use std::io::{self, Write};
+
 use clap::Arg;
 use pica::ReaderBuilder;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::{self, Write};
+use unicode_normalization::UnicodeNormalization;
 use xml::writer::XmlEvent;
 use xml::EmitterConfig;
+
+use crate::config::Config;
+use crate::skip_invalid_flag;
+use crate::util::{App, CliArgs, CliResult};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -24,6 +27,13 @@ pub(crate) fn cli() -> App {
                 .short('s')
                 .long("skip-invalid")
                 .help("skip invalid records"),
+        )
+        .arg(
+            Arg::new("translit")
+                .long("--translit")
+                .value_name("translit")
+                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
+                .help("Comma-separated list of column names."),
         )
         .arg(
             Arg::new("output")
@@ -88,10 +98,16 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                         .attr("code", &subfield.code().to_string()),
                 )?;
 
-                xml_writer.write(XmlEvent::characters(
-                    &subfield.value().to_string(),
-                ))?;
+                let value = subfield.value().to_string();
+                let value = match args.value_of("translit") {
+                    Some("nfc") => value.nfc().collect::<String>(),
+                    Some("nfkc") => value.nfkc().collect::<String>(),
+                    Some("nfd") => value.nfd().collect::<String>(),
+                    Some("nfkd") => value.nfkd().collect::<String>(),
+                    _ => value,
+                };
 
+                xml_writer.write(XmlEvent::characters(&value))?;
                 xml_writer.write(XmlEvent::end_element())?;
             }
 
