@@ -7,10 +7,10 @@ use std::io::{self, Write};
 use clap::Arg;
 use pica::{Outcome, ReaderBuilder, Selectors};
 use serde::{Deserialize, Serialize};
-use unicode_normalization::UnicodeNormalization;
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
+use crate::translit::translit_maybe;
 use crate::util::{App, CliArgs, CliError, CliResult};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -138,16 +138,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             }
 
             if !row.iter().all(|col| col.is_empty()) {
-                if let Some(translit) = args.value_of("translit") {
+                if args.value_of("translit").is_some() {
                     writer.write_record(
                         row.iter().map(ToString::to_string).map(|s| {
-                            match translit {
-                                "nfc" => s.nfc().collect::<String>(),
-                                "nfkc" => s.nfkc().collect::<String>(),
-                                "nfd" => s.nfd().collect::<String>(),
-                                "nfkd" => s.nfkd().collect::<String>(),
-                                _ => unreachable!(),
-                            }
+                            translit_maybe(&s, args.value_of("translit"))
                         }),
                     )?;
                 } else {

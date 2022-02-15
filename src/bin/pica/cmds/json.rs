@@ -3,10 +3,10 @@ use std::io::Write;
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
-use unicode_normalization::UnicodeNormalization;
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
+use crate::translit::translit_maybe;
 use crate::util::{App, CliArgs, CliResult};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -60,15 +60,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             writer.write_all(b",")?;
         }
 
-        let mut j = serde_json::to_string(&record).unwrap();
-        j = match args.value_of("translit") {
-            Some("nfc") => j.nfc().collect::<String>(),
-            Some("nfkc") => j.nfkc().collect::<String>(),
-            Some("nfd") => j.nfd().collect::<String>(),
-            Some("nfkd") => j.nfkd().collect::<String>(),
-            _ => j,
-        };
-
+        let j = translit_maybe(
+            &serde_json::to_string(&record).unwrap(),
+            args.value_of("translit"),
+        );
         writer.write_all(j.as_bytes())?;
     }
 
