@@ -425,6 +425,29 @@ fn pica_select_translit() -> TestResult {
             .stdout(output);
     }
 
+    let expected = vec![
+        ("nfd", "Goethe-Universita\u{308}t Frankfurt am Main\n"),
+        ("nfkd", "Goethe-Universita\u{308}t Frankfurt am Main\n"),
+        ("nfc", "Goethe-Universität Frankfurt am Main\n"),
+        ("nfkc", "Goethe-Universität Frankfurt am Main\n"),
+    ];
+
+    for (translit, output) in expected {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("select")
+            .arg("--translit")
+            .arg(translit)
+            .arg("029A.a")
+            .arg("tests/data/004732650-nfc.dat.gz")
+            .assert();
+
+        assert
+            .success()
+            .stderr(predicate::str::is_empty())
+            .stdout(output);
+    }
+
     Ok(())
 }
 
