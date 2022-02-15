@@ -10,6 +10,7 @@ mod cmds;
 mod common;
 mod config;
 mod macros;
+mod translit;
 mod util;
 
 use config::Config;
