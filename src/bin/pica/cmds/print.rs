@@ -1,12 +1,15 @@
-use crate::config::Config;
-use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use std::io::Write;
+use std::str::FromStr;
+
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
-use std::io::Write;
-use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
+use crate::config::Config;
+use crate::skip_invalid_flag;
+use crate::translit::translit_maybe;
+use crate::util::{App, CliArgs, CliError, CliResult};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -93,6 +96,13 @@ pub(crate) fn cli() -> App {
                 .help("Limit the result to first <n> records."),
         )
         .arg(
+            Arg::new("translit")
+                .long("--translit")
+                .value_name("translit")
+                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
+                .help("Comma-separated list of column names."),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -132,7 +142,11 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             WriterBuilder::new().from_path(filename)?;
 
         for result in reader.records() {
-            writer.write_all(format!("{}\n\n", result?).as_bytes())?;
+            let value = translit_maybe(
+                &format!("{}\n\n", result?),
+                args.value_of("translit"),
+            );
+            writer.write_all(value.as_bytes())?;
         }
 
         writer.flush()?;
@@ -206,7 +220,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     }
 
                     let mut value: String = subfield.value().to_string();
-                    value = value.replace('$', "$$");
+                    value = translit_maybe(
+                        &value.replace('$', "$$"),
+                        args.value_of("translit"),
+                    );
 
                     stdout.set_color(&value_color)?;
                     write!(stdout, "{}", value)?;

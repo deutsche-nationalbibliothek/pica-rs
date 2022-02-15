@@ -245,6 +245,70 @@ fn pica_print_write_output() -> TestResult {
 }
 
 #[test]
+fn pica_print_translit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("tests/data/004732650-reduced.dat.gz")
+        .assert();
+
+    let expected = read_to_string("tests/data/004732650-nfd.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected.to_string());
+
+    let expected = vec![
+        ("nfd", "tests/data/004732650-nfd.txt"),
+        ("nfkd", "tests/data/004732650-nfd.txt"),
+        ("nfc", "tests/data/004732650-nfc.txt"),
+        ("nfkc", "tests/data/004732650-nfc.txt"),
+    ];
+
+    for (translit, output) in expected {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("print")
+            .arg("--translit")
+            .arg(translit)
+            .arg("tests/data/004732650-reduced.dat.gz")
+            .assert();
+
+        let expected = read_to_string(output).unwrap();
+        let expected = if cfg!(windows) {
+            expected.replace('\r', "")
+        } else {
+            expected
+        };
+
+        assert.success().stdout(expected.to_string());
+    }
+
+    let expected = vec![
+        ("nfd", "029A $aGoethe-Universita\u{308}t"),
+        ("nfkd", "029A $aGoethe-Universita\u{308}t"),
+        ("nfc", "029A $aGoethe-Universität"),
+        ("nfkc", "029A $aGoethe-Universität"),
+    ];
+
+    for (translit, prefix) in expected {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("print")
+            .arg("--translit")
+            .arg(translit)
+            .arg("tests/data/004732650-reduced.dat.gz")
+            .assert();
+
+        assert.success().stdout(predicate::str::starts_with(prefix));
+    }
+    Ok(())
+}
+
+#[test]
 fn pica_print_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
