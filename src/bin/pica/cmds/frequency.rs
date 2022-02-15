@@ -1,14 +1,17 @@
-use crate::config::Config;
-use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliError, CliResult};
-use bstr::BString;
-use clap::Arg;
-use pica::{Path, ReaderBuilder};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, Write};
 use std::str::FromStr;
+
+use bstr::BString;
+use clap::Arg;
+use pica::{Path, ReaderBuilder};
+use serde::{Deserialize, Serialize};
+
+use crate::config::Config;
+use crate::skip_invalid_flag;
+use crate::translit::translit_maybe;
+use crate::util::{App, CliArgs, CliError, CliResult};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -50,6 +53,13 @@ pub(crate) fn cli() -> App {
                 .short('H')
                 .long("--header")
                 .value_name("header")
+                .help("Comma-separated list of column names."),
+        )
+        .arg(
+            Arg::new("translit")
+                .long("--translit")
+                .value_name("translit")
+                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
                 .help("Comma-separated list of column names."),
         )
         .arg(
@@ -132,7 +142,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             break;
         }
 
-        writer.write_record(&[value, &BString::from(frequency.to_string())])?;
+        let value =
+            translit_maybe(&value.to_string(), args.value_of("translit"));
+        writer.write_record(&[value, frequency.to_string()])?;
     }
 
     writer.flush()?;
