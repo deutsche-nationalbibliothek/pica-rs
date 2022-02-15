@@ -98,6 +98,12 @@ fn pica_xml_translit() -> TestResult {
             .assert();
 
         let expected = read_to_string(output).unwrap();
+        let expected = if cfg!(windows) {
+            expected.replace('\r', "")
+        } else {
+            expected
+        };
+
         assert.success().stdout(expected.trim_end().to_string());
     }
 
