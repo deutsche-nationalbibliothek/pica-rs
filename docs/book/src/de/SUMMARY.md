@@ -1,7 +1,31 @@
 # Summary
 
+[Einführung](README.md)
+
+# Benutzerhandbuch
+
+- [Installation]()
+- [Kommandos]()
+    - [cat]()
+    - [count]()
+    - [filter]()
+    - [frequency]()
+    - [partition]()
+    - [print]()
+    - [sample]()
+    - [select]()
+    - [slice]()
+    - [split]()
+    - [json]()
+    - [xml]()
+
+# Tutorials
+
 - [Beginner Tutorial](./beginner-tutorial.md)
 - [Verwendung in RMarkdown](./rmarkdown/rmarkdown.md)
+
+# Entwicklerdokumentation
+
 - [Referenz](./referenz/index.md)
   - [Matcher](./referenz/matcher.md)
   - [Occurrence](./referenz/occurrence.md)
