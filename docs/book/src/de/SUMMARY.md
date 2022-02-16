@@ -21,8 +21,8 @@
 
 # Tutorials
 
-- [Beginner Tutorial](./beginner-tutorial.md)
-- [Verwendung in RMarkdown](./rmarkdown/rmarkdown.md)
+- [Beginner Tutorial](tutorials/beginner-tutorial.md)
+- [Verwendung in RMarkdown](tutorials/rmarkdown/rmarkdown.md)
 
 # Entwicklerdokumentation
 
