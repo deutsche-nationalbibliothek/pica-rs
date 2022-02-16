@@ -4,7 +4,7 @@
 
 # Benutzerhandbuch
 
-- [Installation]()
+- [Installation](guide/installation.md)
 - [Kommandos]()
     - [cat]()
     - [completion]()
