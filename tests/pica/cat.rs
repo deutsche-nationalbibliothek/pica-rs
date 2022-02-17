@@ -129,6 +129,30 @@ fn pica_cat_write_gzip() -> TestResult {
 }
 
 #[test]
+fn pica_cat_tee() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--tee")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert!(expected.eval(Path::new(filename_str)));
+
+    Ok(())
+}
+
+#[test]
 fn pica_cat_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

@@ -32,18 +32,28 @@ pub(crate) fn cli() -> Command {
                 .requires("output"),
         )
         .arg(
+            Arg::new("tee")
+            .help(
+                "This option allows to write simultaneously to <file> and to \
+                standard output (stdout)."
+            ).conflicts_with("output")
+            .long("--tee")
+            .value_name("file")
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
                 .value_name("file")
-                .help("Write output to <file> instead of stdout."),
+                .help("Write output to <file> instead of stdout.")
+                .conflicts_with("tee")
         )
         .arg(
             Arg::new("filenames")
                 .help(
                     "Concatenate all records from <filenames> into \
                     one stream. With no <filenames>, or when a filename \
-                    is -, read from standard input (stdint).",
+                    is -, read from standard input (stdin).",
                 )
                 .multiple_values(true),
         )
@@ -57,6 +67,15 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         .gzip(gzip_compression)
         .from_path_or_stdout(args.value_of("output"))?;
 
+    let mut tee_writer = match args.value_of("tee") {
+        Some(path) => Some(
+            WriterBuilder::new()
+                .gzip(gzip_compression)
+                .from_path(path)?,
+        ),
+        None => None,
+    };
+
     let filenames = args
         .values_of_t::<OsString>("filenames")
         .unwrap_or_else(|_| vec![OsString::from("-")]);
@@ -69,10 +88,21 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         };
 
         for result in reader.byte_records() {
-            writer.write_byte_record(&result?)?;
+            let record = result?;
+
+            writer.write_byte_record(&record)?;
+
+            if let Some(ref mut writer) = tee_writer {
+                writer.write_byte_record(&record)?;
+            }
         }
     }
 
     writer.finish()?;
+
+    if let Some(ref mut writer) = tee_writer {
+        writer.finish()?;
+    }
+
     Ok(())
 }
