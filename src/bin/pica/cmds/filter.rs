@@ -1,6 +1,6 @@
 use crate::common::FilterList;
 use crate::config::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
@@ -15,8 +15,8 @@ pub(crate) struct FilterConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("filter")
+pub(crate) fn cli() -> Command {
+    Command::new("filter")
         .about("Filter records by whether the given query matches.")
         .arg(
             Arg::new("skip-invalid")

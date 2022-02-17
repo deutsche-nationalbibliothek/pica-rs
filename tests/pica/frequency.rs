@@ -1,8 +1,7 @@
+use std::fs::read_to_string;
+
 use assert_cmd::Command;
 use predicates::prelude::predicate;
-use std::fs::read_to_string;
-// use std::io::Read;
-// use std::path::Path;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -228,6 +227,48 @@ fn pica_frequency_output() -> TestResult {
     assert.success();
 
     assert_eq!(read_to_string(filename).unwrap(), "Tb1,4\nTp1,2\nTs1,1\n");
+
+    Ok(())
+}
+
+#[test]
+fn pica_frequency_translit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("frequency")
+        .arg("029A.a")
+        .arg("tests/data/004732650-reduced.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::eq(
+            "Goethe-Universita\u{308}t Frankfurt am Main,1\n",
+        ));
+
+    let expected = vec![
+        ("nfd", "Goethe-Universita\u{308}t Frankfurt am Main,1\n"),
+        ("nfkd", "Goethe-Universita\u{308}t Frankfurt am Main,1\n"),
+        ("nfc", "Goethe-Universität Frankfurt am Main,1\n"),
+        ("nfkc", "Goethe-Universität Frankfurt am Main,1\n"),
+    ];
+
+    for (translit, output) in expected {
+        let mut cmd = Command::cargo_bin("pica")?;
+        let assert = cmd
+            .arg("frequency")
+            .arg("--translit")
+            .arg(translit)
+            .arg("029A.a")
+            .arg("tests/data/004732650-reduced.dat.gz")
+            .assert();
+
+        assert
+            .success()
+            .stderr(predicate::str::is_empty())
+            .stdout(predicate::eq(output));
+    }
 
     Ok(())
 }

@@ -1,15 +1,17 @@
-use clap::Arg;
-use pica::{Outcome, ReaderBuilder, Selectors};
-use serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeSet;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 
+use clap::Arg;
+use pica::{Outcome, ReaderBuilder, Selectors};
+use serde::{Deserialize, Serialize};
+
 use crate::config::Config;
 use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::translit::translit_maybe;
+use crate::util::{CliArgs, CliError, CliResult, Command};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -17,8 +19,8 @@ pub(crate) struct SelectConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("select")
+pub(crate) fn cli() -> Command {
+    Command::new("select")
         .about("Select subfield values from records.")
         .arg(
             Arg::new("skip-invalid")
@@ -48,6 +50,13 @@ pub(crate) fn cli() -> App {
                 .short('t')
                 .long("tsv")
                 .help("use tabs as field delimiter"),
+        )
+        .arg(
+            Arg::new("translit")
+                .long("--translit")
+                .value_name("translit")
+                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
+                .help("Comma-separated list of column names."),
         )
         .arg(
             Arg::new("header")
@@ -129,7 +138,15 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             }
 
             if !row.iter().all(|col| col.is_empty()) {
-                writer.write_record(row)?;
+                if args.value_of("translit").is_some() {
+                    writer.write_record(
+                        row.iter().map(ToString::to_string).map(|s| {
+                            translit_maybe(&s, args.value_of("translit"))
+                        }),
+                    )?;
+                } else {
+                    writer.write_record(row)?;
+                };
             }
         }
     }

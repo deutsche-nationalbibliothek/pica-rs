@@ -1,13 +1,16 @@
-use crate::config::Config;
-use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliResult};
+use std::fs::File;
+use std::io::{self, Write};
+
 use clap::Arg;
 use pica::ReaderBuilder;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::{self, Write};
 use xml::writer::XmlEvent;
 use xml::EmitterConfig;
+
+use crate::config::Config;
+use crate::skip_invalid_flag;
+use crate::translit::translit_maybe;
+use crate::util::{CliArgs, CliResult, Command};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -16,14 +19,21 @@ pub(crate) struct XmlConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("xml")
+pub(crate) fn cli() -> Command {
+    Command::new("xml")
         .about("Serialize records to PICA XML")
         .arg(
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
                 .help("skip invalid records"),
+        )
+        .arg(
+            Arg::new("translit")
+                .long("--translit")
+                .value_name("translit")
+                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
+                .help("Comma-separated list of column names."),
         )
         .arg(
             Arg::new("output")
@@ -88,10 +98,11 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                         .attr("code", &subfield.code().to_string()),
                 )?;
 
-                xml_writer.write(XmlEvent::characters(
+                let value = translit_maybe(
                     &subfield.value().to_string(),
-                ))?;
-
+                    args.value_of("translit"),
+                );
+                xml_writer.write(XmlEvent::characters(&value))?;
                 xml_writer.write(XmlEvent::end_element())?;
             }
 

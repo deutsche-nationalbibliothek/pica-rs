@@ -1,10 +1,13 @@
-use crate::config::Config;
-use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliResult};
+use std::io::Write;
+
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
-use std::io::Write;
+
+use crate::config::Config;
+use crate::skip_invalid_flag;
+use crate::translit::translit_maybe;
+use crate::util::{CliArgs, CliResult, Command};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -12,14 +15,21 @@ pub(crate) struct JsonConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("json")
+pub(crate) fn cli() -> Command {
+    Command::new("json")
         .about("Serialize records to JSON.")
         .arg(
             Arg::new("skip-invalid")
                 .short('s')
                 .long("skip-invalid")
                 .help("skip invalid records"),
+        )
+        .arg(
+            Arg::new("translit")
+                .long("--translit")
+                .value_name("translit")
+                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
+                .help("Comma-separated list of column names."),
         )
         .arg(
             Arg::new("output")
@@ -46,10 +56,14 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     for (count, result) in reader.records().enumerate() {
         let record = result?;
 
-        let j = serde_json::to_string(&record).unwrap();
         if count > 0 {
             writer.write_all(b",")?;
         }
+
+        let j = translit_maybe(
+            &serde_json::to_string(&record).unwrap(),
+            args.value_of("translit"),
+        );
         writer.write_all(j.as_bytes())?;
     }
 

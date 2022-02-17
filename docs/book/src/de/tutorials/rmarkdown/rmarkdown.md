@@ -146,7 +146,7 @@ ggplot(gnd_term_freq, aes(x = index, y = freq)) +
 
 Um das hier vorgestellte Tutorial selbst auszuführen, stehen im
 offiziellen github-Repository des Toolkits pica-rs die  
-[.rmd-Quelldatei](https://github.com/deutsche-nationalbibliothek/pica-rs/blob/main/docs/book/src/de/rmarkdown/rmarkdown.rmd)
+[.rmd-Quelldatei](https://github.com/deutsche-nationalbibliothek/pica-rs/blob/main/docs/book/src/de/tutorials/rmarkdown/rmarkdown.rmd)
 sowie ein [Testdatensatz im PICA+
-Format](https://github.com/deutsche-nationalbibliothek/pica-rs/blob/main/docs/book/src/de/testdaten.dat)
+Format](https://github.com/deutsche-nationalbibliothek/pica-rs/blob/main/docs/book/src/de/tutorials/testdaten.dat)
 für dieses Tutorial zum Download zur Verfügung.

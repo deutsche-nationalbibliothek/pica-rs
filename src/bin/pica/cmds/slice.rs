@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
@@ -12,8 +12,8 @@ pub(crate) struct SliceConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("slice")
+pub(crate) fn cli() -> Command {
+    Command::new("slice")
         .about("Return records within a range (half-open interval).")
         .arg(
             Arg::new("skip-invalid")
