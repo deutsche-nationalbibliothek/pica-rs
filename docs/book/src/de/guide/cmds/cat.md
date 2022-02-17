@@ -10,10 +10,11 @@ und fügt diese zu einem Stream zusammen, der entweder in eine Datei oder in die
 
 ## Beschreibung
 
-Der wichtigste Anwendungsfall für das Programm `cat` ist in Kombination mit den Kommandos
-[_partition_] oder [_split_], da es die Funktion (teil-)rückgängig machen kann. Häufig macht es Sinn,
-eine große Datei in viele kleinere Datein anhand eines Kriteriums zu teilen. Sollen die Datensätze
-wieder zu einer Datei zusammengefügt werden, kann das `cat`-Kommando genutzt werden.
+Der wichtigste Anwendungsfall des Kommandos cat besteht in der Kombination mit den Kommandos
+[_partition_] oder [_split_], da mittels `cat` das Ergebnis von [_partition_] oder [_split_]
+(teil-)rückgängig gemacht werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere
+Datein anhand eines Kriteriums zu teilen. Sollen die Datensätze wieder zu einer Datei zusammengefügt
+werden, kann das `cat`-Kommando genutzt werden.
 
 <img src="cat1.png" class="center" />
 
@@ -26,7 +27,7 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
 ### Überspringen ungültiger Datensätze
 
 Der obige Befehl geht davon aus, dass die zwei Partition ausschließlich gültige Datensätze
-enthalten. Gültig in diesem Zusammenhang bedeutet, dass es sich um valide Datensätze im format
+enthalten. Gültig in diesem Zusammenhang bedeutet, dass es sich um valide Datensätze im Format
 PICA+ handelt und nicht ob ein Datensatz einem bestimmten Regelwerk entspricht.
 
 Das Ausschließen von ungültigen Datensätzen wird mit der Option `--skip-invalid` oder `-s` erreicht:
@@ -40,7 +41,7 @@ $ pica cat -s DUMP.dat.gz --output dump_valid.dat.gz
 
 Die beiden Befehlen veranschaulichen auch, dass das `cat`-Kommando sowohl unkompromierte als auch
 komprimierte Dateien verarbeiten kann. Endet eine Datei mit dem Suffix `.gz` wird die Datei automatisch
-dekompromiert (als Eingabedatei) bzw. komprimierte (als Ausgabedatei). Soll eine Komprimierung in der
+dekompromiert (als Eingabedatei) bzw. komprimiert (als Ausgabedatei). Soll eine Komprimierung in der
 Ausgabe unabhängig von der Dateiendung erfolgen, kann dies mit der Option `--gzip` erreicht werden:
 
 ```bash
@@ -50,8 +51,8 @@ $ pica cat ger.dat eng.dat -o eng_ger.dat.gz
 
 ### Lesen von der Standardeingabe
 
-Das Kommando kann auch direkt von der Standardeingabe (`stdin`) lesen. Das ist dann hilfreich, wenn
-diedie Ausgabe aus einem vorhergehenden Pipeline-Schritt mit dem Inhalt einer oder mehrerer Dateien
+Das Kommando kann auch direkt von der Standardeingabe (`stdin`) lesen. Das ist bspw. dann hilfreich,
+wenn die Ausgabe aus einem vorhergehenden Pipeline-Schritt mit dem Inhalt einer oder mehrerer Dateien
 konkateniert werden soll. Das folgende Beispiel liest im ersten Pipeline-Schritt die Datei `eng.dat`
 ein, entfernt ungültige Datensätze und gibt die Ausgabe nach `stdout` aus. Der zweite Pipeline-Schritt
 liest diese Datensätze ein (`-`) und konkateniert diese mit den Datensätzen aus der Datei `ger.dat`.
@@ -68,7 +69,7 @@ Datensätze aus dem ersten Pipeline-Schritt geschrieben.
 ### Abzweigen der Ausgabe
 
 Manchmal kann es nützlich sein, die Ausgabe des `cat`-Kommandos in eine Datei zu schreiben und
-gleichzeitig die Ausgabe an einen weiteren Pipeline-Schritt weiterzureichen. Diese hat den Vorteil,
+gleichzeitig die Ausgabe an einen weiteren Pipeline-Schritt weiterzureichen. Dies hat den Vorteil,
 dass zwei CPU-Kerne gleichzeitig genutzt werden können. Mit der `--tee`-Option lässt sich dieses
 Verhalten erzielen. Der Name der Option leitet sich von dem T-Stück (engl. tee connector) ab, mit
 dem ein Klemptner eine Abzeigung in eine Leitung einbaut. Das Verhalten der Option veranschaulicht
@@ -88,11 +89,10 @@ $ pica cat partitions/Tp*.dat --tee gnd_person.dat | \
 
 ### Hinzufügen von Datensätzen
 
-Wenn eine Ausgabedatei bereits existiert, wird diese standardmäßig neu angeleg und überschrieben.
-Soll das Verhalten so geändert werden, dass an die bestehenden Dateien angehangen wird, kann dies
-mit der `--append`-Option erreicht werden. Diese Option ändert das Verhalten von `--output` und
-`--tee`. Die Option hat auf das Verhalten beim Schreiben in die Standardausgabe keine Auswirkung.
-
+Wenn eine Ausgabedatei bereits existiert, wird diese standardmäßig neu angelegt und überschrieben.
+Soll das Verhalten dahingehend geändert werden, dass an die bestehenden Dateien angehangen wird,
+kann dies mit der `--append`-Option erreicht werden. Diese Option ändert das Verhalten von `--output`
+und `--tee`. Die Option hat auf das Verhalten beim Schreiben in die Standardausgabe keine Auswirkung.
 
 Im folgenden Beispiel erzeugt der erste Befehl eine neue Datei `gnd.dat`. Sollte die Datei bereits
 existieren, wird der Datei-Inhalt überschrieben. Die folgenden Kommandos hängen jeweils an das Ende
