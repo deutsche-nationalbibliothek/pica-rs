@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::ByteRecord;
 use std::ffi::OsStr;
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::{self, BufWriter, Write};
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
@@ -14,6 +14,7 @@ use flate2::Compression;
 pub struct WriterBuilder {
     buffer_size: usize,
     gzip: bool,
+    append: bool,
 }
 
 impl Default for WriterBuilder {
@@ -21,6 +22,7 @@ impl Default for WriterBuilder {
         WriterBuilder {
             buffer_size: 65_536,
             gzip: false,
+            append: false,
         }
     }
 }
@@ -92,11 +94,16 @@ impl WriterBuilder {
         path: P,
     ) -> Result<Box<dyn PicaWriter>> {
         let path = path.as_ref();
+        let file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(self.append)
+            .open(path)?;
 
         if self.gzip || path.extension() == Some(OsStr::new("gz")) {
-            Ok(Box::new(GzipWriter::new(File::create(path)?)))
+            Ok(Box::new(GzipWriter::new(file)))
         } else {
-            Ok(Box::new(PlainWriter::new(self, File::create(path)?)))
+            Ok(Box::new(PlainWriter::new(self, file)))
         }
     }
 
@@ -172,13 +179,7 @@ impl WriterBuilder {
         path: Option<P>,
     ) -> Result<Box<dyn PicaWriter>> {
         if let Some(path) = path {
-            let path = path.as_ref();
-
-            if self.gzip || path.extension() == Some(OsStr::new("gz")) {
-                Ok(Box::new(GzipWriter::new(File::create(path)?)))
-            } else {
-                Ok(Box::new(PlainWriter::new(self, File::create(path)?)))
-            }
+            self.from_path(path)
         } else {
             Ok(Box::new(PlainWriter::new(self, Box::new(io::stdout()))))
         }
@@ -187,6 +188,18 @@ impl WriterBuilder {
     #[must_use]
     pub fn gzip(mut self, yes: bool) -> Self {
         self.gzip = yes;
+        self
+    }
+
+    /// Whether to append to a given file or not.
+    ///
+    /// When this flag is set, the writer appends to the given file. If the file
+    /// does not exists, the file is created. This flag has no effect when
+    /// writing to `stdout`.
+    ///
+    /// This option is disabled by default.
+    pub fn append(mut self, yes: bool) -> Self {
+        self.append = yes;
         self
     }
 }
