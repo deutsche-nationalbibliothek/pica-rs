@@ -14,28 +14,38 @@ pub(crate) struct CatConfig {
 
 pub(crate) fn cli() -> App {
     App::new("cat")
-        .about("Concatenate records from multiple files.")
+        .about("Concatenate records from multiple <files>.")
         .arg(
             Arg::new("skip-invalid")
-                .short('s')
+                .help("Whether to skip invalid records that can't be decoded.")
                 .long("skip-invalid")
-                .help("skip invalid records"),
+                .short('s')
         )
         .arg(
             Arg::new("gzip")
-                .short('g')
+                .help("If the --gzip flag is provided the output will be compressed \
+                      and written in gzip file format.")
                 .long("gzip")
-                .help("compress output with gzip")
+                .short('g')
                 .requires("output"),
         )
         .arg(
             Arg::new("output")
-                .short('o')
+                .help("Write output to <filename> instead of stdout. If the file ends with \
+                      .gz the file content will be compressed and written in gzip file\
+                      format.")
+                .value_name("filename")
                 .long("--output")
-                .value_name("file")
-                .help("Write output to <file> instead of stdout."),
+                .short('o')
         )
-        .arg(Arg::new("filenames").multiple_values(true).required(true))
+        .arg(
+            Arg::new("filenames")
+                .help("Read one or more files in normalized PICA+ format. If the file \
+                ends with .gz the content is automatically decompressed.")
+                .value_name("files")
+                .multiple_values(true)
+                .required(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
