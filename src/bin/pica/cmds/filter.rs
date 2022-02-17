@@ -57,6 +57,12 @@ pub(crate) fn cli() -> Command {
                 .takes_value(true),
         )
         .arg(
+            Arg::new("and")
+                .long("and")
+                .takes_value(true)
+                .multiple_occurrences(true),
+        )
+        .arg(
             Arg::new("allow-list")
                 .long("--allow-list")
                 .takes_value(true)
@@ -135,12 +141,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         Ok(threshold) => threshold,
     };
 
-    let filter_str = if let Some(filename) = args.value_of("expr-file") {
-        read_to_string(filename).unwrap()
-    } else {
-        args.value_of("filter").unwrap().to_owned()
-    };
-
     let mut reducers = vec![];
     if let Some(reduce_expr) = args.value_of("reduce") {
         reducers = reduce_expr
@@ -149,6 +149,12 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| CliError::Other("invalid reduce value".to_string()))?;
     }
+
+    let filter_str = if let Some(filename) = args.value_of("expr-file") {
+        read_to_string(filename).unwrap()
+    } else {
+        args.value_of("filter").unwrap().to_owned()
+    };
 
     let mut filter = match RecordMatcher::new(&filter_str) {
         Ok(f) => f,
@@ -159,6 +165,19 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             )))
         }
     };
+
+    if args.is_present("and") {
+        let predicates = args
+            .values_of("and")
+            .unwrap()
+            .map(RecordMatcher::new)
+            .collect::<Result<Vec<_>, _>>()?;
+
+        for expr in predicates.into_iter() {
+            filter = RecordMatcher::Group(Box::new(filter))
+                & RecordMatcher::Group(Box::new(expr));
+        }
+    }
 
     if let Some(allow_lists) = args.values_of("allow-list") {
         let allow_list =
