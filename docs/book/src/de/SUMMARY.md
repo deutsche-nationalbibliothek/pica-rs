@@ -6,7 +6,7 @@
 
 - [Installation](guide/installation.md)
 - [Kommandos]()
-    - [cat]()
+    - [cat](guide/cmds/cat.md)
     - [completion]()
     - [count]()
     - [filter]()

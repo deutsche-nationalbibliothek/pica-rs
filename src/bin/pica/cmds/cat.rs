@@ -20,15 +20,16 @@ pub(crate) fn cli() -> Command {
         .about("Concatenate records from multiple files.")
         .arg(
             Arg::new("skip-invalid")
-                .short('s')
+                .help("Whether to skip invalid records that can't be decoded.")
                 .long("skip-invalid")
-                .help("skip invalid records"),
+                .short('s')
         )
         .arg(
             Arg::new("gzip")
-                .short('g')
+                .help("If the --gzip flag is provided the output will be compressed \
+                      and written in gzip file format.")
                 .long("gzip")
-                .help("compress output with gzip")
+                .short('g')
                 .requires("output"),
         )
         .arg(
@@ -41,26 +42,28 @@ pub(crate) fn cli() -> Command {
             .help(
                 "This option allows to write simultaneously to <file> and to \
                 standard output (stdout)."
-            ).conflicts_with("output")
+            )
             .long("--tee")
-            .value_name("file")
+            .value_name("filename")
         )
         .arg(
             Arg::new("output")
-                .short('o')
+                .help(
+                    "Write output to <filename> instead of stdout. If the file ends with \
+                    .gz the file content will be compressed and written in gzip file\
+                     format.")
+                .value_name("filename")
                 .long("--output")
-                .value_name("file")
-                .help("Write output to <file> instead of stdout.")
-                .conflicts_with("tee")
+                .short('o')
         )
         .arg(
             Arg::new("filenames")
                 .help(
-                    "Concatenate all records from <filenames> into \
-                    one stream. With no <filenames>, or when a filename \
-                    is -, read from standard input (stdin).",
-                )
-                .multiple_values(true),
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
         )
 }
 

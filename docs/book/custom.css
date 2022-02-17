@@ -1,3 +1,9 @@
+.center {
+    display: block;
+    margin: 20px auto;
+    width: 60%;
+}
+
 table {
     margin: 0 auto;
     border-collapse: collapse;
