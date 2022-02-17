@@ -13,9 +13,9 @@ pub(crate) mod slice;
 pub(crate) mod split;
 pub(crate) mod xml;
 
-use crate::util::App;
+use crate::util::Command;
 
-pub(crate) fn subcmds() -> Vec<App> {
+pub(crate) fn subcmds() -> Vec<Command> {
     vec![
         cat::cli(),
         completion::cli(),

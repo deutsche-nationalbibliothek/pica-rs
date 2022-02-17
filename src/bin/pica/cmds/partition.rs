@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{CliArgs, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag, template_opt};
 use bstr::ByteSlice;
 use clap::Arg;
@@ -19,8 +19,8 @@ pub(crate) struct PartitionConfig {
     pub(crate) template: Option<String>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("partition")
+pub(crate) fn cli() -> Command {
+    Command::new("partition")
         .about("Partition a list of records by subfield value.")
         .arg(
             Arg::new("skip-invalid")

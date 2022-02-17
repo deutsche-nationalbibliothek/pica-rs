@@ -1,11 +1,11 @@
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{CliArgs, CliError, CliResult, Command};
 use clap::Arg;
 use pica::{Error, ParsePicaError, ReaderBuilder};
 use std::fs::File;
 use std::io::{self, BufWriter, Write};
 
-pub(crate) fn cli() -> App {
-    App::new("invalid")
+pub(crate) fn cli() -> Command {
+    Command::new("invalid")
         .about("Filter out invalid records.")
         .arg(
             Arg::new("output")

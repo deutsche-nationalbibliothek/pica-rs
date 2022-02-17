@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::translit::translit_maybe;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{CliArgs, CliError, CliResult, Command};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -19,8 +19,8 @@ pub(crate) struct SelectConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("select")
+pub(crate) fn cli() -> Command {
+    Command::new("select")
         .about("Select subfield values from records.")
         .arg(
             Arg::new("skip-invalid")

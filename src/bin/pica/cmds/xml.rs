@@ -10,7 +10,7 @@ use xml::EmitterConfig;
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::translit::translit_maybe;
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{CliArgs, CliResult, Command};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -19,8 +19,8 @@ pub(crate) struct XmlConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("xml")
+pub(crate) fn cli() -> Command {
+    Command::new("xml")
         .about("Serialize records to PICA XML")
         .arg(
             Arg::new("skip-invalid")
