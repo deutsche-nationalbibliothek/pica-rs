@@ -1,7 +1,7 @@
 use std::convert::From;
 use std::{fmt, io};
 
-pub(crate) type App = clap::App<'static>;
+pub(crate) type Command = clap::Command<'static>;
 pub(crate) type CliArgs = clap::ArgMatches;
 pub(crate) type CliResult<T> = Result<T, CliError>;
 

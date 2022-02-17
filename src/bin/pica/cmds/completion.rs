@@ -1,11 +1,11 @@
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{CliArgs, CliResult, Command};
 use clap::Arg;
 use clap_complete::{generate, Shell};
 use std::fs::File;
 use std::io::{self, Write};
 
-pub(crate) fn cli() -> App {
-    App::new("completion")
+pub(crate) fn cli() -> Command {
+    Command::new("completion")
         .about("Generate a completions file for Bash, Fish or ZSH shell.")
         .arg(
             Arg::new("shell")
@@ -21,7 +21,7 @@ pub(crate) fn cli() -> App {
         )
 }
 
-pub(crate) fn run(args: &CliArgs, cli: &mut App) -> CliResult<()> {
+pub(crate) fn run(args: &CliArgs, cli: &mut Command) -> CliResult<()> {
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(filename) => Box::new(File::create(filename)?),
         None => Box::new(io::stdout()),

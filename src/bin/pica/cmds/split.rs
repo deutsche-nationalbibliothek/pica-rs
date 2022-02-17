@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag, template_opt};
 use clap::Arg;
 use pica::{ReaderBuilder, WriterBuilder};
@@ -15,8 +15,8 @@ pub(crate) struct SplitConfig {
     pub(crate) template: Option<String>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("split")
+pub(crate) fn cli() -> Command {
+    Command::new("split")
         .about("Splits a stream of records into chunks.")
         .arg(
             Arg::new("skip-invalid")
