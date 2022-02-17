@@ -3,7 +3,7 @@ use assert_cmd::Command;
 use predicates::prelude::*;
 
 mod cat;
-mod completion;
+mod completions;
 mod count;
 mod filter;
 mod frequency;

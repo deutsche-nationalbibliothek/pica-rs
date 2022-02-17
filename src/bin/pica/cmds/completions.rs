@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{self, Write};
 
 pub(crate) fn cli() -> Command {
-    Command::new("completion")
+    Command::new("completions")
         .about("Generate a completions file for Bash, Fish or ZSH shell.")
         .arg(
             Arg::new("shell")
