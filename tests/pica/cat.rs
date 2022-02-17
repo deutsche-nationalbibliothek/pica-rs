@@ -153,6 +153,95 @@ fn pica_cat_tee() -> TestResult {
 }
 
 #[test]
+fn pica_cat_append() -> TestResult {
+    // --output
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("tests/data/1004916019.dat")
+        .arg("--output")
+        .arg(filename_str)
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--append")
+        .arg("tests/data/000009229.dat")
+        .arg("--output")
+        .arg(filename_str)
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = format!(
+        "{}{}",
+        read_to_string("tests/data/1004916019.dat").unwrap(),
+        read_to_string("tests/data/000009229.dat").unwrap()
+    );
+
+    assert_eq!(expected, read_to_string(filename_str)?);
+
+    // --tee
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--tee")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("cat")
+        .arg("--append")
+        .arg("--tee")
+        .arg(filename_str)
+        .arg("tests/data/000009229.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/000009229.dat"));
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let expected = format!(
+        "{}{}",
+        read_to_string("tests/data/1004916019.dat").unwrap(),
+        read_to_string("tests/data/000009229.dat").unwrap()
+    );
+
+    assert_eq!(expected, read_to_string(filename_str)?);
+
+    Ok(())
+}
+
+#[test]
 fn pica_cat_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

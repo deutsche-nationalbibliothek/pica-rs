@@ -32,6 +32,11 @@ pub(crate) fn cli() -> Command {
                 .requires("output"),
         )
         .arg(
+            Arg::new("append")
+                .long("--append")
+                .help("Append to the given <file>, do not overwrite.")
+       )
+        .arg(
             Arg::new("tee")
             .help(
                 "This option allows to write simultaneously to <file> and to \
@@ -62,15 +67,18 @@ pub(crate) fn cli() -> Command {
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.cat, config.global);
     let gzip_compression = gzip_flag!(args, config.cat);
+    let append = args.is_present("append");
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
+        .append(append)
         .from_path_or_stdout(args.value_of("output"))?;
 
     let mut tee_writer = match args.value_of("tee") {
         Some(path) => Some(
             WriterBuilder::new()
                 .gzip(gzip_compression)
+                .append(append)
                 .from_path(path)?,
         ),
         None => None,
