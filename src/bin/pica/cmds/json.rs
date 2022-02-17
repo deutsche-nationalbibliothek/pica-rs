@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::translit::translit_maybe;
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{CliArgs, CliResult, Command};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -15,8 +15,8 @@ pub(crate) struct JsonConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("json")
+pub(crate) fn cli() -> Command {
+    Command::new("json")
         .about("Serialize records to JSON.")
         .arg(
             Arg::new("skip-invalid")

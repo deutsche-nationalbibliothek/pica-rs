@@ -4,3 +4,13 @@
     margin-right: auto;
     width: 75%;
 }
+
+table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table thead th {
+    text-align: left !important;
+}

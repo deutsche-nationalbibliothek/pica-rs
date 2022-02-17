@@ -1,9 +1,9 @@
-use clap::{crate_version, App, AppSettings, Arg};
+use clap::{crate_version, Arg, Command};
 
-pub(crate) fn build_cli() -> App<'static> {
-    App::new("pica")
+pub(crate) fn build_cli() -> Command<'static> {
+    Command::new("pica")
         .about("Tools to work with bibliographic records encoded in Pica+")
-        .setting(AppSettings::SubcommandRequired)
+        .subcommand_required(true)
         .version(crate_version!())
         .author(crate_authors!())
         .arg(

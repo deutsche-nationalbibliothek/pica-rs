@@ -3,7 +3,7 @@ use std::io::{self, Write};
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{CliArgs, CliResult, Command};
 use clap::Arg;
 use pica::ReaderBuilder;
 use serde::{Deserialize, Serialize};
@@ -14,8 +14,8 @@ pub(crate) struct CountConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("count")
+pub(crate) fn cli() -> Command {
+    Command::new("count")
         .about("Count records and fields.")
         .arg(
             Arg::new("skip-invalid")
