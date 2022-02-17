@@ -1,15 +1,15 @@
 # Installation
 
-Das Toolkit _pica-rs_ kann unter den Betriebssystemen Linux, macOS und Windows
-verwendet werden. Für diese Betriebssystemen stehen unterschiedliche Pakete zum
+Das Toolkit _pica-rs_ kann unter Linux, macOS und Windows verwendet werden. Für diese
+Betriebssysteme stehen unterschiedliche Pakete zum
 [Download auf GitHub](https://github.com/deutsche-nationalbibliothek/pica-rs/releases)
-zur Verfügung.
+bereit.
 
 ## Debian & Ubuntu
 
 Beginnend mit der Version `0.10.0` stehen für die Linux-Distributionen
 [Debian](https://www.debian.org/) sowie [Ubuntu](https://ubuntu.com/) fertige
-`DEB`-Pakete zum Download bereit. Diese können mit dem folgenden Kommando installiert
+`DEB`-Pakete zum Download bereit. Diese können mit folgendem Kommando installiert
 werden:
 
 ```bash
@@ -21,7 +21,7 @@ $ dpkg -i pica_0.10.0-1_amd64.deb
 Beginnend mit der Version `0.10.0` stehen für die Linux-Distributionen
 [RedHat](https://www.redhat.com/), [SUSE](https://www.suse.com/) und
 [CentOS](https://www.centos.org/) stehen fertige `RPM` zum Download bereit. Diese können
-mit dem folgenden Kommando installiert werden:
+mit folgendem Kommando installiert werden:
 
 ```bash
 $ rpm -i pica-0.10.0-1.x86_64.rpm
@@ -35,8 +35,8 @@ verwendet.
 
 Für die Betriebssysteme Linux, macOS und Windows stehen mit jeder neuen Version Binaries zum
 Download zur Verfügung. Die Archive (`*.tar.gz` oder `*.zip`) enthalten das `pica`-Programm,
-das für die jeweilige Architektur gebaut wurde und direkt genutzt werden kann (ohne, dass das
-Programm installiert werden muss).
+das für die jeweilige Architektur gebaut wurde und das ohne eine Installation direkt genutzt
+werden kann.
 
 Folgende Architekturen werden unterstützt:
 
@@ -47,9 +47,9 @@ Folgende Architekturen werden unterstützt:
 | x86_64-pc-windows-gnu    | 64-bit MinGW (Windows 7+)                  |
 | i686-pc-windows-msvc     | 32-bit MSVC (Windows 7+)                   |
 
-Für die Zielarchitektur `x86_64-unknown-linux-gnu` steht noch ein weiteres Binary bereit,
-das für Betriebssysteme, die die [GNU C Library (glib)](https://www.gnu.org/software/libc)
-in der Version 2.17 verwenden, bestimmt ist.
+Für die Zielarchitektur `x86_64-unknown-linux-gnu` steht noch ein weiteres Binary für
+Betriebssysteme, die die [GNU C Library (glib)](https://www.gnu.org/software/libc)
+in der Version 2.17 verwenden, bereit.
 
 ## Installation aus den Quellen
 
