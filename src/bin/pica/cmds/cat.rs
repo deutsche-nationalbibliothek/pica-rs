@@ -42,7 +42,7 @@ pub(crate) fn cli() -> Command {
             .help(
                 "This option allows to write simultaneously to <file> and to \
                 standard output (stdout)."
-            ).conflicts_with("output")
+            )
             .long("--tee")
             .value_name("filename")
         )
@@ -64,8 +64,6 @@ pub(crate) fn cli() -> Command {
                     <filenames>, or when filename is -, read from standard input (stdin).")
                 .value_name("filenames")
                 .multiple_values(true)
-                .required(true)
-                .conflicts_with("tee")
         )
 }
 
