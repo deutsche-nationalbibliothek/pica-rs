@@ -1,5 +1,5 @@
 pub(crate) mod cat;
-pub(crate) mod completion;
+pub(crate) mod completions;
 pub(crate) mod count;
 pub(crate) mod filter;
 pub(crate) mod frequency;
@@ -18,7 +18,7 @@ use crate::util::Command;
 pub(crate) fn subcmds() -> Vec<Command> {
     vec![
         cat::cli(),
-        completion::cli(),
+        completions::cli(),
         count::cli(),
         filter::cli(),
         frequency::cli(),
