@@ -693,7 +693,7 @@ fn pica_filter_groups() -> TestResult {
     assert.success().stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
-    let filter = r#"003@.0 == '121169502' && 
+    let filter = r#"003@.0 == '121169502' &&
          007N{a? && (0 == '121169502' || 0 == '183361946')}"#;
     let assert = cmd
         .arg("filter")
@@ -892,6 +892,36 @@ fn pica_filter_occurrence_matcher() -> TestResult {
         .stderr(predicate::eq(
             "error: invalid filter: \"047A/03-01.e == \'DE-386\'\"\n",
         ));
+
+    Ok(())
+}
+
+#[test]
+fn pica_filter_and_option() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0 == '121169502'")
+        .arg("--and")
+        .arg("002@.0 == 'Tp1'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0 == '12116950X'")
+        .arg("--and")
+        .arg("002@.0 == 'Tp1'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
 
     Ok(())
 }
