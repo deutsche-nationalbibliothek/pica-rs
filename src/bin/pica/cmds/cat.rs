@@ -1,8 +1,11 @@
+use std::ffi::OsString;
+use std::io::{self, Read};
+
 use crate::config::Config;
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{CliArgs, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
-use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
+use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -12,8 +15,8 @@ pub(crate) struct CatConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("cat")
+pub(crate) fn cli() -> Command {
+    Command::new("cat")
         .about("Concatenate records from multiple files.")
         .arg(
             Arg::new("skip-invalid")
@@ -35,7 +38,15 @@ pub(crate) fn cli() -> App {
                 .value_name("file")
                 .help("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filenames").multiple_values(true).required(true))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Concatenate all records from <filenames> into \
+                    one stream. With no <filenames>, or when a filename \
+                    is -, read from standard input (stdint).",
+                )
+                .multiple_values(true),
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
@@ -46,10 +57,16 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         .gzip(gzip_compression)
         .from_path_or_stdout(args.value_of("output"))?;
 
-    for filename in args.values_of("filenames").unwrap() {
-        let mut reader = ReaderBuilder::new()
-            .skip_invalid(skip_invalid)
-            .from_path(filename)?;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
+
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
 
         for result in reader.byte_records() {
             writer.write_byte_record(&result?)?;

@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{ByteRecord, PicaWriter, ReaderBuilder, WriterBuilder};
@@ -13,8 +13,8 @@ pub(crate) struct SampleConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("sample")
+pub(crate) fn cli() -> Command {
+    Command::new("sample")
         .about("Selects a random permutation of records")
         .arg(
             Arg::new("skip-invalid")
