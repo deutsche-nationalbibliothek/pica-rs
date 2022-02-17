@@ -9,7 +9,7 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::translit::translit_maybe;
-use crate::util::{App, CliArgs, CliError, CliResult};
+use crate::util::{CliArgs, CliError, CliResult, Command};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -68,8 +68,8 @@ impl TryFrom<&PrintColorSpec> for ColorSpec {
     }
 }
 
-pub(crate) fn cli() -> App {
-    App::new("print")
+pub(crate) fn cli() -> Command {
+    Command::new("print")
         .about("Print records in human readable format.")
         .arg(
             Arg::new("skip-invalid")

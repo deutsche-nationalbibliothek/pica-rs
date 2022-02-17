@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::util::{App, CliArgs, CliResult};
+use crate::util::{CliArgs, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
@@ -12,8 +12,8 @@ pub(crate) struct CatConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> App {
-    App::new("cat")
+pub(crate) fn cli() -> Command {
+    Command::new("cat")
         .about("Concatenate records from multiple files.")
         .arg(
             Arg::new("skip-invalid")
