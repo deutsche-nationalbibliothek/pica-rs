@@ -59,7 +59,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let filenames = args
         .values_of_t::<OsString>("filenames")
-        .unwrap_or(vec![OsString::from("-")]);
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
