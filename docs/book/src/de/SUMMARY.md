@@ -7,7 +7,7 @@
 - [Installation](guide/installation.md)
 - [Kommandos]()
     - [cat](guide/cmds/cat.md)
-    - [completions]()
+    - [completions](guide/cmds/completions.md)
     - [count]()
     - [filter]()
     - [frequency]()
