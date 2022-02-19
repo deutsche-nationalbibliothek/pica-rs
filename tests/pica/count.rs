@@ -6,7 +6,7 @@ use tempfile::Builder;
 use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
-fn pica_count() -> TestResult {
+fn pica_count_single_file() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("count")
@@ -26,6 +26,66 @@ fn pica_count() -> TestResult {
         .stderr(predicate::str::is_empty())
         .stdout(expected);
 
+    Ok(())
+}
+
+#[test]
+fn pica_count_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--skip-invalid")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/000009229.dat")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("records 2\nfields 55\nsubfields 114\n");
+
+    Ok(())
+}
+
+#[test]
+fn pica_count_stdin() -> TestResult {
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.write_stdin(data).arg("count").assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("records 1\nfields 22\nsubfields 43\n");
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.write_stdin(data).arg("count").arg("-").assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("records 1\nfields 22\nsubfields 43\n");
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .write_stdin(data)
+        .arg("count")
+        .arg("tests/data/000009229.dat")
+        .arg("-")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("records 2\nfields 55\nsubfields 114\n");
+
+    Ok(())
+}
+
+#[test]
+fn pica_count_tsv() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("count")
@@ -40,11 +100,17 @@ fn pica_count() -> TestResult {
     } else {
         expected
     };
+
     assert
         .success()
         .stderr(predicate::str::is_empty())
         .stdout(expected);
 
+    Ok(())
+}
+
+#[test]
+fn pica_count_csv() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("count")

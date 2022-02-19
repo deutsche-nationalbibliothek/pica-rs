@@ -1,12 +1,14 @@
+use std::ffi::OsString;
 use std::fs::File;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
+
+use clap::Arg;
+use pica::{Reader, ReaderBuilder};
+use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::util::{CliArgs, CliResult, Command};
-use clap::Arg;
-use pica::ReaderBuilder;
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -16,7 +18,7 @@ pub(crate) struct CountConfig {
 
 pub(crate) fn cli() -> Command {
     Command::new("count")
-        .about("Count records and fields.")
+        .about("Count records, fields and subfields..")
         .arg(
             Arg::new("skip-invalid")
                 .short('s')
@@ -42,15 +44,19 @@ pub(crate) fn cli() -> Command {
                 .value_name("file")
                 .help("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.count, config.global);
-
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(filename) => Box::new(File::create(filename)?),
@@ -69,12 +75,24 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let mut fields = 0;
     let mut subfields = 0;
 
-    for result in reader.byte_records() {
-        let record = result?;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
-        records += 1;
-        fields += record.len();
-        subfields += record.iter().map(|field| field.len()).sum::<usize>();
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
+
+        for result in reader.byte_records() {
+            let record = result?;
+
+            records += 1;
+            fields += record.len();
+            subfields += record.iter().map(|field| field.len()).sum::<usize>();
+        }
     }
 
     writeln!(writer, "records{}{}", delimiter, records)?;
