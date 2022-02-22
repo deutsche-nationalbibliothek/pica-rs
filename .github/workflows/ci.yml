@@ -331,9 +331,11 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - uses: peaceiris/actions-mdbook@v1
+      - uses: actions-rs/install@v0.1
         with:
-          mdbook-version: 'latest'
+          use-tool-cache: true
+          crate: mdbook
+          version: latest
       - run: |
           mdbook build docs/book
           mdbook test docs/book
@@ -358,9 +360,11 @@ jobs:
         with:
             toolchain: stable
             override: true
-      - uses: peaceiris/actions-mdbook@v1
+      - uses: actions-rs/install@v0.1
         with:
-          mdbook-version: 'latest'
+          use-tool-cache: true
+          crate: mdbook
+          version: latest
       - run: |
           mkdir -p target/docs
           cargo doc --all --no-deps --target-dir target/docs/api
