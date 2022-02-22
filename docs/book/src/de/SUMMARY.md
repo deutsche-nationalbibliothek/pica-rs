@@ -8,7 +8,7 @@
 - [Kommandos]()
     - [cat](guide/cmds/cat.md)
     - [completions](guide/cmds/completions.md)
-    - [count]()
+    - [count](guide/cmds/count.md)
     - [filter]()
     - [frequency]()
     - [invalid]()
