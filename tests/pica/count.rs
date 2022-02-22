@@ -248,6 +248,53 @@ fn pica_print_no_header() -> TestResult {
 }
 
 #[test]
+fn pica_print_single_value() -> TestResult {
+    // --records
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--skip-invalid")
+        .arg("--records")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("7\n");
+
+    // --fields
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--skip-invalid")
+        .arg("--fields")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("247\n");
+
+    // --subfields
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--skip-invalid")
+        .arg("--subfields")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("549\n");
+
+    Ok(())
+}
+
+#[test]
 fn pica_count_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
