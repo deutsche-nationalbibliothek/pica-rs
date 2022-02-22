@@ -167,6 +167,39 @@ fn pica_print_write_output() -> TestResult {
 }
 
 #[test]
+fn pica_print_no_header() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--skip-invalid")
+        .arg("--csv")
+        .arg("--no-header")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("7,247,549\n");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--skip-invalid")
+        .arg("--tsv")
+        .arg("--no-header")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout("7\t247\t549\n");
+
+    Ok(())
+}
+
+#[test]
 fn pica_count_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
