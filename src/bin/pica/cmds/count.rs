@@ -38,6 +38,11 @@ pub(crate) fn cli() -> Command {
                 .conflicts_with("tsv"),
         )
         .arg(
+            Arg::new("no-header")
+                .long("--no-header")
+                .help("Do not write header row.")
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -61,14 +66,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(filename) => Box::new(File::create(filename)?),
         None => Box::new(io::stdout()),
-    };
-
-    let delimiter = if args.is_present("tsv") {
-        "\t"
-    } else if args.is_present("csv") {
-        ","
-    } else {
-        " "
     };
 
     let mut records = 0;
@@ -95,9 +92,21 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     }
 
-    writeln!(writer, "records{}{}", delimiter, records)?;
-    writeln!(writer, "fields{}{}", delimiter, fields)?;
-    writeln!(writer, "subfields{}{}", delimiter, subfields)?;
+    if args.is_present("csv") {
+        if !args.is_present("no-header") {
+            writeln!(writer, "records,fields,subfields")?;
+        }
+        writeln!(writer, "{},{},{}", records, fields, subfields)?;
+    } else if args.is_present("tsv") {
+        if !args.is_present("no-header") {
+            writeln!(writer, "records\tfields\tsubfields")?;
+        }
+        writeln!(writer, "{}\t{}\t{}", records, fields, subfields)?;
+    } else {
+        writeln!(writer, "records: {}", records)?;
+        writeln!(writer, "fields: {}", fields)?;
+        writeln!(writer, "subfields: {}", subfields)?;
+    }
 
     writer.flush()?;
     Ok(())
