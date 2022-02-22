@@ -42,7 +42,7 @@ fn pica_count_multiple_files() -> TestResult {
     assert
         .success()
         .stderr(predicate::str::is_empty())
-        .stdout("records 2\nfields 55\nsubfields 114\n");
+        .stdout("records: 2\nfields: 55\nsubfields: 114\n");
 
     Ok(())
 }
@@ -56,7 +56,7 @@ fn pica_count_stdin() -> TestResult {
     assert
         .success()
         .stderr(predicate::str::is_empty())
-        .stdout("records 1\nfields 22\nsubfields 43\n");
+        .stdout("records: 1\nfields: 22\nsubfields: 43\n");
 
     let data = read_to_string("tests/data/1004916019.dat").unwrap();
     let mut cmd = Command::cargo_bin("pica")?;
@@ -65,7 +65,7 @@ fn pica_count_stdin() -> TestResult {
     assert
         .success()
         .stderr(predicate::str::is_empty())
-        .stdout("records 1\nfields 22\nsubfields 43\n");
+        .stdout("records: 1\nfields: 22\nsubfields: 43\n");
 
     let data = read_to_string("tests/data/1004916019.dat").unwrap();
     let mut cmd = Command::cargo_bin("pica")?;
@@ -79,7 +79,7 @@ fn pica_count_stdin() -> TestResult {
     assert
         .success()
         .stderr(predicate::str::is_empty())
-        .stdout("records 2\nfields 55\nsubfields 114\n");
+        .stdout("records: 2\nfields: 55\nsubfields: 114\n");
 
     Ok(())
 }
