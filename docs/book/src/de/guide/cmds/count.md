@@ -44,9 +44,8 @@ records,fields,subfields
 ### Ausgabe in eine Datei
 
 Die Ausgabe des Kommandos wird standardmäßig auf der Konsole ausgegeben. Diese kann mit der Option
-`--output` (bzw. `-o`) in eine Datei umgeleitet werden. Soll diese Datei nicht bei jedem Aufruf
-überschrieben werden, sondern bei jedem Aufruf eine neue Zeile erhalten, kann dies mit dem Flag
-`--append` erzielt werden.
+`--output` (bzw. `-o`) in eine Datei umgeleitet werden. Soll diese Datei eine neue Zeile erhalten
+und nicht bei jedem Aufruf überschrieben werden, kann dies mit dem Flag `--append` erzielt werden.
 
 ```bash
 $ pica count -s --csv -o count.csv tests/data/dump.dat.gz
@@ -86,8 +85,8 @@ werden, könnte dies wie folgt erreicht werden:
 
 ```bash
 $ echo "date,records,fields,subfields" > count.csv # Kopfzeile
-$ pica count -s dump.dat.gz --append -o count.csv # Initialer Aufruf
-$ pica count -s dump.dat.gz --append -o count.csv # Aufruf nach x Tagen
+$ pica count -s dump_20220222.dat.gz --append -o count.csv # Initialer Aufruf
+$ pica count -s dump_20220223.dat.gz --append -o count.csv # Aufruf nach x Tagen
 
 $ cat count.csv
 $ records,fields,subfields
@@ -103,11 +102,11 @@ aussehen:
 $ echo "date,records,fields,subfields" > count.csv
 
 # Aufruf am 22.02.2022
-$ pica count -s --no-header --csv dump.dat.gz | \
+$ pica count -s --no-header --csv dump_20220222.dat.gz | \
     xargs -d"\n" -I {} date +"%Y-%m-%d,{}" >> count.csv
 
 # Aufruf am 23.02.2022
-$ pica count -s --no-header --csv dump.dat.gz | \
+$ pica count -s --no-header --csv dump_20220223.dat.gz | \
     xargs -d"\n" -I {} date +"%Y-%m-%d,{}" >> count.csv
 
 $ cat count.csv
