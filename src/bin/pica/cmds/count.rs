@@ -1,5 +1,5 @@
 use std::ffi::OsString;
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 
 use clap::Arg;
@@ -38,6 +38,11 @@ pub(crate) fn cli() -> Command {
                 .conflicts_with("tsv"),
         )
         .arg(
+            Arg::new("append")
+                .long("--append")
+                .help("Append to the given <file>, do not overwrite.")
+       )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -59,7 +64,13 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.count, config.global);
 
     let mut writer: Box<dyn Write> = match args.value_of("output") {
-        Some(filename) => Box::new(File::create(filename)?),
+        Some(path) => Box::new(
+            OpenOptions::new()
+                .write(true)
+                .create(true)
+                .append(args.is_present("append"))
+                .open(path)?,
+        ),
         None => Box::new(io::stdout()),
     };
 
