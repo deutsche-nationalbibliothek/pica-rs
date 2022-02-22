@@ -26,6 +26,24 @@ pub(crate) fn cli() -> Command {
                 .help("skip invalid records"),
         )
         .arg(
+            Arg::new("records")
+                .long("--records")
+                .help("Prints only the number of records.")
+                .conflicts_with_all(&["tsv", "csv", "no-header", "fields", "subfields"])
+        )
+        .arg(
+            Arg::new("fields")
+                .long("--fields")
+                .help("Prints only the number of fields.")
+                .conflicts_with_all(&["tsv", "csv", "no-header", "records", "subfields"])
+        )
+        .arg(
+            Arg::new("subfields")
+                .long("--subfields")
+                .help("Prints only the number of subfields.")
+                .conflicts_with_all(&["tsv", "csv", "no-header", "records", "fields"])
+        )
+        .arg(
             Arg::new("tsv")
                 .long("tsv")
                 .help("use tabs as delimiter")
@@ -103,7 +121,13 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     }
 
-    if args.is_present("csv") {
+    if args.is_present("records") {
+        writeln!(writer, "{}", records)?;
+    } else if args.is_present("fields") {
+        writeln!(writer, "{}", fields)?;
+    } else if args.is_present("subfields") {
+        writeln!(writer, "{}", subfields)?;
+    } else if args.is_present("csv") {
         if !args.is_present("no-header") {
             writeln!(writer, "records,fields,subfields")?;
         }
