@@ -167,6 +167,54 @@ fn pica_print_write_output() -> TestResult {
 }
 
 #[test]
+fn pica_print_append_output() -> TestResult {
+    let filename = Builder::new().suffix(".csv").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--csv")
+        .arg("--append")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/004732650.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("count")
+        .arg("--no-header")
+        .arg("--csv")
+        .arg("--append")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat.gz")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::is_empty());
+
+    let expected = read_to_string(filename_str).unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert_eq!(expected, "records,fields,subfields\n1,45,138\n1,22,43\n");
+
+    Ok(())
+}
+
+#[test]
 fn pica_print_no_header() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
