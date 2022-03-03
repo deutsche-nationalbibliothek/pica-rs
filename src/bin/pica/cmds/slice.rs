@@ -1,9 +1,13 @@
+use std::ffi::OsString;
+use std::io::{self, Read};
+
+use clap::Arg;
+use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
+
 use crate::config::Config;
 use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
-use clap::Arg;
-use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -53,16 +57,20 @@ pub(crate) fn cli() -> Command {
                 .value_name("file")
                 .help("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.slice, config.global);
     let gzip_compression = gzip_flag!(args, config.slice);
-
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(false)
-        .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
@@ -103,23 +111,40 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         start..::std::usize::MAX
     };
 
-    for (i, result) in reader.byte_records().enumerate() {
-        match result {
-            Ok(record) => {
-                if range.contains(&i) {
-                    writer.write_byte_record(&record)?;
-                } else if i < range.start {
-                    continue;
-                } else {
-                    break;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
+
+    let mut i = 0;
+
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(false);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
+
+        for result in reader.byte_records() {
+            match result {
+                Ok(record) => {
+                    if range.contains(&i) {
+                        writer.write_byte_record(&record)?;
+                    } else if i < range.start {
+                        i += 1;
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+                Err(e) if !skip_invalid => return Err(CliError::from(e)),
+                _ => {
+                    if length.is_some() && range.end < std::usize::MAX {
+                        range.end += 1;
+                    }
                 }
             }
-            Err(e) if !skip_invalid => return Err(CliError::from(e)),
-            _ => {
-                if length.is_some() && range.end < std::usize::MAX {
-                    range.end += 1;
-                }
-            }
+
+            i += 1;
         }
     }
 

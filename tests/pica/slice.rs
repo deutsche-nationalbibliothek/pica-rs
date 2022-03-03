@@ -34,6 +34,89 @@ fn pica_slice_default() -> TestResult {
 }
 
 #[test]
+fn pica_slice_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("slice")
+        .arg("--skip-invalid")
+        .arg("--end")
+        .arg("2")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat")?);
+    expected.push_str(&read_to_string("tests/data/121169502.dat")?);
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("slice")
+        .arg("--skip-invalid")
+        .arg("--end")
+        .arg("2")
+        .arg("-")
+        .arg("tests/data/121169502.dat")
+        .write_stdin(data)
+        .assert();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.dat")?);
+    expected.push_str(&read_to_string("tests/data/121169502.dat")?);
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_slice_stdin() -> TestResult {
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("slice")
+        .arg("--skip-invalid")
+        .arg("--end")
+        .arg("1")
+        .write_stdin(data)
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.dat").unwrap();
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("slice")
+        .arg("--skip-invalid")
+        .arg("--end")
+        .arg("1")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+
+    let expected = read_to_string("tests/data/1004916019.dat").unwrap();
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_slice_write_output() -> TestResult {
     let filename = Builder::new().suffix(".dat").tempfile()?;
     let filename_str = filename.path();
