@@ -9,7 +9,7 @@ use tempfile::Builder;
 use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
-fn pica_cat_sample() -> TestResult {
+fn pica_sample_single_file() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("sample")
@@ -30,6 +30,77 @@ fn pica_cat_sample() -> TestResult {
             .or(predicate::path::eq_file(data_dir.join("000009229.dat")))
             .or(predicate::path::eq_file(data_dir.join("121169502.dat"))),
     );
+
+    Ok(())
+}
+
+#[test]
+fn pica_sample_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("1")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/119232022.dat")
+        .assert();
+
+    let data_dir = Path::new("tests/data");
+
+    assert.success().stdout(
+        predicate::never()
+            .or(predicate::path::eq_file(data_dir.join("1004916019.dat")))
+            .or(predicate::path::eq_file(data_dir.join("119232022.dat"))),
+    );
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("1")
+        .arg("-")
+        .arg("tests/data/119232022.dat")
+        .write_stdin(data)
+        .assert();
+
+    let data_dir = Path::new("tests/data");
+
+    assert.success().stdout(
+        predicate::never()
+            .or(predicate::path::eq_file(data_dir.join("1004916019.dat")))
+            .or(predicate::path::eq_file(data_dir.join("119232022.dat"))),
+    );
+
+    Ok(())
+}
+
+#[test]
+fn pica_sample_stdin() -> TestResult {
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("sample").arg("1").write_stdin(data).assert();
+
+    let data_dir = Path::new("tests/data");
+
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(data_dir.join("1004916019.dat")))
+        .stderr(predicate::str::is_empty());
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("sample")
+        .arg("1")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+
+    let data_dir = Path::new("tests/data");
+
+    assert
+        .success()
+        .stdout(predicate::path::eq_file(data_dir.join("1004916019.dat")))
+        .stderr(predicate::str::is_empty());
 
     Ok(())
 }
