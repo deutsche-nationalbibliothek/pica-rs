@@ -1,12 +1,16 @@
+use std::ffi::OsString;
+use std::fs::read_to_string;
+use std::io::{self, Read};
+
+use clap::Arg;
+use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
+use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
+
 use crate::common::FilterList;
 use crate::config::Config;
 use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
-use clap::Arg;
-use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
-use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
-use serde::{Deserialize, Serialize};
-use std::fs::read_to_string;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -99,7 +103,15 @@ pub(crate) fn cli() -> Command {
                 .help("A filter expression used for searching.")
                 .required(true),
         )
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
@@ -115,10 +127,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             ));
         }
     };
-
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
@@ -201,25 +209,37 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         strsim_threshold,
     };
 
-    for result in reader.byte_records() {
-        let mut record = result?;
-        let mut is_match = filter.is_match(&record, &flags);
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
-        if args.is_present("invert-match") {
-            is_match = !is_match;
-        }
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
 
-        if is_match {
-            if !reducers.is_empty() {
-                record.reduce(&reducers);
+        for result in reader.byte_records() {
+            let mut record = result?;
+            let mut is_match = filter.is_match(&record, &flags);
+
+            if args.is_present("invert-match") {
+                is_match = !is_match;
             }
 
-            writer.write_byte_record(&record)?;
-            count += 1;
-        }
+            if is_match {
+                if !reducers.is_empty() {
+                    record.reduce(&reducers);
+                }
 
-        if limit > 0 && count >= limit {
-            break;
+                writer.write_byte_record(&record)?;
+                count += 1;
+            }
+
+            if limit > 0 && count >= limit {
+                break;
+            }
         }
     }
 
