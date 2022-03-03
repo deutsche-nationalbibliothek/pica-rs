@@ -1,0 +1,46 @@
+001@ $0-
+001A $09002:18-04-89
+001B $00281:23-07-21$t14:15:09.000
+001D $09999:23-04-10
+001U $0utf8
+001X $00
+002@ $0Tb1
+003@ $0004732650
+003U $ahttp://d-nb.info/gnd/2014261-4$zhttp://d-nb.info/gnd/4027194-8$zhttp://d-nb.info/gnd/1086389794
+004B $akiz
+007K $agnd$02014261-4
+007N $agnd$01086389794
+007N $agnd$04027194-8
+007N $aswd$04027194-8$vzg
+007N $agkd$02014261-4$vzg
+008A $af$as$ah
+008B $av$az$aw
+010E $bger$erda
+022R $91053648979$7Tu3$Vwip$Agnd$01053648979$tStempel$gGoethe-Universität Frankfurt am Main. Institut für Sozialforschung$n01$4rela
+022R $91053649002$7Tu3$Vwip$Agnd$01053649002$tStempel$gGoethe-Universität Frankfurt am Main. Institut für Sozialforschung. Bücherei$n01$4rela
+029@ $aInstitut für Sozialforschung$gFrankfurt am Main
+029@ $aGoethe-Universität Frankfurt am Main$bInstitut für Soziale Forschung
+029@ $aGoethe-Universität Frankfurt am Main$bIstituto per la Ricerca Sociale di Francoforte
+029@ $aInstitut f. Sozialforschg. an d. Universität Ffm$4nauv
+029@ $aInstitut für Sozialforschung an der Johann Wolfgang Goethe-Universität$4nauv
+029@ $aIfS$4abku
+029@ $aUniversität Frankfurt am Main$bInstitut für Sozialforschung
+029A $aGoethe-Universität Frankfurt am Main$bInstitut für Sozialforschung
+029R $9004735110$7Tb1$Vkiz$Agnd$02014567-6$aInternational Institute of Social Research$gNew York, NY$4nazw
+029R $9004734041$7Tb1$Agnd$02014423-4$aInstitute of Social Research$gNew York, NY$4nazw
+029R $9000350745$7Tb1$Vkiz$Agnd$035074-6$aGoethe-Universität Frankfurt am Main$4adue
+041R $9040559165$7Ts1$Vsaz$Agnd$04055916-6$aSozialwissenschaften$4them
+041R $9041602145$7Ts1$Vsaz$Agnd$04160214-6$aHochschulinstitut$4obin
+042A $a6.6$a9.2a
+042B $aXA-DE-HE
+047A/03 $eDE-1
+047A/03 $rDE-1
+047C $Sgkd$ia$aInstitut für Sozialforschung <Frankfurt, Main>$02014261-4
+047C $Sswd$ic$aFrankfurt am Main / Institut für Sozialforschung$04027194-8
+050E $aHomepage$bStand: 20.07.2021$uhttp://www.ifs.uni-frankfurt.de
+050G $bGegründet 1923; 1933-1951 im Exil in New York, ab 1951 Fortführung in Frankfurt am Main; Verantwortlicher Träger des IfS ist – 1951 vom Hessischen Ministerium des Innern genehmigt und als gemeinnützig anerkannt – die Stiftung Institut für Sozialforschung.
+060R $a1923$4datb
+065R $9040247295$7Tg1$Vgik$Agnd$04024729-6$aHessen$4geow
+065R $9040181189$7Tg1$Vgik$Agnd$04018118-2$aFrankfurt am Main$4orta
+070A/03 $SDE-101$0004732650
+
