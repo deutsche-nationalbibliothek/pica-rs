@@ -23,6 +23,68 @@ fn pica_frequency_default() -> TestResult {
 }
 
 #[test]
+fn pica_frequency_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("frequency")
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected = predicate::eq("Tb1,8\nTp1,4\nTs1,2\n");
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_frequency_stdin() -> TestResult {
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .write_stdin(data)
+        .arg("frequency")
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .assert();
+
+    let expected = predicate::eq("Ts1,1\n");
+    assert.success().stdout(expected);
+
+    let data = read_to_string("tests/data/000008672.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .write_stdin(data)
+        .arg("frequency")
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .arg("tests/data/dump.dat.gz")
+        .arg("-")
+        .assert();
+
+    let expected = predicate::eq("Tb1,5\nTp1,2\nTs1,1\n");
+    assert.success().stdout(expected);
+
+    let data = read_to_string("tests/data/000008672.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .write_stdin(data)
+        .arg("frequency")
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .arg("-")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected = predicate::eq("Tb1,5\nTp1,2\nTs1,1\n");
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_frequency_reverse() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

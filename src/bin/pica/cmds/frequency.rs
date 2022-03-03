@@ -1,11 +1,12 @@
 use std::collections::HashMap;
+use std::ffi::OsString;
 use std::fs::File;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 use std::str::FromStr;
 
 use bstr::BString;
 use clap::Arg;
-use pica::{Path, ReaderBuilder};
+use pica::{Path, Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -70,14 +71,15 @@ pub(crate) fn cli() -> Command {
                 .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("path").required(true))
-        .arg(Arg::new("filename"))
-}
-
-fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
-    Ok(match filename {
-        Some(filename) => Box::new(File::create(filename)?),
-        None => Box::new(io::stdout()),
-    })
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
@@ -104,21 +106,33 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             }
         };
 
-    let mut writer =
-        csv::WriterBuilder::new().from_writer(writer(args.value_of("output"))?);
-
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
-
     let mut ftable: HashMap<BString, u64> = HashMap::new();
     let path = Path::from_str(args.value_of("path").unwrap())?;
 
-    for result in reader.records() {
-        let record = result?;
+    let writer: Box<dyn Write> = match args.value_of("output") {
+        Some(filename) => Box::new(File::create(filename)?),
+        None => Box::new(io::stdout()),
+    };
 
-        for value in record.path(&path) {
-            *ftable.entry(value.to_owned()).or_insert(0) += 1;
+    let mut writer = csv::WriterBuilder::new().from_writer(writer);
+
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
+
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
+
+        for result in reader.records() {
+            let record = result?;
+
+            for value in record.path(&path) {
+                *ftable.entry(value.to_owned()).or_insert(0) += 1;
+            }
         }
     }
 
