@@ -1,6 +1,7 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs::read_to_string;
+use std::path::Path;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -27,6 +28,63 @@ fn pica_json_multiple_records() -> TestResult {
 
     let expected = read_to_string("tests/data/dump.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("json")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/000008672.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/tworecs.json"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("json")
+        .arg("-")
+        .arg("tests/data/000008672.dat")
+        .write_stdin(data)
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/tworecs.json"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_json_stdin() -> TestResult {
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("json").arg("-").write_stdin(data).assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.json"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("json").write_stdin(data).assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.json"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
 
     Ok(())
 }
