@@ -1,10 +1,14 @@
+use std::ffi::OsString;
+use std::io::{self, Read};
+
+use clap::Arg;
+use pica::{ByteRecord, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use rand::{thread_rng, Rng};
+use serde::{Deserialize, Serialize};
+
 use crate::config::Config;
 use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
-use clap::Arg;
-use pica::{ByteRecord, PicaWriter, ReaderBuilder, WriterBuilder};
-use rand::{thread_rng, Rng};
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -36,16 +40,20 @@ pub(crate) fn cli() -> Command {
                 .help("Write output to <file> instead of stdout."),
         )
         .arg(Arg::new("sample-size").required(true))
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.sample, config.global);
     let gzip_compression = gzip_flag!(args, config.sample);
-
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
@@ -64,17 +72,32 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let mut reservoir: Vec<ByteRecord> = Vec::with_capacity(n);
     let mut rng = thread_rng();
+    let mut i = 0;
 
-    for (i, result) in reader.byte_records().enumerate() {
-        let record = result?;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
-        if i < n {
-            reservoir.push(record);
-        } else {
-            let j = rng.gen_range(0..i);
-            if j < n {
-                reservoir[j] = record;
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
+
+        for result in reader.byte_records() {
+            let record = result?;
+
+            if i < n {
+                reservoir.push(record);
+            } else {
+                let j = rng.gen_range(0..i);
+                if j < n {
+                    reservoir[j] = record;
+                }
             }
+
+            i += 1;
         }
     }
 
