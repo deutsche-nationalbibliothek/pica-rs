@@ -23,6 +23,79 @@ fn pica_print_stdout() -> TestResult {
 }
 
 #[test]
+fn pica_print_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/004732650.dat.gz")
+        .assert();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.txt")?);
+    expected.push_str(&read_to_string("tests/data/004732650.txt")?);
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected);
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("-")
+        .arg("tests/data/004732650.dat.gz")
+        .write_stdin(data)
+        .assert();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/1004916019.txt")?);
+    expected.push_str(&read_to_string("tests/data/004732650.txt")?);
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected);
+    Ok(())
+}
+
+#[test]
+fn pica_print_stdin() -> TestResult {
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("print").write_stdin(data).assert();
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected);
+
+    let data = read_to_string("tests/data/1004916019.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("print").arg("-").write_stdin(data).assert();
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_print_escape_dollar() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("print").arg("tests/data/dollar.dat").assert();

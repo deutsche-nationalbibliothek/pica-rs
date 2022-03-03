@@ -1,8 +1,9 @@
-use std::io::Write;
+use std::ffi::OsString;
+use std::io::{self, Read, Write};
 use std::str::FromStr;
 
 use clap::Arg;
-use pica::{PicaWriter, ReaderBuilder, WriterBuilder};
+use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
@@ -109,7 +110,15 @@ pub(crate) fn cli() -> Command {
                 .value_name("file")
                 .help("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
@@ -132,21 +141,29 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     };
 
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .limit(limit)
-        .from_path_or_stdin(args.value_of("filename"))?;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
     if let Some(filename) = args.value_of("output") {
         let mut writer: Box<dyn PicaWriter> =
             WriterBuilder::new().from_path(filename)?;
 
-        for result in reader.records() {
-            let value = translit_maybe(
-                &format!("{}\n\n", result?),
-                args.value_of("translit"),
-            );
-            writer.write_all(value.as_bytes())?;
+        for filename in filenames {
+            let builder =
+                ReaderBuilder::new().skip_invalid(skip_invalid).limit(limit);
+            let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+                Some("-") => builder.from_reader(Box::new(io::stdin())),
+                _ => builder.from_path(filename)?,
+            };
+
+            for result in reader.records() {
+                let value = translit_maybe(
+                    &format!("{}\n\n", result?),
+                    args.value_of("translit"),
+                );
+                writer.write_all(value.as_bytes())?;
+            }
         }
 
         writer.flush()?;
@@ -191,47 +208,56 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             }
         }
 
-        for result in reader.records() {
-            let record = result?;
+        for filename in filenames {
+            let builder =
+                ReaderBuilder::new().skip_invalid(skip_invalid).limit(limit);
+            let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+                Some("-") => builder.from_reader(Box::new(io::stdin())),
+                _ => builder.from_path(filename)?,
+            };
 
-            for field in record.iter() {
-                // TAG
-                stdout.set_color(&field_color)?;
-                write!(stdout, "{}", field.tag())?;
+            for result in reader.records() {
+                let record = result?;
 
-                // OCCURRENCE
-                if let Some(occurrence) = field.occurrence() {
-                    stdout.set_color(&occurrence_color)?;
-                    write!(stdout, "/{}", occurrence)?;
-                }
+                for field in record.iter() {
+                    // TAG
+                    stdout.set_color(&field_color)?;
+                    write!(stdout, "{}", field.tag())?;
 
-                if !add_spaces {
-                    write!(stdout, " ")?;
-                }
-
-                // SUBFIELDS
-                for subfield in field.iter() {
-                    stdout.set_color(&code_color)?;
-
-                    if add_spaces {
-                        write!(stdout, " ${} ", subfield.code())?;
-                    } else {
-                        write!(stdout, "${}", subfield.code())?;
+                    // OCCURRENCE
+                    if let Some(occurrence) = field.occurrence() {
+                        stdout.set_color(&occurrence_color)?;
+                        write!(stdout, "/{}", occurrence)?;
                     }
 
-                    let mut value: String = subfield.value().to_string();
-                    value = translit_maybe(
-                        &value.replace('$', "$$"),
-                        args.value_of("translit"),
-                    );
+                    if !add_spaces {
+                        write!(stdout, " ")?;
+                    }
 
-                    stdout.set_color(&value_color)?;
-                    write!(stdout, "{}", value)?;
+                    // SUBFIELDS
+                    for subfield in field.iter() {
+                        stdout.set_color(&code_color)?;
+
+                        if add_spaces {
+                            write!(stdout, " ${} ", subfield.code())?;
+                        } else {
+                            write!(stdout, "${}", subfield.code())?;
+                        }
+
+                        let mut value: String = subfield.value().to_string();
+                        value = translit_maybe(
+                            &value.replace('$', "$$"),
+                            args.value_of("translit"),
+                        );
+
+                        stdout.set_color(&value_color)?;
+                        write!(stdout, "{}", value)?;
+                    }
+
+                    writeln!(stdout)?;
                 }
-
                 writeln!(stdout)?;
             }
-            writeln!(stdout)?;
         }
 
         stdout.reset()?;
