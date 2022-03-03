@@ -61,7 +61,7 @@ pub(crate) fn cli() -> Command {
                 .long("--translit")
                 .value_name("translit")
                 .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
-                .help("Comma-separated list of column names."),
+                .help("If present, transliterate output into the selected normalform.")
         )
         .arg(
             Arg::new("output")
