@@ -52,6 +52,109 @@ fn pica_partition_by_bbg() -> TestResult {
 }
 
 #[test]
+fn pica_partition_multiple_files() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("002@.0")
+        .arg("--outdir")
+        .arg(tempdir)
+        .arg("tests/data/000008672.dat")
+        .arg("tests/data/000009229.dat")
+        .arg("tests/data/119232022.dat")
+        .assert();
+    assert.success();
+
+    // Tb1
+    let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+
+    // Tp1
+    let actual = read_to_string(tempdir.join("Tp1.dat")).unwrap();
+    let expected = read_to_string("tests/data/119232022.dat")?;
+    assert_eq!(expected, actual);
+
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let data = read_to_string("tests/data/000009229.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir)
+        .arg("002@.0")
+        .arg("tests/data/000008672.dat")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+    assert.success();
+
+    let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
+
+    let mut expected = String::new();
+    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+
+    assert_eq!(expected, actual);
+    Ok(())
+}
+
+#[test]
+fn pica_partition_stdin() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let data = read_to_string("tests/data/000009229.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir)
+        .arg("002@.0")
+        .write_stdin(data)
+        .assert();
+    assert.success();
+
+    let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
+    let expected = read_to_string("tests/data/000009229.dat")?;
+    assert_eq!(expected, actual);
+
+    let tempdir = Builder::new().tempdir().unwrap();
+    let tempdir = tempdir.path();
+
+    let data = read_to_string("tests/data/000009229.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("partition")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(tempdir)
+        .arg("002@.0")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+    assert.success();
+
+    let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
+    let expected = read_to_string("tests/data/000009229.dat")?;
+    assert_eq!(expected, actual);
+
+    Ok(())
+}
+
+#[test]
 fn pica_partition_filename_template() -> TestResult {
     let tempdir = Builder::new().tempdir().unwrap();
     let tempdir = tempdir.path();

@@ -1,15 +1,19 @@
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
+use std::ffi::OsString;
+use std::fs::create_dir;
+use std::io::{self, Read};
+use std::path::Path;
+use std::str::FromStr;
+
+use bstr::ByteSlice;
+use clap::Arg;
+use pica::{self, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
+
 use crate::config::Config;
 use crate::util::{CliArgs, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag, template_opt};
-use bstr::ByteSlice;
-use clap::Arg;
-use pica::{self, PicaWriter, ReaderBuilder, WriterBuilder};
-use serde::{Deserialize, Serialize};
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
-use std::fs::create_dir;
-use std::path::Path;
-use std::str::FromStr;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -48,7 +52,15 @@ pub(crate) fn cli() -> Command {
                 .value_name("template"),
         )
         .arg(Arg::new("path").required(true))
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
@@ -65,10 +77,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     );
 
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
-
     let outdir = Path::new(args.value_of("outdir").unwrap());
     if !outdir.exists() {
         create_dir(outdir)?;
@@ -77,32 +85,47 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let mut writers: HashMap<Vec<u8>, Box<dyn PicaWriter>> = HashMap::new();
     let path = pica::Path::from_str(args.value_of("path").unwrap())?;
 
-    for result in reader.byte_records() {
-        let record = result?;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
-        let mut values = record.path(&path);
-        values.sort_unstable();
-        values.dedup();
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
 
-        for value in values {
-            let mut entry = writers.entry(value.as_bytes().to_vec());
-            let writer = match entry {
-                Entry::Vacant(vacant) => {
-                    let value = String::from_utf8(value.to_vec()).unwrap();
-                    let writer =
-                        WriterBuilder::new().gzip(gzip_compression).from_path(
-                            outdir
-                                .join(filename_template.replace("{}", &value))
-                                .to_str()
-                                .unwrap(),
-                        )?;
+        for result in reader.byte_records() {
+            let record = result?;
 
-                    vacant.insert(writer)
-                }
-                Entry::Occupied(ref mut occupied) => occupied.get_mut(),
-            };
+            let mut values = record.path(&path);
+            values.sort_unstable();
+            values.dedup();
 
-            writer.write_byte_record(&record)?;
+            for value in values {
+                let mut entry = writers.entry(value.as_bytes().to_vec());
+                let writer = match entry {
+                    Entry::Vacant(vacant) => {
+                        let value = String::from_utf8(value.to_vec()).unwrap();
+                        let writer = WriterBuilder::new()
+                            .gzip(gzip_compression)
+                            .from_path(
+                                outdir
+                                    .join(
+                                        filename_template.replace("{}", &value),
+                                    )
+                                    .to_str()
+                                    .unwrap(),
+                            )?;
+
+                        vacant.insert(writer)
+                    }
+                    Entry::Occupied(ref mut occupied) => occupied.get_mut(),
+                };
+
+                writer.write_byte_record(&record)?;
+            }
         }
     }
 
