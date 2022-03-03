@@ -9,6 +9,83 @@ use tempfile::Builder;
 use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
+fn pica_filter_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0 == '121169502'")
+        .arg("tests/data/004732650.dat.gz")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let data = read_to_string("tests/data/121169502.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0 == '121169502'")
+        .arg("tests/data/004732650.dat.gz")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
+fn pica_filter_stdin() -> TestResult {
+    let data = read_to_string("tests/data/121169502.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0 == '121169502'")
+        .write_stdin(data)
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    let data = read_to_string("tests/data/121169502.dat").unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0 == '121169502'")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_filter_equal_operator() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
