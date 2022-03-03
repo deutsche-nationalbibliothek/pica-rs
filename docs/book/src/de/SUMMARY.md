@@ -10,7 +10,7 @@
     - [completions](guide/cmds/completions.md)
     - [count](guide/cmds/count.md)
     - [filter]()
-    - [frequency]()
+    - [frequency](guide/cmds/frequency.md)
     - [invalid]()
     - [partition]()
     - [print]()
