@@ -16,7 +16,7 @@ Ergebnisdatei lässt sich dann durch geeignete Tools eine grafische Darstellung 
 oder die relative Häufigkeitsverteilung berechnen. Die Ausgabe erfolgt im CSV-Format.
 
 Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds `010@.a` (Sprache des
-Textes) ermittel. Sowohl das Feld `010@` als auch das Unterfeld `a` sind wiederholbar und
+Textes) ermittelt. Sowohl das Feld `010@` als auch das Unterfeld `a` sind wiederholbar und
 somit werden Datensätze die sowohl einen Sprachencode `ger` als auch `eng` erhalten haben
 für jede Wertausprägung gezählt.
 
@@ -31,7 +31,7 @@ eng,347171
 
 Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen ist es häufig
 sinnvoll eine Kopfzeile hinzuzufügen. Dies erfolgt mit der Option `--header` bsw. `-H`.
-Die Namen der Spalten werden komma-separiert angebeben. Die Angabe von mehr als zwei
+Die Namen der Spalten werden komma-separiert angegeben. Die Angabe von mehr als zwei
 Spalten ist nicht erlaubt.
 
 ```bash
@@ -61,7 +61,7 @@ ita,60113
 ### Eingrenzen der Treffermenge (Schwellenwert)
 
 Die Treffermenge kann auch mittels der Angabe eines Schwellenwerts eingeschänkt werden.
-Sollen nur die Wertausprägungen angezeigt werden, die häufiger als ein Schwellenwert
+Sollen nur die Wertausprägungen angezeigt werden, die häufiger als ein Schwellenwert _n_
 vorkommen, dann kann dies mit der Option `--threshold` bzw. `-t` erzielt werden:
 
 ```bash
@@ -99,4 +99,4 @@ Tp1,2
 
 Es werden die Normalformen NFC (`nfc`), NFD (`nfd`), NFKC (`nfkc`) und NFKD (`nfkd`)
 unterstützt. Wird die Option nicht verwendet, werden die Wertausprägungen in die Kodierung und
-Normalform ausgegeben, wie sie in de Eingabedatei vorliegt.
+Normalform ausgegeben, wie sie in der Eingabedatei vorliegt.
