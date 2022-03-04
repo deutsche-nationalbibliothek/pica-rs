@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<collection xmlns="info:srw/schema/5/picaXML-v1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="info:srw/schema/5/picaXML-v1.0">
+  <record>
+    <datafield tag="001A">
+      <subfield code="0">8999:22-07-10</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">1250:10-09-14</subfield>
+      <subfield code="t">08:28:16.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">0384:27-07-10</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Ts1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">1004916019</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/7710287-3</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">sip</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">7710287-3</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">7710287-3</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">s</subfield>
+    </datafield>
+    <datafield tag="029R">
+      <subfield code="9">952570254</subfield>
+      <subfield code="7">Tb1</subfield>
+      <subfield code="V">kiz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">5263070-5</subfield>
+      <subfield code="a">Chrysler Corporation</subfield>
+      <subfield code="4">hers</subfield>
+    </datafield>
+    <datafield tag="041A">
+      <subfield code="a">Plymouth</subfield>
+      <subfield code="g">Marke</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">041145135</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="V">saz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4114513-6</subfield>
+      <subfield code="a">Markenname</subfield>
+      <subfield code="4">obin</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">31.7</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-210</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-384</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">swd</subfield>
+      <subfield code="i">s</subfield>
+      <subfield code="a">Plymouth &lt;Marke></subfield>
+      <subfield code="0">7710287-3</subfield>
+    </datafield>
+    <datafield tag="050D">
+      <subfield code="a">Kombiniere mit einer Produktgruppe, z.B. Personenkraftwagen</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">Wikipedia, Internet</subfield>
+      <subfield code="u">http://www.mobile.de/modellverzeichnis/plymouth/</subfield>
+    </datafield>
+    <datafield tag="050H">
+      <subfield code="a">Markenname</subfield>
+    </datafield>
+  </record>
+  <record>
+    <datafield tag="001@">
+      <subfield code="0">-</subfield>
+    </datafield>
+    <datafield tag="001A">
+      <subfield code="0">9002:18-04-89</subfield>
+    </datafield>
+    <datafield tag="001B">
+      <subfield code="0">9999:27-09-17</subfield>
+      <subfield code="t">00:43:48.000</subfield>
+    </datafield>
+    <datafield tag="001D">
+      <subfield code="0">9999:23-04-10</subfield>
+    </datafield>
+    <datafield tag="001U">
+      <subfield code="0">utf8</subfield>
+    </datafield>
+    <datafield tag="001X">
+      <subfield code="0">0</subfield>
+    </datafield>
+    <datafield tag="002@">
+      <subfield code="0">Tb1</subfield>
+    </datafield>
+    <datafield tag="003@">
+      <subfield code="0">000008672</subfield>
+    </datafield>
+    <datafield tag="003U">
+      <subfield code="a">http://d-nb.info/gnd/867-9</subfield>
+      <subfield code="z">http://d-nb.info/gnd/7538748-7</subfield>
+    </datafield>
+    <datafield tag="004B">
+      <subfield code="a">kiz</subfield>
+    </datafield>
+    <datafield tag="007K">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">867-9</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">7538748-7</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gnd</subfield>
+      <subfield code="0">1085295990</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">swd</subfield>
+      <subfield code="0">7538748-7</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="007N">
+      <subfield code="a">gkd</subfield>
+      <subfield code="0">867-9</subfield>
+      <subfield code="v">zg</subfield>
+    </datafield>
+    <datafield tag="008A">
+      <subfield code="a">f</subfield>
+      <subfield code="a">s</subfield>
+    </datafield>
+    <datafield tag="008B">
+      <subfield code="a">z</subfield>
+      <subfield code="a">v</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Vacuum Society</subfield>
+      <subfield code="g">USA</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">AVS</subfield>
+      <subfield code="4">abku</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">Committee on Vacuum Techniques</subfield>
+    </datafield>
+    <datafield tag="029@">
+      <subfield code="a">CVT</subfield>
+      <subfield code="4">abku</subfield>
+    </datafield>
+    <datafield tag="029A">
+      <subfield code="a">American Vacuum Society</subfield>
+    </datafield>
+    <datafield tag="029R">
+      <subfield code="9">984002073</subfield>
+      <subfield code="7">Tb1</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">10168051-X</subfield>
+      <subfield code="a">AVS, the Science and Technology Society</subfield>
+      <subfield code="4">nach</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">040622665</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4062266-6</subfield>
+      <subfield code="a">Vakuum</subfield>
+      <subfield code="4">them</subfield>
+    </datafield>
+    <datafield tag="041R">
+      <subfield code="9">04066581X</subfield>
+      <subfield code="7">Ts1</subfield>
+      <subfield code="V">saz</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4066581-1</subfield>
+      <subfield code="a">Wissenschaftliche Gesellschaft</subfield>
+      <subfield code="4">obin</subfield>
+    </datafield>
+    <datafield tag="042A">
+      <subfield code="a">6.5</subfield>
+      <subfield code="a">9.3c</subfield>
+      <subfield code="a">21.5</subfield>
+      <subfield code="a">31.1b</subfield>
+      <subfield code="a">31.9a</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XD-US</subfield>
+    </datafield>
+    <datafield tag="042B">
+      <subfield code="a">XD-US</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="e">DE-1</subfield>
+    </datafield>
+    <datafield tag="047A" occurrence="03">
+      <subfield code="r">DE-1</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">gkd</subfield>
+      <subfield code="i">a</subfield>
+      <subfield code="a">American Vacuum Society</subfield>
+      <subfield code="0">867-9</subfield>
+    </datafield>
+    <datafield tag="047C">
+      <subfield code="S">swd</subfield>
+      <subfield code="i">k</subfield>
+      <subfield code="a">American Vacuum Society</subfield>
+      <subfield code="0">7538748-7</subfield>
+    </datafield>
+    <datafield tag="050C">
+      <subfield code="a">MMi</subfield>
+    </datafield>
+    <datafield tag="050E">
+      <subfield code="a">GKD</subfield>
+    </datafield>
+    <datafield tag="050H">
+      <subfield code="a">1953 gegr. wiss. Ges., die sich mit Problemen des Vakuums und vor allem seiner Anwendung in der Technik beschäftigt</subfield>
+    </datafield>
+    <datafield tag="065R">
+      <subfield code="9">040787044</subfield>
+      <subfield code="7">Tgz</subfield>
+      <subfield code="V">gik</subfield>
+      <subfield code="A">gnd</subfield>
+      <subfield code="0">4078704-7</subfield>
+      <subfield code="a">USA</subfield>
+      <subfield code="4">geow</subfield>
+    </datafield>
+  </record>
+</collection>
