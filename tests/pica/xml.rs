@@ -44,6 +44,88 @@ fn pica_xml_multiple_records() -> TestResult {
 }
 
 #[test]
+fn pica_xml_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("xml")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/000008672.dat")
+        .assert();
+
+    let expected = read_to_string("tests/data/two-records.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected.trim_end().to_string());
+
+    let data = read_to_string("tests/data/1004916019.dat")?;
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("xml")
+        .arg("-")
+        .arg("tests/data/000008672.dat")
+        .write_stdin(data)
+        .assert();
+
+    let expected = read_to_string("tests/data/two-records.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected.trim_end().to_string());
+
+    Ok(())
+}
+
+#[test]
+fn pica_xml_stdin() -> TestResult {
+    let data = read_to_string("tests/data/1004916019.dat")?;
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("xml").write_stdin(data).assert();
+
+    let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected.trim_end().to_string());
+
+    let data = read_to_string("tests/data/1004916019.dat")?;
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd.arg("xml").arg("-").write_stdin(data).assert();
+
+    let expected = read_to_string("tests/data/1004916019.xml").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(expected.trim_end().to_string());
+
+    Ok(())
+}
+
+#[test]
 fn pica_xml_write_output() -> TestResult {
     let filename = Builder::new().suffix(".xml").tempfile()?;
     let filename_str = filename.path();

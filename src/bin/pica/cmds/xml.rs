@@ -1,8 +1,9 @@
+use std::ffi::OsString;
 use std::fs::File;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 
 use clap::Arg;
-use pica::ReaderBuilder;
+use pica::{Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
 use xml::writer::XmlEvent;
 use xml::EmitterConfig;
@@ -42,15 +43,19 @@ pub(crate) fn cli() -> Command {
                 .value_name("file")
                 .help("Write output to <file> instead of stdout."),
         )
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.xml, config.global);
-
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
 
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(filename) => Box::new(File::create(filename)?),
@@ -70,46 +75,58 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             .default_ns("info:srw/schema/5/picaXML-v1.0"),
     )?;
 
-    for result in reader.records() {
-        let record = result?;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
-        xml_writer.write(
-            XmlEvent::start_element("record")
-                .default_ns("info:srw/schema/5/picaXML-v1.0"),
-        )?;
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
 
-        for field in record.iter() {
-            if let Some(occurrence) = field.occurrence() {
-                xml_writer.write(
-                    XmlEvent::start_element("datafield")
-                        .attr("tag", &field.tag().to_string())
-                        .attr("occurrence", &occurrence.to_string()),
-                )?;
-            } else {
-                xml_writer.write(
-                    XmlEvent::start_element("datafield")
-                        .attr("tag", &field.tag().to_string()),
-                )?;
-            }
+        for result in reader.records() {
+            let record = result?;
 
-            for subfield in field.iter() {
-                xml_writer.write(
-                    XmlEvent::start_element("subfield")
-                        .attr("code", &subfield.code().to_string()),
-                )?;
+            xml_writer.write(
+                XmlEvent::start_element("record")
+                    .default_ns("info:srw/schema/5/picaXML-v1.0"),
+            )?;
 
-                let value = translit_maybe(
-                    &subfield.value().to_string(),
-                    args.value_of("translit"),
-                );
-                xml_writer.write(XmlEvent::characters(&value))?;
+            for field in record.iter() {
+                if let Some(occurrence) = field.occurrence() {
+                    xml_writer.write(
+                        XmlEvent::start_element("datafield")
+                            .attr("tag", &field.tag().to_string())
+                            .attr("occurrence", &occurrence.to_string()),
+                    )?;
+                } else {
+                    xml_writer.write(
+                        XmlEvent::start_element("datafield")
+                            .attr("tag", &field.tag().to_string()),
+                    )?;
+                }
+
+                for subfield in field.iter() {
+                    xml_writer.write(
+                        XmlEvent::start_element("subfield")
+                            .attr("code", &subfield.code().to_string()),
+                    )?;
+
+                    let value = translit_maybe(
+                        &subfield.value().to_string(),
+                        args.value_of("translit"),
+                    );
+                    xml_writer.write(XmlEvent::characters(&value))?;
+                    xml_writer.write(XmlEvent::end_element())?;
+                }
+
                 xml_writer.write(XmlEvent::end_element())?;
             }
 
             xml_writer.write(XmlEvent::end_element())?;
         }
-
-        xml_writer.write(XmlEvent::end_element())?;
     }
 
     xml_writer.write(XmlEvent::end_element())?;
