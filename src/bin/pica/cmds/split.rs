@@ -1,11 +1,15 @@
+use std::ffi::OsString;
+use std::fs::create_dir;
+use std::io::{self, Read};
+use std::path::Path;
+
+use clap::Arg;
+use pica::{Reader, ReaderBuilder, WriterBuilder};
+use serde::{Deserialize, Serialize};
+
 use crate::config::Config;
 use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag, template_opt};
-use clap::Arg;
-use pica::{ReaderBuilder, WriterBuilder};
-use serde::{Deserialize, Serialize};
-use std::fs::create_dir;
-use std::path::Path;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -44,7 +48,15 @@ pub(crate) fn cli() -> Command {
                 .value_name("template"),
         )
         .arg(Arg::new("size").required(true))
-        .arg(Arg::new("filename"))
+        .arg(
+            Arg::new("filenames")
+                .help(
+                    "Read one or more files in normalized PICA+ format. If the file \
+                    ends with .gz the content is automatically decompressed. With no \
+                    <filenames>, or when filename is -, read from standard input (stdin).")
+                .value_name("filenames")
+                .multiple_values(true)
+        )
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
@@ -59,10 +71,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             "{}.dat"
         }
     );
-
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
 
     let outdir = Path::new(args.value_of("outdir").unwrap());
     if !outdir.exists() {
@@ -82,6 +90,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     }
 
     let mut chunks: u32 = 0;
+    let mut count = 0;
 
     let mut writer = WriterBuilder::new().gzip(gzip_compression).from_path(
         outdir
@@ -90,22 +99,39 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             .unwrap(),
     )?;
 
-    for (count, result) in reader.byte_records().enumerate() {
-        let record = result?;
+    let filenames = args
+        .values_of_t::<OsString>("filenames")
+        .unwrap_or_else(|_| vec![OsString::from("-")]);
 
-        if count > 0 && count as u32 % chunk_size == 0 {
-            writer.finish()?;
-            chunks += 1;
+    for filename in filenames {
+        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            Some("-") => builder.from_reader(Box::new(io::stdin())),
+            _ => builder.from_path(filename)?,
+        };
 
-            writer = WriterBuilder::new().gzip(gzip_compression).from_path(
-                outdir
-                    .join(filename_template.replace("{}", &chunks.to_string()))
-                    .to_str()
-                    .unwrap(),
-            )?;
+        for result in reader.byte_records() {
+            let record = result?;
+
+            if count > 0 && count as u32 % chunk_size == 0 {
+                writer.finish()?;
+                chunks += 1;
+
+                writer =
+                    WriterBuilder::new().gzip(gzip_compression).from_path(
+                        outdir
+                            .join(
+                                filename_template
+                                    .replace("{}", &chunks.to_string()),
+                            )
+                            .to_str()
+                            .unwrap(),
+                    )?;
+            }
+
+            writer.write_byte_record(&record)?;
+            count += 1;
         }
-
-        writer.write_byte_record(&record)?;
     }
 
     writer.finish()?;
