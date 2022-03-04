@@ -45,6 +45,135 @@ fn pica_split_default() -> TestResult {
 }
 
 #[test]
+fn pica_split_multiple_files() -> TestResult {
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
+        .arg("tests/data/1004916019.dat")
+        .arg("tests/data/119232022.dat")
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = [
+        ("0.dat", "tests/data/1004916019.dat"),
+        ("1.dat", "tests/data/119232022.dat"),
+    ];
+
+    for (filename, sample) in expected {
+        assert_eq!(
+            read_to_string(outdir.join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
+    }
+
+    let data = read_to_string("tests/data/119232022.dat")?;
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
+        .arg("tests/data/1004916019.dat")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = [
+        ("0.dat", "tests/data/1004916019.dat"),
+        ("1.dat", "tests/data/119232022.dat"),
+    ];
+
+    for (filename, sample) in expected {
+        assert_eq!(
+            read_to_string(outdir.join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
+    }
+
+    Ok(())
+}
+
+#[test]
+fn pica_split_stdin() -> TestResult {
+    let data = read_to_string("tests/data/119232022.dat")?;
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
+        .write_stdin(data)
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = [("0.dat", "tests/data/119232022.dat")];
+    for (filename, sample) in expected {
+        assert_eq!(
+            read_to_string(outdir.join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
+    }
+
+    let data = read_to_string("tests/data/119232022.dat")?;
+    let tempdir = Builder::new().tempdir().unwrap();
+    let outdir = tempdir.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("split")
+        .arg("--skip-invalid")
+        .arg("--outdir")
+        .arg(outdir)
+        .arg("1")
+        .arg("-")
+        .write_stdin(data)
+        .assert();
+
+    assert
+        .success()
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::str::is_empty());
+
+    let expected = [("0.dat", "tests/data/119232022.dat")];
+    for (filename, sample) in expected {
+        assert_eq!(
+            read_to_string(outdir.join(filename)).unwrap(),
+            read_to_string(sample).unwrap()
+        );
+    }
+
+    Ok(())
+}
+
+#[test]
 fn pica_split_outdir() -> TestResult {
     let tempdir = Builder::new().tempdir().unwrap();
     let outdir = tempdir.path();
