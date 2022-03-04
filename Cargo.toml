@@ -1,7 +1,7 @@
 [package]
 name = "pica"
-version = "0.10.0"
-authors = ["Nico Wagner <nwagner84@protonmail.com>"]
+version = "0.11.0"
+authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "MIT OR Unlicense"
 default-run = "pica"
