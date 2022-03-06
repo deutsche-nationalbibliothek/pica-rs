@@ -1,19 +1,15 @@
+use std::collections::BTreeSet;
 use std::ops::Deref;
 
 use crate::util::CliResult;
 use bstr::BString;
 use csv::ReaderBuilder;
-use pica::matcher::{
-    FieldMatcher, OccurrenceMatcher, RecordMatcher, SubfieldListMatcher,
-    SubfieldMatcher, TagMatcher,
-};
-use pica::Tag;
 
 #[derive(Debug, Default)]
-pub struct FilterList(Vec<BString>, bool);
+pub(crate) struct FilterList(BTreeSet<BString>);
 
 impl Deref for FilterList {
-    type Target = Vec<BString>;
+    type Target = BTreeSet<BString>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -21,8 +17,8 @@ impl Deref for FilterList {
 }
 
 impl FilterList {
-    pub(crate) fn new(filenames: Vec<&str>, invert: bool) -> CliResult<Self> {
-        let mut ids: Vec<BString> = Vec::new();
+    pub(crate) fn new(filenames: Vec<&str>) -> CliResult<Self> {
+        let mut ids: BTreeSet<BString> = BTreeSet::new();
 
         for filename in filenames {
             let mut reader = ReaderBuilder::new()
@@ -31,28 +27,10 @@ impl FilterList {
 
             for result in reader.byte_records() {
                 let row = result.expect("valid csv row");
-                let id = BString::from(row.get(0).expect("idn in column 1"));
-
-                if !ids.contains(&id) {
-                    ids.push(id);
-                }
+                ids.insert(BString::from(row.get(0).expect("idn in column 1")));
             }
         }
 
-        Ok(Self(ids, invert))
-    }
-}
-
-impl From<FilterList> for RecordMatcher {
-    fn from(list: FilterList) -> Self {
-        RecordMatcher::from(FieldMatcher::Subield(
-            TagMatcher::from(Tag::new("003@").unwrap()),
-            OccurrenceMatcher::None,
-            SubfieldListMatcher::from(SubfieldMatcher::In(
-                vec!['0'],
-                list.0,
-                list.1,
-            )),
-        ))
+        Ok(Self(ids))
     }
 }
