@@ -1,10 +1,12 @@
 use std::ffi::OsString;
 use std::fs::read_to_string;
 use std::io::{self, Read};
+use std::str::FromStr;
 
 use clap::Arg;
+use lazy_static::lazy_static;
 use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
-use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica::{Path, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
@@ -187,20 +189,20 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     }
 
-    if let Some(allow_lists) = args.values_of("allow-list") {
-        let allow_list =
-            FilterList::new(allow_lists.collect::<Vec<&str>>(), false)?;
-        let matcher = RecordMatcher::from(allow_list);
+    let allow_list = if let Some(allow_lists) = args.values_of("allow-list") {
+        FilterList::new(allow_lists.collect::<Vec<&str>>())?
+    } else {
+        FilterList::new(vec![])?
+    };
 
-        filter = matcher & filter;
-    }
+    let deny_list = if let Some(deny_lists) = args.values_of("deny-list") {
+        FilterList::new(deny_lists.collect::<Vec<&str>>())?
+    } else {
+        FilterList::new(vec![])?
+    };
 
-    if let Some(deny_lists) = args.values_of("deny-list") {
-        let deny_list =
-            FilterList::new(deny_lists.collect::<Vec<&str>>(), true)?;
-        let matcher = RecordMatcher::from(deny_list);
-
-        filter = matcher & filter;
+    lazy_static! {
+        static ref IDN_PATH: Path = Path::from_str("003@.0").unwrap();
     }
 
     let mut count = 0;
@@ -222,6 +224,16 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
         for result in reader.byte_records() {
             let mut record = result?;
+            let idn = record.path(&IDN_PATH);
+            let idn = idn.first().unwrap();
+
+            if !allow_list.is_empty() && !allow_list.contains(*idn) {
+                continue;
+            }
+            if !deny_list.is_empty() && deny_list.contains(*idn) {
+                continue;
+            }
+
             let mut is_match = filter.is_match(&record, &flags);
 
             if args.is_present("invert-match") {
