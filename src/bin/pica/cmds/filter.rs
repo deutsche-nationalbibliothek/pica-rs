@@ -14,6 +14,10 @@ use crate::config::Config;
 use crate::util::{CliArgs, CliError, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
 
+lazy_static! {
+    static ref IDN_PATH: Path = Path::from_str("003@.0").unwrap();
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct FilterConfig {
@@ -121,6 +125,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let gzip_compression = gzip_flag!(args, config.filter);
     let ignore_case = args.is_present("ignore-case");
 
+    let mut allow_list = FilterList::default();
+    let mut deny_list = FilterList::default();
+
     let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
         Ok(limit) => limit,
         Err(_) => {
@@ -189,20 +196,12 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
     }
 
-    let allow_list = if let Some(allow_lists) = args.values_of("allow-list") {
-        FilterList::new(allow_lists.collect::<Vec<&str>>())?
-    } else {
-        FilterList::new(vec![])?
-    };
+    if let Some(allow_lists) = args.values_of("allow-list") {
+        allow_list = FilterList::new(allow_lists.collect::<Vec<&str>>())?
+    }
 
-    let deny_list = if let Some(deny_lists) = args.values_of("deny-list") {
-        FilterList::new(deny_lists.collect::<Vec<&str>>())?
-    } else {
-        FilterList::new(vec![])?
-    };
-
-    lazy_static! {
-        static ref IDN_PATH: Path = Path::from_str("003@.0").unwrap();
+    if let Some(deny_lists) = args.values_of("deny-list") {
+        deny_list = FilterList::new(deny_lists.collect::<Vec<&str>>())?
     }
 
     let mut count = 0;
@@ -235,7 +234,6 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             }
 
             let mut is_match = filter.is_match(&record, &flags);
-
             if args.is_present("invert-match") {
                 is_match = !is_match;
             }
