@@ -6,7 +6,7 @@ use bstr::BString;
 use csv::ReaderBuilder;
 
 #[derive(Debug, Default)]
-pub struct FilterList(BTreeSet<BString>);
+pub(crate) struct FilterList(BTreeSet<BString>);
 
 impl Deref for FilterList {
     type Target = BTreeSet<BString>;
