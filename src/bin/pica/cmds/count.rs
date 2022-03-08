@@ -85,13 +85,15 @@ pub(crate) fn cli() -> Command {
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.count, config.global);
+    let append = args.is_present("append");
 
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(path) => Box::new(
             OpenOptions::new()
                 .write(true)
                 .create(true)
-                .append(args.is_present("append"))
+                .truncate(!append)
+                .append(append)
                 .open(path)?,
         ),
         None => Box::new(io::stdout()),

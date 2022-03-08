@@ -291,6 +291,54 @@ add-spaces = true
 }
 
 #[test]
+fn pica_print_gh438() -> TestResult {
+    let filename = Builder::new().suffix(".txt").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--skip-invalid")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let expected = read_to_string("tests/data/dump.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(expected, actual);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .arg("--skip-invalid")
+        .arg("--output")
+        .arg(filename_str)
+        .arg("tests/data/1004916019.dat")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let expected = read_to_string("tests/data/1004916019.txt").unwrap();
+    let expected = if cfg!(windows) {
+        expected.replace('\r', "")
+    } else {
+        expected
+    };
+
+    let actual = read_to_string(filename_str).unwrap();
+    assert_eq!(expected, actual);
+
+    Ok(())
+}
+
+#[test]
 fn pica_print_write_output() -> TestResult {
     let filename = Builder::new().suffix(".txt").tempfile()?;
     let filename_str = filename.path();
