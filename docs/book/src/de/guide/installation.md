@@ -75,9 +75,9 @@ Wenn die Quelle nicht benötigt werden, kann das Projekt auch direkt über den P
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
      --branch main pica
 
-# Installation der Version 0.11.0
+# Installation der Version 0.11.1
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
-      --tag v0.11.0 pica
+      --tag v0.11.1 pica
 
 # Installation des Entwicklungszweigs "feat1"
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
