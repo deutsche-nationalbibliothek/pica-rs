@@ -97,6 +97,7 @@ impl WriterBuilder {
         let file = OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(!self.append)
             .append(self.append)
             .open(path)?;
 
