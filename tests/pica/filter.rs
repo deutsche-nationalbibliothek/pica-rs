@@ -1057,7 +1057,7 @@ fn pica_filter_reduce() -> TestResult {
         .arg("filter")
         .arg("--skip-invalid")
         .arg("--reduce")
-        .arg("003@,04[78]A")
+        .arg("003@, 04[78]A")
         .arg("003@.0 == '1004916019'")
         .arg("tests/data/dump.dat.gz")
         .assert();

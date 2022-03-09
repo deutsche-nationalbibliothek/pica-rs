@@ -162,6 +162,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     if let Some(reduce_expr) = args.value_of("reduce") {
         reducers = reduce_expr
             .split(',')
+            .map(str::trim)
             .map(TagMatcher::new)
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| CliError::Other("invalid reduce value".to_string()))?;
