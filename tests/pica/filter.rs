@@ -142,10 +142,7 @@ fn pica_filter_equal_operator() -> TestResult {
 
     let expected =
         predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
-    assert
-        .success()
-        .stderr("Don\'t use lazy syntax!\n")
-        .stdout(expected);
+    assert.success().stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -633,6 +630,19 @@ fn pica_filter_and_connective() -> TestResult {
         .arg("tests/data/121169502.dat")
         .assert();
     assert.success().stdout(predicate::str::is_empty());
+
+    // see https://github.com/deutsche-nationalbibliothek/pica-rs/issues/443
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("(003@.0 == '121169502') && 002@.0 == 'Tp1'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
 
     Ok(())
 }

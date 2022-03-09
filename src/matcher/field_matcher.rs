@@ -105,13 +105,7 @@ fn parse_field_matcher_subfield(i: &[u8]) -> ParseResult<FieldMatcher> {
                         opt(alt((char('.'), ws(char('$'))))),
                         parse_subfield_list_matcher_singleton,
                     ),
-                    |(prefix, matcher)| {
-                        if prefix.is_none() {
-                            eprintln!("Don't use lazy syntax!");
-                        }
-
-                        matcher
-                    },
+                    |(_prefix, matcher)| matcher,
                 ),
                 preceded(
                     ws(char('{')),
