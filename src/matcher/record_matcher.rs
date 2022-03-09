@@ -5,7 +5,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, digit1};
 use nom::combinator::{all_consuming, cut, map, map_res, opt};
-use nom::multi::many0;
+use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
@@ -237,7 +237,7 @@ fn parse_record_matcher_composite_and(i: &[u8]) -> ParseResult<RecordMatcher> {
             ws(parse_record_matcher_not),
             ws(parse_record_matcher_exists),
         )),
-        many0(preceded(
+        many1(preceded(
             ws(tag("&&")),
             alt((
                 ws(parse_record_matcher_group),
@@ -264,7 +264,7 @@ fn parse_record_matcher_composite_or(i: &[u8]) -> ParseResult<RecordMatcher> {
             ws(parse_record_matcher_singleton),
             ws(parse_record_matcher_not),
         )),
-        many0(preceded(
+        many1(preceded(
             ws(tag("||")),
             cut(alt((
                 ws(parse_record_matcher_group),
@@ -314,8 +314,8 @@ fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
 
 pub(crate) fn parse_record_matcher(i: &[u8]) -> ParseResult<RecordMatcher> {
     alt((
-        ws(parse_record_matcher_group),
         ws(parse_record_matcher_composite),
+        ws(parse_record_matcher_group),
         ws(parse_record_matcher_not),
         ws(parse_record_matcher_singleton),
         ws(parse_record_matcher_cardinality),
