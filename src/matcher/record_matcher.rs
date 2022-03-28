@@ -1,5 +1,5 @@
 use std::fmt;
-use std::ops::{BitAnd, BitOr};
+use std::ops::{BitAnd, BitOr, Not};
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -163,6 +163,14 @@ impl BitOr for RecordMatcher {
 
     fn bitor(self, rhs: Self) -> Self::Output {
         RecordMatcher::Composite(Box::new(self), BooleanOp::Or, Box::new(rhs))
+    }
+}
+
+impl Not for RecordMatcher {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        RecordMatcher::Not(Box::new(self))
     }
 }
 
