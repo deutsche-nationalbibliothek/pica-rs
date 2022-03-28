@@ -111,6 +111,16 @@ pub(crate) fn cli() -> Command {
                 .help("compress output with gzip"),
         )
         .arg(
+            Arg::new("tee")
+            .help(
+                "This option allows to write simultaneously to <file> and to \
+                standard output (stdout)."
+            )
+            .long("--tee")
+            .value_name("filename")
+            .conflicts_with("output")
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -153,6 +163,15 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
         .from_path_or_stdout(args.value_of("output"))?;
+
+    let mut tee_writer = match args.value_of("tee") {
+        Some(path) => Some(
+            WriterBuilder::new()
+                .gzip(gzip_compression)
+                .from_path(path)?,
+        ),
+        None => None,
+    };
 
     let strsim_threshold = args.value_of("strsim-threshold").unwrap();
     let strsim_threshold = match strsim_threshold.parse::<f64>() {
@@ -281,6 +300,11 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                 }
 
                 writer.write_byte_record(&record)?;
+
+                if let Some(ref mut writer) = tee_writer {
+                    writer.write_byte_record(&record)?;
+                }
+
                 count += 1;
             }
 
@@ -291,5 +315,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     }
 
     writer.finish()?;
+
+    if let Some(ref mut writer) = tee_writer {
+        writer.finish()?;
+    }
+
     Ok(())
 }
