@@ -61,6 +61,11 @@ pub(crate) fn cli() -> Command {
                 .help("The minimum score for string similarity comparisons (range from 0.0..1.0).")
         )
         .arg(
+            Arg::new("append")
+                .long("--append")
+                .help("Append to the given <file>, do not overwrite.")
+       )
+        .arg(
             Arg::new("reduce")
                 .long("reduce")
                 .help("Reduce the record to the following fields.")
@@ -147,6 +152,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid = skip_invalid_flag!(args, config.filter, config.global);
     let gzip_compression = gzip_flag!(args, config.filter);
     let ignore_case = args.is_present("ignore-case");
+    let append = args.is_present("append");
 
     let mut allow_list = FilterList::default();
     let mut deny_list = FilterList::default();
@@ -162,12 +168,14 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
+        .append(append)
         .from_path_or_stdout(args.value_of("output"))?;
 
     let mut tee_writer = match args.value_of("tee") {
         Some(path) => Some(
             WriterBuilder::new()
                 .gzip(gzip_compression)
+                .append(append)
                 .from_path(path)?,
         ),
         None => None,
