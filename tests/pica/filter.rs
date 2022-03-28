@@ -1014,6 +1014,41 @@ fn pica_filter_and_option() -> TestResult {
 }
 
 #[test]
+fn pica_filter_not_option() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("002@.0 =^ 'Tp'")
+        .arg("--not")
+        .arg("003@.0 == '119232022'")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("002@.0 =^ 'Tp'")
+        .arg("--not")
+        .arg("003@.0 == '119232022'")
+        .arg("--not")
+        .arg("003@.0 == '119232023'")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+    assert.success().stdout(expected);
+
+    Ok(())
+}
+
+#[test]
 fn pica_filter_or_option() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -1063,6 +1098,21 @@ fn pica_filter_or_option() -> TestResult {
         .arg("--skip-invalid")
         .arg("003@.0 == '121169503'")
         .arg("--and")
+        .arg("002@.0 =^ 'Ts'")
+        .arg("--or")
+        .arg("002@.0 == 'Tp1'")
+        .arg("tests/data/121169502.dat")
+        .assert();
+
+    assert.failure().stdout(predicate::str::is_empty());
+
+    // --or can't be used in combination with --not
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("003@.0 == '121169503'")
+        .arg("--not")
         .arg("002@.0 =^ 'Ts'")
         .arg("--or")
         .arg("002@.0 == 'Tp1'")
