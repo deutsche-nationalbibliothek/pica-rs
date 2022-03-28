@@ -70,7 +70,15 @@ pub(crate) fn cli() -> Command {
             Arg::new("and")
                 .long("and")
                 .takes_value(true)
-                .multiple_occurrences(true),
+                .multiple_occurrences(true)
+                .conflicts_with("or"),
+        )
+        .arg(
+            Arg::new("or")
+                .long("or")
+                .takes_value(true)
+                .multiple_occurrences(true)
+                .conflicts_with("and")
         )
         .arg(
             Arg::new("allow-list")
@@ -192,8 +200,17 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             .collect::<Result<Vec<_>, _>>()?;
 
         for expr in predicates.into_iter() {
-            filter = RecordMatcher::Group(Box::new(filter))
-                & RecordMatcher::Group(Box::new(expr));
+            filter = filter & expr;
+        }
+    } else if args.is_present("or") {
+        let predicates = args
+            .values_of("or")
+            .unwrap()
+            .map(RecordMatcher::new)
+            .collect::<Result<Vec<_>, _>>()?;
+
+        for expr in predicates.into_iter() {
+            filter = filter | expr;
         }
     }
 
