@@ -1569,6 +1569,31 @@ fn pica_filter_expression_file() -> TestResult {
 }
 
 #[test]
+fn pica_filter_tee_option() -> TestResult {
+    let filename = Builder::new().suffix(".dat").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--tee")
+        .arg(filename_str)
+        .arg("003@.0 == '1004916019'")
+        .arg("tests/data/1004916019.dat")
+        .assert();
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert.success().stdout(expected);
+
+    let expected =
+        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    assert!(expected.eval(Path::new(filename_str)));
+
+    Ok(())
+}
+
+#[test]
 fn pica_filter_invalid_filter() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
