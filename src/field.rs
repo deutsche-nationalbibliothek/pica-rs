@@ -17,7 +17,8 @@ use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
-use crate::common::ParseResult;
+use pica_core::ParseResult;
+
 use crate::error::{Error, Result};
 use crate::occurrence::{parse_occurrence, Occurrence};
 use crate::subfield::{parse_subfield, Subfield};

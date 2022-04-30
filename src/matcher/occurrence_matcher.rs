@@ -7,7 +7,8 @@ use nom::combinator::{all_consuming, cut, map, success, value, verify};
 use nom::sequence::{preceded, separated_pair};
 use nom::Finish;
 
-use crate::common::ParseResult;
+use pica_core::ParseResult;
+
 use crate::occurrence::{parse_occurrence_digits, Occurrence};
 use crate::Error;
 

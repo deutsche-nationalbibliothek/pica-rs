@@ -13,7 +13,8 @@ use nom::multi::count;
 use nom::sequence::tuple;
 use nom::Finish;
 
-use crate::common::ParseResult;
+use pica_core::ParseResult;
+
 use crate::error::Error;
 
 /// A PICA+ tag.

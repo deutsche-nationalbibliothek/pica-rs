@@ -12,7 +12,8 @@ use nom::combinator::{cut, map, recognize};
 use nom::multi::many0;
 use nom::sequence::{pair, preceded};
 
-use crate::common::ParseResult;
+use pica_core::ParseResult;
+
 use crate::error::{Error, Result};
 
 /// A PICA+ subfield, that may contian invalid UTF-8 data.

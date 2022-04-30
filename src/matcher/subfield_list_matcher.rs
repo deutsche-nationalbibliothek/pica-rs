@@ -9,7 +9,9 @@ use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
-use crate::common::{ws, ParseResult};
+use pica_core::ParseResult;
+
+use crate::common::ws;
 use crate::matcher::{
     parse_comparison_op_usize, parse_subfield_matcher, BooleanOp, ComparisonOp,
     MatcherFlags, SubfieldMatcher,
