@@ -13,10 +13,11 @@ use nom::combinator::{all_consuming, cut, map, opt, value, verify};
 use nom::multi::{many1, separated_list1};
 use nom::sequence::{preceded, terminated, tuple};
 
-use crate::common::{parse_string, ws, ParseResult};
+use pica_core::ParseResult;
+
+use crate::common::{parse_string, ws};
 use crate::matcher::{parse_comparison_op_bstring, ComparisonOp, MatcherFlags};
 use crate::subfield::parse_subfield_code;
-
 use crate::{Error, Subfield};
 
 macro_rules! maybe_lowercase {

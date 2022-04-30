@@ -12,7 +12,8 @@ use nom::multi::many_m_n;
 use nom::sequence::preceded;
 use nom::Finish;
 
-use crate::common::ParseResult;
+use pica_core::ParseResult;
+
 use crate::error::Error;
 
 /// A PICA+ occurrence.

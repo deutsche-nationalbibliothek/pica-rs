@@ -4,7 +4,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::value;
 
-use crate::common::ParseResult;
+use pica_core::ParseResult;
 
 /// Boolean Operators.
 #[derive(Debug, Clone, PartialEq)]

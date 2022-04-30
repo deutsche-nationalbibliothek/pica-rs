@@ -9,7 +9,8 @@ use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::{AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice};
 
-use crate::common::ParseResult;
+use pica_core::ParseResult;
+
 use crate::tag::{parse_tag, Tag};
 use crate::Error;
 

@@ -6,7 +6,9 @@ use nom::combinator::{all_consuming, cut, map, opt};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Finish;
 
-use crate::common::{ws, ParseResult};
+use pica_core::ParseResult;
+
+use crate::common::ws;
 use crate::matcher::{
     parse_occurrence_matcher, parse_subfield_list_matcher,
     parse_subfield_list_matcher_singleton, parse_tag_matcher, MatcherFlags,
