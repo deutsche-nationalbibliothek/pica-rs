@@ -416,7 +416,7 @@ impl Deref for ByteRecord {
 }
 
 /// A PICA+ record, that guarantees valid UTF-8 data.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct StringRecord(ByteRecord);
 
 impl Deref for StringRecord {
