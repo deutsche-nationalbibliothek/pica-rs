@@ -119,7 +119,7 @@ mod tests {
     use nom_test_helpers::prelude::*;
 
     #[test]
-    pub fn test_parse_tag() -> TestResult {
+    fn test_parse_tag() -> TestResult {
         assert_done_and_eq!(parse_tag(b"003@"), TagRef(b"003@".as_bstr()));
         assert_done_and_eq!(parse_tag(b"123@"), TagRef(b"123@".as_bstr()));
         assert_done_and_eq!(parse_tag(b"247C"), TagRef(b"247C".as_bstr()));
@@ -133,7 +133,7 @@ mod tests {
     }
 
     #[test]
-    pub fn test_tag_ref_from_bytes() -> TestResult {
+    fn test_tag_ref_from_bytes() -> TestResult {
         assert_eq!(TagRef::from_bytes(b"003@")?, TagRef(b"003@".as_bstr()));
         assert!(TagRef::from_bytes(b"!003@").is_err());
 
@@ -141,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    pub fn test_tag_from_tag_ref() -> TestResult {
+    fn test_tag_from_tag_ref() -> TestResult {
         assert_eq!(
             Tag::from(TagRef::from_bytes(b"003@")?),
             Tag(BString::from("003@"))
