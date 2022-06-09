@@ -17,7 +17,7 @@ use pica_core::ParseResult;
 use crate::error::{Error, Result};
 
 /// A PICA+ subfield, that may contian invalid UTF-8 data.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Subfield {
     pub(crate) code: char,
     pub(crate) value: BString,

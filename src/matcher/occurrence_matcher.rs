@@ -12,7 +12,7 @@ use pica_core::ParseResult;
 use crate::occurrence::{parse_occurrence_digits, Occurrence};
 use crate::Error;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum OccurrenceMatcher {
     Some(Occurrence),
     Range(Occurrence, Occurrence),

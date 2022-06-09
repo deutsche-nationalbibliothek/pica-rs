@@ -69,3 +69,13 @@ impl From<std::str::Utf8Error> for Error {
         Self::Utf8Error(err)
     }
 }
+
+impl From<pica_core::ParseError> for Error {
+    fn from(err: pica_core::ParseError) -> Self {
+        match err {
+            pica_core::ParseError::InvalidTag => {
+                Self::InvalidTag("invalid tag".to_string())
+            }
+        }
+    }
+}

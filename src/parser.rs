@@ -16,7 +16,7 @@ use crate::Path;
 const NL: char = '\x0A';
 
 /// An error that can occur when parsing PICA+ records.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParsePicaError {
     pub message: String,
     pub data: Vec<u8>,
@@ -75,9 +75,13 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
+
+    use pica_core::Tag;
+
     use crate::matcher::OccurrenceMatcher;
     use crate::test::TestResult;
-    use crate::{Occurrence, Subfield, Tag};
+    use crate::{Occurrence, Subfield};
 
     #[test]
     fn test_parse_fields() -> TestResult {
@@ -88,17 +92,17 @@ mod tests {
             .1,
             vec![
                 Field::new(
-                    Tag::new("003@")?,
+                    Tag::from_str("003@")?,
                     None,
                     vec![Subfield::new('0', "123456789X").unwrap()]
                 ),
                 Field::new(
-                    Tag::new("012A")?,
+                    Tag::from_str("012A")?,
                     None,
                     vec![Subfield::new('a', "123").unwrap()]
                 ),
                 Field::new(
-                    Tag::new("012A")?,
+                    Tag::from_str("012A")?,
                     Some(Occurrence::new("01").unwrap()),
                     vec![Subfield::new('a', "456").unwrap()]
                 )

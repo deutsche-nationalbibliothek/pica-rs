@@ -1,0 +1,18 @@
+use std::error::Error;
+use std::fmt::Display;
+
+/// An error that can occur when parsing PICA+ records.
+#[derive(Debug, PartialEq, Eq)]
+pub enum ParseError {
+    InvalidTag,
+}
+
+impl Error for ParseError {}
+
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            Self::InvalidTag => f.write_str("parse error: invalid tag"),
+        }
+    }
+}

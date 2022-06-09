@@ -13,7 +13,7 @@ use std::ops::Deref;
 use std::result::Result as StdResult;
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ByteRecord {
     pub(crate) raw_data: Option<Vec<u8>>,
     pub(crate) fields: Vec<Field>,
@@ -25,12 +25,14 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field, Subfield};
+    /// use pica_core::Tag;
+    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let record = ByteRecord::new(vec![Field::new(
-    ///         Tag::new("003@")?,
+    ///         Tag::from_str("003@")?,
     ///         None,
     ///         vec![Subfield::new('0', "123456789X")?],
     ///     )]);
@@ -90,19 +92,21 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, Error, Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Error, Field, Subfield};
+    /// use pica_core::Tag;
+    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let record = ByteRecord::new(vec![Field::new(
-    ///         Tag::new("003@")?,
+    ///         Tag::from_str("003@")?,
     ///         None,
     ///         vec![Subfield::new('0', "123456789X")?],
     ///     )]);
     ///     assert_eq!(record.validate().is_ok(), true);
     ///
     ///     let record = ByteRecord::new(vec![Field::new(
-    ///         Tag::new("003@")?,
+    ///         Tag::from_str("003@")?,
     ///         None,
     ///         vec![
     ///             Subfield::new('0', "234567890X")?,
@@ -128,9 +132,11 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, Field, Occurrence, Subfield, Tag, WriterBuilder};
+    /// use pica::{ByteRecord, Field, Occurrence, Subfield, WriterBuilder};
+    /// use pica_core::Tag;
     /// use std::error::Error;
     /// use tempfile::Builder;
+    /// use std::str::FromStr;
     /// # use std::fs::read_to_string;
     ///
     /// # fn main() { example().unwrap(); }
@@ -140,12 +146,12 @@ impl ByteRecord {
     ///
     ///     let record = ByteRecord::new(vec![
     ///         Field::new(
-    ///             Tag::new("012A")?,
+    ///             Tag::from_str("012A")?,
     ///             Some(Occurrence::new("001")?),
     ///             vec![Subfield::new('0', "123456789X")?],
     ///         ),
     ///         Field::new(
-    ///             Tag::new("012A")?,
+    ///             Tag::from_str("012A")?,
     ///             Some(Occurrence::new("002")?),
     ///             vec![Subfield::new('0', "123456789X")?],
     ///         ),
@@ -175,7 +181,9 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field, Subfield};
+    /// use pica_core::Tag;
+    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -183,7 +191,7 @@ impl ByteRecord {
     ///     assert_eq!(
     ///         record.first("003@"),
     ///         Some(&Field::new(
-    ///             Tag::new("003@")?,
+    ///             Tag::from_str("003@")?,
     ///             None,
     ///             vec![Subfield::new('0', "123456789X")?]
     ///         ))
@@ -201,7 +209,9 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field, Subfield};
+    /// use pica_core::Tag;
+    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -212,12 +222,12 @@ impl ByteRecord {
     ///         record.all("012A"),
     ///         Some(vec![
     ///             &Field::new(
-    ///                 Tag::new("012A")?,
+    ///                 Tag::from_str("012A")?,
     ///                 None,
     ///                 vec![Subfield::new('a', "123")?]
     ///             ),
     ///             &Field::new(
-    ///                 Tag::new("012A")?,
+    ///                 Tag::from_str("012A")?,
     ///                 None,
     ///                 vec![Subfield::new('a', "456")?]
     ///             ),
@@ -331,7 +341,8 @@ impl ByteRecord {
     ///
     /// ```rust
     /// use pica::matcher::TagMatcher;
-    /// use pica::{ByteRecord, Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field, Subfield};
+    /// use pica_core::Tag;
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
@@ -343,7 +354,7 @@ impl ByteRecord {
     ///     assert_eq!(
     ///         record,
     ///         ByteRecord::new(vec![Field::new(
-    ///             Tag::new("012A")?,
+    ///             Tag::from_str("012A")?,
     ///             None,
     ///             vec![Subfield::new('a', "123")?],
     ///         )])
@@ -405,7 +416,7 @@ impl Deref for ByteRecord {
 }
 
 /// A PICA+ record, that guarantees valid UTF-8 data.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct StringRecord(ByteRecord);
 
 impl Deref for StringRecord {
@@ -509,20 +520,23 @@ impl Serialize for StringRecord {
 mod tests {
     use super::*;
     use std::io::Cursor;
+    use std::str::FromStr;
+
+    use pica_core::Tag;
 
     use crate::test::TestResult;
-    use crate::{Occurrence, Subfield, Tag};
+    use crate::{Occurrence, Subfield};
 
     #[test]
     fn test_field_new() -> TestResult {
         assert_eq!(
             Field::new(
-                Tag::new("003@")?,
+                Tag::from_str("003@")?,
                 None,
                 vec![Subfield::new('0', "123456789X")?]
             ),
             Field {
-                tag: Tag::new("003@")?,
+                tag: Tag::from_str("003@")?,
                 occurrence: None,
                 subfields: vec![Subfield::new('0', "123456789X")?]
             }
@@ -534,19 +548,19 @@ mod tests {
     #[test]
     fn test_field_tag() -> TestResult {
         let field = Field::new(
-            Tag::new("003@")?,
+            Tag::from_str("003@")?,
             None,
             vec![Subfield::new('0', "123456789X")?],
         );
 
-        assert_eq!(field.tag(), &Tag::new("003@")?);
+        assert_eq!(field.tag(), &Tag::from_str("003@")?);
         Ok(())
     }
 
     #[test]
     fn test_field_occurrence() -> TestResult {
         let field = Field::new(
-            Tag::new("003@")?,
+            Tag::from_str("003@")?,
             None,
             vec![Subfield::new('0', "123456789X")?],
         );
@@ -554,7 +568,7 @@ mod tests {
         assert_eq!(field.occurrence(), None);
 
         let field = Field::new(
-            Tag::new("003@")?,
+            Tag::from_str("003@")?,
             Some(Occurrence::new("01")?),
             vec![Subfield::new('0', "123456789X")?],
         );
@@ -567,7 +581,7 @@ mod tests {
     #[test]
     fn test_field_contains_code() -> TestResult {
         let field = Field::new(
-            Tag::new("003@")?,
+            Tag::from_str("003@")?,
             None,
             vec![Subfield::new('0', "123456789X")?],
         );
@@ -581,7 +595,7 @@ mod tests {
     #[test]
     fn test_field_get() -> TestResult {
         let field = Field::new(
-            Tag::new("012A")?,
+            Tag::from_str("012A")?,
             None,
             vec![
                 Subfield::new('a', "abc")?,
@@ -606,7 +620,7 @@ mod tests {
     #[test]
     fn test_field_first() -> TestResult {
         let field = Field::new(
-            Tag::new("012A")?,
+            Tag::from_str("012A")?,
             None,
             vec![
                 Subfield::new('a', "abc")?,
@@ -625,7 +639,7 @@ mod tests {
     #[test]
     fn test_field_all() -> TestResult {
         let field = Field::new(
-            Tag::new("012A")?,
+            Tag::from_str("012A")?,
             None,
             vec![
                 Subfield::new('a', "abc")?,
@@ -647,7 +661,7 @@ mod tests {
     #[test]
     fn test_field_validate() -> TestResult {
         let field = Field::new(
-            Tag::new("012A")?,
+            Tag::from_str("012A")?,
             None,
             vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
         );
@@ -655,7 +669,7 @@ mod tests {
         assert!(field.validate().is_ok());
 
         let field = Field::new(
-            Tag::new("012A")?,
+            Tag::from_str("012A")?,
             None,
             vec![
                 Subfield::new('a', "abc")?,
@@ -673,7 +687,7 @@ mod tests {
     fn test_field_write() -> TestResult {
         let mut writer = Cursor::new(Vec::<u8>::new());
         let field = Field::new(
-            Tag::new("012A")?,
+            Tag::from_str("012A")?,
             Some(Occurrence::new("01")?),
             vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
         );
@@ -691,7 +705,7 @@ mod tests {
     #[test]
     fn test_field_to_string() -> TestResult {
         let field = Field::new(
-            Tag::new("012A")?,
+            Tag::from_str("012A")?,
             Some(Occurrence::new("01")?),
             vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
         );

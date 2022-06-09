@@ -198,16 +198,20 @@ fn parse_selectors(i: &[u8]) -> ParseResult<Selectors> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
+
+    use pica_core::Tag;
+
     use crate::matcher::{ComparisonOp, SubfieldMatcher};
     use crate::test::TestResult;
-    use crate::{Occurrence, Tag};
+    use crate::Occurrence;
 
     #[test]
     fn test_parse_selector() -> TestResult {
         assert_eq!(
             parse_selector(b"003@.0")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::Some(Tag::new("003@")?),
+                TagMatcher::Some(Tag::from_str("003@")?),
                 OccurrenceMatcher::None,
                 None,
                 vec!['0']
@@ -217,7 +221,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"003@$0")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::Some(Tag::new("003@")?),
+                TagMatcher::Some(Tag::from_str("003@")?),
                 OccurrenceMatcher::None,
                 None,
                 vec!['0']
@@ -227,7 +231,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"003@ $0")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::Some(Tag::new("003@")?),
+                TagMatcher::Some(Tag::from_str("003@")?),
                 OccurrenceMatcher::None,
                 None,
                 vec!['0']
@@ -237,7 +241,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"044H/*{ 9, E ,H}")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::Some(Tag::new("044H")?),
+                TagMatcher::Some(Tag::from_str("044H")?),
                 OccurrenceMatcher::Any,
                 None,
                 vec!['9', 'E', 'H']
@@ -247,7 +251,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"044H/*{ E == 'm', 9, E , H }")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::Some(Tag::new("044H")?),
+                TagMatcher::Some(Tag::from_str("044H")?),
                 OccurrenceMatcher::Any,
                 Some(SubfieldListMatcher::Singleton(
                     SubfieldMatcher::Comparison(
@@ -263,7 +267,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"012A/*.a")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::Some(Tag::new("012A")?),
+                TagMatcher::Some(Tag::from_str("012A")?),
                 OccurrenceMatcher::Any,
                 None,
                 vec!['a']
@@ -273,7 +277,7 @@ mod tests {
         assert_eq!(
             parse_selector(b"012A/01.a")?.1,
             Selector::Field(Box::new(FieldSelector::new(
-                TagMatcher::Some(Tag::new("012A")?),
+                TagMatcher::Some(Tag::from_str("012A")?),
                 OccurrenceMatcher::Some(Occurrence::new("01")?),
                 None,
                 vec!['a']

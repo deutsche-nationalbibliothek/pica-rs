@@ -31,7 +31,7 @@ macro_rules! maybe_lowercase {
 }
 
 /// A subfield matcher.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum SubfieldMatcher {
     Comparison(Vec<char>, ComparisonOp, BString),
     Exists(Vec<char>),

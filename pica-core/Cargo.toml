@@ -4,4 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+bstr = "0.2"
 nom = "7.1"
+
+[dev-dependencies]
+criterion = "0.3"
+nom-test-helpers = "6"
+
+[[bench]]
+name = "tag"
+harness = false
