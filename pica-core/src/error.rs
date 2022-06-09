@@ -12,7 +12,7 @@ impl Error for ParseError {}
 impl Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
-            Self::InvalidTag => f.write_str("pica parse error: invalid tag"),
+            Self::InvalidTag => f.write_str("parse error: invalid tag"),
         }
     }
 }

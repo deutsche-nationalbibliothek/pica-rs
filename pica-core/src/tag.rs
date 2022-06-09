@@ -135,7 +135,10 @@ mod tests {
     #[test]
     fn test_tag_ref_from_bytes() -> TestResult {
         assert_eq!(TagRef::from_bytes(b"003@")?, TagRef(b"003@".as_bstr()));
-        assert!(TagRef::from_bytes(b"!003@").is_err());
+        assert_eq!(
+            TagRef::from_bytes(b"!003@").unwrap_err().to_string(),
+            "parse error: invalid tag"
+        );
 
         Ok(())
     }
@@ -144,6 +147,14 @@ mod tests {
     fn test_tag_from_str() -> TestResult {
         assert_eq!(Tag::from_str("003@")?, Tag("003@".into()));
         assert!(Tag::from_str("!003@").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_tag_str_eq() -> TestResult {
+        assert_eq!(Tag::from_str("003@")?, "003@");
+        assert_ne!(Tag::from_str("002@")?, "003@");
 
         Ok(())
     }
