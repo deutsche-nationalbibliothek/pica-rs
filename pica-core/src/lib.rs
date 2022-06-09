@@ -1,5 +1,11 @@
-/// Holds the result of a parsing function.
-///
-/// It takes a byte slice as input and uses `nom::Err<()>` as error variant. The
-/// type only depends the output type `O`.
-pub type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
+mod error;
+mod tag;
+mod types;
+
+pub use error::ParseError;
+pub use tag::{Tag, TagRef};
+pub use types::ParseResult;
+
+pub mod parser {
+    pub use super::tag::parse_tag;
+}

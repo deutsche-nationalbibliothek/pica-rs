@@ -12,10 +12,11 @@
 //! occurrence ::= '/' [0-9]{2,3}
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
+use pica_core::Tag;
 
 use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_path, ParsePathError};
-use crate::{Error, Result, Tag};
+use crate::{Error, Result};
 
 use std::str::FromStr;
 
@@ -56,7 +57,7 @@ impl Path {
         }
 
         Ok(Path {
-            tag: TagMatcher::Some(Tag::new(tag)?),
+            tag: TagMatcher::Some(Tag::from_bytes(tag.as_ref().as_bytes())?),
             occurrence,
             codes,
         })

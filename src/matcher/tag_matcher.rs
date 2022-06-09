@@ -9,9 +9,9 @@ use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::{AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice};
 
-use pica_core::ParseResult;
+use pica_core::parser::parse_tag;
+use pica_core::{ParseResult, Tag};
 
-use crate::tag::{parse_tag, Tag};
 use crate::Error;
 
 #[derive(Debug, PartialEq)]
@@ -83,13 +83,14 @@ impl TagMatcher {
     ///
     /// ```rust
     /// use pica::matcher::TagMatcher;
-    /// use pica::Tag;
+    /// use pica_core::Tag;
+    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let matcher = TagMatcher::new("012[A@]")?;
-    ///     assert!(matcher.is_match(&Tag::new("012A")?));
-    ///     assert!(matcher.is_match(&Tag::new("012@")?));
+    ///     assert!(matcher.is_match(&Tag::from_str("012A")?));
+    ///     assert!(matcher.is_match(&Tag::from_str("012@")?));
     ///     Ok(())
     /// }
     /// ```
@@ -131,7 +132,7 @@ where
 
 pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
     alt((
-        map(parse_tag, TagMatcher::Some),
+        map(parse_tag, |tag| TagMatcher::Some(Tag::from(tag))),
         map(
             tuple((
                 alt((
@@ -163,55 +164,56 @@ pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
 mod tests {
     use super::*;
     use crate::test::TestResult;
+    use std::str::FromStr;
 
     #[test]
     fn test_tag_matcher() -> TestResult {
         let matcher = TagMatcher::new("012A")?;
-        assert!(matcher.is_match(&Tag::new("012A")?));
-        assert!(!matcher.is_match(&Tag::new("012@")?));
+        assert!(matcher.is_match(&Tag::from_str("012A")?));
+        assert!(!matcher.is_match(&Tag::from_str("012@")?));
 
         let matcher = TagMatcher::new("[01][34][56][AB]")?;
-        assert!(matcher.is_match(&Tag::new("035A")?));
-        assert!(matcher.is_match(&Tag::new("146B")?));
+        assert!(matcher.is_match(&Tag::from_str("035A")?));
+        assert!(matcher.is_match(&Tag::from_str("146B")?));
 
         let matcher = TagMatcher::new(".12A")?;
-        assert!(matcher.is_match(&Tag::new("012A")?));
-        assert!(matcher.is_match(&Tag::new("112A")?));
-        assert!(matcher.is_match(&Tag::new("212A")?));
+        assert!(matcher.is_match(&Tag::from_str("012A")?));
+        assert!(matcher.is_match(&Tag::from_str("112A")?));
+        assert!(matcher.is_match(&Tag::from_str("212A")?));
 
         let matcher = TagMatcher::new("0.2A")?;
-        assert!(matcher.is_match(&Tag::new("002A")?));
-        assert!(matcher.is_match(&Tag::new("012A")?));
-        assert!(matcher.is_match(&Tag::new("022A")?));
-        assert!(matcher.is_match(&Tag::new("032A")?));
-        assert!(matcher.is_match(&Tag::new("042A")?));
-        assert!(matcher.is_match(&Tag::new("052A")?));
-        assert!(matcher.is_match(&Tag::new("062A")?));
-        assert!(matcher.is_match(&Tag::new("072A")?));
-        assert!(matcher.is_match(&Tag::new("082A")?));
-        assert!(matcher.is_match(&Tag::new("092A")?));
+        assert!(matcher.is_match(&Tag::from_str("002A")?));
+        assert!(matcher.is_match(&Tag::from_str("012A")?));
+        assert!(matcher.is_match(&Tag::from_str("022A")?));
+        assert!(matcher.is_match(&Tag::from_str("032A")?));
+        assert!(matcher.is_match(&Tag::from_str("042A")?));
+        assert!(matcher.is_match(&Tag::from_str("052A")?));
+        assert!(matcher.is_match(&Tag::from_str("062A")?));
+        assert!(matcher.is_match(&Tag::from_str("072A")?));
+        assert!(matcher.is_match(&Tag::from_str("082A")?));
+        assert!(matcher.is_match(&Tag::from_str("092A")?));
 
         let matcher = TagMatcher::new("01.A")?;
-        assert!(matcher.is_match(&Tag::new("010A")?));
-        assert!(matcher.is_match(&Tag::new("011A")?));
-        assert!(matcher.is_match(&Tag::new("012A")?));
-        assert!(matcher.is_match(&Tag::new("013A")?));
-        assert!(matcher.is_match(&Tag::new("014A")?));
-        assert!(matcher.is_match(&Tag::new("015A")?));
-        assert!(matcher.is_match(&Tag::new("016A")?));
-        assert!(matcher.is_match(&Tag::new("017A")?));
-        assert!(matcher.is_match(&Tag::new("018A")?));
-        assert!(matcher.is_match(&Tag::new("019A")?));
+        assert!(matcher.is_match(&Tag::from_str("010A")?));
+        assert!(matcher.is_match(&Tag::from_str("011A")?));
+        assert!(matcher.is_match(&Tag::from_str("012A")?));
+        assert!(matcher.is_match(&Tag::from_str("013A")?));
+        assert!(matcher.is_match(&Tag::from_str("014A")?));
+        assert!(matcher.is_match(&Tag::from_str("015A")?));
+        assert!(matcher.is_match(&Tag::from_str("016A")?));
+        assert!(matcher.is_match(&Tag::from_str("017A")?));
+        assert!(matcher.is_match(&Tag::from_str("018A")?));
+        assert!(matcher.is_match(&Tag::from_str("019A")?));
 
         let matcher = TagMatcher::new("012.")?;
-        assert!(matcher.is_match(&Tag::new("012A")?));
-        assert!(matcher.is_match(&Tag::new("012B")?));
-        assert!(matcher.is_match(&Tag::new("012C")?));
-        assert!(matcher.is_match(&Tag::new("012@")?));
+        assert!(matcher.is_match(&Tag::from_str("012A")?));
+        assert!(matcher.is_match(&Tag::from_str("012B")?));
+        assert!(matcher.is_match(&Tag::from_str("012C")?));
+        assert!(matcher.is_match(&Tag::from_str("012@")?));
 
         let matcher = TagMatcher::new("0...")?;
-        assert!(matcher.is_match(&Tag::new("012A")?));
-        assert!(matcher.is_match(&Tag::new("023B")?));
+        assert!(matcher.is_match(&Tag::from_str("012A")?));
+        assert!(matcher.is_match(&Tag::from_str("023B")?));
 
         assert!(TagMatcher::new("412A").is_err());
         assert!(TagMatcher::new("0A2A").is_err());
@@ -227,10 +229,5 @@ mod tests {
         assert_eq!(TagMatcher::new("[01]12A")?.to_string(), "[01]12A");
         assert_eq!(TagMatcher::new("[0]12A")?.to_string(), "012A");
         Ok(())
-    }
-
-    #[quickcheck]
-    fn tag_matcher_quickcheck(tag: Tag) -> bool {
-        TagMatcher::from(tag.clone()).is_match(&tag)
     }
 }
