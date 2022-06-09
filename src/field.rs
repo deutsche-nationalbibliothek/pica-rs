@@ -30,7 +30,7 @@ const RS: char = '\x1E';
 const SP: char = '\x20';
 
 /// A PICA+ field, that may contian invalid UTF-8 data.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Field {
     pub(crate) tag: Tag,
     pub(crate) occurrence: Option<Occurrence>,
@@ -467,7 +467,7 @@ pub(crate) fn parse_field(i: &[u8]) -> ParseResult<Field> {
     map(
         terminated(
             tuple((
-                map(parse_tag, |tag| Tag::from(tag)),
+                map(parse_tag, Tag::from),
                 alt((
                     value(None, tag("/00")),
                     map(parse_occurrence, Some),

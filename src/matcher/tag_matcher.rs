@@ -14,7 +14,7 @@ use pica_core::{ParseResult, Tag};
 
 use crate::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum TagMatcher {
     Some(Tag),
     Pattern(Vec<char>, Vec<char>, Vec<char>, Vec<char>),

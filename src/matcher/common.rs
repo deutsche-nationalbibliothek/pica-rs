@@ -7,7 +7,7 @@ use nom::combinator::value;
 use pica_core::ParseResult;
 
 /// Boolean Operators.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BooleanOp {
     And, // and, "&&"
     Or,  // or, "||"
@@ -23,7 +23,7 @@ impl fmt::Display for BooleanOp {
 }
 
 /// Comparison Operators
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ComparisonOp {
     Eq,         // equal, "=="
     Ne,         // not equal, "!="

@@ -17,7 +17,7 @@ use pica_core::ParseResult;
 use crate::error::Error;
 
 /// A PICA+ occurrence.
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub struct Occurrence(BString);
 
 /// Parses digits of a PICA+ occurrence.

@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt::Display;
 
 /// An error that can occur when parsing PICA+ records.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ParseError {
     InvalidTag,
 }

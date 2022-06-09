@@ -20,7 +20,7 @@ use crate::{Error, Result};
 
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Path {
     pub(crate) tag: TagMatcher,
     pub(crate) occurrence: OccurrenceMatcher,

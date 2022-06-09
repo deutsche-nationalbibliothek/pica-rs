@@ -11,18 +11,18 @@ use nom::Finish;
 use crate::{ParseError, ParseResult};
 
 /// An immutable (read-only) PICA+ tag.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct TagRef<'a>(&'a BStr);
 
 /// A mutable PICA+ tag.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Tag(BString);
 
 /// Parse a PICA+ tag
 #[inline]
 pub fn parse_tag<'a>(i: &'a [u8]) -> ParseResult<TagRef<'a>> {
     let (i, value) = recognize(tuple((
-        satisfy(|c| c >= '0' && c <= '2'),
+        satisfy(|c| ('0'..='2').contains(&c)),
         satisfy(|c| c.is_ascii_digit()),
         satisfy(|c| c.is_ascii_digit()),
         satisfy(|c| c.is_ascii_uppercase() || c == '@'),
@@ -137,6 +137,20 @@ mod tests {
         assert_eq!(TagRef::from_bytes(b"003@")?, TagRef(b"003@".as_bstr()));
         assert!(TagRef::from_bytes(b"!003@").is_err());
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_tag_from_str() -> TestResult {
+        assert_eq!(Tag::from_str("003@")?, Tag("003@".into()));
+        assert!(Tag::from_str("!003@").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_tag_to_string() -> TestResult {
+        assert_eq!(Tag::from_str("003@")?.to_string(), "003@");
         Ok(())
     }
 
