@@ -148,7 +148,7 @@ jobs:
       #     crate: cargo-fuzz
       #     version: latest
       - run: |
-          cargo install --force cargo-fuzz
+          cargo install cargo-fuzz
       - run: |
           cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
 
