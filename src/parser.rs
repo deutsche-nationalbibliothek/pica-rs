@@ -6,11 +6,11 @@ use nom::combinator::{all_consuming, map, opt};
 use nom::multi::many1;
 use nom::sequence::{delimited, preceded, terminated, tuple};
 
+use pica_core::parser::parse_subfield_code;
 use pica_core::ParseResult;
 
 use crate::field::{parse_field, Field};
 use crate::matcher::{parse_occurrence_matcher, parse_tag_matcher};
-use crate::subfield::parse_subfield_code;
 use crate::Path;
 
 const NL: char = '\x0A';
@@ -75,14 +75,11 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pica_core::{Occurrence, Subfield, Tag};
     use std::str::FromStr;
-
-    use pica_core::Tag;
 
     use crate::matcher::OccurrenceMatcher;
     use crate::test::TestResult;
-    use crate::Subfield;
-    use pica_core::Occurrence;
 
     #[test]
     fn test_parse_fields() -> TestResult {
@@ -95,17 +92,17 @@ mod tests {
                 Field::new(
                     Tag::from_str("003@")?,
                     None,
-                    vec![Subfield::new('0', "123456789X").unwrap()]
+                    vec![Subfield::from_bytes(b"\x1f0123456789X").unwrap()]
                 ),
                 Field::new(
                     Tag::from_str("012A")?,
                     None,
-                    vec![Subfield::new('a', "123").unwrap()]
+                    vec![Subfield::from_bytes(b"\x1fa123").unwrap()]
                 ),
                 Field::new(
                     Tag::from_str("012A")?,
                     Some(Occurrence::from_str("/01").unwrap()),
-                    vec![Subfield::new('a', "456").unwrap()]
+                    vec![Subfield::from_bytes(b"\x1fa456").unwrap()]
                 )
             ]
         );

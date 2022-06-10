@@ -9,14 +9,14 @@ use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
-use pica_core::ParseResult;
+use pica_core::parser::parse_subfield_code;
+use pica_core::{ParseResult, Subfield};
 
 use crate::common::ws;
 use crate::matcher::{
     parse_comparison_op_usize, parse_subfield_matcher, BooleanOp, ComparisonOp,
     MatcherFlags, SubfieldMatcher,
 };
-use crate::subfield::{parse_subfield_code, Subfield};
 use crate::Error;
 
 use super::subfield_matcher::parse_subfield_matcher_exists;
@@ -88,12 +88,15 @@ impl SubfieldListMatcher {
     ///
     /// ```rust
     /// use pica::matcher::{MatcherFlags, SubfieldListMatcher};
-    /// use pica::Subfield;
+    /// use pica_core::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let matcher = SubfieldListMatcher::new("0 == 'abc' && 9?")?;
-    ///     let list = [Subfield::new('0', "abc")?, Subfield::new('9', "123")?];
+    ///     let list = [
+    ///         Subfield::from_bytes(b"\x1f0abc")?,
+    ///         Subfield::from_bytes(b"\x1f9123")?,
+    ///     ];
     ///     assert!(matcher.is_match(&list, &MatcherFlags::default()));
     ///     Ok(())
     /// }
@@ -318,10 +321,10 @@ mod tests {
     fn test_subfield_list_matcher_singleton() -> TestResult {
         let matcher = SubfieldListMatcher::new("0 == 'abc'")?;
 
-        let subfields = [Subfield::new('0', "abc")?];
+        let subfields = [Subfield::from_bytes(b"\x1f0abc")?];
         assert!(matcher.is_match(&subfields, &MatcherFlags::default()));
 
-        let subfields = [Subfield::new('0', "bcd")?];
+        let subfields = [Subfield::from_bytes(b"\x1f0bcd")?];
         assert!(!matcher.is_match(&subfields, &MatcherFlags::default()));
 
         Ok(())
@@ -329,8 +332,10 @@ mod tests {
 
     #[test]
     fn test_subfield_list_matcher_cardinality() -> TestResult {
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
 
         let matcher = SubfieldListMatcher::new("#0 == 2")?;
         assert!(matcher.is_match(&subfields, &MatcherFlags::default()));
@@ -362,23 +367,31 @@ mod tests {
         let flags = MatcherFlags::default();
 
         let matcher = SubfieldListMatcher::new("(0? && 0 == 'abc')")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("(0 == 'abc')")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("(!9?)")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("((0 == 'def'))")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         assert!(SubfieldListMatcher::new("((0 == 'abc')").is_err());
@@ -391,18 +404,24 @@ mod tests {
         let flags = MatcherFlags::default();
 
         let matcher = SubfieldListMatcher::new("!(0? && 0 == 'hij')")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("!9?")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("!!(0? && 0 == 'abc')")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         Ok(())
@@ -414,46 +433,62 @@ mod tests {
 
         let matcher =
             SubfieldListMatcher::new("0? && 0 == 'abc' && 0 == 'def'")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0hij")?,
+        ];
         assert!(!matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
-        let subfields =
-            [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0hij")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(!matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0hij")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher = SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
-        let subfields =
-            [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0hij")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher =
             SubfieldListMatcher::new("9? || 0 == 'abc' && 0 == 'def'")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher =
             SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'def'")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(matcher.is_match(&subfields, &flags));
 
         let matcher =
             SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'hij'")?;
-        let subfields =
-            [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
+        let subfields = [
+            Subfield::from_bytes(b"\x1f0abc")?,
+            Subfield::from_bytes(b"\x1f0def")?,
+        ];
         assert!(!matcher.is_match(&subfields, &flags));
 
         Ok(())

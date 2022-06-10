@@ -6,10 +6,12 @@ edition = "2021"
 [dependencies]
 bstr = "0.2"
 nom = "7.1"
+serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
 criterion = "0.3"
-nom-test-helpers = "6"
+nom-test-helpers = "6.0"
+tempfile = "3.2"
 
 [[bench]]
 name = "tag"
@@ -17,4 +19,8 @@ harness = false
 
 [[bench]]
 name = "occurrence"
+harness = false
+
+[[bench]]
+name = "subfield"
 harness = false
