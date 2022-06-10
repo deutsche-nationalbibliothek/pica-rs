@@ -227,7 +227,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     // OCCURRENCE
                     if let Some(occurrence) = field.occurrence() {
                         stdout.set_color(&occurrence_color)?;
-                        write!(stdout, "/{}", occurrence)?;
+                        write!(stdout, "{}", occurrence)?;
                     }
 
                     if !add_spaces {

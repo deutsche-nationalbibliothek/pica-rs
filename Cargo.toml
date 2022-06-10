@@ -31,8 +31,6 @@ pica-core = { path = "./pica-core" }
 [dev-dependencies]
 assert_cmd = "2.0"
 predicates = "2.1"
-quickcheck = "1.0"
-quickcheck_macros = "1.0"
 tempfile = "3.2"
 
 [lib]

@@ -2,14 +2,16 @@ use std::fmt;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map, success, value, verify};
+use nom::character::complete::{char, satisfy};
+use nom::combinator::{
+    all_consuming, cut, map, recognize, success, value, verify,
+};
+use nom::multi::many_m_n;
 use nom::sequence::{preceded, separated_pair};
 use nom::Finish;
 
-use pica_core::ParseResult;
+use pica_core::{Occurrence, ParseResult};
 
-use crate::occurrence::{parse_occurrence_digits, Occurrence};
 use crate::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -23,8 +25,11 @@ pub enum OccurrenceMatcher {
 impl fmt::Display for OccurrenceMatcher {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Some(o) => write!(f, "/{}", o),
-            Self::Range(from, to) => write!(f, "/{}-{}", from, to),
+            Self::Some(o) => write!(f, "{}", o),
+            Self::Range(from, to) => {
+                let to = to.to_string();
+                write!(f, "{}-{}", from, &to[1..to.len()])
+            }
             Self::Any => write!(f, "/*"),
             Self::None => write!(f, ""),
         }
@@ -70,12 +75,13 @@ impl OccurrenceMatcher {
     ///
     /// ```rust
     /// use pica::matcher::OccurrenceMatcher;
-    /// use pica::Occurrence;
+    /// use pica_core::Occurrence;
+    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let matcher = OccurrenceMatcher::new("/01-09")?;
-    ///     assert!(matcher.is_match(Some(&Occurrence::new("03")?)));
+    ///     assert!(matcher.is_match(Some(&Occurrence::from_str("/03")?)));
     ///     Ok(())
     /// }
     /// ```
@@ -100,6 +106,11 @@ impl From<Occurrence> for OccurrenceMatcher {
     fn from(occurrence: Occurrence) -> Self {
         Self::Some(occurrence)
     }
+}
+
+#[inline]
+fn parse_occurrence_digits(i: &[u8]) -> ParseResult<&[u8]> {
+    recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit())))(i)
 }
 
 pub(crate) fn parse_occurrence_matcher(
@@ -141,35 +152,36 @@ pub(crate) fn parse_occurrence_matcher(
 mod tests {
     use super::*;
     use crate::test::TestResult;
+    use std::str::FromStr;
 
     #[test]
     fn test_occurrence_matcher() -> TestResult {
         // Some
         let matcher = OccurrenceMatcher::new("/03")?;
-        assert!(!matcher.is_match(Some(&Occurrence::new("00")?)));
-        assert!(!matcher.is_match(Some(&Occurrence::new("02")?)));
-        assert!(matcher.is_match(Some(&Occurrence::new("03")?)));
-        assert!(!matcher.is_match(Some(&Occurrence::new("04")?)));
+        assert!(!matcher.is_match(Some(&Occurrence::from_str("/00")?)));
+        assert!(!matcher.is_match(Some(&Occurrence::from_str("/02")?)));
+        assert!(matcher.is_match(Some(&Occurrence::from_str("/03")?)));
+        assert!(!matcher.is_match(Some(&Occurrence::from_str("/04")?)));
 
         // Range
         let matcher = OccurrenceMatcher::new("/03-05")?;
-        assert!(!matcher.is_match(Some(&Occurrence::new("00")?)));
-        assert!(!matcher.is_match(Some(&Occurrence::new("02")?)));
-        assert!(matcher.is_match(Some(&Occurrence::new("03")?)));
-        assert!(matcher.is_match(Some(&Occurrence::new("04")?)));
-        assert!(matcher.is_match(Some(&Occurrence::new("05")?)));
-        assert!(!matcher.is_match(Some(&Occurrence::new("06")?)));
+        assert!(!matcher.is_match(Some(&Occurrence::from_str("/00")?)));
+        assert!(!matcher.is_match(Some(&Occurrence::from_str("/02")?)));
+        assert!(matcher.is_match(Some(&Occurrence::from_str("/03")?)));
+        assert!(matcher.is_match(Some(&Occurrence::from_str("/04")?)));
+        assert!(matcher.is_match(Some(&Occurrence::from_str("/05")?)));
+        assert!(!matcher.is_match(Some(&Occurrence::from_str("/06")?)));
 
         // Any
         let matcher = OccurrenceMatcher::new("/*")?;
-        assert!(matcher.is_match(Some(&Occurrence::new("00")?)));
-        assert!(matcher.is_match(Some(&Occurrence::new("01")?)));
+        assert!(matcher.is_match(Some(&Occurrence::from_str("/00")?)));
+        assert!(matcher.is_match(Some(&Occurrence::from_str("/01")?)));
         assert!(matcher.is_match(None));
 
         // None
         let matcher = OccurrenceMatcher::None;
-        assert!(matcher.is_match(Some(&Occurrence::new("00")?)));
-        assert!(!matcher.is_match(Some(&Occurrence::new("01")?)));
+        assert!(matcher.is_match(Some(&Occurrence::from_str("/00")?)));
+        assert!(!matcher.is_match(Some(&Occurrence::from_str("/01")?)));
         assert!(matcher.is_match(None));
 
         // Error
@@ -190,15 +202,5 @@ mod tests {
         assert_eq!(OccurrenceMatcher::new("")?.to_string(), "");
 
         Ok(())
-    }
-
-    #[quickcheck]
-    fn occurrence_matcher_quickcheck1(occurrence: Occurrence) -> bool {
-        OccurrenceMatcher::from(occurrence.clone()).is_match(Some(&occurrence))
-    }
-
-    #[quickcheck]
-    fn occurrence_matcher_quickcheck2(occurrence: Occurrence) -> bool {
-        OccurrenceMatcher::Any.is_match(Some(&occurrence))
     }
 }

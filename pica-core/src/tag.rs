@@ -10,13 +10,9 @@ use nom::Finish;
 
 use crate::{ParseError, ParseResult};
 
-/// An immutable (read-only) PICA+ tag.
+/// An immutable PICA+ tag.
 #[derive(Debug, PartialEq, Eq)]
 pub struct TagRef<'a>(&'a BStr);
-
-/// A mutable PICA+ tag.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Tag(BString);
 
 /// Parse a PICA+ tag
 #[inline]
@@ -55,6 +51,10 @@ impl<'a> TagRef<'a> {
     }
 }
 
+/// A mutable PICA+ tag.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Tag(BString);
+
 impl Tag {
     /// Creates an PICA+ tag from a byte slice.
     ///
@@ -82,12 +82,6 @@ impl From<TagRef<'_>> for Tag {
     }
 }
 
-impl fmt::Display for Tag {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
 impl Deref for Tag {
     type Target = BString;
 
@@ -108,6 +102,12 @@ impl FromStr for Tag {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Tag::from_bytes(s.as_bytes())
+    }
+}
+
+impl fmt::Display for Tag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

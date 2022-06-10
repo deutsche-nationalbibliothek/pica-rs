@@ -1,12 +1,5 @@
-#[cfg(test)]
-extern crate quickcheck;
-#[cfg(test)]
-#[macro_use(quickcheck)]
-extern crate quickcheck_macros;
-
 pub use self::error::{Error, Result};
 pub use self::field::Field;
-pub use self::occurrence::Occurrence;
 pub use self::parser::{ParsePathError, ParsePicaError};
 pub use self::path::Path;
 pub use self::reader::{Reader, ReaderBuilder};
@@ -19,7 +12,6 @@ mod common;
 mod error;
 mod field;
 pub mod matcher;
-mod occurrence;
 mod parser;
 mod path;
 mod reader;

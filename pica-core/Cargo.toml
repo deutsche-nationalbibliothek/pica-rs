@@ -14,3 +14,7 @@ nom-test-helpers = "6"
 [[bench]]
 name = "tag"
 harness = false
+
+[[bench]]
+name = "occurrence"
+harness = false

@@ -76,6 +76,9 @@ impl From<pica_core::ParseError> for Error {
             pica_core::ParseError::InvalidTag => {
                 Self::InvalidTag("invalid tag".to_string())
             }
+            pica_core::ParseError::InvalidOccurrence => {
+                Self::InvalidOccurrence("invalid occurrence".to_string())
+            }
         }
     }
 }

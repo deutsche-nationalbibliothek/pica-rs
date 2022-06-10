@@ -17,14 +17,11 @@ use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
-use pica_core::ParseResult;
+use pica_core::parser::{parse_occurrence, parse_tag};
+use pica_core::{Occurrence, ParseResult, Tag};
 
 use crate::error::{Error, Result};
-use crate::occurrence::{parse_occurrence, Occurrence};
 use crate::subfield::{parse_subfield, Subfield};
-
-use pica_core::parser::parse_tag;
-use pica_core::Tag;
 
 const RS: char = '\x1E';
 const SP: char = '\x20';
@@ -108,18 +105,18 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Occurrence};
-    /// use pica_core::Tag;
+    /// use pica::Field;
+    /// use pica_core::{Occurrence, Tag};
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
     ///         Tag::from_str("012A")?,
-    ///         Some(Occurrence::new("00")?),
+    ///         Some(Occurrence::from_str("/00")?),
     ///         vec![],
     ///     );
-    ///     assert_eq!(field.occurrence(), Some(&Occurrence::new("00")?));
+    ///     assert_eq!(field.occurrence(), Some(&Occurrence::from_str("/00")?));
     ///     Ok(())
     /// }
     /// ```
@@ -132,7 +129,7 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Occurrence, Subfield};
+    /// use pica::{Field, Subfield};
     /// use pica_core::Tag;
     /// use std::str::FromStr;
     ///
@@ -346,8 +343,9 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Occurrence, Subfield, WriterBuilder};
+    /// use pica::{Field, Subfield, WriterBuilder};
     /// use pica_core::Tag;
+    /// use pica_core::Occurrence;
     /// use std::str::FromStr;
     /// use std::error::Error;
     /// use tempfile::Builder;
@@ -359,7 +357,7 @@ impl Field {
     ///     # let path = tempfile.path().to_owned();
     ///
     ///     let subfield = Subfield::new('0', "123456789X")?;
-    ///     let occurrence = Occurrence::new("001")?;
+    ///     let occurrence = Occurrence::from_str("/001")?;
     ///     let field = Field::new(Tag::from_str("012A")?, Some(occurrence), vec![subfield]);
     ///
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
@@ -375,7 +373,7 @@ impl Field {
         writer.write_all(self.tag.as_slice())?;
 
         if let Some(ref occurrence) = self.occurrence {
-            write!(writer, "/{}", occurrence)?;
+            write!(writer, "{}", occurrence)?;
         }
 
         writer.write_all(&[b' '])?;
@@ -395,15 +393,15 @@ impl fmt::Display for Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Error, Field, Occurrence, Subfield};
-    /// use pica_core::Tag;
+    /// use pica::{Error, Field, Subfield};
+    /// use pica_core::{Occurrence, Tag};
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
     ///         Tag::from_str("012A")?,
-    ///         Some(Occurrence::new("01")?),
+    ///         Some(Occurrence::from_str("/01")?),
     ///         vec![
     ///             Subfield::new('0', "123456789X")?,
     ///             Subfield::new('a', "foo")?,
@@ -419,7 +417,7 @@ impl fmt::Display for Field {
         write!(f, "{}", self.tag)?;
 
         if let Some(ref occurrence) = self.occurrence {
-            write!(f, "/{}", occurrence)?;
+            write!(f, "{}", occurrence)?;
         }
 
         if !self.is_empty() {
@@ -470,7 +468,7 @@ pub(crate) fn parse_field(i: &[u8]) -> ParseResult<Field> {
                 map(parse_tag, Tag::from),
                 alt((
                     value(None, tag("/00")),
-                    map(parse_occurrence, Some),
+                    map(parse_occurrence, |o| Some(o.into())),
                     success(None),
                 )),
                 preceded(char(SP), many0(parse_subfield)),
@@ -527,7 +525,7 @@ mod tests {
             parse_field(b"012A/01 \x1f0abc\x1f0def\x1e")?.1,
             Field::new(
                 Tag::from_str("012A")?,
-                Some(Occurrence::new("01")?),
+                Some(Occurrence::from_str("/01")?),
                 vec![Subfield::new('0', "abc")?, Subfield::new('0', "def")?]
             )
         );

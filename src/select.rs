@@ -200,11 +200,10 @@ mod tests {
     use super::*;
     use std::str::FromStr;
 
-    use pica_core::Tag;
+    use pica_core::{Occurrence, Tag};
 
     use crate::matcher::{ComparisonOp, SubfieldMatcher};
     use crate::test::TestResult;
-    use crate::Occurrence;
 
     #[test]
     fn test_parse_selector() -> TestResult {
@@ -278,7 +277,7 @@ mod tests {
             parse_selector(b"012A/01.a")?.1,
             Selector::Field(Box::new(FieldSelector::new(
                 TagMatcher::Some(Tag::from_str("012A")?),
-                OccurrenceMatcher::Some(Occurrence::new("01")?),
+                OccurrenceMatcher::Some(Occurrence::from_str("/01")?),
                 None,
                 vec!['a']
             )))
