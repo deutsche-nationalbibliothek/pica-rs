@@ -142,13 +142,11 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           override: true
-      # - uses: actions-rs/install@v0.1
-      #   with:
-      #     use-tool-cache: true
-      #     crate: cargo-fuzz
-      #     version: latest
-      - run: |
-          cargo install --force cargo-fuzz
+      - uses: actions-rs/install@v0.1
+        with:
+          use-tool-cache: true
+          crate: cargo-fuzz
+          version: latest
       - run: |
           cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
 
