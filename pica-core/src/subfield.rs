@@ -32,7 +32,7 @@ pub fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
 
 /// Parse a PICA+ subfield value.
 #[inline]
-pub fn parse_subfield_value<'a>(i: &'a [u8]) -> ParseResult<&'a BStr> {
+fn parse_subfield_value<'a>(i: &'a [u8]) -> ParseResult<&'a BStr> {
     map(take_till(|c| c == US || c == RS), ByteSlice::as_bstr)(i)
 }
 
