@@ -150,6 +150,8 @@ mod tests {
             "parse error: invalid occurrence"
         );
 
+        assert!(OccurrenceRef::from_bytes(b"/0A").is_err());
+
         Ok(())
     }
 
