@@ -81,7 +81,8 @@ mod tests {
 
     use crate::matcher::OccurrenceMatcher;
     use crate::test::TestResult;
-    use crate::{Occurrence, Subfield};
+    use crate::Subfield;
+    use pica_core::Occurrence;
 
     #[test]
     fn test_parse_fields() -> TestResult {
@@ -103,7 +104,7 @@ mod tests {
                 ),
                 Field::new(
                     Tag::from_str("012A")?,
-                    Some(Occurrence::new("01").unwrap()),
+                    Some(Occurrence::from_str("/01").unwrap()),
                     vec![Subfield::new('a', "456").unwrap()]
                 )
             ]
@@ -122,7 +123,7 @@ mod tests {
             parse_path(b"012A/01.0")?.1,
             Path::new(
                 "012A",
-                OccurrenceMatcher::Some(Occurrence::new("01")?),
+                OccurrenceMatcher::Some(Occurrence::from_str("/01")?),
                 vec!['0']
             )
             .unwrap()

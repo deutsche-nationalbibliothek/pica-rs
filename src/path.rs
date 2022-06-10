@@ -69,7 +69,9 @@ impl Path {
     ///
     /// ```rust
     /// use pica::matcher::OccurrenceMatcher;
-    /// use pica::{Occurrence, Path};
+    /// use pica::Path;
+    /// use pica_core::Occurrence;
+    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -84,7 +86,7 @@ impl Path {
     ///         path,
     ///         Path::new(
     ///             "012A",
-    ///             OccurrenceMatcher::Some(Occurrence::new("01")?),
+    ///             OccurrenceMatcher::Some(Occurrence::from_str("/01")?),
     ///             vec!['0']
     ///         )?
     ///     );

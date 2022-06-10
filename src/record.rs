@@ -132,8 +132,9 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, Field, Occurrence, Subfield, WriterBuilder};
+    /// use pica::{ByteRecord, Field, Subfield, WriterBuilder};
     /// use pica_core::Tag;
+    /// use pica_core::Occurrence;
     /// use std::error::Error;
     /// use tempfile::Builder;
     /// use std::str::FromStr;
@@ -147,12 +148,12 @@ impl ByteRecord {
     ///     let record = ByteRecord::new(vec![
     ///         Field::new(
     ///             Tag::from_str("012A")?,
-    ///             Some(Occurrence::new("001")?),
+    ///             Some(Occurrence::from_str("/001")?),
     ///             vec![Subfield::new('0', "123456789X")?],
     ///         ),
     ///         Field::new(
     ///             Tag::from_str("012A")?,
-    ///             Some(Occurrence::new("002")?),
+    ///             Some(Occurrence::from_str("/002")?),
     ///             vec![Subfield::new('0', "123456789X")?],
     ///         ),
     ///     ]);
@@ -522,10 +523,10 @@ mod tests {
     use std::io::Cursor;
     use std::str::FromStr;
 
-    use pica_core::Tag;
+    use pica_core::{Occurrence, Tag};
 
     use crate::test::TestResult;
-    use crate::{Occurrence, Subfield};
+    use crate::Subfield;
 
     #[test]
     fn test_field_new() -> TestResult {
@@ -569,11 +570,11 @@ mod tests {
 
         let field = Field::new(
             Tag::from_str("003@")?,
-            Some(Occurrence::new("01")?),
+            Some(Occurrence::from_str("/01")?),
             vec![Subfield::new('0', "123456789X")?],
         );
 
-        assert_eq!(field.occurrence(), Some(&Occurrence::new("01")?));
+        assert_eq!(field.occurrence(), Some(&Occurrence::from_str("/01")?));
 
         Ok(())
     }
@@ -688,7 +689,7 @@ mod tests {
         let mut writer = Cursor::new(Vec::<u8>::new());
         let field = Field::new(
             Tag::from_str("012A")?,
-            Some(Occurrence::new("01")?),
+            Some(Occurrence::from_str("/01")?),
             vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
         );
 
@@ -706,7 +707,7 @@ mod tests {
     fn test_field_to_string() -> TestResult {
         let field = Field::new(
             Tag::from_str("012A")?,
-            Some(Occurrence::new("01")?),
+            Some(Occurrence::from_str("/01")?),
             vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
         );
 

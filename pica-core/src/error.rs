@@ -5,14 +5,18 @@ use std::fmt::Display;
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseError {
     InvalidTag,
+    InvalidOccurrence,
 }
 
 impl Error for ParseError {}
 
 impl Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("parse error: ")?;
+
         match *self {
-            Self::InvalidTag => f.write_str("parse error: invalid tag"),
+            Self::InvalidTag => f.write_str("invalid tag"),
+            Self::InvalidOccurrence => f.write_str("invalid occurrence"),
         }
     }
 }
