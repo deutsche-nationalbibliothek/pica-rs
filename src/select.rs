@@ -8,6 +8,7 @@ use nom::Finish;
 use std::default::Default;
 use std::ops::{Add, Deref, Mul};
 
+use pica_core::parser::parse_subfield_code;
 use pica_core::ParseResult;
 
 use crate::common::{parse_string, ws};
@@ -15,7 +16,6 @@ use crate::matcher::{
     parse_occurrence_matcher, parse_subfield_list_matcher, parse_tag_matcher,
     OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
 };
-use crate::subfield::parse_subfield_code;
 
 #[derive(Debug, PartialEq)]
 pub struct FieldSelector {

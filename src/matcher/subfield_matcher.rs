@@ -13,12 +13,12 @@ use nom::combinator::{all_consuming, cut, map, opt, value, verify};
 use nom::multi::{many1, separated_list1};
 use nom::sequence::{preceded, terminated, tuple};
 
-use pica_core::ParseResult;
+use pica_core::parser::parse_subfield_code;
+use pica_core::{ParseResult, Subfield};
 
 use crate::common::{parse_string, ws};
 use crate::matcher::{parse_comparison_op_bstring, ComparisonOp, MatcherFlags};
-use crate::subfield::parse_subfield_code;
-use crate::{Error, Subfield};
+use crate::Error;
 
 macro_rules! maybe_lowercase {
     ($value:expr, $flag:expr) => {
@@ -115,12 +115,12 @@ impl SubfieldMatcher {
     ///
     /// ```rust
     /// use pica::matcher::{MatcherFlags, SubfieldMatcher};
-    /// use pica::Subfield;
+    /// use pica_core::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let matcher = SubfieldMatcher::new("0 == 'abc'")?;
-    ///     let subfield = Subfield::new('0', "abc")?;
+    ///     let subfield = Subfield::from_bytes(b"\x1f0abc")?;
     ///
     ///     assert!(matcher.is_match(&subfield, &MatcherFlags::new()));
     ///     Ok(())
@@ -336,22 +336,24 @@ mod tests {
         let flags = MatcherFlags::new();
 
         let matcher = SubfieldMatcher::new("0 == 'abc'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("[01] == 'abc'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('1', "abc")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('2', "abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f1abc")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f2abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 == 'def'")?;
-        assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 == 'ABC'")?;
-        assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 == 'ABC'")?;
-        assert!(matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(matcher.is_match(
+            &Subfield::from_bytes(b"\x1f0abc")?,
+            &flags.ignore_case(true)
+        ));
 
         Ok(())
     }
@@ -361,22 +363,24 @@ mod tests {
         let flags = MatcherFlags::new();
 
         let matcher = SubfieldMatcher::new("0 != 'abc'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "def")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('1', "def")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0def")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f1def")?, &flags));
 
         let matcher = SubfieldMatcher::new("[01] != 'abc'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "def")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('1', "def")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0def")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f1def")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 != 'abc'")?;
-        assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 != 'ABC'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 != 'ABC'")?;
-        assert!(!matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(!matcher.is_match(
+            &Subfield::from_bytes(b"\x1f0abc")?,
+            &flags.ignore_case(true)
+        ));
 
         Ok(())
     }
@@ -386,22 +390,24 @@ mod tests {
         let flags = MatcherFlags::new();
 
         let matcher = SubfieldMatcher::new("0 =^ 'ab'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("[01] =^ 'ab'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('1', "abc")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('2', "abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f1abc")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f2abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =^ 'ab'")?;
-        assert!(!matcher.is_match(&Subfield::new('0', "bcd")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0bcd")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =^ 'AB'")?;
-        assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =^ 'AB'")?;
-        assert!(matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(matcher.is_match(
+            &Subfield::from_bytes(b"\x1f0abc")?,
+            &flags.ignore_case(true)
+        ));
 
         Ok(())
     }
@@ -411,17 +417,19 @@ mod tests {
         let flags = MatcherFlags::new();
 
         let matcher = SubfieldMatcher::new("0 =$ 'bc'")?;
-        assert!(matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =$ 'bc'")?;
-        assert!(!matcher.is_match(&Subfield::new('0', "bcd")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0bcd")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =$ 'BC'")?;
-        assert!(!matcher.is_match(&Subfield::new('0', "abc")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0abc")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =$ 'BC'")?;
-        assert!(matcher
-            .is_match(&Subfield::new('0', "abc")?, &flags.ignore_case(true)));
+        assert!(matcher.is_match(
+            &Subfield::from_bytes(b"\x1f0abc")?,
+            &flags.ignore_case(true)
+        ));
 
         Ok(())
     }
@@ -430,15 +438,17 @@ mod tests {
     fn test_subfield_matcher_similar() -> TestResult {
         let matcher = SubfieldMatcher::new("0 =* 'Heike'")?;
         let flags = MatcherFlags::new();
-        assert!(matcher.is_match(&Subfield::new('0', "Heike")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0Heike")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =* 'Heike'")?;
         let flags = MatcherFlags::new();
-        assert!(!matcher.is_match(&Subfield::new('0', "Heiko")?, &flags));
+        assert!(
+            !matcher.is_match(&Subfield::from_bytes(b"\x1f0Heiko")?, &flags)
+        );
 
         let matcher = SubfieldMatcher::new("0 =* 'Heike'")?;
         let flags = MatcherFlags::new().strsim_threshold(0.7);
-        assert!(matcher.is_match(&Subfield::new('0', "Heiko")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0Heiko")?, &flags));
 
         Ok(())
     }
@@ -447,15 +457,15 @@ mod tests {
     fn test_subfield_matcher_regex() -> TestResult {
         let matcher = SubfieldMatcher::new("0 =~ '^A.*C$'")?;
         let flags = MatcherFlags::new();
-        assert!(matcher.is_match(&Subfield::new('0', "AbC")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0AbC")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =~ '^A.*C$'")?;
         let flags = MatcherFlags::new();
-        assert!(!matcher.is_match(&Subfield::new('0', "abC")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0abC")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 =~ '^A.*C$'")?;
         let flags = MatcherFlags::new().ignore_case(true);
-        assert!(matcher.is_match(&Subfield::new('0', "abC")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0abC")?, &flags));
 
         Ok(())
     }
@@ -465,31 +475,31 @@ mod tests {
         let matcher = SubfieldMatcher::new("0 in ['a', 'b', 'c']")?;
         let flags = MatcherFlags::new();
 
-        assert!(matcher.is_match(&Subfield::new('0', "a")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('0', "b")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('0', "c")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('0', "A")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0a")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0b")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0c")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0A")?, &flags));
 
         let matcher = SubfieldMatcher::new("[01] in ['a', 'b']")?;
         let flags = MatcherFlags::new();
 
-        assert!(matcher.is_match(&Subfield::new('0', "a")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('0', "b")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('1', "a")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('1', "b")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('2', "a")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0a")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0b")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f1a")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f1b")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f2a")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 not in ['a', 'b', 'c']")?;
         let flags = MatcherFlags::new();
 
-        assert!(!matcher.is_match(&Subfield::new('0', "a")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('0', "b")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('0', "c")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('0', "A")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0a")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0b")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f0c")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0A")?, &flags));
 
         let matcher = SubfieldMatcher::new("0 in ['a', 'b', 'c']")?;
         let flags = MatcherFlags::new().ignore_case(true);
-        assert!(matcher.is_match(&Subfield::new('0', "A")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0A")?, &flags));
 
         Ok(())
     }
@@ -499,14 +509,14 @@ mod tests {
         let matcher = SubfieldMatcher::new("0?")?;
         let flags = MatcherFlags::new();
 
-        assert!(matcher.is_match(&Subfield::new('0', "a")?, &flags));
-        assert!(!matcher.is_match(&Subfield::new('1', "a")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0a")?, &flags));
+        assert!(!matcher.is_match(&Subfield::from_bytes(b"\x1f1a")?, &flags));
 
         let matcher = SubfieldMatcher::new("[01]?")?;
         let flags = MatcherFlags::new();
 
-        assert!(matcher.is_match(&Subfield::new('0', "a")?, &flags));
-        assert!(matcher.is_match(&Subfield::new('1', "a")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f0a")?, &flags));
+        assert!(matcher.is_match(&Subfield::from_bytes(b"\x1f1a")?, &flags));
 
         Ok(())
     }

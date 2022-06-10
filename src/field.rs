@@ -17,11 +17,10 @@ use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
-use pica_core::parser::{parse_occurrence, parse_tag};
-use pica_core::{Occurrence, ParseResult, Tag};
+use pica_core::parser::{parse_occurrence, parse_subfield, parse_tag};
+use pica_core::{Occurrence, ParseResult, Subfield, Tag};
 
 use crate::error::{Error, Result};
-use crate::subfield::{parse_subfield, Subfield};
 
 const RS: char = '\x1E';
 const SP: char = '\x20';
@@ -49,19 +48,18 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield};
-    /// use pica_core::Tag;
-    /// use std::str::FromStr;
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("003@")?,
+    ///         Tag::from_bytes(b"003@")?,
     ///         None,
-    ///         vec![Subfield::new('0', "123456789X")?],
+    ///         vec![Subfield::from_bytes(b"\x1f0123456789X")?],
     ///     );
     ///
-    ///     assert_eq!(field.tag(), &Tag::from_str("003@")?);
+    ///     assert_eq!(field.tag(), &Tag::from_bytes(b"003@")?);
     ///     assert_eq!(field.len(), 1);
     ///
     ///     Ok(())
@@ -86,12 +84,11 @@ impl Field {
     /// ```rust
     /// use pica::Field;
     /// use pica_core::Tag;
-    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let field = Field::new(Tag::from_str("003@")?, None, vec![]);
-    ///     assert_eq!(field.tag(), &Tag::from_str("003@")?);
+    ///     let field = Field::new(Tag::from_bytes(b"003@")?, None, vec![]);
+    ///     assert_eq!(field.tag(), &Tag::from_bytes(b"003@")?);
     ///
     ///     Ok(())
     /// }
@@ -107,16 +104,15 @@ impl Field {
     /// ```rust
     /// use pica::Field;
     /// use pica_core::{Occurrence, Tag};
-    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("012A")?,
-    ///         Some(Occurrence::from_str("/00")?),
+    ///         Tag::from_bytes(b"012A")?,
+    ///         Some(Occurrence::from_bytes(b"/00")?),
     ///         vec![],
     ///     );
-    ///     assert_eq!(field.occurrence(), Some(&Occurrence::from_str("/00")?));
+    ///     assert_eq!(field.occurrence(), Some(&Occurrence::from_bytes(b"/00")?));
     ///     Ok(())
     /// }
     /// ```
@@ -129,18 +125,20 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield};
-    /// use pica_core::Tag;
-    /// use std::str::FromStr;
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("012A")?,
+    ///         Tag::from_bytes(b"012A")?,
     ///         None,
-    ///         vec![Subfield::new('0', "123456789X")?],
+    ///         vec![Subfield::from_bytes(b"\x1f0123456789X")?],
     ///     );
-    ///     assert_eq!(field.subfields(), &[Subfield::new('0', "123456789X")?]);
+    ///     assert_eq!(
+    ///         field.subfields(),
+    ///         &[Subfield::from_bytes(b"\x1f0123456789X")?]
+    ///     );
     ///     Ok(())
     /// }
     /// ```
@@ -154,16 +152,15 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield};
-    /// use pica_core::Tag;
-    /// use std::str::FromStr;
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("003@")?,
+    ///         Tag::from_bytes(b"003@")?,
     ///         None,
-    ///         vec![Subfield::new('0', "123456789X")?],
+    ///         vec![Subfield::from_bytes(b"\x1f0123456789X")?],
     ///     );
     ///
     ///     assert_eq!(field.contains_code('0'), true);
@@ -173,7 +170,7 @@ impl Field {
     /// }
     /// ```
     pub fn contains_code(&self, code: char) -> bool {
-        self.iter().any(|x| x.code == code)
+        self.iter().any(|x| x.code() == code)
     }
 
     /// Returns a list of references to all `Subfields` of the given subfield
@@ -185,21 +182,20 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield};
-    /// use pica_core::Tag;
-    /// use std::str::FromStr;
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("003@")?,
+    ///         Tag::from_bytes(b"003@")?,
     ///         None,
-    ///         vec![Subfield::new('0', "123456789X")?],
+    ///         vec![Subfield::from_bytes(b"\x1f0123456789X")?],
     ///     );
     ///
     ///     assert_eq!(
     ///         field.get('0'),
-    ///         Some(vec![&Subfield::new('0', "123456789X")?])
+    ///         Some(vec![&Subfield::from_bytes(b"\x1f0123456789X")?])
     ///     );
     ///     assert_eq!(field.get('1'), None);
     ///
@@ -209,7 +205,7 @@ impl Field {
     pub fn get(&self, code: char) -> Option<Vec<&Subfield>> {
         let subfields = self
             .iter()
-            .filter(|x| x.code == code)
+            .filter(|x| x.code() == code)
             .collect::<Vec<&Subfield>>();
 
         if !subfields.is_empty() {
@@ -225,19 +221,18 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield};
-    /// use pica_core::Tag;
-    /// use std::str::FromStr;
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("003@")?,
+    ///         Tag::from_bytes(b"003@")?,
     ///         None,
     ///         vec![
-    ///             Subfield::new('a', "abc")?,
-    ///             Subfield::new('a', "def")?,
-    ///             Subfield::new('a', "hij")?,
+    ///             Subfield::from_bytes(b"\x1faabc")?,
+    ///             Subfield::from_bytes(b"\x1fadef")?,
+    ///             Subfield::from_bytes(b"\x1fahij")?,
     ///         ],
     ///     );
     ///
@@ -249,8 +244,8 @@ impl Field {
     /// ```
     pub fn first(&self, code: char) -> Option<&BString> {
         self.iter()
-            .filter(|x| x.code == code)
-            .map(|x| &x.value)
+            .filter(|x| x.code() == code)
+            .map(|x| x.value())
             .next()
     }
 
@@ -260,19 +255,18 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield};
-    /// use pica_core::Tag;
-    /// use std::str::FromStr;
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("003@")?,
+    ///         Tag::from_bytes(b"003@")?,
     ///         None,
     ///         vec![
-    ///             Subfield::new('a', "abc")?,
-    ///             Subfield::new('a', "def")?,
-    ///             Subfield::new('a', "hij")?,
+    ///             Subfield::from_bytes(b"\x1faabc")?,
+    ///             Subfield::from_bytes(b"\x1fadef")?,
+    ///             Subfield::from_bytes(b"\x1fahij")?,
     ///         ],
     ///     );
     ///
@@ -285,8 +279,8 @@ impl Field {
     pub fn all(&self, code: char) -> Option<Vec<&BString>> {
         let result = self
             .iter()
-            .filter(|x| x.code == code)
-            .map(|x| &x.value)
+            .filter(|x| x.code() == code)
+            .map(|x| x.value())
             .collect::<Vec<&BString>>();
 
         if !result.is_empty() {
@@ -301,27 +295,26 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Error, Field, Subfield};
-    /// use pica_core::Tag;
-    /// use std::str::FromStr;
+    /// use pica::{Error, Field};
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("003@")?,
+    ///         Tag::from_bytes(b"003@")?,
     ///         None,
-    ///         vec![Subfield::new('0', "123456789X")?],
+    ///         vec![Subfield::from_bytes(b"\x1f0123456789X")?],
     ///     );
     ///
     ///     assert_eq!(field.validate().is_ok(), true);
     ///
     ///     let field = Field::new(
-    ///         Tag::from_str("003@")?,
+    ///         Tag::from_bytes(b"003@")?,
     ///         None,
     ///         vec![
-    ///             Subfield::new('0', "234567890X")?,
-    ///             Subfield::new('1', vec![0, 159])?,
-    ///             Subfield::new('2', "123456789X")?,
+    ///             Subfield::from_bytes(b"\x1f0234567890X")?,
+    ///             Subfield::from_bytes(&[b'\x1f', b'0', 0, 159])?,
+    ///             Subfield::from_bytes(b"\x1f2123456789X")?,
     ///         ],
     ///     );
     ///
@@ -343,10 +336,10 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Field, Subfield, WriterBuilder};
+    /// use pica::{Field, WriterBuilder};
     /// use pica_core::Tag;
     /// use pica_core::Occurrence;
-    /// use std::str::FromStr;
+    /// use pica_core::Subfield;
     /// use std::error::Error;
     /// use tempfile::Builder;
     /// # use std::fs::read_to_string;
@@ -356,9 +349,9 @@ impl Field {
     ///     let mut tempfile = Builder::new().tempfile()?;
     ///     # let path = tempfile.path().to_owned();
     ///
-    ///     let subfield = Subfield::new('0', "123456789X")?;
-    ///     let occurrence = Occurrence::from_str("/001")?;
-    ///     let field = Field::new(Tag::from_str("012A")?, Some(occurrence), vec![subfield]);
+    ///     let subfield = Subfield::from_bytes(b"\x1f0123456789X")?;
+    ///     let occurrence = Occurrence::from_bytes(b"/001")?;
+    ///     let field = Field::new(Tag::from_bytes(b"012A")?, Some(occurrence), vec![subfield]);
     ///
     ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
     ///     field.write(&mut writer)?;
@@ -393,18 +386,17 @@ impl fmt::Display for Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{Error, Field, Subfield};
-    /// use pica_core::{Occurrence, Tag};
-    /// use std::str::FromStr;
+    /// use pica::{Error, Field};
+    /// use pica_core::{Occurrence, Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let field = Field::new(
-    ///         Tag::from_str("012A")?,
-    ///         Some(Occurrence::from_str("/01")?),
+    ///         Tag::from_bytes(b"012A")?,
+    ///         Some(Occurrence::from_bytes(b"/01")?),
     ///         vec![
-    ///             Subfield::new('0', "123456789X")?,
-    ///             Subfield::new('a', "foo")?,
+    ///             Subfield::from_bytes(b"\x1f0123456789X")?,
+    ///             Subfield::from_bytes(b"\x1fafoo")?,
     ///         ],
     ///     );
     ///
@@ -471,7 +463,7 @@ pub(crate) fn parse_field(i: &[u8]) -> ParseResult<Field> {
                     map(parse_occurrence, |o| Some(o.into())),
                     success(None),
                 )),
-                preceded(char(SP), many0(parse_subfield)),
+                preceded(char(SP), many0(map(parse_subfield, Subfield::from))),
             )),
             char(RS),
         ),
@@ -503,7 +495,7 @@ mod tests {
             Field::new(
                 Tag::from_str("003@")?,
                 None,
-                vec![Subfield::new('0', "123456789X")?]
+                vec![Subfield::from_bytes(b"\x1f0123456789X")?]
             )
         );
 
@@ -517,7 +509,7 @@ mod tests {
             Field::new(
                 Tag::from_str("003@")?,
                 None,
-                vec![Subfield::new('0', "123456789X")?]
+                vec![Subfield::from_bytes(b"\x1f0123456789X")?]
             )
         );
 
@@ -526,7 +518,10 @@ mod tests {
             Field::new(
                 Tag::from_str("012A")?,
                 Some(Occurrence::from_str("/01")?),
-                vec![Subfield::new('0', "abc")?, Subfield::new('0', "def")?]
+                vec![
+                    Subfield::from_bytes(b"\x1f0abc")?,
+                    Subfield::from_bytes(b"\x1f0def")?
+                ]
             )
         );
 
@@ -535,7 +530,7 @@ mod tests {
             Field::new(
                 Tag::from_str("012A")?,
                 None,
-                vec![Subfield::new('0', "abc")?]
+                vec![Subfield::from_bytes(b"\x1f0abc")?]
             )
         );
 
