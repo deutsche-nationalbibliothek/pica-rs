@@ -11,7 +11,7 @@ use nom::Finish;
 use crate::{ParseError, ParseResult};
 
 /// An immutable PICA+ tag.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TagRef<'a>(&'a BStr);
 
 /// Parse a PICA+ tag
@@ -90,6 +90,12 @@ impl Deref for Tag {
     }
 }
 
+impl PartialEq<str> for Tag {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
 impl PartialEq<&str> for Tag {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
