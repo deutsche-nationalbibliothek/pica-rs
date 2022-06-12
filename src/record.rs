@@ -374,7 +374,7 @@ impl ByteRecord {
                 .clone()
                 .into_iter()
                 .filter(|field| {
-                    matchers.iter().any(|m| m.is_match(&field.tag()))
+                    matchers.iter().any(|m| m.is_match(field.tag()))
                 })
                 .collect();
         }
