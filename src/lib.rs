@@ -1,5 +1,4 @@
 pub use self::error::{Error, Result};
-pub use self::field::Field;
 pub use self::parser::{ParsePathError, ParsePicaError};
 pub use self::path::Path;
 pub use self::reader::{Reader, ReaderBuilder};
@@ -9,7 +8,6 @@ pub use self::writer::{GzipWriter, PicaWriter, PlainWriter, WriterBuilder};
 
 mod common;
 mod error;
-mod field;
 pub mod matcher;
 mod parser;
 mod path;

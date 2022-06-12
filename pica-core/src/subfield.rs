@@ -18,7 +18,7 @@ use crate::parser::{RS, US};
 use crate::{ParseError, ParseResult};
 
 /// An immutable PICA+ tag.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SubfieldRef<'a> {
     code: char,
     value: &'a BStr,

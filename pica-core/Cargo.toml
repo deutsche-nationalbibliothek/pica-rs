@@ -24,3 +24,7 @@ harness = false
 [[bench]]
 name = "subfield"
 harness = false
+
+[[bench]]
+name = "field"
+harness = false

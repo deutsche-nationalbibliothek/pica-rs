@@ -82,6 +82,9 @@ impl From<pica_core::ParseError> for Error {
             pica_core::ParseError::InvalidSubfield => {
                 Self::InvalidSubfield("invalid subfield".to_string())
             }
+            pica_core::ParseError::InvalidField => {
+                Self::InvalidSubfield("invalid field".to_string())
+            }
         }
     }
 }

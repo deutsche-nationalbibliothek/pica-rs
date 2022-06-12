@@ -6,10 +6,9 @@ use nom::combinator::{all_consuming, map, opt};
 use nom::multi::many1;
 use nom::sequence::{delimited, preceded, terminated, tuple};
 
-use pica_core::parser::parse_subfield_code;
-use pica_core::ParseResult;
+use pica_core::parser::{parse_field, parse_subfield_code};
+use pica_core::{Field, ParseResult};
 
-use crate::field::{parse_field, Field};
 use crate::matcher::{parse_occurrence_matcher, parse_tag_matcher};
 use crate::Path;
 
@@ -50,7 +49,10 @@ pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
 
 /// Parses a record.
 pub(crate) fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
-    all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
+    all_consuming(terminated(
+        many1(map(parse_field, |f| f.into())),
+        opt(char(NL)),
+    ))(i)
 }
 
 pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
@@ -96,7 +98,7 @@ mod tests {
                 ),
                 Field::new(
                     Tag::from_str("012A")?,
-                    None,
+                    Some(Occurrence::from_str("/00").unwrap()),
                     vec![Subfield::from_bytes(b"\x1fa123").unwrap()]
                 ),
                 Field::new(

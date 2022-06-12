@@ -7,6 +7,7 @@ pub enum ParseError {
     InvalidTag,
     InvalidOccurrence,
     InvalidSubfield,
+    InvalidField,
 }
 
 impl Error for ParseError {}
@@ -19,6 +20,7 @@ impl Display for ParseError {
             Self::InvalidTag => f.write_str("invalid tag"),
             Self::InvalidOccurrence => f.write_str("invalid occurrence"),
             Self::InvalidSubfield => f.write_str("invalid subfield"),
+            Self::InvalidField => f.write_str("invalid field"),
         }
     }
 }
