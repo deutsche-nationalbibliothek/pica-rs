@@ -27,11 +27,6 @@ xml-rs = "0.8"
 pica-core = { path = "../pica-core" }
 pica = { path = "../" }
 
-[dev-dependencies]
-assert_cmd = "2.0"
-predicates = "2.1"
-tempfile = "3.2"
-
 [[bin]]
 path = "src/main.rs"
 name = "pica"
