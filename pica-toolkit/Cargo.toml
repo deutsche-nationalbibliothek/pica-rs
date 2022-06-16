@@ -27,14 +27,9 @@ xml-rs = "0.8"
 pica-core = { path = "../pica-core" }
 pica = { path = "../" }
 
+[dev-dependencies]
+trycmd = "0.13"
+
 [[bin]]
 path = "src/main.rs"
 name = "pica"
-
-[profile.release]
-codegen-units = 1
-panic = "abort"
-lto = true
-
-[profile.dev]
-debug = 0
