@@ -212,7 +212,7 @@ jobs:
           command: test
           args: --workspace --all-features --no-fail-fast
         env:
-          RUSTFLAGS: "-Zinstrument-coverage"
+          RUSTFLAGS: "-C instrument-coverage"
           LLVM_PROFILE_FILE: "pica-%p-%m.profraw"
       - uses: actions-rs/install@v0.1
         with:
