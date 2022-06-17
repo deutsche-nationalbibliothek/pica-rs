@@ -2,7 +2,6 @@ use crate::TestResult;
 use assert_cmd::Command;
 use predicates::prelude::*;
 
-mod cat;
 mod completions;
 mod count;
 mod filter;
