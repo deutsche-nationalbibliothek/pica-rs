@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = ["count", "tests/data/118515551.dat.gz"]
+status.code = 0
+stdout = "records: 1\nfields: 69\nsubfields: 220\n"
+stderr = ""

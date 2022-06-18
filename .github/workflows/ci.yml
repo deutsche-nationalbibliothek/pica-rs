@@ -192,7 +192,7 @@ jobs:
       - uses: abbbi/github-actions-tune@v1
       - uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-cargo-nightly-${{ hashFiles('**/Cargo.toml') }}
           path: |
             ~/.cargo/bin/
             ~/.cargo/registry/index/
@@ -220,7 +220,7 @@ jobs:
           crate: grcov
           version: latest
       - name: Run grcov
-        run: grcov *.profraw -s . --binary-path ./target/debug/ --branch --ignore-not-existing --ignore 'examples/*' --ignore 'tests/*' --ignore '../**' --ignore '/*' --keep-only 'pica-*' --excl-line "(unreachable!|#\\[derive\\(|no-coverage)" -t lcov -o coverage.lcov
+        run: grcov . -s . --binary-path ./target/debug/ --branch --ignore-not-existing --keep-only '**/src/*' --excl-line "(unreachable!|#\\[derive\\(|no-coverage)" -t lcov -o coverage.lcov
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
