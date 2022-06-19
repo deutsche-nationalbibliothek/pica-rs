@@ -1,0 +1,7 @@
+```
+$ pica count tests/data/118515551.dat
+records: 1
+fields: 69
+subfields: 220
+
+```

@@ -1,0 +1,6 @@
+```
+$ pica count --csv tests/data/118515551.dat
+records,fields,subfields
+1,69,220
+
+```

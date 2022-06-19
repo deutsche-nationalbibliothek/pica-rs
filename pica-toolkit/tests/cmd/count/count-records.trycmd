@@ -1,0 +1,5 @@
+```
+$ pica count --records tests/data/118515551.dat
+1
+
+```

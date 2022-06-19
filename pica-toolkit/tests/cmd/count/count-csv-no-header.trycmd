@@ -1,0 +1,5 @@
+```
+$ pica count --csv --no-header tests/data/118515551.dat
+1,69,220
+
+```

@@ -1,0 +1,7 @@
+```
+$ pica count -s tests/data/dump.dat.gz
+records: 5
+fields: 259
+subfields: 1070
+
+```

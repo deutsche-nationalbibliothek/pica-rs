@@ -1,0 +1,5 @@
+```
+$ pica count --fields tests/data/118515551.dat
+69
+
+```

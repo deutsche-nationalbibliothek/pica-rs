@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = ["cat", "tests/data/118515551.dat.gz"]
-status.code = 0
-stderr = ""
