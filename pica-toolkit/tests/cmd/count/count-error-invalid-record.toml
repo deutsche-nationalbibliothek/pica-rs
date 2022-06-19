@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = ["count", "tests/data/invalid.dat"]
+status = "failed"
+stderr = "Pica Error: Invalid record on line 1.\n"

@@ -1,0 +1,8 @@
+bin.name = "pica"
+args = ["count" , "-s"]
+stderr = ""
+stdout = """
+records: 1
+fields: 69
+subfields: 220
+"""

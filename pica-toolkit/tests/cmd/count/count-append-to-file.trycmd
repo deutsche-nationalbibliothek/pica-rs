@@ -1,0 +1,4 @@
+```
+$ pica count -s --csv --output count.txt dump.dat
+$ pica count -s --csv --no-header --append --output count.txt dump.dat
+```
