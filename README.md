@@ -97,6 +97,8 @@ to test for the number of occurrence of a field or subfield use the
 cardinality operator `#` (`#010@ == 1` or `010@{ #a == 1 && a ==
 'ger'}`).
 
+Option `--reduce` can be used to reduce records to a limited set of fields.
+
 **Examples**
 
 ```bash
@@ -109,7 +111,7 @@ $ pica filter -s "010@.a not in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
-$ pica filter -s "012[AB]/00?" DUMP.dat
+$ pica filter -s "012[AB]/00?" --reduce "003@,012[AB]/00" DUMP.dat
 ```
 
 ### Frequency
