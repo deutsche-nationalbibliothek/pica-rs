@@ -158,10 +158,7 @@ impl Subfield {
             return Ok(());
         }
 
-        if let Err(e) = std::str::from_utf8(&self.value) {
-            return Err(e);
-        }
-
+        std::str::from_utf8(&self.value)?;
         Ok(())
     }
 
