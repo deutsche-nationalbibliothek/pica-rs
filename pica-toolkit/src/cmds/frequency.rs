@@ -6,7 +6,8 @@ use std::str::FromStr;
 
 use bstr::BString;
 use clap::Arg;
-use pica::{Path, Reader, ReaderBuilder};
+use pica::Path;
+use pica_api::{Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

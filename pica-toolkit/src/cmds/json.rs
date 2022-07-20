@@ -2,7 +2,7 @@ use std::ffi::OsString;
 use std::io::{self, Read, Write};
 
 use clap::Arg;
-use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica_api::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

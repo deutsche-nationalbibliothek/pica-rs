@@ -1,5 +1,5 @@
-use crate::error::Result;
-use crate::ByteRecord;
+use pica::error::Result;
+use pica::ByteRecord;
 use std::ffi::OsStr;
 use std::fs::OpenOptions;
 use std::io::{self, BufWriter, Write};
@@ -33,8 +33,8 @@ impl WriterBuilder {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, WriterBuilder};
-    /// # use pica::{ReaderBuilder, StringRecord};
+    /// use pica::{ByteRecord, StringRecord};
+    /// use pica_io::{ReaderBuilder, WriterBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -67,8 +67,8 @@ impl WriterBuilder {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, WriterBuilder};
-    /// # use pica::{ReaderBuilder, StringRecord};
+    /// use pica::{ByteRecord, StringRecord};
+    /// use pica_io::{ReaderBuilder, WriterBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -114,8 +114,8 @@ impl WriterBuilder {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, WriterBuilder};
-    /// # use pica::{ReaderBuilder, StringRecord};
+    /// use pica::{ByteRecord, StringRecord};
+    /// use pica_io::{ReaderBuilder, WriterBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -154,7 +154,8 @@ impl WriterBuilder {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, WriterBuilder};
+    /// use pica::ByteRecord;
+    /// use pica_io::WriterBuilder;
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -236,8 +237,8 @@ impl<W: Write> PlainWriter<W> {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, PicaWriter, PlainWriter, WriterBuilder};
-    /// # use pica::{ReaderBuilder, StringRecord};
+    /// use pica::{ByteRecord, StringRecord};
+    /// use pica_io::{WriterBuilder, PlainWriter, PicaWriter, ReaderBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
@@ -286,8 +287,8 @@ impl<W: Write> PicaWriter for PlainWriter<W> {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, PicaWriter, PlainWriter, WriterBuilder};
-    /// # use pica::{ReaderBuilder, StringRecord};
+    /// use pica::{ByteRecord, StringRecord};
+    /// use pica_io::{PicaWriter, PlainWriter, WriterBuilder, ReaderBuilder};
     /// use std::error::Error;
     /// use tempfile::Builder;
     ///
