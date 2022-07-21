@@ -12,7 +12,7 @@ use nom::Finish;
 
 use pica_core::{Occurrence, ParseResult};
 
-use crate::Error;
+use crate::ParseError;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum OccurrenceMatcher {
@@ -44,7 +44,7 @@ impl OccurrenceMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::OccurrenceMatcher;
+    /// use pica_matcher::OccurrenceMatcher;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -55,16 +55,13 @@ impl OccurrenceMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
+    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, ParseError> {
         let data = data.as_ref();
 
         match all_consuming(parse_occurrence_matcher)(data.as_bytes()).finish()
         {
             Ok((_, matcher)) => Ok(matcher),
-            Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid occurrence matcher, got '{}'",
-                data
-            ))),
+            Err(_) => Err(ParseError::InvalidOccurrenceMatcher),
         }
     }
 
@@ -74,8 +71,8 @@ impl OccurrenceMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::OccurrenceMatcher;
     /// use pica_core::Occurrence;
+    /// use pica_matcher::OccurrenceMatcher;
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
@@ -113,9 +110,7 @@ fn parse_occurrence_digits(i: &[u8]) -> ParseResult<&[u8]> {
     recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit())))(i)
 }
 
-pub(crate) fn parse_occurrence_matcher(
-    i: &[u8],
-) -> ParseResult<OccurrenceMatcher> {
+pub fn parse_occurrence_matcher(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
     alt((
         preceded(
             char('/'),
@@ -151,7 +146,7 @@ pub(crate) fn parse_occurrence_matcher(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test::TestResult;
+    use crate::TestResult;
     use std::str::FromStr;
 
     #[test]

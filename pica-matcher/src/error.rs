@@ -4,6 +4,7 @@ use std::fmt::{self, Display};
 /// An error that can occur when parsing matcher expressions.
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseError {
+    InvalidOccurrenceMatcher,
     InvalidTagMatcher,
 }
 
@@ -14,6 +15,9 @@ impl Display for ParseError {
         f.write_str("parse error: ")?;
 
         match *self {
+            Self::InvalidOccurrenceMatcher => {
+                f.write_str("invalid occurrence matcher")
+            }
             Self::InvalidTagMatcher => f.write_str("invalid tag matcher"),
         }
     }

@@ -12,13 +12,10 @@ use pica_core::parser::parse_subfield_code;
 use pica_core::ParseResult;
 
 use crate::common::{parse_string, ws};
-use crate::matcher::{
-    parse_occurrence_matcher, parse_subfield_list_matcher, OccurrenceMatcher,
-    SubfieldListMatcher,
-};
+use crate::matcher::{parse_subfield_list_matcher, SubfieldListMatcher};
 
-use pica_matcher::parser::parse_tag_matcher;
-use pica_matcher::TagMatcher;
+use pica_matcher::parser::{parse_occurrence_matcher, parse_tag_matcher};
+use pica_matcher::{OccurrenceMatcher, TagMatcher};
 
 #[derive(Debug, PartialEq)]
 pub struct FieldSelector {
