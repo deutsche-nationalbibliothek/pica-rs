@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 pica-io = { path = "../pica-io" }
+pica-matcher = { path = "../pica-matcher" }

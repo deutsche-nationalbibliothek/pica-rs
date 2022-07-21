@@ -1,0 +1,11 @@
+[package]
+name = "pica-matcher"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nom = "7.1"
+pica-core = { path = "../pica-core" }
+
+[dev-dependencies]
+

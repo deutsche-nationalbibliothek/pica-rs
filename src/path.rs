@@ -13,8 +13,9 @@
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
 use pica_core::Tag;
+use pica_matcher::TagMatcher;
 
-use crate::matcher::{OccurrenceMatcher, TagMatcher};
+use crate::matcher::OccurrenceMatcher;
 use crate::parser::{parse_path, ParsePathError};
 use crate::{Error, Result};
 

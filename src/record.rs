@@ -8,9 +8,10 @@ use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::cmp::PartialEq;
 
 use pica_core::Field;
+use pica_matcher::TagMatcher;
 
 use crate::error::Result;
-use crate::matcher::{MatcherFlags, TagMatcher};
+use crate::matcher::MatcherFlags;
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
 use crate::Path;
@@ -302,9 +303,9 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::TagMatcher;
     /// use pica::ByteRecord;
     /// use pica_core::{Field, Subfield, Tag};
+    /// use pica_matcher::TagMatcher;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {

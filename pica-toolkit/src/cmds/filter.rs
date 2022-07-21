@@ -5,8 +5,9 @@ use std::str::FromStr;
 
 use clap::Arg;
 use lazy_static::lazy_static;
-use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
+use pica::matcher::{MatcherFlags, RecordMatcher};
 use pica::Path;
+use pica_api::matcher::TagMatcher;
 use pica_api::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 

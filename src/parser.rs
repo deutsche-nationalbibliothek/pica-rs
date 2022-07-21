@@ -8,8 +8,9 @@ use nom::sequence::{delimited, preceded, terminated, tuple};
 
 use pica_core::parser::{parse_field, parse_subfield_code};
 use pica_core::{Field, ParseResult};
+use pica_matcher::parser::parse_tag_matcher;
 
-use crate::matcher::{parse_occurrence_matcher, parse_tag_matcher};
+use crate::matcher::parse_occurrence_matcher;
 use crate::Path;
 
 const NL: char = '\x0A';

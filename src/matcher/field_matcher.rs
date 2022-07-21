@@ -7,12 +7,14 @@ use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Finish;
 
 use pica_core::{Field, ParseResult};
+use pica_matcher::parser::parse_tag_matcher;
+use pica_matcher::TagMatcher;
 
 use crate::common::ws;
 use crate::matcher::{
     parse_occurrence_matcher, parse_subfield_list_matcher,
-    parse_subfield_list_matcher_singleton, parse_tag_matcher, MatcherFlags,
-    OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
+    parse_subfield_list_matcher_singleton, MatcherFlags, OccurrenceMatcher,
+    SubfieldListMatcher,
 };
 use crate::Error;
 

@@ -15,6 +15,9 @@ use crate::common::ws;
 use crate::matcher::*;
 use crate::{ByteRecord, Error};
 
+use pica_matcher::parser::parse_tag_matcher;
+use pica_matcher::TagMatcher;
+
 use super::subfield_matcher::parse_subfield_matcher_exists;
 
 #[derive(Debug, PartialEq)]
