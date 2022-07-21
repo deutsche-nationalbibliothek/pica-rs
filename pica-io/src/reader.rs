@@ -1,7 +1,7 @@
-use crate::error::{Error, Result};
-use crate::parser::ParsePicaError;
-use crate::{ByteRecord, StringRecord};
 use flate2::read::GzDecoder;
+use pica::error::{Error, Result};
+use pica::parser::ParsePicaError;
+use pica::{ByteRecord, StringRecord};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
@@ -32,7 +32,8 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::{ByteRecord, ReaderBuilder, StringRecord};
+    /// use pica::{ByteRecord, StringRecord};
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     ///
     /// # fn main() { example().unwrap(); }
@@ -65,18 +66,18 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::ReaderBuilder;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader =
-    ///         ReaderBuilder::new().from_path("tests/data/119232022.dat")?;
+    ///         ReaderBuilder::new().from_path("../tests/data/119232022.dat")?;
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
     ///     let mut reader =
-    ///         ReaderBuilder::new().from_path("tests/data/119232022.dat.gz")?;
+    ///         ReaderBuilder::new().from_path("../tests/data/119232022.dat.gz")?;
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
@@ -105,7 +106,7 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::ReaderBuilder;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     /// use std::io::Cursor;
     ///
@@ -129,14 +130,15 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::{ByteRecord, ReaderBuilder};
+    /// use pica::ByteRecord;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     /// use std::path::Path;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader = ReaderBuilder::new()
-    ///         .from_path_or_stdin(Some("tests/data/119232022.dat.gz"))?;
+    ///         .from_path_or_stdin(Some("../tests/data/119232022.dat.gz"))?;
     ///     let record = reader.records().next().unwrap();
     ///     assert!(record.is_ok());
     ///
@@ -176,7 +178,7 @@ impl ReaderBuilder {
     ///
     /// # Example
     /// ```
-    /// use pica::ReaderBuilder;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     /// use std::io::Cursor;
     ///
@@ -219,7 +221,7 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::ReaderBuilder;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     /// use std::io::Cursor;
     ///
@@ -245,7 +247,7 @@ impl ReaderBuilder {
     /// # Example
     ///
     /// ```
-    /// use pica::ReaderBuilder;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     /// use std::io::Cursor;
     ///
@@ -287,7 +289,8 @@ impl<R: Read> Reader<R> {
     /// # Example
     ///
     /// ```
-    /// use pica::{ByteRecord, Reader, ReaderBuilder, StringRecord};
+    /// use pica::{ByteRecord, StringRecord};
+    /// use pica_io::{Reader, ReaderBuilder};
     /// use std::error::Error;
     /// use std::io::Cursor;
     ///
@@ -324,14 +327,14 @@ impl<R: Read> Reader<R> {
     /// # Example
     ///
     /// ```
-    /// use pica::ReaderBuilder;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader = ReaderBuilder::new()
     ///         .skip_invalid(true)
-    ///         .from_path("tests/data/dump.dat.gz")?;
+    ///         .from_path("../tests/data/dump.dat.gz")?;
     ///     assert_eq!(reader.records().count(), 7);
     ///
     ///     Ok(())
@@ -346,14 +349,14 @@ impl<R: Read> Reader<R> {
     /// # Example
     ///
     /// ```
-    /// use pica::ReaderBuilder;
+    /// use pica_io::ReaderBuilder;
     /// use std::error::Error;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
     ///     let mut reader = ReaderBuilder::new()
     ///         .skip_invalid(true)
-    ///         .from_path("tests/data/dump.dat.gz")?;
+    ///         .from_path("../tests/data/dump.dat.gz")?;
     ///     assert_eq!(reader.byte_records().count(), 7);
     ///
     ///     Ok(())

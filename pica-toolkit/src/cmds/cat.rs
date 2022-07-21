@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::util::{CliArgs, CliResult, Command};
 use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
-use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica_api::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]

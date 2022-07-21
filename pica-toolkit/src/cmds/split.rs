@@ -4,7 +4,7 @@ use std::io::{self, Read};
 use std::path::Path;
 
 use clap::Arg;
-use pica::{Reader, ReaderBuilder, WriterBuilder};
+use pica_api::{Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

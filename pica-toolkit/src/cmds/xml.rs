@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 
 use clap::Arg;
-use pica::{Reader, ReaderBuilder};
+use pica_api::{Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
 use xml::writer::XmlEvent;
 use xml::EmitterConfig;
