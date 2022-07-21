@@ -1,3 +1,4 @@
+use std::cmp::PartialEq;
 use std::fmt;
 use std::io::Write;
 use std::ops::Deref;
@@ -5,10 +6,11 @@ use std::result::Result as StdResult;
 
 use bstr::BString;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use std::cmp::PartialEq;
 
 use pica_core::Field;
-use pica_matcher::{MatcherFlags, TagMatcher};
+use pica_matcher::{
+    BooleanOp, ComparisonOp, MatcherFlags, RecordMatcher, TagMatcher,
+};
 
 use crate::error::Result;
 use crate::parser::{parse_fields, ParsePicaError};
@@ -230,6 +232,78 @@ impl ByteRecord {
             })
             .map(|subfield| subfield.value())
             .collect()
+    }
+
+    /// Returns true, if and only if the given record matches against
+    /// the record matcher.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::ByteRecord;
+    /// use pica_matcher::{MatcherFlags, RecordMatcher};
+    /// use std::str::FromStr;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let matcher = RecordMatcher::new("012A/*{0? && 0 == 'abc'}")?;
+    ///     let record = ByteRecord::from_bytes("012A/01 \x1f0abc\x1e")?;
+    ///     assert!(record.is_match(&matcher, &MatcherFlags::default()));
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn is_match(
+        &self,
+        matcher: &RecordMatcher,
+        flags: &MatcherFlags,
+    ) -> bool {
+        match matcher {
+            RecordMatcher::Singleton(matcher) => {
+                self.iter().any(|field| matcher.is_match(field, flags))
+            }
+            RecordMatcher::Group(matcher) => self.is_match(matcher, flags),
+            RecordMatcher::Not(matcher) => !self.is_match(matcher, flags),
+            RecordMatcher::Composite(lhs, BooleanOp::And, rhs) => {
+                self.is_match(lhs, flags) && self.is_match(rhs, flags)
+            }
+            RecordMatcher::Composite(lhs, BooleanOp::Or, rhs) => {
+                self.is_match(lhs, flags) || self.is_match(rhs, flags)
+            }
+            RecordMatcher::Cardinality(
+                tag,
+                occurrence,
+                subfields,
+                op,
+                value,
+            ) => {
+                let fields = self
+                    .iter()
+                    .filter(|field| {
+                        tag.is_match(field.tag())
+                            && occurrence.is_match(field.occurrence())
+                    })
+                    .filter(|field| {
+                        if let Some(matcher) = subfields {
+                            matcher.is_match(field.subfields(), flags)
+                        } else {
+                            true
+                        }
+                    });
+
+                let cardinality = fields.count();
+
+                match op {
+                    ComparisonOp::Eq => cardinality == *value,
+                    ComparisonOp::Ne => cardinality != *value,
+                    ComparisonOp::Gt => cardinality > *value,
+                    ComparisonOp::Ge => cardinality >= *value,
+                    ComparisonOp::Lt => cardinality < *value,
+                    ComparisonOp::Le => cardinality <= *value,
+                    _ => unreachable!(),
+                }
+            }
+            RecordMatcher::True => true,
+        }
     }
 
     pub fn select(&self, selector: &Selector, ignore_case: bool) -> Outcome {

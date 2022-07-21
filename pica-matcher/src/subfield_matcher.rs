@@ -15,11 +15,10 @@ use nom::sequence::{preceded, terminated, tuple};
 
 use pica_core::parser::parse_subfield_code;
 use pica_core::{ParseResult, Subfield};
-use pica_matcher::MatcherFlags;
 
 use crate::common::{parse_string, ws};
-use crate::matcher::{parse_comparison_op_bstring, ComparisonOp};
-use crate::Error;
+use crate::ops::parse_comparison_op_bstring;
+use crate::{ComparisonOp, MatcherFlags, ParseError};
 
 macro_rules! maybe_lowercase {
     ($value:expr, $flag:expr) => {
@@ -88,7 +87,7 @@ impl SubfieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::SubfieldMatcher;
+    /// use pica_matcher::SubfieldMatcher;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -97,15 +96,12 @@ impl SubfieldMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
+    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, ParseError> {
         let data = data.as_ref();
 
         match all_consuming(parse_subfield_matcher)(data.as_bytes()).finish() {
             Ok((_, matcher)) => Ok(matcher),
-            Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid subfield matcher, got '{}'",
-                data
-            ))),
+            Err(_) => Err(ParseError::InvalidSubfieldMatcher),
         }
     }
 
@@ -115,9 +111,8 @@ impl SubfieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::SubfieldMatcher;
     /// use pica_core::Subfield;
-    /// use pica_matcher::MatcherFlags;
+    /// use pica_matcher::{MatcherFlags, SubfieldMatcher};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -289,7 +284,7 @@ pub(crate) fn parse_subfield_matcher_exists(
     )(i)
 }
 
-pub(crate) fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+pub fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     alt((
         ws(parse_subfield_matcher_comparison),
         ws(parse_subfield_matcher_regex),
@@ -301,7 +296,7 @@ pub(crate) fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test::TestResult;
+    use crate::TestResult;
 
     #[test]
     fn test_parse_subfield_codes() -> TestResult {

@@ -3,5 +3,8 @@ pub use pica_io::{
 };
 
 pub mod matcher {
-    pub use pica_matcher::{MatcherFlags, TagMatcher};
+    pub use pica_matcher::{
+        MatcherFlags, OccurrenceMatcher, ParseError, RecordMatcher,
+        SubfieldMatcher, TagMatcher,
+    };
 }

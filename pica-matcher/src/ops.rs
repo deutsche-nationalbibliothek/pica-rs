@@ -80,7 +80,7 @@ pub(crate) fn parse_comparison_op_usize(i: &[u8]) -> ParseResult<ComparisonOp> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test::TestResult;
+    use crate::TestResult;
 
     #[test]
     fn test_parse_comparison_op() -> TestResult {
