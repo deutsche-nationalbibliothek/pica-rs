@@ -19,6 +19,7 @@ pica-core = { path = "./pica-core" }
 assert_cmd = "2.0"
 predicates = "2.1"
 tempfile = "3.2"
+flate2 = "1.0"
 
 [lib]
 path = "src/lib.rs"
