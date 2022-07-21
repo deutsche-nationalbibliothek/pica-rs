@@ -1,13 +1,11 @@
 mod common;
 mod field_matcher;
-mod flags;
 mod record_matcher;
 mod subfield_list_matcher;
 mod subfield_matcher;
 
 pub use common::{BooleanOp, ComparisonOp};
 pub use field_matcher::FieldMatcher;
-pub use flags::MatcherFlags;
 pub use record_matcher::RecordMatcher;
 pub use subfield_list_matcher::SubfieldListMatcher;
 pub use subfield_matcher::SubfieldMatcher;

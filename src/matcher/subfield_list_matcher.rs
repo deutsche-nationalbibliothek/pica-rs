@@ -11,11 +11,12 @@ use nom::Finish;
 
 use pica_core::parser::parse_subfield_code;
 use pica_core::{ParseResult, Subfield};
+use pica_matcher::MatcherFlags;
 
 use crate::common::ws;
 use crate::matcher::{
     parse_comparison_op_usize, parse_subfield_matcher, BooleanOp, ComparisonOp,
-    MatcherFlags, SubfieldMatcher,
+    SubfieldMatcher,
 };
 use crate::Error;
 
@@ -87,8 +88,9 @@ impl SubfieldListMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::{MatcherFlags, SubfieldListMatcher};
+    /// use pica::matcher::SubfieldListMatcher;
     /// use pica_core::Subfield;
+    /// use pica_matcher::MatcherFlags;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {

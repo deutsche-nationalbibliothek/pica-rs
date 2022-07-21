@@ -1,8 +1,10 @@
 mod error;
+mod flags;
 mod occurrence_matcher;
 mod tag_matcher;
 
 pub use error::ParseError;
+pub use flags::MatcherFlags;
 pub use occurrence_matcher::OccurrenceMatcher;
 pub use tag_matcher::TagMatcher;
 

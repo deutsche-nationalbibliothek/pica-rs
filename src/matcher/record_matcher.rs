@@ -16,7 +16,7 @@ use crate::matcher::*;
 use crate::{ByteRecord, Error};
 
 use pica_matcher::parser::{parse_occurrence_matcher, parse_tag_matcher};
-use pica_matcher::{OccurrenceMatcher, TagMatcher};
+use pica_matcher::{MatcherFlags, OccurrenceMatcher, TagMatcher};
 
 use super::subfield_matcher::parse_subfield_matcher_exists;
 
@@ -92,8 +92,9 @@ impl RecordMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::{MatcherFlags, RecordMatcher};
+    /// use pica::matcher::RecordMatcher;
     /// use pica::ByteRecord;
+    /// use pica_matcher::MatcherFlags;
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }

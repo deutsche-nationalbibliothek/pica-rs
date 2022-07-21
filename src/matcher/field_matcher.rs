@@ -8,12 +8,12 @@ use nom::Finish;
 
 use pica_core::{Field, ParseResult};
 use pica_matcher::parser::{parse_occurrence_matcher, parse_tag_matcher};
-use pica_matcher::{OccurrenceMatcher, TagMatcher};
+use pica_matcher::{MatcherFlags, OccurrenceMatcher, TagMatcher};
 
 use crate::common::ws;
 use crate::matcher::{
     parse_subfield_list_matcher, parse_subfield_list_matcher_singleton,
-    MatcherFlags, SubfieldListMatcher,
+    SubfieldListMatcher,
 };
 use crate::Error;
 
@@ -70,8 +70,9 @@ impl FieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::{FieldMatcher, MatcherFlags};
+    /// use pica::matcher::FieldMatcher;
     /// use pica_core::Field;
+    /// use pica_matcher::MatcherFlags;
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }

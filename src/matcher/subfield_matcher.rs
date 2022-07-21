@@ -15,9 +15,10 @@ use nom::sequence::{preceded, terminated, tuple};
 
 use pica_core::parser::parse_subfield_code;
 use pica_core::{ParseResult, Subfield};
+use pica_matcher::MatcherFlags;
 
 use crate::common::{parse_string, ws};
-use crate::matcher::{parse_comparison_op_bstring, ComparisonOp, MatcherFlags};
+use crate::matcher::{parse_comparison_op_bstring, ComparisonOp};
 use crate::Error;
 
 macro_rules! maybe_lowercase {
@@ -114,8 +115,9 @@ impl SubfieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::{MatcherFlags, SubfieldMatcher};
+    /// use pica::matcher::SubfieldMatcher;
     /// use pica_core::Subfield;
+    /// use pica_matcher::MatcherFlags;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {

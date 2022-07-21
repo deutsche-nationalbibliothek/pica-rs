@@ -8,10 +8,9 @@ use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::cmp::PartialEq;
 
 use pica_core::Field;
-use pica_matcher::TagMatcher;
+use pica_matcher::{MatcherFlags, TagMatcher};
 
 use crate::error::Result;
-use crate::matcher::MatcherFlags;
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
 use crate::Path;
