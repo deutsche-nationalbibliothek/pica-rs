@@ -11,6 +11,7 @@ pub(crate) enum CliError {
     Csv(csv::Error),
     Xml(xml::writer::Error),
     Pica(pica::Error),
+    Matcher(pica_api::matcher::ParseError),
     Other(String),
 }
 
@@ -21,8 +22,15 @@ impl fmt::Display for CliError {
             CliError::Xml(ref e) => e.fmt(f),
             CliError::Io(ref e) => e.fmt(f),
             CliError::Pica(ref e) => e.fmt(f),
+            CliError::Matcher(ref e) => e.fmt(f),
             CliError::Other(ref s) => f.write_str(s),
         }
+    }
+}
+
+impl From<pica_api::matcher::ParseError> for CliError {
+    fn from(e: pica_api::matcher::ParseError) -> CliError {
+        CliError::Matcher(e)
     }
 }
 

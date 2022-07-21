@@ -9,12 +9,14 @@ use nom::Finish;
 use pica_core::{Field, ParseResult};
 
 use crate::common::ws;
-use crate::matcher::{
-    parse_occurrence_matcher, parse_subfield_list_matcher,
-    parse_subfield_list_matcher_singleton, parse_tag_matcher, MatcherFlags,
-    OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
+use crate::parser::{parse_occurrence_matcher, parse_tag_matcher};
+use crate::subfield_list_matcher::{
+    parse_subfield_list_matcher, parse_subfield_list_matcher_singleton,
 };
-use crate::Error;
+use crate::{
+    MatcherFlags, OccurrenceMatcher, ParseError, SubfieldListMatcher,
+    TagMatcher,
+};
 
 #[derive(Debug, PartialEq)]
 pub enum FieldMatcher {
@@ -42,7 +44,7 @@ impl FieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::FieldMatcher;
+    /// use pica_matcher::FieldMatcher;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -51,15 +53,12 @@ impl FieldMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
+    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, ParseError> {
         let data = data.as_ref();
 
         match all_consuming(parse_field_matcher)(data.as_bytes()).finish() {
             Ok((_, matcher)) => Ok(matcher),
-            Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid field matcher, got '{}'",
-                data
-            ))),
+            Err(_) => Err(ParseError::InvalidFieldMatcher),
         }
     }
 
@@ -69,8 +68,8 @@ impl FieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::{FieldMatcher, MatcherFlags};
     /// use pica_core::Field;
+    /// use pica_matcher::{FieldMatcher, MatcherFlags};
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
@@ -133,7 +132,7 @@ pub(crate) fn parse_field_matcher_exists(
     )(i)
 }
 
-pub(crate) fn parse_field_matcher(i: &[u8]) -> ParseResult<FieldMatcher> {
+pub fn parse_field_matcher(i: &[u8]) -> ParseResult<FieldMatcher> {
     alt((parse_field_matcher_subfield, parse_field_matcher_exists))(i)
 }
 
@@ -142,7 +141,7 @@ mod tests {
     use std::str::FromStr;
 
     use super::*;
-    use crate::test::TestResult;
+    use crate::TestResult;
 
     #[test]
     fn test_field_matcher_invalid() -> TestResult {

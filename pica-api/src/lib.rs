@@ -1,3 +1,10 @@
 pub use pica_io::{
     GzipWriter, PicaWriter, PlainWriter, Reader, ReaderBuilder, WriterBuilder,
 };
+
+pub mod matcher {
+    pub use pica_matcher::{
+        MatcherFlags, OccurrenceMatcher, ParseError, RecordMatcher,
+        SubfieldMatcher, TagMatcher,
+    };
+}

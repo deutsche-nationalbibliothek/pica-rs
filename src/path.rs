@@ -13,8 +13,8 @@
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
 use pica_core::Tag;
+use pica_matcher::{OccurrenceMatcher, TagMatcher};
 
-use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_path, ParsePathError};
 use crate::{Error, Result};
 
@@ -31,8 +31,8 @@ impl Path {
     /// Creates a new path
     ///
     /// ```rust
-    /// use pica::matcher::OccurrenceMatcher;
     /// use pica::Path;
+    /// use pica_matcher::OccurrenceMatcher;
     ///
     /// assert!(Path::new("003@", OccurrenceMatcher::None, vec!['0']).is_ok());
     /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['0']).is_ok());
@@ -68,9 +68,9 @@ impl Path {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::OccurrenceMatcher;
     /// use pica::Path;
     /// use pica_core::Occurrence;
+    /// use pica_matcher::OccurrenceMatcher;
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }

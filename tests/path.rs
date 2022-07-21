@@ -1,5 +1,5 @@
-use pica::matcher::OccurrenceMatcher;
 use pica::Path;
+use pica_matcher::OccurrenceMatcher;
 
 #[test]
 fn path_new() {

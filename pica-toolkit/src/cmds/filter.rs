@@ -5,8 +5,8 @@ use std::str::FromStr;
 
 use clap::Arg;
 use lazy_static::lazy_static;
-use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
 use pica::Path;
+use pica_api::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
 use pica_api::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
@@ -298,7 +298,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                 continue;
             }
 
-            let mut is_match = filter.is_match(&record, &flags);
+            let mut is_match = record.is_match(&filter, &flags);
             if args.is_present("invert-match") {
                 is_match = !is_match;
             }

@@ -4,7 +4,6 @@ use std::ops::RangeFrom;
 use nom::branch::alt;
 use nom::character::complete::{char, one_of};
 use nom::combinator::{all_consuming, cut, map, value};
-use nom::error::ParseError;
 use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::{AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice};
@@ -12,7 +11,7 @@ use nom::{AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice};
 use pica_core::parser::parse_tag;
 use pica_core::{ParseResult, Tag};
 
-use crate::Error;
+use crate::ParseError;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum TagMatcher {
@@ -54,7 +53,7 @@ impl TagMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::TagMatcher;
+    /// use pica_matcher::TagMatcher;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -64,15 +63,12 @@ impl TagMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
+    pub fn new<S: AsRef<str>>(data: S) -> Result<Self, ParseError> {
         let data = data.as_ref();
 
         match all_consuming(parse_tag_matcher)(data.as_bytes()).finish() {
             Ok((_, matcher)) => Ok(matcher),
-            Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid tag matcher, got '{}'",
-                data
-            ))),
+            Err(_) => Err(ParseError::InvalidTagMatcher),
         }
     }
 
@@ -82,8 +78,8 @@ impl TagMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica::matcher::TagMatcher;
     /// use pica_core::Tag;
+    /// use pica_matcher::TagMatcher;
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
@@ -113,7 +109,7 @@ impl From<Tag> for TagMatcher {
     }
 }
 
-fn parse_character_class<I, T, E: ParseError<I>>(
+fn parse_character_class<I, T, E: nom::error::ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, Vec<char>, E>
 where
@@ -130,7 +126,7 @@ where
     ))
 }
 
-pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
+pub fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
     alt((
         map(parse_tag, |tag| TagMatcher::Some(Tag::from(tag))),
         map(
@@ -163,7 +159,7 @@ pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test::TestResult;
+    use crate::TestResult;
     use std::str::FromStr;
 
     #[test]
