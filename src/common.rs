@@ -42,7 +42,7 @@ fn parse_escaped_char(i: &[u8]) -> ParseResult<char> {
 
 /// Parse a non-empty block of text that doesn't include \ or ".
 
-fn parse_literal<'a>(i: &'a [u8]) -> ParseResult<&'a str> {
+fn parse_literal(i: &[u8]) -> ParseResult<&str> {
     map_res(
         verify(is_not("\'\\"), |s: &[u8]| !s.is_empty()),
         std::str::from_utf8,
@@ -57,7 +57,7 @@ enum StringFragment<'a> {
 }
 
 /// Combine parse_literal, parse_escaped_char into a StringFragment.
-fn parse_fragment<'a>(i: &'a [u8]) -> ParseResult<StringFragment<'a>> {
+fn parse_fragment(i: &[u8]) -> ParseResult<StringFragment> {
     alt((
         map(parse_literal, StringFragment::Literal),
         map(parse_escaped_char, StringFragment::EscapedChar),

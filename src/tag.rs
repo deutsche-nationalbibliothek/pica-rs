@@ -20,7 +20,7 @@ use crate::error::Error;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tag(pub(crate) BString);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Level {
     Main,
     Local,
@@ -86,9 +86,9 @@ impl Tag {
     ///     assert_eq!(Tag::new("003@")?.level(), Level::Main);
     ///     Ok(())
     /// }
-    /// ```    
+    /// ```
     pub fn level(&self) -> Level {
-        match self.0.get(0) {
+        match self.0.first() {
             Some(b'0') => Level::Main,
             Some(b'1') => Level::Local,
             Some(b'2') => Level::Copy,
