@@ -5,7 +5,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, digit1};
 use nom::combinator::{all_consuming, cut, map, map_res};
-use nom::multi::many0;
+use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
@@ -240,7 +240,7 @@ fn parse_subfield_list_matcher_composite_and(
             ws(parse_subfield_list_matcher_cardinality),
             ws(parse_subfield_list_matcher_not),
         )),
-        many0(preceded(
+        many1(preceded(
             ws(tag("&&")),
             alt((
                 ws(parse_subfield_list_matcher_group),
@@ -268,7 +268,7 @@ fn parse_subfield_list_matcher_composite_or(
             ws(parse_subfield_list_matcher_cardinality),
             ws(parse_subfield_list_matcher_not),
         )),
-        many0(preceded(
+        many1(preceded(
             ws(tag("||")),
             cut(alt((
                 ws(parse_subfield_list_matcher_group),
@@ -299,9 +299,9 @@ pub(crate) fn parse_subfield_list_matcher(
     i: &[u8],
 ) -> ParseResult<SubfieldListMatcher> {
     alt((
+        parse_subfield_list_matcher_composite,
         parse_subfield_list_matcher_group,
         parse_subfield_list_matcher_not,
-        parse_subfield_list_matcher_composite,
         parse_subfield_list_matcher_singleton,
         parse_subfield_list_matcher_cardinality,
     ))(i)
