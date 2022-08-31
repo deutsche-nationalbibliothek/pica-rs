@@ -18,7 +18,7 @@ use crate::Path;
 /// A PICA+ record, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq, Eq)]
 pub struct ByteRecord {
-    pub raw_data: Option<Vec<u8>>,
+    pub(crate) raw_data: Option<Vec<u8>>,
     pub(crate) fields: Vec<Field>,
 }
 
@@ -131,6 +131,48 @@ impl ByteRecord {
     }
 
     /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica::{ByteRecord, WriterBuilder};
+    /// use pica_core::Tag;
+    /// use pica_core::Subfield;
+    /// use pica_core::Occurrence;
+    /// use pica_core::Field;
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// use std::str::FromStr;
+    /// # use std::fs::read_to_string;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
+    ///
+    ///     let record = ByteRecord::new(vec![
+    ///         Field::new(
+    ///             Tag::from_str("012A")?,
+    ///             Some(Occurrence::from_str("/001")?),
+    ///             vec![Subfield::from_bytes(b"\x1f0123456789X")?],
+    ///         ),
+    ///         Field::new(
+    ///             Tag::from_str("012A")?,
+    ///             Some(Occurrence::from_str("/002")?),
+    ///             vec![Subfield::from_bytes(b"\x1f0123456789X")?],
+    ///         ),
+    ///     ]);
+    ///
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
+    ///     record.write(&mut writer)?;
+    ///     writer.finish()?;
+    ///
+    ///     # let result = read_to_string(path)?;
+    ///     # assert_eq!(result, String::from(
+    ///     #     "012A/001 \x1f0123456789X\x1e012A/002 \x1f0123456789X\x1e\n"));
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn write(&self, writer: &mut dyn Write) -> crate::error::Result<()> {
         for field in &self.fields {
             field.write(writer)?;

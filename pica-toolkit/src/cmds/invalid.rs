@@ -3,8 +3,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Read, Write};
 
 use clap::Arg;
-use pica::{Error, ParsePicaError};
-use pica_api::{Reader, ReaderBuilder};
+use pica::{Error, ParsePicaError, Reader, ReaderBuilder};
 
 use crate::util::{CliArgs, CliError, CliResult, Command};
 

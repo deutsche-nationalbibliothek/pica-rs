@@ -3,7 +3,7 @@ use std::io::{self, Read, Write};
 use std::str::FromStr;
 
 use clap::Arg;
-use pica_api::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
