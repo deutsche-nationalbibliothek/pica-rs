@@ -14,7 +14,6 @@ serde = { version = "1.0", features = ["derive"] }
 strsim = "0.10"
 
 pica-core = { path = "./pica-core" }
-pica-matcher = { path = "./pica-matcher" }
 
 [dev-dependencies]
 assert_cmd = "2.0"
@@ -36,7 +35,6 @@ members = [
     "pica-api",
     "pica-core",
     "pica-io",
-    "pica-matcher",
     "pica-toolkit",
 ]
 

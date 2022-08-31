@@ -6,6 +6,7 @@ pub use self::select::{Outcome, Selector, Selectors};
 
 mod common;
 pub mod error;
+pub mod matcher;
 pub mod parser;
 mod path;
 mod record;
