@@ -21,7 +21,7 @@ impl fmt::Display for CliError {
             CliError::Xml(ref e) => e.fmt(f),
             CliError::Io(ref e) => e.fmt(f),
             CliError::Pica(ref e) => e.fmt(f),
-            CliError::Other(ref s) => f.write_str(&**s),
+            CliError::Other(ref s) => f.write_str(s),
         }
     }
 }

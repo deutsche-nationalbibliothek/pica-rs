@@ -15,7 +15,7 @@ use crate::Path;
 const NL: char = '\x0A';
 
 /// An error that can occur when parsing PICA+ records.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParsePicaError {
     pub message: String,
     pub data: Vec<u8>,

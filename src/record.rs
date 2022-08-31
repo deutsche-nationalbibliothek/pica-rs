@@ -13,7 +13,7 @@ use std::ops::Deref;
 use std::result::Result as StdResult;
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ByteRecord {
     pub(crate) raw_data: Option<Vec<u8>>,
     pub(crate) fields: Vec<Field>,
@@ -405,7 +405,7 @@ impl Deref for ByteRecord {
 }
 
 /// A PICA+ record, that guarantees valid UTF-8 data.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct StringRecord(ByteRecord);
 
 impl Deref for StringRecord {
