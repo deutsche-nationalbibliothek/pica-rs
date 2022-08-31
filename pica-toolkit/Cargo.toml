@@ -30,3 +30,11 @@ pica = { path = "../" }
 [[bin]]
 path = "src/main.rs"
 name = "pica"
+
+[profile.release]
+codegen-units = 1
+panic = "abort"
+lto = true
+
+[profile.dev]
+debug = 0
