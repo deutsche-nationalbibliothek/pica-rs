@@ -1,85 +1,45 @@
 //! This module contains data structures and functions related to
-//! PICA+ fields.
+//! PICA+ field.
 
 use std::fmt;
 use std::io::Write;
-use std::str::{FromStr, Utf8Error};
+use std::ops::Deref;
+use std::str::FromStr;
 
-use bstr::BString;
+use bstr::{BString, ByteSlice};
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
+use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::opt;
+use nom::combinator::{all_consuming, map, success, value};
 use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
-use crate::parser::{parse_occurrence, parse_subfield, parse_tag};
-use crate::{
-    Occurrence, OccurrenceRef, ParseError, ParseResult, Subfield, SubfieldRef,
-    Tag, TagRef,
-};
+use pica_core::parser::{parse_occurrence, parse_subfield, parse_tag};
+use pica_core::{Occurrence, ParseResult, Subfield, Tag};
 
-/// An immutable PICA+ field.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct FieldRef<'a> {
-    tag: TagRef<'a>,
-    occurrence: Option<OccurrenceRef<'a>>,
-    subfields: Vec<SubfieldRef<'a>>,
-}
+use crate::error::{Error, Result};
 
-/// Parse a PICA+ field.
-#[inline]
-pub fn parse_field<'a>(i: &'a [u8]) -> ParseResult<FieldRef<'a>> {
-    const RS: char = '\x1E';
-    const SP: char = '\x20';
+const RS: char = '\x1E';
+const SP: char = '\x20';
 
-    let (i, (tag, occurrence, subfields)) = terminated(
-        tuple((
-            parse_tag,
-            opt(parse_occurrence),
-            preceded(char(SP), many0(parse_subfield)),
-        )),
-        char(RS),
-    )(i)?;
-
-    Ok((
-        i,
-        FieldRef {
-            tag,
-            occurrence,
-            subfields,
-        },
-    ))
-}
-
-impl<'a> FieldRef<'a> {
-    /// Creates an immutable PICA+ field from a byte slice.
-    ///
-    /// ```rust
-    /// use pica_core::FieldRef;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     assert!(FieldRef::from_bytes(b"003@ \x1f0123456789X\x1e").is_ok());
-    ///     Ok(())
-    /// }
-    /// ```
-    #[inline]
-    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParseError> {
-        Ok(match parse_field(data).finish() {
-            Ok((_, field)) => field,
-            _ => return Err(ParseError::InvalidField),
-        })
-    }
-}
-
-/// An mutable PICA+ field.
+/// A PICA+ field, that may contian invalid UTF-8 data.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Field {
-    tag: Tag,
-    occurrence: Option<Occurrence>,
-    subfields: Vec<Subfield>,
+    pub(crate) tag: Tag,
+    pub(crate) occurrence: Option<Occurrence>,
+    pub(crate) subfields: Vec<Subfield>,
+}
+
+impl Deref for Field {
+    type Target = Vec<Subfield>;
+
+    /// Dereferences the value
+    fn deref(&self) -> &Self::Target {
+        &self.subfields
+    }
 }
 
 impl Field {
@@ -88,7 +48,8 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -115,29 +76,14 @@ impl Field {
             subfields,
         }
     }
-    /// Creates an PICA+ field from a byte slice.
-    ///
-    /// ```rust
-    /// use pica_core::Field;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     assert!(Field::from_bytes(b"002@ \x1f0Oaf\x1e").is_ok());
-    ///     assert!(Field::from_bytes(b"002@\x1fOaf\x1e").is_err());
-    ///     Ok(())
-    /// }
-    /// ```
-    #[inline]
-    pub fn from_bytes(data: &[u8]) -> Result<Self, ParseError> {
-        Ok(FieldRef::from_bytes(data)?.into())
-    }
 
     /// Get a reference to the field's tag.
     ///
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Tag};
+    /// use pica::Field;
+    /// use pica_core::Tag;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -156,7 +102,8 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Occurrence, Tag};
+    /// use pica::Field;
+    /// use pica_core::{Occurrence, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -178,7 +125,8 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -198,78 +146,14 @@ impl Field {
         &self.subfields
     }
 
-    /// Returns the number of subfields.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let field = Field::new(
-    ///         Tag::from_bytes(b"012A")?,
-    ///         None,
-    ///         vec![Subfield::from_bytes(b"\x1f0123456789X")?],
-    ///     );
-    ///     assert_eq!(field.len(), 1);
-    ///     Ok(())
-    /// }
-    /// ```
-    #[inline]
-    pub fn len(&self) -> usize {
-        self.subfields().len()
-    }
-
-    /// Returns `true` if the field is empty (no subfields), otherwise `false`.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let field = Field::new(Tag::from_bytes(b"012A")?, None, vec![]);
-    ///     assert!(field.is_empty());
-    ///     Ok(())
-    /// }
-    /// ```
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.subfields().is_empty()
-    }
-
-    /// Returns an iterator over subfields
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let subfield = Subfield::from_bytes(b"\x1f0123456789X")?;
-    ///     let field =
-    ///         Field::new(Tag::from_bytes(b"012A")?, None, vec![subfield.clone()]);
-    ///
-    ///     let mut iter = field.iter();
-    ///     assert_eq!(iter.next(), Some(&subfield));
-    ///     assert_eq!(iter.next(), None);
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn iter(&self) -> impl Iterator<Item = &Subfield> {
-        self.subfields().iter()
-    }
-
     /// Returns `true` if the `Field` contains a `Subfield` with the specified
     ///  code.
     ///
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -298,7 +182,8 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -336,7 +221,8 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -369,7 +255,8 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::Field;
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -408,7 +295,8 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::{Error, Field};
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -435,7 +323,7 @@ impl Field {
     ///     Ok(())
     /// }
     /// ```
-    pub fn validate(&self) -> Result<(), Utf8Error> {
+    pub fn validate(&self) -> Result<()> {
         for subfield in &self.subfields {
             subfield.validate()?;
         }
@@ -448,26 +336,33 @@ impl Field {
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Tag, Occurrence, Subfield, Field};
-    /// use std::io::Cursor;
+    /// use pica::{Field, WriterBuilder};
+    /// use pica_core::Tag;
+    /// use pica_core::Occurrence;
+    /// use pica_core::Subfield;
+    /// use std::error::Error;
+    /// use tempfile::Builder;
+    /// # use std::fs::read_to_string;
     ///
     /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let field = Field::new(
-    ///         Tag::from_bytes(b"012A")?,
-    ///         Some(Occurrence::from_bytes(b"/001")?),
-    ///         vec![Subfield::from_bytes(b"\x1f0123456789X")?],
-    ///     );
+    /// fn example() -> Result<(), Box<dyn Error>> {
+    ///     let mut tempfile = Builder::new().tempfile()?;
+    ///     # let path = tempfile.path().to_owned();
     ///
-    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let subfield = Subfield::from_bytes(b"\x1f0123456789X")?;
+    ///     let occurrence = Occurrence::from_bytes(b"/001")?;
+    ///     let field = Field::new(Tag::from_bytes(b"012A")?, Some(occurrence), vec![subfield]);
+    ///
+    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
     ///     field.write(&mut writer)?;
+    ///     writer.finish()?;
     ///
-    ///     # let result = String::from_utf8(writer.into_inner())?;
+    ///     # let result = read_to_string(path)?;
     ///     # assert_eq!(result, String::from("012A/001 \x1f0123456789X\x1e"));
     ///     Ok(())
     /// }
     /// ```
-    pub fn write(&self, writer: &mut dyn Write) -> Result<(), std::io::Error> {
+    pub fn write(&self, writer: &mut dyn Write) -> crate::error::Result<()> {
         writer.write_all(self.tag.as_slice())?;
 
         if let Some(ref occurrence) = self.occurrence {
@@ -485,37 +380,14 @@ impl Field {
     }
 }
 
-impl From<FieldRef<'_>> for Field {
-    fn from(field_ref: FieldRef<'_>) -> Self {
-        let FieldRef {
-            tag,
-            occurrence,
-            subfields,
-        } = field_ref;
-
-        Field {
-            tag: tag.into(),
-            occurrence: occurrence.map(Into::into),
-            subfields: subfields.into_iter().map(Into::into).collect(),
-        }
-    }
-}
-
-impl FromStr for Field {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::from_bytes(s.as_bytes())
-    }
-}
-
 impl fmt::Display for Field {
     /// Format the field in a human-readable format.
     ///
     /// # Example
     ///
     /// ```rust
-    /// use pica_core::{Field, Occurrence, Subfield, Tag};
+    /// use pica::{Error, Field};
+    /// use pica_core::{Occurrence, Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -553,6 +425,7 @@ impl fmt::Display for Field {
         Ok(())
     }
 }
+
 impl Serialize for Field {
     fn serialize<S>(
         &self,
@@ -562,10 +435,16 @@ impl Serialize for Field {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("Field", 3)?;
-        state.serialize_field("tag", &self.tag.to_string())?;
-        if let Some(occurrence) = self.occurrence() {
-            let occurrence = occurrence.to_string();
-            state.serialize_field("occurrence", &occurrence[1..])?;
+        // SAFETY: It's save because `Serialize` is only implemented for
+        // `StringRecord` and not for `ByteRecord`.
+        unsafe {
+            state.serialize_field("tag", &self.tag.to_str_unchecked())?;
+            if let Some(occurrence) = self.occurrence() {
+                state.serialize_field(
+                    "occurrence",
+                    occurrence.to_str_unchecked(),
+                )?;
+            }
         }
 
         state.serialize_field("subfields", &self.subfields)?;
@@ -573,25 +452,91 @@ impl Serialize for Field {
     }
 }
 
+#[inline]
+pub(crate) fn parse_field(i: &[u8]) -> ParseResult<Field> {
+    map(
+        terminated(
+            tuple((
+                map(parse_tag, Tag::from),
+                alt((
+                    value(None, tag("/00")),
+                    map(parse_occurrence, |o| Some(o.into())),
+                    success(None),
+                )),
+                preceded(char(SP), many0(map(parse_subfield, Subfield::from))),
+            )),
+            char(RS),
+        ),
+        |(tag, occurrence, subfields)| Field::new(tag, occurrence, subfields),
+    )(i)
+}
+
+impl FromStr for Field {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match all_consuming(parse_field)(s.as_bytes()).finish() {
+            Ok((_, field)) => Ok(field),
+            Err(_) => Err(Error::InvalidField("invalid field!".to_string())),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::TestResult;
 
-    use nom_test_helpers::prelude::*;
+    use crate::test::TestResult;
 
     #[test]
-    fn test_parse_tag() -> TestResult {
-        assert_done_and_eq!(
-            parse_field(b"003@ \x1f0123456789X\x1fabc\x1e"),
-            FieldRef {
-                tag: TagRef::from_bytes(b"003@")?,
-                occurrence: None,
-                subfields: vec![
-                    SubfieldRef::from_bytes(b"\x1f0123456789X")?,
-                    SubfieldRef::from_bytes(b"\x1fabc")?
+    fn test_field_from_str() -> TestResult {
+        assert_eq!(
+            Field::from_str("003@ \x1f0123456789X\x1e")?,
+            Field::new(
+                Tag::from_str("003@")?,
+                None,
+                vec![Subfield::from_bytes(b"\x1f0123456789X")?]
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_field() -> TestResult {
+        assert_eq!(
+            parse_field(b"003@ \x1f0123456789X\x1e")?.1,
+            Field::new(
+                Tag::from_str("003@")?,
+                None,
+                vec![Subfield::from_bytes(b"\x1f0123456789X")?]
+            )
+        );
+
+        assert_eq!(
+            parse_field(b"012A/01 \x1f0abc\x1f0def\x1e")?.1,
+            Field::new(
+                Tag::from_str("012A")?,
+                Some(Occurrence::from_str("/01")?),
+                vec![
+                    Subfield::from_bytes(b"\x1f0abc")?,
+                    Subfield::from_bytes(b"\x1f0def")?
                 ]
-            }
+            )
+        );
+
+        assert_eq!(
+            parse_field(b"012A/00 \x1f0abc\x1e")?.1,
+            Field::new(
+                Tag::from_str("012A")?,
+                None,
+                vec![Subfield::from_bytes(b"\x1f0abc")?]
+            )
+        );
+
+        assert_eq!(
+            parse_field(b"012A \x1e")?.1,
+            Field::new(Tag::from_str("012A")?, None, vec![])
         );
 
         Ok(())

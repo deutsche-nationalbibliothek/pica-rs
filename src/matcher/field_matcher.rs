@@ -6,7 +6,7 @@ use nom::combinator::{all_consuming, cut, map, opt};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::Finish;
 
-use pica_core::{Field, ParseResult};
+use pica_core::ParseResult;
 
 use crate::common::ws;
 use crate::matcher::{
@@ -14,7 +14,7 @@ use crate::matcher::{
     parse_subfield_list_matcher_singleton, parse_tag_matcher, MatcherFlags,
     OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
 };
-use crate::Error;
+use crate::{Error, Field};
 
 #[derive(Debug, PartialEq)]
 pub enum FieldMatcher {
@@ -70,7 +70,7 @@ impl FieldMatcher {
     ///
     /// ```rust
     /// use pica::matcher::{FieldMatcher, MatcherFlags};
-    /// use pica_core::Field;
+    /// use pica::Field;
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }

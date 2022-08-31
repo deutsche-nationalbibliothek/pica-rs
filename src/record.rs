@@ -1,19 +1,16 @@
-use std::fmt;
-use std::io::Write;
-use std::ops::Deref;
-use std::result::Result as StdResult;
-
-use bstr::BString;
-use serde::ser::{Serialize, SerializeStruct, Serializer};
-use std::cmp::PartialEq;
-
-use pica_core::Field;
-
 use crate::error::Result;
 use crate::matcher::{MatcherFlags, TagMatcher};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
-use crate::Path;
+use crate::{Field, Path};
+
+use bstr::BString;
+use serde::ser::{Serialize, SerializeStruct, Serializer};
+use std::cmp::PartialEq;
+use std::fmt;
+use std::io::Write;
+use std::ops::Deref;
+use std::result::Result as StdResult;
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq, Eq)]
@@ -28,8 +25,8 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::ByteRecord;
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field};
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -60,8 +57,8 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::ByteRecord;
-    /// use pica_core::{Field, Subfield};
+    /// use pica::{ByteRecord, Field};
+    /// use pica_core::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -95,8 +92,8 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, Error};
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Error, Field};
+    /// use pica_core::{Subfield, Tag};
     /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
@@ -135,11 +132,10 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, WriterBuilder};
+    /// use pica::{ByteRecord, Field, WriterBuilder};
     /// use pica_core::Tag;
     /// use pica_core::Subfield;
     /// use pica_core::Occurrence;
-    /// use pica_core::Field;
     /// use std::error::Error;
     /// use tempfile::Builder;
     /// use std::str::FromStr;
@@ -187,8 +183,8 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::ByteRecord;
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field};
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -206,7 +202,7 @@ impl ByteRecord {
     /// }
     /// ```
     pub fn first(&self, tag: &str) -> Option<&Field> {
-        self.iter().find(|field| field.tag() == tag)
+        self.iter().find(|field| field.tag == tag)
     }
 
     /// Returns all fields matching the given tag
@@ -214,8 +210,8 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::ByteRecord;
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field};
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -246,7 +242,7 @@ impl ByteRecord {
     pub fn all(&self, tag: &str) -> Option<Vec<&Field>> {
         let result = self
             .iter()
-            .filter(|field| field.tag() == tag)
+            .filter(|field| field.tag == tag)
             .collect::<Vec<&Field>>();
 
         if !result.is_empty() {
@@ -289,7 +285,7 @@ impl ByteRecord {
                     .filter(|field| {
                         if let Some(filter) = &selector.filter {
                             filter.is_match(
-                                field.subfields(),
+                                field,
                                 &MatcherFlags {
                                     ignore_case,
                                     strsim_threshold: 0.0,
@@ -299,7 +295,7 @@ impl ByteRecord {
                             true
                         }
                     })
-                    .map(|field| field.subfields())
+                    .map(|field| &field.subfields)
                     .map(|subfields| {
                         selector
                             .subfields
@@ -345,8 +341,8 @@ impl ByteRecord {
     ///
     /// ```rust
     /// use pica::matcher::TagMatcher;
-    /// use pica::ByteRecord;
-    /// use pica_core::{Field, Subfield, Tag};
+    /// use pica::{ByteRecord, Field};
+    /// use pica_core::{Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -373,9 +369,7 @@ impl ByteRecord {
                 .fields
                 .clone()
                 .into_iter()
-                .filter(|field| {
-                    matchers.iter().any(|m| m.is_match(field.tag()))
-                })
+                .filter(|field| matchers.iter().any(|m| m.is_match(&field.tag)))
                 .collect();
         }
     }
@@ -524,7 +518,7 @@ impl Serialize for StringRecord {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pica_core::{Field, Occurrence, Subfield, Tag};
+    use pica_core::{Occurrence, Subfield, Tag};
     use std::io::Cursor;
     use std::str::FromStr;
 
@@ -538,7 +532,11 @@ mod tests {
                 None,
                 vec![Subfield::from_bytes(b"\x1f0123456789X")?]
             ),
-            Field::from_bytes(b"003@ \x1f0123456789X\x1e")?
+            Field {
+                tag: Tag::from_str("003@")?,
+                occurrence: None,
+                subfields: vec![Subfield::from_bytes(b"\x1f0123456789X")?]
+            }
         );
 
         Ok(())

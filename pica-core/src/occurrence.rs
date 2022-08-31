@@ -15,7 +15,7 @@ use nom::Finish;
 use crate::{ParseError, ParseResult};
 
 /// An immutable PICA+ occurrence.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct OccurrenceRef<'a>(&'a BStr);
 
 /// Parse a PICA+ occurrence.
