@@ -5,8 +5,7 @@ use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 
 use clap::Arg;
-use pica::{Outcome, Selectors};
-use pica_api::ReaderBuilder;
+use pica::{Outcome, ReaderBuilder, Selectors};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

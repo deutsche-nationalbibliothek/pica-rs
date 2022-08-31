@@ -25,7 +25,6 @@ unicode-normalization = "0.1"
 xml-rs = "0.8"
 
 pica-core = { path = "../pica-core" }
-pica-api = { path = "../pica-api" }
 pica = { path = "../" }
 
 [[bin]]

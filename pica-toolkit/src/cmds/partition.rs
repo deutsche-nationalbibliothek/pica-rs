@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 use bstr::ByteSlice;
 use clap::Arg;
-use pica_api::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica::{self, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

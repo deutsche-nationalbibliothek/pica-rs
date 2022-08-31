@@ -2,8 +2,7 @@ use std::ffi::OsString;
 use std::io::{self, Read};
 
 use clap::Arg;
-use pica::ByteRecord;
-use pica_api::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica::{ByteRecord, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 

@@ -3,7 +3,7 @@ use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 
 use clap::Arg;
-use pica_api::{Reader, ReaderBuilder};
+use pica::{Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
