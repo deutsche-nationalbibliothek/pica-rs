@@ -61,10 +61,6 @@ fn main() {
             eprintln!("Pica Error: {}", err);
             process::exit(1);
         }
-        Err(CliError::Matcher(err)) => {
-            eprintln!("Matcher Error: {}", err);
-            process::exit(1);
-        }
         Err(CliError::Io(err)) => {
             eprintln!("IO Error: {}", err);
             process::exit(1);
