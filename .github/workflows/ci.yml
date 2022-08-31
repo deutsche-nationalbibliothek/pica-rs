@@ -39,7 +39,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --workspace
 
   test:
     name: test (${{ matrix.target }} with rust-${{ matrix.rust }})
@@ -95,12 +94,8 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          command: build
-          args: --workspace
-      - uses: actions-rs/cargo@v1
-        with:
           command: test
-          args: --workspace
+          args: --all
 
   fuzz:
     name: fuzz ${{ matrix.name }}
