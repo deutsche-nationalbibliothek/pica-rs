@@ -39,6 +39,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
+          args: --workspace
 
   test:
     name: test (${{ matrix.target }} with rust-${{ matrix.rust }})
@@ -94,8 +95,12 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
+          command: build
+          args: --workspace
+      - uses: actions-rs/cargo@v1
+        with:
           command: test
-          args: --all
+          args: --workspace
 
   fuzz:
     name: fuzz ${{ matrix.name }}
@@ -142,11 +147,13 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           override: true
-      - uses: actions-rs/install@v0.1
-        with:
-          use-tool-cache: true
-          crate: cargo-fuzz
-          version: latest
+      # - uses: actions-rs/install@v0.1
+      #   with:
+      #     use-tool-cache: true
+      #     crate: cargo-fuzz
+      #     version: latest
+      - run: |
+          cargo install --force cargo-fuzz
       - run: |
           cargo fuzz run ${{ matrix.target }} --jobs 2 -- -max_total_time=${{ matrix.max-total-time }}
 

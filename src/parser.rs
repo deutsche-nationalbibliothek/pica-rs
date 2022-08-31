@@ -6,16 +6,16 @@ use nom::combinator::{all_consuming, map, opt};
 use nom::multi::many1;
 use nom::sequence::{delimited, preceded, terminated, tuple};
 
-use crate::common::ParseResult;
-use crate::field::{parse_field, Field};
-use crate::matcher::{parse_occurrence_matcher, parse_tag_matcher};
-use crate::subfield::parse_subfield_code;
+use pica_core::parser::{parse_field, parse_subfield_code};
+use pica_core::{Field, ParseResult};
+use pica_matcher::parser::{parse_occurrence_matcher, parse_tag_matcher};
+
 use crate::Path;
 
 const NL: char = '\x0A';
 
 /// An error that can occur when parsing PICA+ records.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParsePicaError {
     pub message: String,
     pub data: Vec<u8>,
@@ -49,7 +49,10 @@ pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
 
 /// Parses a record.
 pub(crate) fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
-    all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
+    all_consuming(terminated(
+        many1(map(parse_field, |f| f.into())),
+        opt(char(NL)),
+    ))(i)
 }
 
 pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
@@ -74,9 +77,11 @@ pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::matcher::OccurrenceMatcher;
+    use pica_core::{Occurrence, Subfield, Tag};
+    use std::str::FromStr;
+
     use crate::test::TestResult;
-    use crate::{Occurrence, Subfield, Tag};
+    use pica_matcher::OccurrenceMatcher;
 
     #[test]
     fn test_parse_fields() -> TestResult {
@@ -87,19 +92,19 @@ mod tests {
             .1,
             vec![
                 Field::new(
-                    Tag::new("003@")?,
+                    Tag::from_str("003@")?,
                     None,
-                    vec![Subfield::new('0', "123456789X").unwrap()]
+                    vec![Subfield::from_bytes(b"\x1f0123456789X").unwrap()]
                 ),
                 Field::new(
-                    Tag::new("012A")?,
-                    None,
-                    vec![Subfield::new('a', "123").unwrap()]
+                    Tag::from_str("012A")?,
+                    Some(Occurrence::from_str("/00").unwrap()),
+                    vec![Subfield::from_bytes(b"\x1fa123").unwrap()]
                 ),
                 Field::new(
-                    Tag::new("012A")?,
-                    Some(Occurrence::new("01").unwrap()),
-                    vec![Subfield::new('a', "456").unwrap()]
+                    Tag::from_str("012A")?,
+                    Some(Occurrence::from_str("/01").unwrap()),
+                    vec![Subfield::from_bytes(b"\x1fa456").unwrap()]
                 )
             ]
         );
@@ -117,7 +122,7 @@ mod tests {
             parse_path(b"012A/01.0")?.1,
             Path::new(
                 "012A",
-                OccurrenceMatcher::Some(Occurrence::new("01")?),
+                OccurrenceMatcher::Some(Occurrence::from_str("/01")?),
                 vec!['0']
             )
             .unwrap()
