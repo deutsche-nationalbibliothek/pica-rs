@@ -53,3 +53,9 @@ lto = true
 
 [profile.dev]
 debug = 0
+
+[workspace]
+
+members = [
+    "pica-record"
+]

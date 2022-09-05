@@ -39,6 +39,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
+          args: --workspace
 
   test:
     name: test (${{ matrix.target }} with rust-${{ matrix.rust }})
@@ -95,7 +96,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all
+          args: --all --workspace
 
   fuzz:
     name: fuzz ${{ matrix.name }}
@@ -203,7 +204,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-features --no-fail-fast
+          args: --all-features --workspace --no-fail-fast
         env:
           RUSTFLAGS: "-Zinstrument-coverage"
           LLVM_PROFILE_FILE: "pica-%p-%m.profraw"
@@ -270,7 +271,7 @@ jobs:
           crate: cargo-udeps
           version: latest
       - run: |
-          cargo +nightly udeps
+          cargo +nightly udeps --workspace
 
   audit:
     if: ${{ github.ref == 'refs/heads/main' }}
