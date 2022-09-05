@@ -81,7 +81,7 @@ pub(crate) fn cli() -> Command {
         .arg(
             Arg::new("color")
                 .long("color")
-                .possible_values(&["auto", "always", "ansi", "never"])
+                .possible_values(["auto", "always", "ansi", "never"])
                 .default_value("auto"),
         )
         .arg(
