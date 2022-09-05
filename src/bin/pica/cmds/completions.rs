@@ -11,7 +11,7 @@ pub(crate) fn cli() -> Command {
         .about("Generate a completions file for Bash, Fish or ZSH shell.")
         .arg(
             Arg::new("shell")
-                .possible_values(&[
+                .possible_values([
                     "bash",
                     "evlish",
                     "fish",
