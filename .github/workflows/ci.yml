@@ -121,3 +121,29 @@ jobs:
           use-cross: true
           command: build
           args: --workspace --all-features
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: abbbi/github-actions-tune@v1
+      - uses: actions/cache@v2
+        with:
+          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/git/db/
+            ~/.cargo/registry/cache/
+            ~/.cargo/registry/index/
+            target/
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
