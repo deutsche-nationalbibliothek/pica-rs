@@ -294,7 +294,7 @@ jobs:
           cargo upgrades
 
   book:
-    # if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -321,3 +321,47 @@ jobs:
       - run: |
           mdbook build docs/book
           mdbook test docs/book
+
+  gh-pages:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs:
+      - check
+      - test
+      - cross
+      - fuzz
+      - rustfmt
+      - clippy
+      - udeps
+      - audit
+      - upgrades
+      - book
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: abbbi/github-actions-tune@v1
+      - uses: actions/cache@v2
+        with:
+          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/git/db/
+            ~/.cargo/registry/cache/
+            ~/.cargo/registry/index/
+            target/
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --all --no-deps --workspace
+      - run: |
+          echo '<meta http-equiv=refresh content=0;url=pica/index.html>' > target/doc/index.html
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: target/doc
+          keep_files: false
+          force_orphan: true
