@@ -86,9 +86,10 @@ jobs:
           args: --workspace --all-features --no-fail-fast
 
   cross:
-    needs: check
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     name: cross ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
     runs-on: ${{ matrix.target.os }}
+    needs: check
     strategy:
       matrix:
         target:
@@ -125,9 +126,9 @@ jobs:
 
   fuzz:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    needs: check
     name: fuzz ${{ matrix.item.name }}
     runs-on: ubuntu-latest
+    needs: check
     strategy:
       matrix:
         item:
@@ -159,7 +160,7 @@ jobs:
           command: fuzz
           args: run --fuzz-dir ${{ matrix.item.fuzz-dir }} --jobs 2 ${{ matrix.item.target }} -- -max_total_time=${{ matrix.item.max-total-time }}
 
-  rustfmt:
+  fmt:
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -326,16 +327,16 @@ jobs:
   gh-pages:
     if: ${{ github.ref == 'refs/heads/main' }}
     needs:
-      - check
-      - test
-      - cross
-      - fuzz
-      - rustfmt
-      - clippy
-      - udeps
       - audit
-      - upgrades
       - book
+      - check
+      - clippy
+      - cross
+      - fmt
+      - fuzz
+      - test
+      - udeps
+      - upgrades
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
