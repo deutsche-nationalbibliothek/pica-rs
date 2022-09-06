@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: abbbi/github-actions-tune@v1
       - uses: actions/cache@v2
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
@@ -61,6 +62,8 @@ jobs:
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v3
+      - uses: abbbi/github-actions-tune@v1
+        if: ${{ matrix.target.os == 'ubuntu-latest' }}
       - uses: actions/cache@v2
         with:
           key: ${{ runner.os }}-cargo-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
