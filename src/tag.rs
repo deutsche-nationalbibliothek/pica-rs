@@ -5,7 +5,6 @@ use std::fmt;
 use std::ops::Deref;
 
 use bstr::BString;
-
 use nom::branch::alt;
 use nom::character::complete::{char, one_of, satisfy};
 use nom::combinator::{all_consuming, map, recognize};
@@ -159,7 +158,10 @@ mod tests {
 
     #[test]
     fn test_tag_from_unchecked() -> TestResult {
-        assert_eq!(Tag::from_unchecked("003@"), Tag(BString::from("003@")));
+        assert_eq!(
+            Tag::from_unchecked("003@"),
+            Tag(BString::from("003@"))
+        );
         Ok(())
     }
 
@@ -178,7 +180,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Expected tag to start with '0', '1' or '2'.")]
+    #[should_panic(
+        expected = "Expected tag to start with '0', '1' or '2'."
+    )]
     fn test_invalid_tag_level() {
         Tag::from_unchecked("345A").level();
     }

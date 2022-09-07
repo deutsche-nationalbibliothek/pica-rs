@@ -42,14 +42,18 @@ pub(crate) fn run(args: &CliArgs) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(false);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };
 
         for result in reader.records() {
             match result {
-                Err(Error::InvalidRecord(ParsePicaError { data, .. })) => {
+                Err(Error::InvalidRecord(ParsePicaError {
+                    data,
+                    ..
+                })) => {
                     writer.write_all(&data)?;
                 }
                 Err(e) => return Err(CliError::from(e)), // no-coverage

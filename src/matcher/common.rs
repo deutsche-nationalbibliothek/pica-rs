@@ -66,7 +66,9 @@ pub(crate) fn parse_comparison_op_bstring(
 }
 
 /// Parses comparison operator for usize.
-pub(crate) fn parse_comparison_op_usize(i: &[u8]) -> ParseResult<ComparisonOp> {
+pub(crate) fn parse_comparison_op_usize(
+    i: &[u8],
+) -> ParseResult<ComparisonOp> {
     alt((
         value(ComparisonOp::Eq, tag("==")),
         value(ComparisonOp::Ne, tag("!=")),
@@ -85,8 +87,14 @@ mod tests {
     #[test]
     fn test_parse_comparison_op() -> TestResult {
         // bstring
-        assert_eq!(parse_comparison_op_bstring(b"==")?.1, ComparisonOp::Eq);
-        assert_eq!(parse_comparison_op_bstring(b"!=")?.1, ComparisonOp::Ne);
+        assert_eq!(
+            parse_comparison_op_bstring(b"==")?.1,
+            ComparisonOp::Eq
+        );
+        assert_eq!(
+            parse_comparison_op_bstring(b"!=")?.1,
+            ComparisonOp::Ne
+        );
         assert_eq!(
             parse_comparison_op_bstring(b"=^")?.1,
             ComparisonOp::StartsWith
@@ -102,12 +110,30 @@ mod tests {
         assert!(parse_comparison_op_bstring(b"<").is_err());
 
         // usize
-        assert_eq!(parse_comparison_op_usize(b"==")?.1, ComparisonOp::Eq);
-        assert_eq!(parse_comparison_op_usize(b"!=")?.1, ComparisonOp::Ne);
-        assert_eq!(parse_comparison_op_usize(b">=")?.1, ComparisonOp::Ge);
-        assert_eq!(parse_comparison_op_usize(b">")?.1, ComparisonOp::Gt);
-        assert_eq!(parse_comparison_op_usize(b"<=")?.1, ComparisonOp::Le);
-        assert_eq!(parse_comparison_op_usize(b"<")?.1, ComparisonOp::Lt);
+        assert_eq!(
+            parse_comparison_op_usize(b"==")?.1,
+            ComparisonOp::Eq
+        );
+        assert_eq!(
+            parse_comparison_op_usize(b"!=")?.1,
+            ComparisonOp::Ne
+        );
+        assert_eq!(
+            parse_comparison_op_usize(b">=")?.1,
+            ComparisonOp::Ge
+        );
+        assert_eq!(
+            parse_comparison_op_usize(b">")?.1,
+            ComparisonOp::Gt
+        );
+        assert_eq!(
+            parse_comparison_op_usize(b"<=")?.1,
+            ComparisonOp::Le
+        );
+        assert_eq!(
+            parse_comparison_op_usize(b"<")?.1,
+            ComparisonOp::Lt
+        );
 
         assert!(parse_comparison_op_usize(b"=^").is_err());
         assert!(parse_comparison_op_usize(b"=$").is_err());

@@ -1,7 +1,8 @@
-edition = "2018"
+edition = "2021"
 format_code_in_doc_comments = true
-max_width = 80
+group_imports = "StdExternalCrate"
 imports_granularity="Module"
+max_width = 72
 newline_style = "Unix"
 normalize_comments = true
 normalize_doc_attributes = true

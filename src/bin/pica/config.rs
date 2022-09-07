@@ -1,7 +1,8 @@
-use directories::ProjectDirs;
-use serde::{Deserialize, Serialize};
 use std::fs::{create_dir_all, read_to_string};
 use std::path::{Path, PathBuf};
+
+use directories::ProjectDirs;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -17,9 +18,11 @@ pub(crate) struct Config {
     pub(crate) cat: Option<crate::cmds::cat::CatConfig>,
     pub(crate) count: Option<crate::cmds::count::CountConfig>,
     pub(crate) filter: Option<crate::cmds::filter::FilterConfig>,
-    pub(crate) frequency: Option<crate::cmds::frequency::FrequencyConfig>,
+    pub(crate) frequency:
+        Option<crate::cmds::frequency::FrequencyConfig>,
     pub(crate) json: Option<crate::cmds::json::JsonConfig>,
-    pub(crate) partition: Option<crate::cmds::partition::PartitionConfig>,
+    pub(crate) partition:
+        Option<crate::cmds::partition::PartitionConfig>,
     pub(crate) print: Option<crate::cmds::print::PrintConfig>,
     pub(crate) sample: Option<crate::cmds::sample::SampleConfig>,
     pub(crate) select: Option<crate::cmds::select::SelectConfig>,

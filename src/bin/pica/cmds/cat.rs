@@ -1,12 +1,13 @@
 use std::ffi::OsString;
 use std::io::{self, Read};
 
-use crate::config::Config;
-use crate::util::{CliArgs, CliResult, Command};
-use crate::{gzip_flag, skip_invalid_flag};
 use clap::Arg;
 use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
+
+use crate::config::Config;
+use crate::util::{CliArgs, CliResult, Command};
+use crate::{gzip_flag, skip_invalid_flag};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -68,7 +69,8 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.cat, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.cat, config.global);
     let gzip_compression = gzip_flag!(args, config.cat);
     let append = args.is_present("append");
 
@@ -93,7 +95,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };

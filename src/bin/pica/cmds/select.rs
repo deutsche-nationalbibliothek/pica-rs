@@ -84,7 +84,8 @@ fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.select, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.select, config.global);
     let no_empty_columns = args.is_present("no-empty-columns");
     let ignore_case = args.is_present("ignore-case");
     let unique = args.is_present("unique");
@@ -121,7 +122,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             .fold(Outcome::default(), |acc, x| acc * x);
 
         for row in outcome.iter() {
-            if no_empty_columns && row.iter().any(|column| column.is_empty()) {
+            if no_empty_columns
+                && row.iter().any(|column| column.is_empty())
+            {
                 continue;
             }
 
@@ -141,7 +144,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                 if args.value_of("translit").is_some() {
                     writer.write_record(
                         row.iter().map(ToString::to_string).map(|s| {
-                            translit_maybe(&s, args.value_of("translit"))
+                            translit_maybe(
+                                &s,
+                                args.value_of("translit"),
+                            )
                         }),
                     )?;
                 } else {

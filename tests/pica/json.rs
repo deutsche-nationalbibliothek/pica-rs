@@ -1,7 +1,8 @@
-use assert_cmd::Command;
-use predicates::prelude::*;
 use std::fs::read_to_string;
 use std::path::Path;
+
+use assert_cmd::Command;
+use predicates::prelude::*;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -9,9 +10,11 @@ use crate::common::{CommandExt, TestContext, TestResult};
 #[test]
 fn pica_json_single_record() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("json").arg("tests/data/1004916019.dat").assert();
+    let assert =
+        cmd.arg("json").arg("tests/data/1004916019.dat").assert();
 
-    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())
@@ -68,8 +71,9 @@ fn pica_json_stdin() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("json").arg("-").write_stdin(data).assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.json"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.json",
+    ));
     assert
         .success()
         .stderr(predicate::str::is_empty())
@@ -79,8 +83,9 @@ fn pica_json_stdin() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("json").write_stdin(data).assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.json"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.json",
+    ));
     assert
         .success()
         .stderr(predicate::str::is_empty())
@@ -103,7 +108,8 @@ fn pica_json_write_output() -> TestResult {
         .assert();
     assert.success();
 
-    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019.json").unwrap();
     let actual = read_to_string(filename_str).unwrap();
     assert_eq!(expected.trim_end().to_string(), actual);
 
@@ -118,7 +124,8 @@ fn pica_json_translit() -> TestResult {
         .arg("tests/data/004732650-reduced.dat.gz")
         .assert();
 
-    let expected = read_to_string("tests/data/004732650-nfd.json").unwrap();
+    let expected =
+        read_to_string("tests/data/004732650-nfd.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
 
     let expected = vec![
@@ -156,10 +163,9 @@ fn pica_json_skip_invalid() -> TestResult {
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("json").arg("tests/data/dump.dat.gz").assert();
-    assert
-        .failure()
-        .code(1)
-        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+    assert.failure().code(1).stderr(predicate::eq(
+        "Pica Error: Invalid record on line 2.\n",
+    ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -173,7 +179,8 @@ skip-invalid = true
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -188,7 +195,8 @@ skip-invalid = true
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -206,7 +214,8 @@ skip-invalid = true
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -225,7 +234,8 @@ skip-invalid = false
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/1004916019.json").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019.json").unwrap();
     assert.success().stdout(expected.trim_end().to_string());
 
     Ok(())

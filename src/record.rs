@@ -1,16 +1,17 @@
-use crate::error::Result;
-use crate::matcher::{MatcherFlags, TagMatcher};
-use crate::parser::{parse_fields, ParsePicaError};
-use crate::select::{Outcome, Selector};
-use crate::{Field, Path};
-
-use bstr::BString;
-use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::cmp::PartialEq;
 use std::fmt;
 use std::io::Write;
 use std::ops::Deref;
 use std::result::Result as StdResult;
+
+use bstr::BString;
+use serde::ser::{Serialize, SerializeStruct, Serializer};
+
+use crate::error::Result;
+use crate::matcher::{MatcherFlags, TagMatcher};
+use crate::parser::{parse_fields, ParsePicaError};
+use crate::select::{Outcome, Selector};
+use crate::{Field, Path};
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq, Eq)]
@@ -50,8 +51,8 @@ impl ByteRecord {
     /// Creates a new ByteRecord from a byte vector.
     ///
     /// Parses the given byte sequence and return the corresponding
-    /// `ByteRecord`. If an parse error occurs an `ParsePicaError` will be
-    /// returned.
+    /// `ByteRecord`. If an parse error occurs an `ParsePicaError` will
+    /// be returned.
     ///
     /// # Example
     ///
@@ -60,13 +61,16 @@ impl ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+    ///     let record =
+    ///         ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
     ///     assert_eq!(record.len(), 1);
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_bytes<T>(data: T) -> StdResult<ByteRecord, ParsePicaError>
+    pub fn from_bytes<T>(
+        data: T,
+    ) -> StdResult<ByteRecord, ParsePicaError>
     where
         T: Into<Vec<u8>>,
     {
@@ -161,7 +165,10 @@ impl ByteRecord {
     ///     Ok(())
     /// }
     /// ```
-    pub fn write(&self, writer: &mut dyn Write) -> crate::error::Result<()> {
+    pub fn write(
+        &self,
+        writer: &mut dyn Write,
+    ) -> crate::error::Result<()> {
         for field in &self.fields {
             field.write(writer)?;
         }
@@ -179,7 +186,8 @@ impl ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+    ///     let record =
+    ///         ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
     ///     assert_eq!(
     ///         record.first("003@"),
     ///         Some(&Field::new(
@@ -205,8 +213,9 @@ impl ByteRecord {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("012A \x1fa123\x1e012A \x1fa456\x1e")?;
+    ///     let record = ByteRecord::from_bytes(
+    ///         "012A \x1fa123\x1e012A \x1fa456\x1e",
+    ///     )?;
     ///
     ///     assert_eq!(
     ///         record.all("012A"),
@@ -249,21 +258,30 @@ impl ByteRecord {
             .filter(|field| {
                 path.tag.is_match(field.tag())
                     && path.occurrence.is_match(field.occurrence())
-                    && path.codes.iter().any(|x| field.contains_code(*x))
+                    && path
+                        .codes
+                        .iter()
+                        .any(|x| field.contains_code(*x))
             })
             .flat_map(|field| {
-                path.codes
-                    .iter()
-                    .flat_map(move |code| field.get(*code).unwrap_or_default())
+                path.codes.iter().flat_map(move |code| {
+                    field.get(*code).unwrap_or_default()
+                })
             })
             .map(|subfield| subfield.value())
             .collect()
     }
 
-    pub fn select(&self, selector: &Selector, ignore_case: bool) -> Outcome {
+    pub fn select(
+        &self,
+        selector: &Selector,
+        ignore_case: bool,
+    ) -> Outcome {
         match selector {
             Selector::Value(value) => {
-                Outcome::from_values(vec![BString::from(value.as_bytes())])
+                Outcome::from_values(vec![BString::from(
+                    value.as_bytes(),
+                )])
             }
             Selector::Field(selector) => {
                 let result = self
@@ -293,9 +311,13 @@ impl ByteRecord {
                             .map(|code| {
                                 subfields
                                     .iter()
-                                    .filter(|subfield| subfield.code == *code)
+                                    .filter(|subfield| {
+                                        subfield.code == *code
+                                    })
                                     .map(|subfield| {
-                                        vec![subfield.value().to_owned()]
+                                        vec![subfield
+                                            .value()
+                                            .to_owned()]
                                     })
                                     .collect::<Vec<Vec<BString>>>()
                             })
@@ -330,15 +352,20 @@ impl ByteRecord {
     /// # Example
     ///
     /// ```rust
+    /// use std::str::FromStr;
+    ///
     /// use pica::matcher::TagMatcher;
     /// use pica::{ByteRecord, Field, Subfield, Tag};
-    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut record =
-    ///         ByteRecord::from_bytes("012A \x1fa123\x1e013A \x1fa456\x1e")?;
-    ///     record.reduce(&[TagMatcher::new("003@")?, TagMatcher::new("012A")?]);
+    ///     let mut record = ByteRecord::from_bytes(
+    ///         "012A \x1fa123\x1e013A \x1fa456\x1e",
+    ///     )?;
+    ///     record.reduce(&[
+    ///         TagMatcher::new("003@")?,
+    ///         TagMatcher::new("012A")?,
+    ///     ]);
     ///
     ///     assert_eq!(
     ///         record,
@@ -359,7 +386,9 @@ impl ByteRecord {
                 .fields
                 .clone()
                 .into_iter()
-                .filter(|field| matchers.iter().any(|m| m.is_match(&field.tag)))
+                .filter(|field| {
+                    matchers.iter().any(|m| m.is_match(&field.tag))
+                })
                 .collect();
         }
     }
@@ -378,12 +407,18 @@ impl fmt::Display for ByteRecord {
     ///     let record = ByteRecord::from_bytes(
     ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
     ///     )?;
-    ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
+    ///     assert_eq!(
+    ///         format!("{}", record),
+    ///         "003@ $0123456789X\n012A/01 $a123"
+    ///     );
     ///
     ///     Ok(())
     /// }
     /// ```
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> StdResult<(), fmt::Error> {
         let fields = self
             .fields
             .iter()
@@ -422,23 +457,28 @@ impl StringRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, StringRecord};
     /// use std::error::Error;
+    ///
+    /// use pica::{ByteRecord, StringRecord};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e".to_vec())?;
+    ///     let record = ByteRecord::from_bytes(
+    ///         b"003@ \x1f0123456789X\x1e".to_vec(),
+    ///     )?;
     ///     assert!(StringRecord::from_byte_record(record).is_ok());
     ///
-    ///     let record =
-    ///         ByteRecord::from_bytes(b"003@ \x1ffoo\xffbar\x1e".to_vec())?;
+    ///     let record = ByteRecord::from_bytes(
+    ///         b"003@ \x1ffoo\xffbar\x1e".to_vec(),
+    ///     )?;
     ///     assert!(StringRecord::from_byte_record(record).is_err());
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_byte_record(record: ByteRecord) -> Result<StringRecord> {
+    pub fn from_byte_record(
+        record: ByteRecord,
+    ) -> Result<StringRecord> {
         match record.validate() {
             Ok(()) => Ok(StringRecord(record)),
             Err(e) => Err(e),
@@ -450,18 +490,22 @@ impl StringRecord {
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, StringRecord};
     /// use std::error::Error;
+    ///
+    /// use pica::{ByteRecord, StringRecord};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let result = StringRecord::from_bytes("003@ \x1f0123456789X\x1e");
+    ///     let result =
+    ///         StringRecord::from_bytes("003@ \x1f0123456789X\x1e");
     ///     assert!(result.is_ok());
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_bytes<T: Into<Vec<u8>>>(data: T) -> Result<StringRecord> {
+    pub fn from_bytes<T: Into<Vec<u8>>>(
+        data: T,
+    ) -> Result<StringRecord> {
         let record = ByteRecord::from_bytes(data.into())?;
         StringRecord::from_byte_record(record)
     }
@@ -480,13 +524,19 @@ impl fmt::Display for StringRecord {
     ///     let record = StringRecord::from_bytes(
     ///         "003@ \x1f0123456789X\x1e012A/01 \x1fa123\x1e",
     ///     )?;
-    ///     assert_eq!(format!("{}", record), "003@ $0123456789X\n012A/01 $a123");
+    ///     assert_eq!(
+    ///         format!("{}", record),
+    ///         "003@ $0123456789X\n012A/01 $a123"
+    ///     );
     ///
     ///     Ok(())
     /// }
     /// ```
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> StdResult<(), fmt::Error> {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> StdResult<(), fmt::Error> {
         write!(f, "{}", self.0)
     }
 }
@@ -507,9 +557,9 @@ impl Serialize for StringRecord {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::Cursor;
 
+    use super::*;
     use crate::test::TestResult;
     use crate::{Occurrence, Subfield, Tag};
 
@@ -597,7 +647,10 @@ mod tests {
                 &Subfield::new('a', "hij")?
             ])
         );
-        assert_eq!(field.get('b'), Some(vec![&Subfield::new('b', "def")?]));
+        assert_eq!(
+            field.get('b'),
+            Some(vec![&Subfield::new('b', "def")?])
+        );
         assert_eq!(field.get('c'), None,);
 
         Ok(())
@@ -649,7 +702,10 @@ mod tests {
         let field = Field::new(
             Tag::new("012A")?,
             None,
-            vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
+            vec![
+                Subfield::new('a', "abc")?,
+                Subfield::new('a', "hij")?,
+            ],
         );
 
         assert!(field.validate().is_ok());
@@ -675,7 +731,10 @@ mod tests {
         let field = Field::new(
             Tag::new("012A")?,
             Some(Occurrence::new("01")?),
-            vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
+            vec![
+                Subfield::new('a', "abc")?,
+                Subfield::new('a', "hij")?,
+            ],
         );
 
         field.write(&mut writer)?;
@@ -693,7 +752,10 @@ mod tests {
         let field = Field::new(
             Tag::new("012A")?,
             Some(Occurrence::new("01")?),
-            vec![Subfield::new('a', "abc")?, Subfield::new('a', "hij")?],
+            vec![
+                Subfield::new('a', "abc")?,
+                Subfield::new('a', "hij")?,
+            ],
         );
 
         assert_eq!(field.to_string(), "012A/01 $aabc$ahij");

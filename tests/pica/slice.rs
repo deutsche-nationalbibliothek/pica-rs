@@ -1,8 +1,9 @@
+use std::fs::{read_to_string, File};
+use std::io::Read;
+
 use assert_cmd::Command;
 use flate2::read::GzDecoder;
 use predicates::prelude::*;
-use std::fs::{read_to_string, File};
-use std::io::Read;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -17,13 +18,21 @@ fn pica_slice_default() -> TestResult {
         .assert();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert
         .success()
@@ -136,13 +145,21 @@ fn pica_slice_write_output() -> TestResult {
         .stdout(predicate::str::is_empty());
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     let actual = read_to_string(filename_str)?;
 
@@ -244,13 +261,21 @@ fn pica_slice_start() -> TestResult {
         .assert();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert
         .success()
@@ -267,12 +292,18 @@ fn pica_slice_start() -> TestResult {
         .assert();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert
         .success()
@@ -354,8 +385,11 @@ fn pica_slice_end() -> TestResult {
         .assert();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
 
     assert
         .success()
@@ -372,13 +406,21 @@ fn pica_slice_end() -> TestResult {
         .assert();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert
         .success()
@@ -431,8 +473,11 @@ fn pica_slice_length() -> TestResult {
         .assert();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
 
     assert
         .success()
@@ -449,13 +494,21 @@ fn pica_slice_length() -> TestResult {
         .assert();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert
         .success()
@@ -513,7 +566,8 @@ fn pica_slice_skip_invalid() -> TestResult {
         .stdout(predicate::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("slice").arg("tests/data/invalid.dat").assert();
+    let assert =
+        cmd.arg("slice").arg("tests/data/invalid.dat").assert();
 
     assert
         .failure()

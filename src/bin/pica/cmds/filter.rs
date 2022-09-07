@@ -149,7 +149,8 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.filter, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.filter, config.global);
     let gzip_compression = gzip_flag!(args, config.filter);
     let ignore_case = args.is_present("ignore-case");
     let append = args.is_present("append");
@@ -157,14 +158,16 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let mut allow_list = FilterList::default();
     let mut deny_list = FilterList::default();
 
-    let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
-        Ok(limit) => limit,
-        Err(_) => {
-            return Err(CliError::Other(
-                "Invalid limit value, expected unsigned integer.".to_string(),
-            ));
-        }
-    };
+    let limit =
+        match args.value_of("limit").unwrap_or("0").parse::<usize>() {
+            Ok(limit) => limit,
+            Err(_) => {
+                return Err(CliError::Other(
+                    "Invalid limit value, expected unsigned integer."
+                        .to_string(),
+                ));
+            }
+        };
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
@@ -205,10 +208,13 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             .map(str::trim)
             .map(TagMatcher::new)
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|_| CliError::Other("invalid reduce value".to_string()))?;
+            .map_err(|_| {
+                CliError::Other("invalid reduce value".to_string())
+            })?;
     }
 
-    let filter_str = if let Some(filename) = args.value_of("expr-file") {
+    let filter_str = if let Some(filename) = args.value_of("expr-file")
+    {
         read_to_string(filename).unwrap()
     } else {
         args.value_of("filter").unwrap().to_owned()
@@ -261,7 +267,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     }
 
     if let Some(allow_lists) = args.values_of("allow-list") {
-        allow_list = FilterList::new(allow_lists.collect::<Vec<&str>>())?
+        allow_list =
+            FilterList::new(allow_lists.collect::<Vec<&str>>())?
     }
 
     if let Some(deny_lists) = args.values_of("deny-list") {
@@ -280,7 +287,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };

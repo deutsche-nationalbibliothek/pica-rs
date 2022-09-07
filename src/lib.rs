@@ -14,7 +14,9 @@ pub use self::record::{ByteRecord, StringRecord};
 pub use self::select::{Outcome, Selector, Selectors};
 pub use self::subfield::Subfield;
 pub use self::tag::{Level, Tag};
-pub use self::writer::{GzipWriter, PicaWriter, PlainWriter, WriterBuilder};
+pub use self::writer::{
+    GzipWriter, PicaWriter, PlainWriter, WriterBuilder,
+};
 
 mod common;
 mod error;

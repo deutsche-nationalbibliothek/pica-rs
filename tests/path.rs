@@ -3,9 +3,15 @@ use pica::Path;
 
 #[test]
 fn path_new() {
-    assert!(Path::new("003@", OccurrenceMatcher::None, vec!['0']).is_ok());
-    assert!(Path::new("303@", OccurrenceMatcher::None, vec!['0']).is_err());
-    assert!(Path::new("003@", OccurrenceMatcher::None, vec!['!']).is_err());
+    assert!(
+        Path::new("003@", OccurrenceMatcher::None, vec!['0']).is_ok()
+    );
+    assert!(
+        Path::new("303@", OccurrenceMatcher::None, vec!['0']).is_err()
+    );
+    assert!(
+        Path::new("003@", OccurrenceMatcher::None, vec!['!']).is_err()
+    );
 }
 
 #[test]

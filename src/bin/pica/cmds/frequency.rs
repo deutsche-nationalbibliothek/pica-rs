@@ -86,25 +86,30 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let skip_invalid =
         skip_invalid_flag!(args, config.frequency, config.global);
 
-    let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
-        Ok(limit) => limit,
-        Err(_) => {
-            return Err(CliError::Other(
-                "Invalid limit value, expected unsigned integer.".to_string(),
-            ));
-        }
-    };
-
-    let threshold =
-        match args.value_of("threshold").unwrap_or("0").parse::<u64>() {
-            Ok(threshold) => threshold,
+    let limit =
+        match args.value_of("limit").unwrap_or("0").parse::<usize>() {
+            Ok(limit) => limit,
             Err(_) => {
                 return Err(CliError::Other(
-                    "Invalid threshold value, expected unsigned integer."
+                    "Invalid limit value, expected unsigned integer."
                         .to_string(),
                 ));
             }
         };
+
+    let threshold = match args
+        .value_of("threshold")
+        .unwrap_or("0")
+        .parse::<u64>()
+    {
+        Ok(threshold) => threshold,
+        Err(_) => {
+            return Err(CliError::Other(
+                "Invalid threshold value, expected unsigned integer."
+                    .to_string(),
+            ));
+        }
+    };
 
     let mut ftable: HashMap<BString, u64> = HashMap::new();
     let path = Path::from_str(args.value_of("path").unwrap())?;
@@ -122,7 +127,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };
@@ -140,7 +146,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         writer.write_record(header.split(',').map(|s| s.trim()))?;
     }
 
-    let mut ftable_sorted: Vec<(&BString, &u64)> = ftable.iter().collect();
+    let mut ftable_sorted: Vec<(&BString, &u64)> =
+        ftable.iter().collect();
     if args.is_present("reverse") {
         ftable_sorted.sort_by(|a, b| a.1.cmp(b.1));
     } else {
@@ -156,8 +163,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             break;
         }
 
-        let value =
-            translit_maybe(&value.to_string(), args.value_of("translit"));
+        let value = translit_maybe(
+            &value.to_string(),
+            args.value_of("translit"),
+        );
         writer.write_record(&[value, frequency.to_string()])?;
     }
 

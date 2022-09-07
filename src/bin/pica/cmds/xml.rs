@@ -55,7 +55,8 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.xml, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.xml, config.global);
 
     let mut writer: Box<dyn Write> = match args.value_of("output") {
         Some(filename) => Box::new(File::create(filename)?),
@@ -81,7 +82,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };
@@ -99,7 +101,10 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                     xml_writer.write(
                         XmlEvent::start_element("datafield")
                             .attr("tag", &field.tag().to_string())
-                            .attr("occurrence", &occurrence.to_string()),
+                            .attr(
+                                "occurrence",
+                                &occurrence.to_string(),
+                            ),
                     )?;
                 } else {
                     xml_writer.write(

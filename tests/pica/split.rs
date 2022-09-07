@@ -1,8 +1,9 @@
+use std::fs::{read_to_string, remove_file, File};
+use std::io::Read;
+
 use assert_cmd::Command;
 use flate2::read::GzDecoder;
 use predicates::prelude::*;
-use std::fs::{read_to_string, remove_file, File};
-use std::io::Read;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -367,7 +368,8 @@ fn pica_split_gzip() -> TestResult {
     for (filename, sample) in expected {
         let expected = read_to_string(sample).unwrap();
 
-        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut gz =
+            GzDecoder::new(File::open(outdir.join(filename)).unwrap());
         let mut actual = String::new();
         gz.read_to_string(&mut actual).unwrap();
 
@@ -408,7 +410,8 @@ fn pica_split_gzip() -> TestResult {
     for (filename, sample) in expected {
         let expected = read_to_string(sample).unwrap();
 
-        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut gz =
+            GzDecoder::new(File::open(outdir.join(filename)).unwrap());
         let mut actual = String::new();
         gz.read_to_string(&mut actual).unwrap();
 
@@ -453,7 +456,8 @@ template = "CHUNK_{}.dat.gz"
     for (filename, sample) in expected {
         let expected = read_to_string(sample).unwrap();
 
-        let mut gz = GzDecoder::new(File::open(outdir.join(filename)).unwrap());
+        let mut gz =
+            GzDecoder::new(File::open(outdir.join(filename)).unwrap());
         let mut actual = String::new();
         gz.read_to_string(&mut actual).unwrap();
 

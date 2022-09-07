@@ -84,7 +84,8 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.count, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.count, config.global);
     let append = args.is_present("append");
 
     let mut writer: Box<dyn Write> = match args.value_of("output") {
@@ -109,7 +110,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };
@@ -119,7 +121,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
             records += 1;
             fields += record.len();
-            subfields += record.iter().map(|field| field.len()).sum::<usize>();
+            subfields +=
+                record.iter().map(|field| field.len()).sum::<usize>();
         }
     }
 

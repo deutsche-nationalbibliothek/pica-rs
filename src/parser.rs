@@ -111,7 +111,8 @@ mod tests {
     fn test_parse_path() -> TestResult {
         assert_eq!(
             parse_path(b"003@.0")?.1,
-            Path::new("003@", OccurrenceMatcher::None, vec!['0']).unwrap()
+            Path::new("003@", OccurrenceMatcher::None, vec!['0'])
+                .unwrap()
         );
         assert_eq!(
             parse_path(b"012A/01.0")?.1,
@@ -124,11 +125,13 @@ mod tests {
         );
         assert_eq!(
             parse_path(b"012A/*.[ab]")?.1,
-            Path::new("012A", OccurrenceMatcher::Any, vec!['a', 'b']).unwrap()
+            Path::new("012A", OccurrenceMatcher::Any, vec!['a', 'b'])
+                .unwrap()
         );
         assert_eq!(
             parse_path(b"012A/*.0")?.1,
-            Path::new("012A", OccurrenceMatcher::Any, vec!['0']).unwrap()
+            Path::new("012A", OccurrenceMatcher::Any, vec!['0'])
+                .unwrap()
         );
 
         Ok(())

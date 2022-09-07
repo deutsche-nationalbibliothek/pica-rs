@@ -1,6 +1,7 @@
+use std::fs::read_to_string;
+
 use assert_cmd::Command;
 use predicates::prelude::*;
-use std::fs::read_to_string;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -8,7 +9,8 @@ use crate::common::{CommandExt, TestContext, TestResult};
 #[test]
 fn pica_xml_single_record() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("xml").arg("tests/data/1004916019.dat").assert();
+    let assert =
+        cmd.arg("xml").arg("tests/data/1004916019.dat").assert();
 
     let expected = read_to_string("tests/data/1004916019.xml").unwrap();
     let expected = if cfg!(windows) {
@@ -52,7 +54,8 @@ fn pica_xml_multiple_files() -> TestResult {
         .arg("tests/data/000008672.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/two-records.xml").unwrap();
+    let expected =
+        read_to_string("tests/data/two-records.xml").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {
@@ -73,7 +76,8 @@ fn pica_xml_multiple_files() -> TestResult {
         .write_stdin(data)
         .assert();
 
-    let expected = read_to_string("tests/data/two-records.xml").unwrap();
+    let expected =
+        read_to_string("tests/data/two-records.xml").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {
@@ -160,7 +164,8 @@ fn pica_xml_translit() -> TestResult {
         .arg("tests/data/004732650-reduced.dat.gz")
         .assert();
 
-    let expected = read_to_string("tests/data/004732650-nfd.xml").unwrap();
+    let expected =
+        read_to_string("tests/data/004732650-nfd.xml").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {
@@ -218,10 +223,9 @@ fn pica_xml_skip_invalid() -> TestResult {
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("xml").arg("tests/data/dump.dat.gz").assert();
-    assert
-        .failure()
-        .code(1)
-        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+    assert.failure().code(1).stderr(predicate::eq(
+        "Pica Error: Invalid record on line 2.\n",
+    ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

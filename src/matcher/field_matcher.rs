@@ -9,8 +9,8 @@ use nom::Finish;
 use crate::common::{ws, ParseResult};
 use crate::matcher::{
     parse_occurrence_matcher, parse_subfield_list_matcher,
-    parse_subfield_list_matcher_singleton, parse_tag_matcher, MatcherFlags,
-    OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
+    parse_subfield_list_matcher_singleton, parse_tag_matcher,
+    MatcherFlags, OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
 };
 use crate::{Error, Field};
 
@@ -52,7 +52,9 @@ impl FieldMatcher {
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
         let data = data.as_ref();
 
-        match all_consuming(parse_field_matcher)(data.as_bytes()).finish() {
+        match all_consuming(parse_field_matcher)(data.as_bytes())
+            .finish()
+        {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
                 "Expected valid field matcher, got '{}'",
@@ -67,9 +69,10 @@ impl FieldMatcher {
     /// # Example
     ///
     /// ```rust
+    /// use std::str::FromStr;
+    ///
     /// use pica::matcher::{FieldMatcher, MatcherFlags};
     /// use pica::Field;
-    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -79,7 +82,11 @@ impl FieldMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn is_match(&self, field: &Field, flags: &MatcherFlags) -> bool {
+    pub fn is_match(
+        &self,
+        field: &Field,
+        flags: &MatcherFlags,
+    ) -> bool {
         match self {
             Self::Subield(tag, occurrence, subfield) => {
                 tag.is_match(field.tag())
@@ -109,7 +116,10 @@ fn parse_field_matcher_subfield(i: &[u8]) -> ParseResult<FieldMatcher> {
                 ),
                 preceded(
                     ws(char('{')),
-                    cut(terminated(parse_subfield_list_matcher, ws(char('}')))),
+                    cut(terminated(
+                        parse_subfield_list_matcher,
+                        ws(char('}')),
+                    )),
                 ),
             )),
         )),
@@ -131,7 +141,9 @@ pub(crate) fn parse_field_matcher_exists(
     )(i)
 }
 
-pub(crate) fn parse_field_matcher(i: &[u8]) -> ParseResult<FieldMatcher> {
+pub(crate) fn parse_field_matcher(
+    i: &[u8],
+) -> ParseResult<FieldMatcher> {
     alt((parse_field_matcher_subfield, parse_field_matcher_exists))(i)
 }
 
@@ -235,7 +247,10 @@ mod tests {
         ];
 
         for (matcher, expected) in values {
-            assert_eq!(FieldMatcher::new(matcher)?.to_string(), expected);
+            assert_eq!(
+                FieldMatcher::new(matcher)?.to_string(),
+                expected
+            );
         }
 
         Ok(())
