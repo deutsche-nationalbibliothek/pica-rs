@@ -7,3 +7,6 @@ include = ["src/**/*"]
 edition = "2021"
 
 [dependencies]
+bstr = "0.2"
+nom = "7.1"
+thiserror = "1.0"
