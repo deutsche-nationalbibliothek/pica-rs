@@ -10,6 +10,20 @@ impl<'a> SubfieldRef<'a> {
     /// # Panics
     ///
     /// This method panics if the subfield code or the value is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = SubfieldRef::new('a', "bcd");
+    ///     assert_eq!(subfield.code(), 'a');
+    ///     assert_eq!(subfield.value(), "bcd");
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn new(code: char, value: impl Into<&'a BStr>) -> Self {
         let value = value.into();
 
