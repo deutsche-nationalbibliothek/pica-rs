@@ -1,0 +1,9 @@
+[package]
+name = "pica-record"
+version = "0.1.0"
+license = "MIT OR Unlicense"
+authors = ["Nico Wagner <n.wagner@dnb.de>"]
+include = ["src/**/*"]
+edition = "2021"
+
+[dependencies]
