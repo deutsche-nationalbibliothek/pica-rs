@@ -71,4 +71,22 @@ impl<'a> SubfieldRef<'a> {
     pub fn value(&self) -> &'a BStr {
         self.1
     }
+
+    /// Returns true if the subfield value is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = SubfieldRef::new('0', "");
+    ///     assert!(subfield.is_empty());
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn is_empty(&self) -> bool {
+        self.1.len() == 0
+    }
 }
