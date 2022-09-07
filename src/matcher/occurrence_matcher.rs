@@ -3,7 +3,9 @@ use std::fmt;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map, success, value, verify};
+use nom::combinator::{
+    all_consuming, cut, map, success, value, verify,
+};
 use nom::sequence::{preceded, separated_pair};
 use nom::Finish;
 
@@ -52,7 +54,8 @@ impl OccurrenceMatcher {
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
         let data = data.as_ref();
 
-        match all_consuming(parse_occurrence_matcher)(data.as_bytes()).finish()
+        match all_consuming(parse_occurrence_matcher)(data.as_bytes())
+            .finish()
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
@@ -89,7 +92,10 @@ impl OccurrenceMatcher {
                 }
             },
             None => {
-                matches!(self, OccurrenceMatcher::Any | OccurrenceMatcher::None)
+                matches!(
+                    self,
+                    OccurrenceMatcher::Any | OccurrenceMatcher::None
+                )
             }
         }
     }
@@ -115,7 +121,9 @@ pub(crate) fn parse_occurrence_matcher(
                             char('-'),
                             parse_occurrence_digits,
                         ),
-                        |(min, max)| min.len() == max.len() && min < max,
+                        |(min, max)| {
+                            min.len() == max.len() && min < max
+                        },
                     ),
                     |(min, max)| {
                         OccurrenceMatcher::Range(
@@ -125,8 +133,14 @@ pub(crate) fn parse_occurrence_matcher(
                     },
                 ),
                 map(
-                    verify(parse_occurrence_digits, |x: &[u8]| x != b"00"),
-                    |x| OccurrenceMatcher::Some(Occurrence::from_unchecked(x)),
+                    verify(parse_occurrence_digits, |x: &[u8]| {
+                        x != b"00"
+                    }),
+                    |x| {
+                        OccurrenceMatcher::Some(
+                            Occurrence::from_unchecked(x),
+                        )
+                    },
                 ),
                 value(OccurrenceMatcher::None, tag("00")),
                 value(OccurrenceMatcher::Any, char('*')),
@@ -184,7 +198,10 @@ mod tests {
     #[test]
     fn test_occurrence_matcher_to_string() -> TestResult {
         assert_eq!(OccurrenceMatcher::new("/01")?.to_string(), "/01");
-        assert_eq!(OccurrenceMatcher::new("/01-04")?.to_string(), "/01-04");
+        assert_eq!(
+            OccurrenceMatcher::new("/01-04")?.to_string(),
+            "/01-04"
+        );
         assert_eq!(OccurrenceMatcher::new("/*")?.to_string(), "/*");
         assert_eq!(OccurrenceMatcher::new("")?.to_string(), "");
 
@@ -193,7 +210,8 @@ mod tests {
 
     #[quickcheck]
     fn occurrence_matcher_quickcheck1(occurrence: Occurrence) -> bool {
-        OccurrenceMatcher::from(occurrence.clone()).is_match(Some(&occurrence))
+        OccurrenceMatcher::from(occurrence.clone())
+            .is_match(Some(&occurrence))
     }
 
     #[quickcheck]

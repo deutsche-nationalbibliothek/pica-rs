@@ -9,11 +9,10 @@ use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
+use super::subfield_matcher::parse_subfield_matcher_exists;
 use crate::common::{ws, ParseResult};
 use crate::matcher::*;
 use crate::{ByteRecord, Error};
-
-use super::subfield_matcher::parse_subfield_matcher_exists;
 
 #[derive(Debug, PartialEq)]
 pub enum RecordMatcher {
@@ -42,7 +41,11 @@ impl fmt::Display for RecordMatcher {
             }
             Self::Cardinality(tm, om, sm, op, value) => {
                 if let Some(sm) = sm {
-                    write!(f, "#{}{}{{{}}} {} {}", tm, om, sm, op, value)
+                    write!(
+                        f,
+                        "#{}{}{{{}}} {} {}",
+                        tm, om, sm, op, value
+                    )
                 } else {
                     write!(f, "#{}{} {} {}", tm, om, op, value)
                 }
@@ -64,7 +67,10 @@ impl RecordMatcher {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     assert!(RecordMatcher::new("013A? && 012A/*{0? && 0 == 'abc'}").is_ok());
+    ///     assert!(RecordMatcher::new(
+    ///         "013A? && 012A/*{0? && 0 == 'abc'}"
+    ///     )
+    ///     .is_ok());
     ///     assert!(RecordMatcher::new("013!?").is_err());
     ///     Ok(())
     /// }
@@ -72,7 +78,9 @@ impl RecordMatcher {
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
         let data = data.as_ref();
 
-        match all_consuming(parse_record_matcher)(data.as_bytes()).finish() {
+        match all_consuming(parse_record_matcher)(data.as_bytes())
+            .finish()
+        {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
                 "Expected valid record matcher, got '{}'",
@@ -87,9 +95,10 @@ impl RecordMatcher {
     /// # Example
     ///
     /// ```rust
+    /// use std::str::FromStr;
+    ///
     /// use pica::matcher::{MatcherFlags, RecordMatcher};
     /// use pica::ByteRecord;
-    /// use std::str::FromStr;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -99,20 +108,32 @@ impl RecordMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn is_match(&self, record: &ByteRecord, flags: &MatcherFlags) -> bool {
+    pub fn is_match(
+        &self,
+        record: &ByteRecord,
+        flags: &MatcherFlags,
+    ) -> bool {
         match self {
-            Self::Singleton(matcher) => {
-                record.iter().any(|field| matcher.is_match(field, flags))
-            }
+            Self::Singleton(matcher) => record
+                .iter()
+                .any(|field| matcher.is_match(field, flags)),
             Self::Group(matcher) => matcher.is_match(record, flags),
             Self::Not(matcher) => !matcher.is_match(record, flags),
             Self::Composite(lhs, BooleanOp::And, rhs) => {
-                lhs.is_match(record, flags) && rhs.is_match(record, flags)
+                lhs.is_match(record, flags)
+                    && rhs.is_match(record, flags)
             }
             Self::Composite(lhs, BooleanOp::Or, rhs) => {
-                lhs.is_match(record, flags) || rhs.is_match(record, flags)
+                lhs.is_match(record, flags)
+                    || rhs.is_match(record, flags)
             }
-            Self::Cardinality(tag, occurrence, subfields, op, value) => {
+            Self::Cardinality(
+                tag,
+                occurrence,
+                subfields,
+                op,
+                value,
+            ) => {
                 let fields = record
                     .iter()
                     .filter(|field| {
@@ -154,7 +175,11 @@ impl BitAnd for RecordMatcher {
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
-        RecordMatcher::Composite(Box::new(self), BooleanOp::And, Box::new(rhs))
+        RecordMatcher::Composite(
+            Box::new(self),
+            BooleanOp::And,
+            Box::new(rhs),
+        )
     }
 }
 
@@ -162,7 +187,11 @@ impl BitOr for RecordMatcher {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        RecordMatcher::Composite(Box::new(self), BooleanOp::Or, Box::new(rhs))
+        RecordMatcher::Composite(
+            Box::new(self),
+            BooleanOp::Or,
+            Box::new(rhs),
+        )
     }
 }
 
@@ -174,7 +203,9 @@ impl Not for RecordMatcher {
     }
 }
 
-fn parse_record_matcher_singleton(i: &[u8]) -> ParseResult<RecordMatcher> {
+fn parse_record_matcher_singleton(
+    i: &[u8],
+) -> ParseResult<RecordMatcher> {
     map(ws(parse_field_matcher), |x| {
         RecordMatcher::Singleton(Box::new(x))
     })(i)
@@ -188,7 +219,10 @@ fn parse_record_matcher_exists(i: &[u8]) -> ParseResult<RecordMatcher> {
                 tuple((
                     parse_tag_matcher,
                     parse_occurrence_matcher,
-                    preceded(char('.'), cut(parse_subfield_matcher_exists)),
+                    preceded(
+                        char('.'),
+                        cut(parse_subfield_matcher_exists),
+                    ),
                 )),
                 |(tag, occurrence, subfields)| {
                     FieldMatcher::Subield(
@@ -236,7 +270,9 @@ fn parse_record_matcher_not(i: &[u8]) -> ParseResult<RecordMatcher> {
     )(i)
 }
 
-fn parse_record_matcher_composite_and(i: &[u8]) -> ParseResult<RecordMatcher> {
+fn parse_record_matcher_composite_and(
+    i: &[u8],
+) -> ParseResult<RecordMatcher> {
     let (i, (first, remainder)) = tuple((
         alt((
             ws(parse_record_matcher_group),
@@ -263,7 +299,9 @@ fn parse_record_matcher_composite_and(i: &[u8]) -> ParseResult<RecordMatcher> {
     ))
 }
 
-fn parse_record_matcher_composite_or(i: &[u8]) -> ParseResult<RecordMatcher> {
+fn parse_record_matcher_composite_or(
+    i: &[u8],
+) -> ParseResult<RecordMatcher> {
     let (i, (first, remainder)) = tuple((
         alt((
             ws(parse_record_matcher_group),
@@ -290,14 +328,18 @@ fn parse_record_matcher_composite_or(i: &[u8]) -> ParseResult<RecordMatcher> {
     ))
 }
 
-fn parse_record_matcher_composite(i: &[u8]) -> ParseResult<RecordMatcher> {
+fn parse_record_matcher_composite(
+    i: &[u8],
+) -> ParseResult<RecordMatcher> {
     alt((
         parse_record_matcher_composite_or,
         parse_record_matcher_composite_and,
     ))(i)
 }
 
-fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
+fn parse_record_matcher_cardinality(
+    i: &[u8],
+) -> ParseResult<RecordMatcher> {
     map(
         preceded(
             ws(char('#')),
@@ -306,7 +348,10 @@ fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
                 ws(parse_occurrence_matcher),
                 opt(preceded(
                     ws(char('{')),
-                    cut(terminated(parse_subfield_list_matcher, ws(char('}')))),
+                    cut(terminated(
+                        parse_subfield_list_matcher,
+                        ws(char('}')),
+                    )),
                 )),
                 ws(parse_comparison_op_usize),
                 map_res(digit1, |s| {
@@ -320,7 +365,9 @@ fn parse_record_matcher_cardinality(i: &[u8]) -> ParseResult<RecordMatcher> {
     )(i)
 }
 
-pub(crate) fn parse_record_matcher(i: &[u8]) -> ParseResult<RecordMatcher> {
+pub(crate) fn parse_record_matcher(
+    i: &[u8],
+) -> ParseResult<RecordMatcher> {
     alt((
         ws(parse_record_matcher_composite),
         ws(parse_record_matcher_group),
@@ -344,11 +391,13 @@ mod tests {
     #[test]
     fn test_record_matcher_singleton() -> TestResult {
         let matcher = RecordMatcher::new("003@.0 == '123456789X'")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         let matcher = RecordMatcher::new("003@.0 == '123456789X'")?;
-        let record = ByteRecord::from_bytes("003@ \x1f023456789X1\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f023456789X1\x1e")?;
         assert!(!matcher.is_match(&record, &MatcherFlags::default()));
 
         Ok(())
@@ -357,24 +406,30 @@ mod tests {
     #[test]
     fn test_record_matcher_group() -> TestResult {
         // composite
-        let matcher =
-            RecordMatcher::new("(#003@ == 1 && 003@.0 == '123456789X')")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let matcher = RecordMatcher::new(
+            "(#003@ == 1 && 003@.0 == '123456789X')",
+        )?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         // singleton
         let matcher = RecordMatcher::new("(003@.0 == '123456789X')")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         // not
         let matcher = RecordMatcher::new("(!012A?)")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         // group
-        let matcher = RecordMatcher::new("(((003@.0 == '123456789X')))")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let matcher =
+            RecordMatcher::new("(((003@.0 == '123456789X')))")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         Ok(())
@@ -384,21 +439,25 @@ mod tests {
     fn test_record_matcher_not() -> TestResult {
         // group
         let matcher = RecordMatcher::new("!(003@.0 == '123456789X')")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0223456789X1\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0223456789X1\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         // exists
         let matcher = RecordMatcher::new("!012A?")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         let matcher = RecordMatcher::new("!012A.0?")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         // not
         let matcher = RecordMatcher::new("!!003@?")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
         Ok(())
@@ -406,12 +465,16 @@ mod tests {
 
     #[test]
     fn test_record_matcher_composite() -> TestResult {
-        let matcher = RecordMatcher::new("003@? && 003@.0 == '123456789X'")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let matcher =
+            RecordMatcher::new("003@? && 003@.0 == '123456789X'")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
 
-        let matcher = RecordMatcher::new("!012A? && 003@.0 == '123456789X'")?;
-        let record = ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
+        let matcher =
+            RecordMatcher::new("!012A? && 003@.0 == '123456789X'")?;
+        let record =
+            ByteRecord::from_bytes("003@ \x1f0123456789X\x1e")?;
         assert!(matcher.is_match(&record, &MatcherFlags::default()));
         Ok(())
     }
@@ -422,14 +485,26 @@ mod tests {
             ("003@.0  ==  '0123456789'", "003@.0 == '0123456789'"),
             ("( 003@.0  ==  '0123456789')", "(003@.0 == '0123456789')"),
             ("!012A.0?", "!012A.0?"),
-            ("!012A.0? && 013A.a == 'abc'", "!012A.0? && 013A.a == 'abc'"),
-            ("!012A.0? || 013A.a == 'abc'", "!012A.0? || 013A.a == 'abc'"),
-            ("#012A{ a? && b == '1'} >= 2", "#012A{a? && b == '1'} >= 2"),
+            (
+                "!012A.0? && 013A.a == 'abc'",
+                "!012A.0? && 013A.a == 'abc'",
+            ),
+            (
+                "!012A.0? || 013A.a == 'abc'",
+                "!012A.0? || 013A.a == 'abc'",
+            ),
+            (
+                "#012A{ a? && b == '1'} >= 2",
+                "#012A{a? && b == '1'} >= 2",
+            ),
             ("#012A >= 2", "#012A >= 2"),
         ];
 
         for (matcher, expected) in values {
-            assert_eq!(RecordMatcher::new(matcher)?.to_string(), expected);
+            assert_eq!(
+                RecordMatcher::new(matcher)?.to_string(),
+                expected
+            );
         }
 
         Ok(())

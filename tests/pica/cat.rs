@@ -1,7 +1,8 @@
-use assert_cmd::Command;
-use predicates::prelude::*;
 use std::fs::read_to_string;
 use std::path::Path;
+
+use assert_cmd::Command;
+use predicates::prelude::*;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -15,8 +16,9 @@ fn pica_cat_single_file() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     Ok(())
@@ -48,8 +50,9 @@ fn pica_cat_stdin() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("cat").write_stdin(data).assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
 
     assert
         .success()
@@ -60,8 +63,9 @@ fn pica_cat_stdin() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("cat").arg("-").write_stdin(data).assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
 
     assert
         .success()
@@ -77,8 +81,9 @@ fn pica_cat_stdin() -> TestResult {
         .write_stdin("foo")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
 
     assert
         .success()
@@ -96,8 +101,9 @@ fn pica_cat_read_gzip() -> TestResult {
         .arg("tests/data/1004916019.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     Ok(())
@@ -121,8 +127,9 @@ fn pica_cat_write_gzip() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("cat").arg(filename_str).assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     Ok(())
@@ -141,12 +148,14 @@ fn pica_cat_tee() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert!(expected.eval(Path::new(filename_str)));
 
     Ok(())
@@ -205,8 +214,9 @@ fn pica_cat_append() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
 
     assert
         .success()
@@ -260,7 +270,9 @@ fn pica_cat_skip_invalid() -> TestResult {
         .stdout(predicate::path::eq_file(Path::new(
             "tests/data/1004916019.dat",
         )))
-        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+        .stderr(predicate::eq(
+            "Pica Error: Invalid record on line 2.\n",
+        ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

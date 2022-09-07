@@ -1,9 +1,10 @@
 use std::collections::BTreeSet;
 use std::ops::Deref;
 
-use crate::util::CliResult;
 use bstr::BString;
 use csv::ReaderBuilder;
+
+use crate::util::CliResult;
 
 #[derive(Debug, Default)]
 pub(crate) struct FilterList(BTreeSet<BString>);
@@ -27,7 +28,9 @@ impl FilterList {
 
             for result in reader.byte_records() {
                 let row = result.expect("valid csv row");
-                ids.insert(BString::from(row.get(0).expect("idn in column 1")));
+                ids.insert(BString::from(
+                    row.get(0).expect("idn in column 1"),
+                ));
             }
         }
 

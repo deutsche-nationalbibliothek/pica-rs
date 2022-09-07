@@ -5,7 +5,9 @@ use std::str::FromStr;
 use clap::Arg;
 use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::{
+    Color, ColorChoice, ColorSpec, StandardStream, WriteColor,
+};
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
@@ -122,7 +124,8 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.print, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.print, config.global);
 
     let add_spaces = if args.is_present("add-spaces") {
         true
@@ -132,14 +135,16 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         false
     };
 
-    let limit = match args.value_of("limit").unwrap_or("0").parse::<usize>() {
-        Ok(limit) => limit,
-        Err(_) => {
-            return Err(CliError::Other(
-                "Invalid limit value, expected unsigned integer.".to_string(),
-            ));
-        }
-    };
+    let limit =
+        match args.value_of("limit").unwrap_or("0").parse::<usize>() {
+            Ok(limit) => limit,
+            Err(_) => {
+                return Err(CliError::Other(
+                    "Invalid limit value, expected unsigned integer."
+                        .to_string(),
+                ));
+            }
+        };
 
     let filenames = args
         .values_of_t::<OsString>("filenames")
@@ -150,9 +155,12 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             WriterBuilder::new().from_path(filename)?;
 
         for filename in filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid).limit(limit);
-            let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            let builder = ReaderBuilder::new()
+                .skip_invalid(skip_invalid)
+                .limit(limit);
+            let mut reader: Reader<Box<dyn Read>> = match filename
+                .to_str()
+            {
                 Some("-") => builder.from_reader(Box::new(io::stdin())),
                 _ => builder.from_path(filename)?,
             };
@@ -209,9 +217,12 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         }
 
         for filename in filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid).limit(limit);
-            let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+            let builder = ReaderBuilder::new()
+                .skip_invalid(skip_invalid)
+                .limit(limit);
+            let mut reader: Reader<Box<dyn Read>> = match filename
+                .to_str()
+            {
                 Some("-") => builder.from_reader(Box::new(io::stdin())),
                 _ => builder.from_path(filename)?,
             };
@@ -244,7 +255,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                             write!(stdout, "${}", subfield.code())?;
                         }
 
-                        let mut value: String = subfield.value().to_string();
+                        let mut value: String =
+                            subfield.value().to_string();
                         value = translit_maybe(
                             &value.replace('$', "$$"),
                             args.value_of("translit"),

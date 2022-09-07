@@ -1,8 +1,9 @@
 //! Pica+ Path
 //!
-//! A path is a query syntax to address values within a pica+ record. The path
-//! consists of a [`crate::Field`] tag and a [`crate::Subfield`] name. A
-//! [`crate::Field`] occurrence or an index is optional
+//! A path is a query syntax to address values within a pica+ record.
+//! The path consists of a [`crate::Field`] tag and a
+//! [`crate::Subfield`] name. A [`crate::Field`] occurrence or an index
+//! is optional
 //!
 //! # Grammar
 //!
@@ -13,11 +14,11 @@
 //! name       ::= [a-z] | [A-Z] | [0-9]
 //! ```
 
+use std::str::FromStr;
+
 use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_path, ParsePathError};
 use crate::{Error, Result, Tag};
-
-use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Path {
@@ -33,10 +34,17 @@ impl Path {
     /// use pica::matcher::OccurrenceMatcher;
     /// use pica::Path;
     ///
-    /// assert!(Path::new("003@", OccurrenceMatcher::None, vec!['0']).is_ok());
-    /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['0']).is_ok());
-    /// assert!(Path::new("012!", OccurrenceMatcher::Any, vec!['0']).is_err());
-    /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['a', '!']).is_err());
+    /// assert!(
+    ///     Path::new("003@", OccurrenceMatcher::None, vec!['0']).is_ok()
+    /// );
+    /// assert!(
+    ///     Path::new("012A", OccurrenceMatcher::Any, vec!['0']).is_ok()
+    /// );
+    /// assert!(
+    ///     Path::new("012!", OccurrenceMatcher::Any, vec!['0']).is_err()
+    /// );
+    /// assert!(Path::new("012A", OccurrenceMatcher::Any, vec!['a', '!'])
+    ///     .is_err());
     /// ```
     pub fn new<S>(
         tag: S,
@@ -89,25 +97,34 @@ impl Path {
     ///     );
     ///
     ///     let path = Path::from_bytes("012A/*.0")?;
-    ///     assert_eq!(path, Path::new("012A", OccurrenceMatcher::Any, vec!['0'])?);
+    ///     assert_eq!(
+    ///         path,
+    ///         Path::new("012A", OccurrenceMatcher::Any, vec!['0'])?
+    ///     );
     ///
     ///     let path = Path::from_bytes("012A/*.[abc]")?;
     ///     assert_eq!(
     ///         path,
-    ///         Path::new("012A", OccurrenceMatcher::Any, vec!['a', 'b', 'c'])?
+    ///         Path::new(
+    ///             "012A",
+    ///             OccurrenceMatcher::Any,
+    ///             vec!['a', 'b', 'c']
+    ///         )?
     ///     );
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_bytes<T>(data: T) -> std::result::Result<Path, ParsePathError>
+    pub fn from_bytes<T>(
+        data: T,
+    ) -> std::result::Result<Path, ParsePathError>
     where
         T: Into<Vec<u8>>,
     {
         match parse_path(&data.into()) {
-            Err(_) => {
-                Err(ParsePathError(String::from("Invalid path expression")))
-            }
+            Err(_) => Err(ParsePathError(String::from(
+                "Invalid path expression",
+            ))),
             Ok((_, path)) => Ok(path),
         }
     }
@@ -121,8 +138,9 @@ impl FromStr for Path {
     /// # Example
     ///
     /// ```rust
-    /// use pica::Path;
     /// use std::str::FromStr;
+    ///
+    /// use pica::Path;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {

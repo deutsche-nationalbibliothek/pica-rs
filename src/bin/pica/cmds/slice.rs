@@ -69,18 +69,22 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.slice, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.slice, config.global);
     let gzip_compression = gzip_flag!(args, config.slice);
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
         .gzip(gzip_compression)
         .from_path_or_stdout(args.value_of("output"))?;
 
-    // SAFETY: It's safe to call `unwrap()` because start has a default value.
+    // SAFETY: It's safe to call `unwrap()` because start has a default
+    // value.
     let start = match args.value_of("start").unwrap().parse::<usize>() {
         Ok(start) => start,
         Err(_) => {
-            return Err(CliError::Other("invalid start option".to_string()))
+            return Err(CliError::Other(
+                "invalid start option".to_string(),
+            ))
         }
     };
 
@@ -91,7 +95,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         let end = match end.parse::<usize>() {
             Ok(end) => end,
             Err(_) => {
-                return Err(CliError::Other("invalid end option".to_string()))
+                return Err(CliError::Other(
+                    "invalid end option".to_string(),
+                ))
             }
         };
 
@@ -119,7 +125,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(false);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };
@@ -136,7 +143,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                         break;
                     }
                 }
-                Err(e) if !skip_invalid => return Err(CliError::from(e)),
+                Err(e) if !skip_invalid => {
+                    return Err(CliError::from(e))
+                }
                 _ => {
                     if length.is_some() && range.end < std::usize::MAX {
                         range.end += 1;

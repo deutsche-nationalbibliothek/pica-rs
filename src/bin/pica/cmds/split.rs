@@ -60,7 +60,8 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.split, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.split, config.global);
     let gzip_compression = gzip_flag!(args, config.split);
     let filename_template = template_opt!(
         args,
@@ -81,7 +82,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let chunk_size = match chunk_size.parse::<u32>() {
         Ok(size) => size,
         Err(_) => {
-            return Err(CliError::Other("invalid chunk size".to_string()))
+            return Err(CliError::Other(
+                "invalid chunk size".to_string(),
+            ))
         }
     };
 
@@ -92,12 +95,16 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
     let mut chunks: u32 = 0;
     let mut count = 0;
 
-    let mut writer = WriterBuilder::new().gzip(gzip_compression).from_path(
-        outdir
-            .join(filename_template.replace("{}", &chunks.to_string()))
-            .to_str()
-            .unwrap(),
-    )?;
+    let mut writer =
+        WriterBuilder::new().gzip(gzip_compression).from_path(
+            outdir
+                .join(
+                    filename_template
+                        .replace("{}", &chunks.to_string()),
+                )
+                .to_str()
+                .unwrap(),
+        )?;
 
     let filenames = args
         .values_of_t::<OsString>("filenames")
@@ -105,7 +112,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };
@@ -117,8 +125,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
                 writer.finish()?;
                 chunks += 1;
 
-                writer =
-                    WriterBuilder::new().gzip(gzip_compression).from_path(
+                writer = WriterBuilder::new()
+                    .gzip(gzip_compression)
+                    .from_path(
                         outdir
                             .join(
                                 filename_template

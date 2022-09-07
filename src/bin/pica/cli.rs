@@ -2,7 +2,9 @@ use clap::{crate_version, Arg, Command};
 
 pub(crate) fn build_cli() -> Command<'static> {
     Command::new("pica")
-        .about("Tools to work with bibliographic records encoded in Pica+")
+        .about(
+            "Tools to work with bibliographic records encoded in Pica+",
+        )
         .subcommand_required(true)
         .version(crate_version!())
         .author(crate_authors!())

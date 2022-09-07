@@ -9,15 +9,14 @@ use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
 
+use super::subfield_matcher::parse_subfield_matcher_exists;
 use crate::common::{ws, ParseResult};
 use crate::matcher::{
-    parse_comparison_op_usize, parse_subfield_matcher, BooleanOp, ComparisonOp,
-    MatcherFlags, SubfieldMatcher,
+    parse_comparison_op_usize, parse_subfield_matcher, BooleanOp,
+    ComparisonOp, MatcherFlags, SubfieldMatcher,
 };
 use crate::subfield::{parse_subfield_code, Subfield};
 use crate::Error;
-
-use super::subfield_matcher::parse_subfield_matcher_exists;
 
 #[derive(Debug, PartialEq)]
 pub enum SubfieldListMatcher {
@@ -51,7 +50,8 @@ impl fmt::Display for SubfieldListMatcher {
 impl SubfieldListMatcher {
     /// Creates a subfield list matcher from a string slice.
     ///
-    /// If an invalid subfield list matcher is given, an error is returned.
+    /// If an invalid subfield list matcher is given, an error is
+    /// returned.
     ///
     /// # Example
     ///
@@ -68,8 +68,10 @@ impl SubfieldListMatcher {
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
         let data = data.as_ref();
 
-        match all_consuming(parse_subfield_list_matcher)(data.as_bytes())
-            .finish()
+        match all_consuming(parse_subfield_list_matcher)(
+            data.as_bytes(),
+        )
+        .finish()
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
@@ -79,8 +81,8 @@ impl SubfieldListMatcher {
         }
     }
 
-    /// Returns true, if and only if the given subfield list matches against the
-    /// subfield list matcher.
+    /// Returns true, if and only if the given subfield list matches
+    /// against the subfield list matcher.
     ///
     /// # Example
     ///
@@ -91,7 +93,8 @@ impl SubfieldListMatcher {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
     ///     let matcher = SubfieldListMatcher::new("0 == 'abc' && 9?")?;
-    ///     let list = [Subfield::new('0', "abc")?, Subfield::new('9', "123")?];
+    ///     let list =
+    ///         [Subfield::new('0', "abc")?, Subfield::new('9', "123")?];
     ///     assert!(matcher.is_match(&list, &MatcherFlags::default()));
     ///     Ok(())
     /// }
@@ -108,14 +111,18 @@ impl SubfieldListMatcher {
             Self::Group(matcher) => matcher.is_match(subfields, flags),
             Self::Not(matcher) => !matcher.is_match(subfields, flags),
             Self::Composite(lhs, BooleanOp::And, rhs) => {
-                lhs.is_match(subfields, flags) && rhs.is_match(subfields, flags)
+                lhs.is_match(subfields, flags)
+                    && rhs.is_match(subfields, flags)
             }
             Self::Composite(lhs, BooleanOp::Or, rhs) => {
-                lhs.is_match(subfields, flags) || rhs.is_match(subfields, flags)
+                lhs.is_match(subfields, flags)
+                    || rhs.is_match(subfields, flags)
             }
             Self::Cardinality(code, op, value) => {
-                let cardinality =
-                    subfields.iter().filter(|s| s.code() == *code).count();
+                let cardinality = subfields
+                    .iter()
+                    .filter(|s| s.code() == *code)
+                    .count();
 
                 match op {
                     ComparisonOp::Eq => cardinality == *value,
@@ -190,7 +197,9 @@ fn parse_subfield_list_matcher_cardinality(
                 }),
             ))),
         ),
-        |(code, op, value)| SubfieldListMatcher::Cardinality(code, op, value),
+        |(code, op, value)| {
+            SubfieldListMatcher::Cardinality(code, op, value)
+        },
     )(i)
 }
 
@@ -416,22 +425,26 @@ mod tests {
             [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
-        let matcher = SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
+        let matcher =
+            SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
         let subfields =
             [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
         assert!(!matcher.is_match(&subfields, &flags));
 
-        let matcher = SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
+        let matcher =
+            SubfieldListMatcher::new("0 == 'abc' && 0 == 'def'")?;
         let subfields =
             [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
         assert!(!matcher.is_match(&subfields, &flags));
 
-        let matcher = SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
+        let matcher =
+            SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
         let subfields =
             [Subfield::new('0', "abc")?, Subfield::new('0', "hij")?];
         assert!(matcher.is_match(&subfields, &flags));
 
-        let matcher = SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
+        let matcher =
+            SubfieldListMatcher::new("0 == 'abc' || 0 == 'def'")?;
         let subfields =
             [Subfield::new('0', "hij")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
@@ -442,14 +455,16 @@ mod tests {
             [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
-        let matcher =
-            SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'def'")?;
+        let matcher = SubfieldListMatcher::new(
+            "9? && 0 == 'abc' ||  0 == 'def'",
+        )?;
         let subfields =
             [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(matcher.is_match(&subfields, &flags));
 
-        let matcher =
-            SubfieldListMatcher::new("9? && 0 == 'abc' ||  0 == 'hij'")?;
+        let matcher = SubfieldListMatcher::new(
+            "9? && 0 == 'abc' ||  0 == 'hij'",
+        )?;
         let subfields =
             [Subfield::new('0', "abc")?, Subfield::new('0', "def")?];
         assert!(!matcher.is_match(&subfields, &flags));

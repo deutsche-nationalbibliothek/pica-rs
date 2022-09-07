@@ -82,7 +82,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         create_dir(outdir)?;
     }
 
-    let mut writers: HashMap<Vec<u8>, Box<dyn PicaWriter>> = HashMap::new();
+    let mut writers: HashMap<Vec<u8>, Box<dyn PicaWriter>> =
+        HashMap::new();
     let path = pica::Path::from_str(args.value_of("path").unwrap())?;
 
     let filenames = args
@@ -91,7 +92,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };
@@ -104,16 +106,19 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
             values.dedup();
 
             for value in values {
-                let mut entry = writers.entry(value.as_bytes().to_vec());
+                let mut entry =
+                    writers.entry(value.as_bytes().to_vec());
                 let writer = match entry {
                     Entry::Vacant(vacant) => {
-                        let value = String::from_utf8(value.to_vec()).unwrap();
+                        let value =
+                            String::from_utf8(value.to_vec()).unwrap();
                         let writer = WriterBuilder::new()
                             .gzip(gzip_compression)
                             .from_path(
                                 outdir
                                     .join(
-                                        filename_template.replace("{}", &value),
+                                        filename_template
+                                            .replace("{}", &value),
                                     )
                                     .to_str()
                                     .unwrap(),
@@ -121,7 +126,9 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
                         vacant.insert(writer)
                     }
-                    Entry::Occupied(ref mut occupied) => occupied.get_mut(),
+                    Entry::Occupied(ref mut occupied) => {
+                        occupied.get_mut()
+                    }
                 };
 
                 writer.write_byte_record(&record)?;

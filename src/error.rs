@@ -1,7 +1,7 @@
-use crate::parser::{ParsePathError, ParsePicaError};
-
 use std::fmt::{self, Display, Formatter};
 use std::{error, io};
+
+use crate::parser::{ParsePathError, ParsePicaError};
 
 /// A type alias for `Result<T, pica::Error>`.
 pub type Result<T> = std::result::Result<T, Error>;

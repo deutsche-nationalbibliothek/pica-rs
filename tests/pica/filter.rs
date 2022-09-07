@@ -1,9 +1,10 @@
-use assert_cmd::Command;
-use flate2::read::GzDecoder;
-use predicates::prelude::*;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
+
+use assert_cmd::Command;
+use flate2::read::GzDecoder;
+use predicates::prelude::*;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -272,8 +273,9 @@ fn pica_filter_regex_operator() -> TestResult {
         .arg("tests/data/121169502.dat")
         .assert();
 
-    let expected =
-        predicate::eq("error: invalid filter: \"001A.0 =~ \'\\d{a}\'\"\n");
+    let expected = predicate::eq(
+        "error: invalid filter: \"001A.0 =~ \'\\d{a}\'\"\n",
+    );
 
     assert
         .failure()
@@ -1252,7 +1254,9 @@ fn pica_filter_reduce() -> TestResult {
 
     assert
         .failure()
-        .stderr(predicate::str::starts_with("error: invalid reduce value"))
+        .stderr(predicate::str::starts_with(
+            "error: invalid reduce value",
+        ))
         .stdout(predicate::str::is_empty());
 
     Ok(())
@@ -1267,8 +1271,9 @@ fn pica_filter_read_gzip() -> TestResult {
         .arg("tests/data/1004916019.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     Ok(())
@@ -1289,8 +1294,9 @@ fn pica_filter_write_plain_output() -> TestResult {
         .assert();
     assert.success().stdout(predicate::str::is_empty());
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert!(expected.eval(Path::new(filename_str)));
 
     Ok(())
@@ -1376,8 +1382,9 @@ fn pica_filter_limit() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -1390,8 +1397,9 @@ fn pica_filter_limit() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -1404,8 +1412,9 @@ fn pica_filter_limit() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -1634,12 +1643,14 @@ fn pica_filter_tee_option() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert!(expected.eval(Path::new(filename_str)));
 
     Ok(())
@@ -1701,8 +1712,9 @@ fn pica_filter_append_option() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
 
     assert
         .success()
@@ -1801,7 +1813,9 @@ fn pica_filter_skip_invalid() -> TestResult {
         .stdout(predicate::path::eq_file(Path::new(
             "tests/data/1004916019.dat",
         )))
-        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+        .stderr(predicate::eq(
+            "Pica Error: Invalid record on line 2.\n",
+        ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -1892,12 +1906,15 @@ fn pica_filter_cardinality_op() -> TestResult {
             .arg("tests/data/121169502.dat")
             .assert();
 
-        let expected =
-            predicate::path::eq_file(Path::new("tests/data/121169502.dat"));
+        let expected = predicate::path::eq_file(Path::new(
+            "tests/data/121169502.dat",
+        ));
         assert.success().stdout(expected);
     }
 
-    for filter_expr in ["#047C < 2", "#047C == 1", "#047C != 2", "#048C > 2"] {
+    for filter_expr in
+        ["#047C < 2", "#047C == 1", "#047C != 2", "#048C > 2"]
+    {
         let mut cmd = Command::cargo_bin("pica")?;
         let assert = cmd
             .arg("filter")
@@ -2048,8 +2065,9 @@ fn pica_filter_strsim() -> TestResult {
         .arg("tests/data/121169502.dat")
         .assert();
 
-    let expected =
-        predicate::eq("error: expected threshold to be a f64, got \'abc\'.\n");
+    let expected = predicate::eq(
+        "error: expected threshold to be a f64, got \'abc\'.\n",
+    );
 
     assert
         .failure()
@@ -2072,8 +2090,9 @@ fn pica_filter_allow_deny_listing() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -2088,8 +2107,9 @@ fn pica_filter_allow_deny_listing() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert.success().stdout(expected);
 
     Ok(())

@@ -13,8 +13,9 @@ mod macros;
 mod translit;
 mod util;
 
-use config::Config;
 use std::{io, process};
+
+use config::Config;
 use util::{CliError, CliResult};
 
 fn run() -> CliResult<()> {

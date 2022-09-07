@@ -1,5 +1,3 @@
-use crate::error::Result;
-use crate::ByteRecord;
 use std::ffi::OsStr;
 use std::fs::OpenOptions;
 use std::io::{self, BufWriter, Write};
@@ -8,6 +6,9 @@ use std::path::Path;
 
 use flate2::write::GzEncoder;
 use flate2::Compression;
+
+use crate::error::Result;
+use crate::ByteRecord;
 
 /// Configures and builds a PICA+ writer.
 #[derive(Debug)]
@@ -61,8 +62,8 @@ impl WriterBuilder {
         WriterBuilder::default()
     }
 
-    /// Builds a new `Writer` with the current configuration, that writes to
-    /// the specified file path.
+    /// Builds a new `Writer` with the current configuration, that
+    /// writes to the specified file path.
     ///
     /// # Example
     ///
@@ -108,8 +109,8 @@ impl WriterBuilder {
         }
     }
 
-    /// Builds a new `Writer` with the current configuration, that writes to an
-    /// existing writer.
+    /// Builds a new `Writer` with the current configuration, that
+    /// writes to an existing writer.
     ///
     /// # Example
     ///
@@ -148,24 +149,27 @@ impl WriterBuilder {
         }
     }
 
-    /// Builds a new `Writer` with the current configuration, that writes to
-    /// the specified file path, if some was provided, otherwise to `stdout`.
+    /// Builds a new `Writer` with the current configuration, that
+    /// writes to the specified file path, if some was provided,
+    /// otherwise to `stdout`.
     ///
     /// # Example
     ///
     /// ```rust
-    /// use pica::{ByteRecord, WriterBuilder};
     /// use std::error::Error;
+    ///
+    /// use pica::{ByteRecord, WriterBuilder};
     /// use tempfile::Builder;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let record =
-    ///         ByteRecord::from_bytes("003@ \x1f0123456789\x1e\n".as_bytes())?;
+    ///     let record = ByteRecord::from_bytes(
+    ///         "003@ \x1f0123456789\x1e\n".as_bytes(),
+    ///     )?;
     ///
     ///     let mut tempfile = Builder::new().rand_bytes(5).tempfile()?;
-    ///     let mut writer =
-    ///         WriterBuilder::new().from_path_or_stdout(Some(&tempfile.path()));
+    ///     let mut writer = WriterBuilder::new()
+    ///         .from_path_or_stdout(Some(&tempfile.path()));
     ///     assert!(writer.is_ok());
     ///
     ///     let mut writer =
@@ -194,9 +198,9 @@ impl WriterBuilder {
 
     /// Whether to append to a given file or not.
     ///
-    /// When this flag is set, the writer appends to the given file. If the file
-    /// does not exists, the file is created. This flag has no effect when
-    /// writing to `stdout`.
+    /// When this flag is set, the writer appends to the given file. If
+    /// the file does not exists, the file is created. This flag has
+    /// no effect when writing to `stdout`.
     ///
     /// This option is disabled by default.
     pub fn append(mut self, yes: bool) -> Self {
@@ -321,8 +325,8 @@ impl<W: Write> PicaWriter for PlainWriter<W> {
 
     /// Flushes the underlying writer.
     ///
-    /// If an problem occurs when writing to the underlying writer, an error is
-    /// returned.
+    /// If an problem occurs when writing to the underlying writer, an
+    /// error is returned.
     fn finish(&mut self) -> Result<()> {
         self.inner.flush()?;
         Ok(())

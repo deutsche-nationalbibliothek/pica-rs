@@ -10,7 +10,8 @@ use nom::sequence::{delimited, preceded};
 use nom::IResult;
 
 /// Parser result.
-pub(crate) type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
+pub(crate) type ParseResult<'a, O> =
+    Result<(&'a [u8], O), nom::Err<()>>;
 
 /// Strip whitespaces from the beginning and end.
 pub(crate) fn ws<'a, F: 'a, O, E: ParseError<&'a [u8]>>(
@@ -61,21 +62,28 @@ fn parse_fragment(i: &[u8]) -> ParseResult<StringFragment> {
     alt((
         map(parse_literal, StringFragment::Literal),
         map(parse_escaped_char, StringFragment::EscapedChar),
-        value(StringFragment::EscapedWs, preceded(char('\\'), multispace1)),
+        value(
+            StringFragment::EscapedWs,
+            preceded(char('\\'), multispace1),
+        ),
     ))(i)
 }
 
 pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
     delimited(
         char('\''),
-        fold_many0(parse_fragment, String::new, |mut string, fragment| {
-            match fragment {
-                StringFragment::Literal(s) => string.push_str(s),
-                StringFragment::EscapedChar(c) => string.push(c),
-                StringFragment::EscapedWs => {}
-            }
-            string
-        }),
+        fold_many0(
+            parse_fragment,
+            String::new,
+            |mut string, fragment| {
+                match fragment {
+                    StringFragment::Literal(s) => string.push_str(s),
+                    StringFragment::EscapedChar(c) => string.push(c),
+                    StringFragment::EscapedWs => {}
+                }
+                string
+            },
+        ),
         char('\''),
     )(i)
 }
