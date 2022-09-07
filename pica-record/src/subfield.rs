@@ -30,7 +30,7 @@ impl<'a> SubfieldRef<'a> {
     /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// fn example() -> anyhow::Result<()> {
     ///     let subfield = SubfieldRef::new('0', "0123456789X");
     ///     assert_eq!(subfield.code(), '0');
     ///     Ok(())
@@ -38,5 +38,23 @@ impl<'a> SubfieldRef<'a> {
     /// ```
     pub fn code(&self) -> char {
         self.0
+    }
+
+    /// Returns the value of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = SubfieldRef::new('0', "0123456789X");
+    ///     assert_eq!(subfield.value(), "0123456789X");
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn value(&self) -> &'a BStr {
+        self.1
     }
 }

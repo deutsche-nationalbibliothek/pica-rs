@@ -10,3 +10,6 @@ edition = "2021"
 bstr = "0.2"
 nom = "7.1"
 thiserror = "1.0"
+
+[dev-dependencies]
+anyhow = "1.0"
