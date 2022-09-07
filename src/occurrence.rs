@@ -5,7 +5,6 @@ use std::fmt;
 use std::ops::Deref;
 
 use bstr::BString;
-
 use nom::character::complete::{char, satisfy};
 use nom::combinator::{all_consuming, cut, map, recognize};
 use nom::multi::many_m_n;
@@ -52,19 +51,23 @@ impl Occurrence {
     /// }
     /// ```
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
-        let mut parser =
-            map(all_consuming(parse_occurrence_digits), Self::from_unchecked);
+        let mut parser = map(
+            all_consuming(parse_occurrence_digits),
+            Self::from_unchecked,
+        );
 
         match parser(data.as_ref().as_bytes()).finish() {
             Ok((_, occurrence)) => Ok(occurrence),
-            Err(_) => {
-                Err(Error::InvalidOccurrence("Invalid occurrence".to_string()))
-            }
+            Err(_) => Err(Error::InvalidOccurrence(
+                "Invalid occurrence".to_string(),
+            )),
         }
     }
 
     /// Creates a new `Occurrence` without checking the input
-    pub(crate) fn from_unchecked<S: Into<BString>>(occurrence: S) -> Self {
+    pub(crate) fn from_unchecked<S: Into<BString>>(
+        occurrence: S,
+    ) -> Self {
         Self(occurrence.into())
     }
 }
@@ -140,8 +143,14 @@ mod tests {
 
     #[test]
     fn test_occurrence_new() -> TestResult {
-        assert_eq!(Occurrence::new("00")?, Occurrence(BString::from("00")));
-        assert_eq!(Occurrence::new("001")?, Occurrence(BString::from("001")));
+        assert_eq!(
+            Occurrence::new("00")?,
+            Occurrence(BString::from("00"))
+        );
+        assert_eq!(
+            Occurrence::new("001")?,
+            Occurrence(BString::from("001"))
+        );
         assert!(Occurrence::new("/00").is_err());
         assert!(Occurrence::new("a0").is_err());
         assert!(Occurrence::new("0a").is_err());

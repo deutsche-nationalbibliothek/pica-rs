@@ -1,10 +1,11 @@
 extern crate pica;
 
-use bstr::io::BufReadExt;
-use pica::StringRecord;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
+
+use bstr::io::BufReadExt;
+use pica::StringRecord;
 
 fn main() {
     let filename = env::args()

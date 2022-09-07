@@ -8,7 +8,9 @@ use crate::util::{CliArgs, CliResult, Command};
 
 pub(crate) fn cli() -> Command {
     Command::new("completions")
-        .about("Generate a completions file for Bash, Fish or ZSH shell.")
+        .about(
+            "Generate a completions file for Bash, Fish or ZSH shell.",
+        )
         .arg(
             Arg::new("shell")
                 .possible_values([
@@ -39,7 +41,9 @@ pub(crate) fn run(args: &CliArgs, cli: &mut Command) -> CliResult<()> {
         "bash" => generate(Shell::Bash, cli, "pica", &mut writer),
         "evlish" => generate(Shell::Elvish, cli, "pica", &mut writer),
         "fish" => generate(Shell::Fish, cli, "pica", &mut writer),
-        "powershell" => generate(Shell::PowerShell, cli, "pica", &mut writer),
+        "powershell" => {
+            generate(Shell::PowerShell, cli, "pica", &mut writer)
+        }
         "zsh" => generate(Shell::Zsh, cli, "pica", &mut writer),
         _ => unreachable!(),
     }

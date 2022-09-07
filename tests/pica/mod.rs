@@ -1,6 +1,7 @@
-use crate::TestResult;
 use assert_cmd::Command;
 use predicates::prelude::*;
+
+use crate::TestResult;
 
 mod cat;
 mod completions;

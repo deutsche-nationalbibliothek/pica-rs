@@ -1,6 +1,7 @@
+use std::fs::read_to_string;
+
 use assert_cmd::Command;
 use predicates::prelude::*;
-use std::fs::read_to_string;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -209,7 +210,10 @@ fn pica_print_append_output() -> TestResult {
         expected
     };
 
-    assert_eq!(expected, "records,fields,subfields\n1,45,138\n1,22,43\n");
+    assert_eq!(
+        expected,
+        "records,fields,subfields\n1,45,138\n1,22,43\n"
+    );
 
     Ok(())
 }
@@ -316,13 +320,16 @@ fn pica_count_skip_invalid() -> TestResult {
         .stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("count").arg("tests/data/dump.dat.gz").assert();
+    let assert =
+        cmd.arg("count").arg("tests/data/dump.dat.gz").assert();
 
     assert
         .failure()
         .code(1)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+        .stderr(predicate::eq(
+            "Pica Error: Invalid record on line 2.\n",
+        ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

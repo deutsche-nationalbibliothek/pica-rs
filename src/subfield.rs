@@ -4,13 +4,12 @@
 use std::fmt;
 
 use bstr::{BString, ByteSlice};
-use serde::ser::{Serialize, SerializeStruct, Serializer};
-
 use nom::bytes::complete::is_not;
 use nom::character::complete::{char, satisfy};
 use nom::combinator::{cut, map, recognize};
 use nom::multi::many0;
 use nom::sequence::{pair, preceded};
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 use crate::common::ParseResult;
 use crate::error::{Error, Result};
@@ -49,8 +48,9 @@ impl Subfield {
     /// # Example
     ///
     /// ```rust
-    /// use pica::Subfield;
     /// use std::error::Error;
+    ///
+    /// use pica::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn Error>> {
@@ -133,7 +133,8 @@ impl Subfield {
         &self.value
     }
 
-    /// Returns `true` if the subfield value is valid UTF-8 byte sequence.
+    /// Returns `true` if the subfield value is valid UTF-8 byte
+    /// sequence.
     ///
     /// # Example
     ///
@@ -217,7 +218,10 @@ impl Serialize for Subfield {
         // SAFETY: It's save because `Serialize` is only implemented for
         // `StringRecord` and not for `ByteRecord`.
         unsafe {
-            state.serialize_field("value", &self.value.to_str_unchecked())?;
+            state.serialize_field(
+                "value",
+                &self.value.to_str_unchecked(),
+            )?;
         }
         state.end()
     }
@@ -225,10 +229,10 @@ impl Serialize for Subfield {
 
 #[cfg(test)]
 mod tests {
-    use crate::test::TestResult;
     use std::io::Cursor;
 
     use super::*;
+    use crate::test::TestResult;
 
     #[test]
     fn test_subfield_new() -> TestResult {
@@ -293,7 +297,10 @@ mod tests {
         let subfield = Subfield::new('0', "123456789X")?;
         subfield.write(&mut writer)?;
 
-        assert_eq!(String::from_utf8(writer.into_inner())?, "\x1f0123456789X");
+        assert_eq!(
+            String::from_utf8(writer.into_inner())?,
+            "\x1f0123456789X"
+        );
 
         Ok(())
     }
@@ -328,8 +335,14 @@ mod tests {
 
     #[test]
     fn test_parse_subfield() -> TestResult {
-        assert_eq!(parse_subfield(b"\x1fa123")?.1, Subfield::new('a', "123")?);
-        assert_eq!(parse_subfield(b"\x1fa")?.1, Subfield::new('a', "")?);
+        assert_eq!(
+            parse_subfield(b"\x1fa123")?.1,
+            Subfield::new('a', "123")?
+        );
+        assert_eq!(
+            parse_subfield(b"\x1fa")?.1,
+            Subfield::new('a', "")?
+        );
         assert!(parse_subfield(b"a123").is_err());
         assert!(parse_subfield(b"").is_err());
 

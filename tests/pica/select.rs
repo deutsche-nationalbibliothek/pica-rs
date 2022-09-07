@@ -1,6 +1,7 @@
+use std::fs::read_to_string;
+
 use assert_cmd::Command;
 use predicates::prelude::*;
-use std::fs::read_to_string;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};

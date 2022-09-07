@@ -7,7 +7,9 @@ use nom::combinator::{all_consuming, cut, map, value};
 use nom::error::ParseError;
 use nom::multi::many1;
 use nom::sequence::{preceded, terminated, tuple};
-use nom::{AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice};
+use nom::{
+    AsChar, FindToken, Finish, IResult, InputIter, InputLength, Slice,
+};
 
 use crate::common::ParseResult;
 use crate::tag::{parse_tag, Tag};
@@ -66,7 +68,8 @@ impl TagMatcher {
     pub fn new<S: AsRef<str>>(data: S) -> Result<Self, Error> {
         let data = data.as_ref();
 
-        match all_consuming(parse_tag_matcher)(data.as_bytes()).finish() {
+        match all_consuming(parse_tag_matcher)(data.as_bytes()).finish()
+        {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
                 "Expected valid tag matcher, got '{}'",
@@ -150,7 +153,9 @@ pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ@".chars().collect(),
                         char('.'),
                     ),
-                    parse_character_class("ABCDEFGHIJKLMNOPQRSTUVWXYZ@"),
+                    parse_character_class(
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ@",
+                    ),
                 )),
             )),
             |(p1, p2, p3, p4)| TagMatcher::Pattern(p1, p2, p3, p4),

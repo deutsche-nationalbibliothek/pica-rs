@@ -1,6 +1,7 @@
+use std::fs::read_to_string;
+
 use assert_cmd::Command;
 use predicates::prelude::*;
-use std::fs::read_to_string;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -8,7 +9,8 @@ use crate::common::{CommandExt, TestContext, TestResult};
 #[test]
 fn pica_print_stdout() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("print").arg("tests/data/1004916019.dat").assert();
+    let assert =
+        cmd.arg("print").arg("tests/data/1004916019.dat").assert();
 
     let expected = read_to_string("tests/data/1004916019.txt").unwrap();
     let expected = if cfg!(windows) {
@@ -163,12 +165,11 @@ fn pica_print_limit() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq(
+    assert.failure().stdout(predicate::str::is_empty()).stderr(
+        predicate::eq(
             "error: Invalid limit value, expected unsigned integer.\n",
-        ));
+        ),
+    );
 
     Ok(())
 }
@@ -183,7 +184,8 @@ fn pica_print_color() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/1004916019-color1.txt").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019-color1.txt").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {
@@ -212,7 +214,8 @@ fn pica_print_color() -> TestResult {
         .arg("tests/data/1004916019.dat")
         .assert();
 
-    let expected = read_to_string("tests/data/1004916019-color2.txt").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019-color2.txt").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {
@@ -249,7 +252,8 @@ fn pica_print_color() -> TestResult {
 
 #[test]
 fn pica_print_add_spaces() -> TestResult {
-    let expected = read_to_string("tests/data/1004916019-spaces.txt").unwrap();
+    let expected =
+        read_to_string("tests/data/1004916019-spaces.txt").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {
@@ -373,7 +377,8 @@ fn pica_print_translit() -> TestResult {
         .arg("tests/data/004732650-reduced.dat.gz")
         .assert();
 
-    let expected = read_to_string("tests/data/004732650-nfd.txt").unwrap();
+    let expected =
+        read_to_string("tests/data/004732650-nfd.txt").unwrap();
     let expected = if cfg!(windows) {
         expected.replace('\r', "")
     } else {
@@ -440,10 +445,13 @@ fn pica_print_skip_invalid() -> TestResult {
     assert.success().stdout(predicate::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("print").arg("tests/data/invalid.dat").assert();
+    let assert =
+        cmd.arg("print").arg("tests/data/invalid.dat").assert();
     assert
         .failure()
-        .stderr(predicate::eq("Pica Error: Invalid record on line 1.\n"))
+        .stderr(predicate::eq(
+            "Pica Error: Invalid record on line 1.\n",
+        ))
         .stdout(predicate::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;

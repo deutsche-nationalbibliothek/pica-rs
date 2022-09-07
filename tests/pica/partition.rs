@@ -1,10 +1,12 @@
-use crate::common::{CommandExt, TestContext, TestResult};
+use std::fs::{read_to_string, remove_file, File};
+use std::io::Read;
+
 use assert_cmd::Command;
 use flate2::read::GzDecoder;
 use predicates::prelude::*;
-use std::fs::{read_to_string, remove_file, File};
-use std::io::Read;
 use tempfile::Builder;
+
+use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
 fn pica_partition_by_bbg() -> TestResult {
@@ -21,10 +23,14 @@ fn pica_partition_by_bbg() -> TestResult {
     let actual = read_to_string("Tb1.dat").unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
     remove_file("Tb1.dat").unwrap();
@@ -33,8 +39,10 @@ fn pica_partition_by_bbg() -> TestResult {
     let actual = read_to_string("Tp1.dat").unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
     remove_file("Tp1.dat").unwrap();
@@ -43,7 +51,9 @@ fn pica_partition_by_bbg() -> TestResult {
     let actual = read_to_string("Ts1.dat").unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
     remove_file("Ts1.dat").unwrap();
@@ -73,8 +83,10 @@ fn pica_partition_multiple_files() -> TestResult {
     let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -103,8 +115,10 @@ fn pica_partition_multiple_files() -> TestResult {
     let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
     Ok(())
@@ -176,10 +190,14 @@ fn pica_partition_filename_template() -> TestResult {
     let actual = read_to_string(tempdir.join("BBG_Tb1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -187,8 +205,10 @@ fn pica_partition_filename_template() -> TestResult {
     let actual = read_to_string(tempdir.join("BBG_Tp1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -196,7 +216,9 @@ fn pica_partition_filename_template() -> TestResult {
     let actual = read_to_string(tempdir.join("BBG_Ts1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 
@@ -229,10 +251,14 @@ template = "bbg_{}.dat"
     let actual = read_to_string(tempdir.join("bbg_Tb1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -240,8 +266,10 @@ template = "bbg_{}.dat"
     let actual = read_to_string(tempdir.join("bbg_Tp1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -249,7 +277,9 @@ template = "bbg_{}.dat"
     let actual = read_to_string(tempdir.join("bbg_Ts1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 
@@ -276,10 +306,14 @@ fn pica_partition_output_dir1() -> TestResult {
     let actual = read_to_string(tempdir.join("Tb1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -287,8 +321,10 @@ fn pica_partition_output_dir1() -> TestResult {
     let actual = read_to_string(tempdir.join("Tp1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -296,7 +332,9 @@ fn pica_partition_output_dir1() -> TestResult {
     let actual = read_to_string(tempdir.join("Ts1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 
@@ -323,10 +361,14 @@ fn pica_partition_output_dir2() -> TestResult {
     let actual = read_to_string(tempdir.join("dir2/Tb1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -334,8 +376,10 @@ fn pica_partition_output_dir2() -> TestResult {
     let actual = read_to_string(tempdir.join("dir2/Tp1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
@@ -343,7 +387,9 @@ fn pica_partition_output_dir2() -> TestResult {
     let actual = read_to_string(tempdir.join("dir2/Ts1.dat")).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 
@@ -380,10 +426,9 @@ fn pica_partition_skip_invalid() -> TestResult {
         .arg("tests/data/invalid.dat")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stderr(predicate::eq("Pica Error: Invalid record on line 1.\n"));
+    assert.failure().code(1).stderr(predicate::eq(
+        "Pica Error: Invalid record on line 1.\n",
+    ));
 
     let tempdir = Builder::new().tempdir().unwrap();
     let tempdir = tempdir.path();
@@ -489,36 +534,47 @@ fn pica_partition_write_gzip_template() -> TestResult {
     assert.success();
 
     // Tb1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Tp1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Ts1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 
@@ -543,36 +599,47 @@ fn pica_partition_write_gzip_flag1() -> TestResult {
     assert.success();
 
     // Tb1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Tp1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Ts1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 
@@ -599,36 +666,47 @@ fn pica_partition_write_gzip_flag2() -> TestResult {
     assert.success();
 
     // Tb1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tb1.dat")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Tp1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tp1.dat")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Ts1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Ts1.dat")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 
@@ -658,36 +736,47 @@ gzip = true
     assert.success();
 
     // Tb1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tb1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/000008672.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016586.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000016756.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/000009229.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000008672.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016586.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000016756.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/000009229.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Tp1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Tp1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/119232022.dat").unwrap());
-    expected.push_str(&read_to_string("tests/data/121169502.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/119232022.dat").unwrap());
+    expected
+        .push_str(&read_to_string("tests/data/121169502.dat").unwrap());
 
     assert_eq!(expected, actual);
 
     // Ts1
-    let mut gz = GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
+    let mut gz =
+        GzDecoder::new(File::open(outdir.join("Ts1.dat.gz")).unwrap());
     let mut actual = String::new();
     gz.read_to_string(&mut actual).unwrap();
 
     let mut expected = String::new();
-    expected.push_str(&read_to_string("tests/data/1004916019.dat").unwrap());
+    expected.push_str(
+        &read_to_string("tests/data/1004916019.dat").unwrap(),
+    );
 
     assert_eq!(expected, actual);
 

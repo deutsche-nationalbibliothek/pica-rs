@@ -126,12 +126,11 @@ fn pica_frequency_limit() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq(
+    assert.failure().stdout(predicate::str::is_empty()).stderr(
+        predicate::eq(
             "error: Invalid limit value, expected unsigned integer.\n",
-        ));
+        ),
+    );
 
     Ok(())
 }
@@ -218,8 +217,8 @@ fn pica_frequency_threshold() -> TestResult {
         .failure()
         .stdout(predicate::str::is_empty())
         .stderr(predicate::eq(
-            "error: Invalid threshold value, expected unsigned integer.\n",
-        ));
+        "error: Invalid threshold value, expected unsigned integer.\n",
+    ));
 
     Ok(())
 }
@@ -288,7 +287,10 @@ fn pica_frequency_output() -> TestResult {
 
     assert.success();
 
-    assert_eq!(read_to_string(filename).unwrap(), "Tb1,4\nTp1,2\nTs1,1\n");
+    assert_eq!(
+        read_to_string(filename).unwrap(),
+        "Tb1,4\nTp1,2\nTs1,1\n"
+    );
 
     Ok(())
 }
@@ -302,12 +304,11 @@ fn pica_frequency_translit() -> TestResult {
         .arg("tests/data/004732650-reduced.dat.gz")
         .assert();
 
-    assert
-        .success()
-        .stderr(predicate::str::is_empty())
-        .stdout(predicate::eq(
+    assert.success().stderr(predicate::str::is_empty()).stdout(
+        predicate::eq(
             "Goethe-Universita\u{308}t Frankfurt am Main,1\n",
-        ));
+        ),
+    );
 
     let expected = vec![
         ("nfd", "Goethe-Universita\u{308}t Frankfurt am Main,1\n"),
@@ -354,10 +355,9 @@ fn pica_frequency_skip_invalid() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+    assert.failure().code(1).stderr(predicate::eq(
+        "Pica Error: Invalid record on line 2.\n",
+    ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

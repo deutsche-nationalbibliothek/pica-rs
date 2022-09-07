@@ -1,7 +1,8 @@
-use assert_cmd::Command;
-use predicates::prelude::*;
 use std::fs::read_to_string;
 use std::path::Path;
+
+use assert_cmd::Command;
+use predicates::prelude::*;
 use tempfile::Builder;
 
 use crate::common::TestResult;
@@ -9,14 +10,16 @@ use crate::common::TestResult;
 #[test]
 fn pica_invalid_stdout() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("invalid").arg("tests/data/invalid.dat").assert();
+    let assert =
+        cmd.arg("invalid").arg("tests/data/invalid.dat").assert();
 
     let expected =
         predicate::path::eq_file(Path::new("tests/data/invalid.dat"));
     assert.success().stdout(expected);
 
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("invalid").arg("tests/data/dump.dat.gz").assert();
+    let assert =
+        cmd.arg("invalid").arg("tests/data/dump.dat.gz").assert();
 
     let expected =
         predicate::path::eq_file(Path::new("tests/data/invalid.dat"));

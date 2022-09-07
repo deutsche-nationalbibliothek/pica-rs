@@ -1,3 +1,6 @@
+use std::default::Default;
+use std::ops::{Add, Deref, Mul};
+
 use bstr::BString;
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
@@ -5,13 +8,12 @@ use nom::combinator::{all_consuming, map, opt};
 use nom::multi::separated_list1;
 use nom::sequence::{delimited, pair, terminated, tuple};
 use nom::Finish;
-use std::default::Default;
-use std::ops::{Add, Deref, Mul};
 
 use crate::common::{parse_string, ws, ParseResult};
 use crate::matcher::{
-    parse_occurrence_matcher, parse_subfield_list_matcher, parse_tag_matcher,
-    OccurrenceMatcher, SubfieldListMatcher, TagMatcher,
+    parse_occurrence_matcher, parse_subfield_list_matcher,
+    parse_tag_matcher, OccurrenceMatcher, SubfieldListMatcher,
+    TagMatcher,
 };
 use crate::subfield::parse_subfield_code;
 
@@ -142,7 +144,10 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
             tuple((
                 parse_tag_matcher,
                 parse_occurrence_matcher,
-                pair(opt(alt((char('.'), ws(char('$'))))), parse_subfield_code),
+                pair(
+                    opt(alt((char('.'), ws(char('$'))))),
+                    parse_subfield_code,
+                ),
             )),
             |(tag, occurrence, (prefix, subfield))| {
                 if prefix.is_none() {
@@ -168,7 +173,10 @@ fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
                             parse_subfield_list_matcher,
                             ws(char(',')),
                         )),
-                        separated_list1(ws(char(',')), ws(parse_subfield_code)),
+                        separated_list1(
+                            ws(char(',')),
+                            ws(parse_subfield_code),
+                        ),
                     ),
                     ws(char('}')),
                 ),

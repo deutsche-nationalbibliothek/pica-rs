@@ -7,8 +7,6 @@ use std::ops::Deref;
 use std::str::FromStr;
 
 use bstr::{BString, ByteSlice};
-use serde::ser::{Serialize, SerializeStruct, Serializer};
-
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -16,6 +14,7 @@ use nom::combinator::{all_consuming, map, success, value};
 use nom::multi::many0;
 use nom::sequence::{preceded, terminated, tuple};
 use nom::Finish;
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 use crate::common::ParseResult;
 use crate::error::{Error, Result};
@@ -105,8 +104,11 @@ impl Field {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let field =
-    ///         Field::new(Tag::new("012A")?, Some(Occurrence::new("00")?), vec![]);
+    ///     let field = Field::new(
+    ///         Tag::new("012A")?,
+    ///         Some(Occurrence::new("00")?),
+    ///         vec![],
+    ///     );
     ///     assert_eq!(field.occurrence(), Some(&Occurrence::new("00")?));
     ///     Ok(())
     /// }
@@ -129,7 +131,10 @@ impl Field {
     ///         None,
     ///         vec![Subfield::new('0', "123456789X")?],
     ///     );
-    ///     assert_eq!(field.subfields(), &[Subfield::new('0', "123456789X")?]);
+    ///     assert_eq!(
+    ///         field.subfields(),
+    ///         &[Subfield::new('0', "123456789X")?]
+    ///     );
     ///     Ok(())
     /// }
     /// ```
@@ -137,8 +142,8 @@ impl Field {
         &self.subfields
     }
 
-    /// Returns `true` if the `Field` contains a `Subfield` with the specified
-    ///  code.
+    /// Returns `true` if the `Field` contains a `Subfield` with the
+    /// specified  code.
     ///
     /// # Example
     ///
@@ -163,8 +168,8 @@ impl Field {
         self.iter().any(|x| x.code == code)
     }
 
-    /// Returns a list of references to all `Subfields` of the given subfield
-    /// code.
+    /// Returns a list of references to all `Subfields` of the given
+    /// subfield code.
     ///
     /// If no subfield exists `None` is returned.
     ///
@@ -277,7 +282,8 @@ impl Field {
         }
     }
 
-    /// Returns `true` if and only if all subfield values are valid UTF-8.
+    /// Returns `true` if and only if all subfield values are valid
+    /// UTF-8.
     ///
     /// # Example
     ///
@@ -345,7 +351,10 @@ impl Field {
     ///     Ok(())
     /// }
     /// ```
-    pub fn write(&self, writer: &mut dyn Write) -> crate::error::Result<()> {
+    pub fn write(
+        &self,
+        writer: &mut dyn Write,
+    ) -> crate::error::Result<()> {
         writer.write_all(self.tag.as_slice())?;
 
         if let Some(ref occurrence) = self.occurrence {
@@ -420,7 +429,8 @@ impl Serialize for Field {
         // SAFETY: It's save because `Serialize` is only implemented for
         // `StringRecord` and not for `ByteRecord`.
         unsafe {
-            state.serialize_field("tag", &self.tag.to_str_unchecked())?;
+            state
+                .serialize_field("tag", &self.tag.to_str_unchecked())?;
             if let Some(occurrence) = self.occurrence() {
                 state.serialize_field(
                     "occurrence",
@@ -449,7 +459,9 @@ pub(crate) fn parse_field(i: &[u8]) -> ParseResult<Field> {
             )),
             char(RS),
         ),
-        |(tag, occurrence, subfields)| Field::new(tag, occurrence, subfields),
+        |(tag, occurrence, subfields)| {
+            Field::new(tag, occurrence, subfields)
+        },
     )(i)
 }
 
@@ -459,7 +471,9 @@ impl FromStr for Field {
     fn from_str(s: &str) -> Result<Self> {
         match all_consuming(parse_field)(s.as_bytes()).finish() {
             Ok((_, field)) => Ok(field),
-            Err(_) => Err(Error::InvalidField("invalid field!".to_string())),
+            Err(_) => {
+                Err(Error::InvalidField("invalid field!".to_string()))
+            }
         }
     }
 }
@@ -467,7 +481,6 @@ impl FromStr for Field {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::test::TestResult;
 
     #[test]
@@ -500,7 +513,10 @@ mod tests {
             Field::new(
                 Tag::new("012A")?,
                 Some(Occurrence::new("01")?),
-                vec![Subfield::new('0', "abc")?, Subfield::new('0', "def")?]
+                vec![
+                    Subfield::new('0', "abc")?,
+                    Subfield::new('0', "def")?
+                ]
             )
         );
 

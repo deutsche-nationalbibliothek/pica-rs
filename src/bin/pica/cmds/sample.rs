@@ -2,7 +2,9 @@ use std::ffi::OsString;
 use std::io::{self, Read};
 
 use clap::Arg;
-use pica::{ByteRecord, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica::{
+    ByteRecord, PicaWriter, Reader, ReaderBuilder, WriterBuilder,
+};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
@@ -52,7 +54,8 @@ pub(crate) fn cli() -> Command {
 }
 
 pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid = skip_invalid_flag!(args, config.sample, config.global);
+    let skip_invalid =
+        skip_invalid_flag!(args, config.sample, config.global);
     let gzip_compression = gzip_flag!(args, config.sample);
 
     let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
@@ -80,7 +83,8 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     for filename in filenames {
         let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str() {
+        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
+        {
             Some("-") => builder.from_reader(Box::new(io::stdin())),
             _ => builder.from_path(filename)?,
         };

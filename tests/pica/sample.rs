@@ -1,9 +1,10 @@
-use assert_cmd::Command;
-use flate2::read::GzDecoder;
-use predicates::prelude::*;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
+
+use assert_cmd::Command;
+use flate2::read::GzDecoder;
+use predicates::prelude::*;
 use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
@@ -22,13 +23,27 @@ fn pica_sample_single_file() -> TestResult {
 
     assert.success().stdout(
         predicate::never()
-            .or(predicate::path::eq_file(data_dir.join("1004916019.dat")))
-            .or(predicate::path::eq_file(data_dir.join("119232022.dat")))
-            .or(predicate::path::eq_file(data_dir.join("000008672.dat")))
-            .or(predicate::path::eq_file(data_dir.join("000016586.dat")))
-            .or(predicate::path::eq_file(data_dir.join("000016756.dat")))
-            .or(predicate::path::eq_file(data_dir.join("000009229.dat")))
-            .or(predicate::path::eq_file(data_dir.join("121169502.dat"))),
+            .or(predicate::path::eq_file(
+                data_dir.join("1004916019.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("119232022.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("000008672.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("000016586.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("000016756.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("000009229.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("121169502.dat"),
+            )),
     );
 
     Ok(())
@@ -48,8 +63,12 @@ fn pica_sample_multiple_files() -> TestResult {
 
     assert.success().stdout(
         predicate::never()
-            .or(predicate::path::eq_file(data_dir.join("1004916019.dat")))
-            .or(predicate::path::eq_file(data_dir.join("119232022.dat"))),
+            .or(predicate::path::eq_file(
+                data_dir.join("1004916019.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("119232022.dat"),
+            )),
     );
 
     let data = read_to_string("tests/data/1004916019.dat").unwrap();
@@ -66,8 +85,12 @@ fn pica_sample_multiple_files() -> TestResult {
 
     assert.success().stdout(
         predicate::never()
-            .or(predicate::path::eq_file(data_dir.join("1004916019.dat")))
-            .or(predicate::path::eq_file(data_dir.join("119232022.dat"))),
+            .or(predicate::path::eq_file(
+                data_dir.join("1004916019.dat"),
+            ))
+            .or(predicate::path::eq_file(
+                data_dir.join("119232022.dat"),
+            )),
     );
 
     Ok(())
@@ -83,7 +106,9 @@ fn pica_sample_stdin() -> TestResult {
 
     assert
         .success()
-        .stdout(predicate::path::eq_file(data_dir.join("1004916019.dat")))
+        .stdout(predicate::path::eq_file(
+            data_dir.join("1004916019.dat"),
+        ))
         .stderr(predicate::str::is_empty());
 
     let data = read_to_string("tests/data/1004916019.dat").unwrap();
@@ -99,7 +124,9 @@ fn pica_sample_stdin() -> TestResult {
 
     assert
         .success()
-        .stdout(predicate::path::eq_file(data_dir.join("1004916019.dat")))
+        .stdout(predicate::path::eq_file(
+            data_dir.join("1004916019.dat"),
+        ))
         .stderr(predicate::str::is_empty());
 
     Ok(())
@@ -181,10 +208,9 @@ fn pica_sample_size_invalid() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .stdout(predicate::str::is_empty())
-        .stderr("error: invalid sample size \'0\'. expected non-zero usize.\n");
+    assert.failure().stdout(predicate::str::is_empty()).stderr(
+        "error: invalid sample size \'0\'. expected non-zero usize.\n",
+    );
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -194,10 +220,9 @@ fn pica_sample_size_invalid() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .stdout(predicate::str::is_empty())
-        .stderr("error: invalid sample size \'a\'. expected non-zero usize.\n");
+    assert.failure().stdout(predicate::str::is_empty()).stderr(
+        "error: invalid sample size \'a\'. expected non-zero usize.\n",
+    );
 
     Ok(())
 }
@@ -218,8 +243,9 @@ fn pica_sample_write_output() -> TestResult {
         .assert();
     assert.success().stdout(predicate::str::is_empty());
 
-    let expected =
-        predicate::path::eq_file(Path::new("tests/data/1004916019.dat"));
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1004916019.dat",
+    ));
     assert!(expected.eval(Path::new(filename_str)));
 
     Ok(())
@@ -296,7 +322,9 @@ fn pica_sample_skip_invalid() -> TestResult {
         .failure()
         .code(1)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq("Pica Error: Invalid record on line 2.\n"));
+        .stderr(predicate::eq(
+            "Pica Error: Invalid record on line 2.\n",
+        ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
