@@ -21,4 +21,22 @@ impl<'a> SubfieldRef<'a> {
 
         Self(code, value)
     }
+
+    /// Returns the code of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let subfield = SubfieldRef::new('0', "0123456789X");
+    ///     assert_eq!(subfield.code(), '0');
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn code(&self) -> char {
+        self.0
+    }
 }
