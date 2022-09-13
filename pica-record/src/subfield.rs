@@ -1,4 +1,7 @@
 use bstr::{BStr, ByteSlice};
+use nom::character::complete::satisfy;
+
+use crate::parser::ParseResult;
 
 /// An immutable PICA+ subfield.
 #[derive(Debug, PartialEq, Eq)]
@@ -88,5 +91,34 @@ impl<'a> SubfieldRef<'a> {
     /// ```
     pub fn is_empty(&self) -> bool {
         self.1.len() == 0
+    }
+}
+
+/// Parse a PICA+ subfield code.
+pub fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
+    satisfy(|c| c.is_ascii_alphanumeric())(i)
+}
+
+#[cfg(test)]
+mod tests {
+
+    use nom_test_helpers::prelude::*;
+
+    use super::*;
+
+    #[test]
+    fn test_parse_subfield_code() -> anyhow::Result<()> {
+        for c in b'0'..=b'z' {
+            if c.is_ascii_alphanumeric() {
+                assert_done_and_eq!(
+                    parse_subfield_code(&[c]),
+                    c as char
+                );
+            } else {
+                assert_error!(parse_subfield_code(&[c]));
+            }
+        }
+
+        Ok(())
     }
 }

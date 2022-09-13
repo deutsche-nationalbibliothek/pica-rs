@@ -13,3 +13,4 @@ thiserror = "1.0"
 
 [dev-dependencies]
 anyhow = "1.0"
+nom-test-helpers = "6.1"
