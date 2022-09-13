@@ -2,7 +2,10 @@ mod error;
 mod subfield;
 
 pub use error::ParsePicaError;
-pub use subfield::SubfieldRef;
+pub use subfield::{Subfield, SubfieldRef};
+
+#[cfg(feature = "arbitrary")]
+pub mod arbitrary;
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
 pub mod parser {
