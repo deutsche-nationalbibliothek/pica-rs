@@ -1,7 +1,9 @@
 use bstr::{BStr, ByteSlice};
+use nom::bytes::complete::take_till;
 use nom::character::complete::satisfy;
+use nom::combinator::map;
 
-use crate::parser::ParseResult;
+use crate::parser::{ParseResult, RS, US};
 
 /// An immutable PICA+ subfield.
 #[derive(Debug, PartialEq, Eq)]
@@ -99,6 +101,11 @@ pub fn parse_subfield_code(i: &[u8]) -> ParseResult<char> {
     satisfy(|c| c.is_ascii_alphanumeric())(i)
 }
 
+/// Parse a PICA+ subfield value.
+pub fn parse_subfield_value(i: &[u8]) -> ParseResult<&BStr> {
+    map(take_till(|c| c == US || c == RS), ByteSlice::as_bstr)(i)
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -107,7 +114,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_subfield_code() -> anyhow::Result<()> {
+    fn test_parse_subfield_code() {
         for c in b'0'..=b'z' {
             if c.is_ascii_alphanumeric() {
                 assert_done_and_eq!(
@@ -118,7 +125,13 @@ mod tests {
                 assert_error!(parse_subfield_code(&[c]));
             }
         }
+    }
 
-        Ok(())
+    #[test]
+    fn test_parse_subfield_value() {
+        assert_done_and_eq!(parse_subfield_value(b"abc"), "abc");
+        assert_done_and_eq!(parse_subfield_value(b"a\x1ebc"), "a");
+        assert_done_and_eq!(parse_subfield_value(b"a\x1fbc"), "a");
+        assert_done_and_eq!(parse_subfield_value(b""), "");
     }
 }
