@@ -149,6 +149,53 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_subfield_ref_new() {
+        let subfield = SubfieldRef::new('a', "abc");
+        assert_eq!(subfield.code(), 'a');
+        assert_eq!(subfield.value(), "abc");
+        assert!(!subfield.is_empty());
+
+        let subfield = SubfieldRef::new('a', "");
+        assert!(subfield.is_empty());
+    }
+
+    #[test]
+    fn test_subfield_ref_from_bytes() {
+        let subfield =
+            SubfieldRef::from_bytes(b"\x1f0123456789X").unwrap();
+        assert_eq!(subfield.value(), "123456789X");
+        assert_eq!(subfield.code(), '0');
+
+        assert_eq!(
+            SubfieldRef::from_bytes(b"\x1faabc").unwrap(),
+            SubfieldRef::new('a', "abc")
+        );
+
+        assert_eq!(
+            SubfieldRef::from_bytes(b"abc").unwrap_err(),
+            ParsePicaError::InvalidSubfield,
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_subfield_ref_invalid_code() {
+        SubfieldRef::new('!', "abc");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_subfield_ref_invalid_value1() {
+        SubfieldRef::new('0', "\x1f");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_subfield_ref_invalid_value2() {
+        SubfieldRef::new('0', "\x1e");
+    }
+
+    #[test]
     fn test_parse_subfield_code() {
         for c in b'0'..=b'z' {
             if c.is_ascii_alphanumeric() {
