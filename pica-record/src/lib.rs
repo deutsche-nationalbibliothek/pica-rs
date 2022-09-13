@@ -4,9 +4,6 @@ mod subfield;
 pub use error::ParsePicaError;
 pub use subfield::{Subfield, SubfieldRef};
 
-#[cfg(feature = "arbitrary")]
-pub mod arbitrary;
-
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
 pub mod parser {
     pub(crate) const RS: u8 = b'\x1E'; // Record Separator
