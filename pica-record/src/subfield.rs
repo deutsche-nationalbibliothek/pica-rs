@@ -1,7 +1,8 @@
 use bstr::{BStr, ByteSlice};
 use nom::bytes::complete::take_till;
-use nom::character::complete::satisfy;
+use nom::character::complete::{char, satisfy};
 use nom::combinator::map;
+use nom::sequence::{pair, preceded};
 
 use crate::parser::{ParseResult, RS, US};
 
@@ -106,6 +107,17 @@ pub fn parse_subfield_value(i: &[u8]) -> ParseResult<&BStr> {
     map(take_till(|c| c == US || c == RS), ByteSlice::as_bstr)(i)
 }
 
+/// Parse a PICA+ subfield reference.
+pub fn parse_subfield_ref(i: &[u8]) -> ParseResult<SubfieldRef> {
+    map(
+        preceded(
+            char('\x1f'),
+            pair(parse_subfield_code, parse_subfield_value),
+        ),
+        |(code, value)| SubfieldRef(code, value),
+    )(i)
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -133,5 +145,21 @@ mod tests {
         assert_done_and_eq!(parse_subfield_value(b"a\x1ebc"), "a");
         assert_done_and_eq!(parse_subfield_value(b"a\x1fbc"), "a");
         assert_done_and_eq!(parse_subfield_value(b""), "");
+    }
+
+    #[test]
+    fn test_parse_subfield_ref() {
+        assert_done_and_eq!(
+            parse_subfield_ref(b"\x1fa123"),
+            SubfieldRef('a', "123".into())
+        );
+
+        assert_done_and_eq!(
+            parse_subfield_ref(b"\x1fa"),
+            SubfieldRef('a', "".into())
+        );
+
+        assert!(parse_subfield_ref(b"a123").is_err());
+        assert!(parse_subfield_ref(b"").is_err());
     }
 }
