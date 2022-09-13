@@ -1,3 +1,5 @@
+use std::str::Utf8Error;
+
 use bstr::{BStr, BString, ByteSlice};
 use nom::bytes::complete::take_till;
 use nom::character::complete::{char, satisfy};
@@ -117,6 +119,38 @@ impl<'a> SubfieldRef<'a> {
     /// ```
     pub fn is_empty(&self) -> bool {
         self.1.len() == 0
+    }
+
+    /// Returns an [`std::str::Utf8Error`](Utf8Error) if the subfield
+    /// value contains invalid UTF-8 data, otherwise the unit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = SubfieldRef::new('0', "123456789X");
+    ///     assert_eq!(subfield.validate().is_ok(), true);
+    ///
+    ///     let subfield =
+    ///         SubfieldRef::from_bytes(&[b'\x1f', b'0', 0, 159])?;
+    ///     assert_eq!(subfield.validate().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn validate(&self) -> Result<(), Utf8Error> {
+        if self.1.is_ascii() {
+            return Ok(());
+        }
+
+        if let Err(e) = std::str::from_utf8(&self.1) {
+            return Err(e);
+        }
+
+        Ok(())
     }
 }
 
@@ -248,6 +282,37 @@ impl Subfield {
     pub fn is_empty(&self) -> bool {
         self.1.len() == 0
     }
+
+    /// Returns an [`std::str::Utf8Error`](Utf8Error) if the subfield
+    /// value contains invalid UTF-8 data, otherwise the unit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Subfield;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = Subfield::new('0', "123456789X");
+    ///     assert_eq!(subfield.validate().is_ok(), true);
+    ///
+    ///     let subfield = Subfield::from_bytes(&[b'\x1f', b'0', 0, 159])?;
+    ///     assert_eq!(subfield.validate().is_err(), true);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn validate(&self) -> Result<(), Utf8Error> {
+        if self.1.is_ascii() {
+            return Ok(());
+        }
+
+        if let Err(e) = std::str::from_utf8(&self.1) {
+            return Err(e);
+        }
+
+        Ok(())
+    }
 }
 
 impl From<SubfieldRef<'_>> for Subfield {
@@ -267,6 +332,7 @@ mod tests {
     #[test]
     fn test_subfield_ref_new() {
         let subfield = SubfieldRef::new('a', "abc");
+        assert!(subfield.validate().is_ok());
         assert_eq!(subfield.code(), 'a');
         assert_eq!(subfield.value(), "abc");
         assert!(!subfield.is_empty());
@@ -279,6 +345,7 @@ mod tests {
     fn test_subfield_ref_from_bytes() {
         let subfield =
             SubfieldRef::from_bytes(b"\x1f0123456789X").unwrap();
+        assert!(subfield.validate().is_ok());
         assert_eq!(subfield.value(), "123456789X");
         assert_eq!(subfield.code(), '0');
 
