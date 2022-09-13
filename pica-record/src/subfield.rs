@@ -3,8 +3,10 @@ use nom::bytes::complete::take_till;
 use nom::character::complete::{char, satisfy};
 use nom::combinator::map;
 use nom::sequence::{pair, preceded};
+use nom::Finish;
 
 use crate::parser::{ParseResult, RS, US};
+use crate::ParsePicaError;
 
 /// An immutable PICA+ subfield.
 #[derive(Debug, PartialEq, Eq)]
@@ -40,6 +42,27 @@ impl<'a> SubfieldRef<'a> {
         );
 
         Self(code, value)
+    }
+
+    /// Creates an immutable PICA+ subfield from a byte slice.
+    ///
+    /// If an invalid tag is given, an error is returned.
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     assert!(SubfieldRef::from_bytes(b"\x1f0123456789X").is_ok());
+    ///     assert!(SubfieldRef::from_bytes(b"abc").is_err());
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
+        parse_subfield_ref(data)
+            .finish()
+            .map_err(|_| ParsePicaError::InvalidSubfield)
+            .map(|(_, subfield)| subfield)
     }
 
     /// Returns the code of the subfield.
