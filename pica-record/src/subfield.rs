@@ -251,6 +251,7 @@ impl Subfield {
 }
 
 impl From<SubfieldRef<'_>> for Subfield {
+    #[inline]
     fn from(subfield: SubfieldRef<'_>) -> Self {
         Self(subfield.0, subfield.1.into())
     }
