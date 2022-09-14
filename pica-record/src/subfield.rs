@@ -12,7 +12,7 @@ use crate::parser::{ParseResult, RS, US};
 use crate::ParsePicaError;
 
 /// A immutable PICA+ subfield.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SubfieldRef<'a>(pub(crate) char, pub(crate) &'a BStr);
 
 impl<'a> SubfieldRef<'a> {
@@ -120,6 +120,17 @@ impl<'a> SubfieldRef<'a> {
     /// ```
     pub fn is_empty(&self) -> bool {
         self.1.len() == 0
+    }
+
+    /// Converts the immutable subfield into its mutable counterpart by
+    /// consuming the source.
+    pub fn into_owned(self) -> Subfield {
+        self.into()
+    }
+
+    /// Converts the immutable subfield into its mutable counterpart.
+    pub fn to_owned(&self) -> Subfield {
+        self.clone().into()
     }
 
     /// Returns an [`std::str::Utf8Error`](Utf8Error) if the subfield
