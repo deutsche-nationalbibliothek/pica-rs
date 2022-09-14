@@ -20,3 +20,7 @@ nom-test-helpers = "6.1"
 [[bench]]
 name = "subfield"
 harness = false
+
+[[bench]]
+name = "tag"
+harness = false

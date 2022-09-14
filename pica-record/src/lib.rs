@@ -5,9 +5,11 @@
 mod arbitrary;
 mod error;
 mod subfield;
+mod tag;
 
 pub use error::ParsePicaError;
 pub use subfield::{Subfield, SubfieldRef};
+pub use tag::{Tag, TagRef};
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
 pub mod parser {
@@ -23,4 +25,5 @@ pub mod parser {
     pub use super::subfield::{
         parse_subfield_code, parse_subfield_value,
     };
+    pub use super::tag::parse_tag_ref;
 }
