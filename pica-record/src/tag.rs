@@ -121,11 +121,7 @@ impl Tag {
     /// }
     /// ```
     pub fn new(value: impl Into<BString>) -> Self {
-        let value: BString = value.into();
-
-        assert!(TagRef::from_bytes(&value).is_ok());
-
-        Self(value)
+        Self::from_bytes(&value.into()).unwrap()
     }
 
     /// Creates an immutable PICA+ tag from a byte slice.
@@ -193,6 +189,12 @@ mod tests {
         let tag = Tag::new("003@");
         assert_eq!(tag, Tag("003@".into()));
         assert_eq!(tag, "003@")
+    }
+
+    #[test]
+    #[should_panic(expected = "InvalidTag")]
+    fn test_tag_invalid() {
+        Tag::new("003!");
     }
 
     #[test]
