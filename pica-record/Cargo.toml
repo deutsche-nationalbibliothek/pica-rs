@@ -7,3 +7,16 @@ include = ["src/**/*"]
 edition = "2021"
 
 [dependencies]
+bstr = "0.2"
+nom = "7.1"
+quickcheck = "1.0"
+thiserror = "1.0"
+
+[dev-dependencies]
+anyhow = "1.0"
+criterion = { version = "0.3", features = ["html_reports"] }
+nom-test-helpers = "6.1"
+
+[[bench]]
+name = "subfield"
+harness = false
