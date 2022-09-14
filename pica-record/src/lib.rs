@@ -1,6 +1,6 @@
 //! This crate provides the low-level primitives to work with
 //! bibliographic records encoded in PICA+. There exists a read-only
-//! (immutable) and mutable variant of each primitives.
+//! (immutable) and mutable variant of each primitive.
 
 #[cfg(test)]
 #[macro_use(quickcheck)]

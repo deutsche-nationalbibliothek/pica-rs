@@ -69,7 +69,7 @@ impl<'a> TagRef<'a> {
     }
 }
 
-// Parse a PICA+ tag.
+/// Parse a PICA+ tag.
 pub fn parse_tag_ref(i: &[u8]) -> ParseResult<TagRef<'_>> {
     map(
         recognize(tuple((
