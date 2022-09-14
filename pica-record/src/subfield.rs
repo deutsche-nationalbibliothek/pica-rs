@@ -146,10 +146,7 @@ impl<'a> SubfieldRef<'a> {
             return Ok(());
         }
 
-        if let Err(e) = std::str::from_utf8(&self.1) {
-            return Err(e);
-        }
-
+        std::str::from_utf8(self.1)?;
         Ok(())
     }
 }
@@ -307,10 +304,7 @@ impl Subfield {
             return Ok(());
         }
 
-        if let Err(e) = std::str::from_utf8(&self.1) {
-            return Err(e);
-        }
-
+        std::str::from_utf8(&self.1)?;
         Ok(())
     }
 }
