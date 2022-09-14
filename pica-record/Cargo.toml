@@ -16,6 +16,7 @@ thiserror = "1.0"
 anyhow = "1.0"
 criterion = { version = "0.4", features = ["html_reports"] }
 nom-test-helpers = "6.1"
+quickcheck_macros = "1.0"
 
 [[bench]]
 name = "subfield"

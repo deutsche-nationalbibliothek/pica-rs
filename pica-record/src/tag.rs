@@ -93,12 +93,12 @@ impl Deref for TagRef<'_> {
     type Target = BStr;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0
     }
 }
 
 /// A mutable PICA+ tag.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Tag(pub(crate) BString);
 
 impl Tag {
@@ -189,7 +189,7 @@ mod tests {
     }
 
     #[test]
-    fn test_tag_() {
+    fn test_tag_new() {
         let tag = Tag::new("003@");
         assert_eq!(tag, Tag("003@".into()));
         assert_eq!(tag, "003@")
@@ -207,5 +207,10 @@ mod tests {
         for tag in ["456@", "0A2A", "01AA", "01Aa"] {
             assert_error!(parse_tag_ref(tag.as_bytes()))
         }
+    }
+
+    #[quickcheck]
+    fn test_parse_arbitrary_tag(tag: Tag) -> bool {
+        TagRef::from_bytes(tag.to_string().as_bytes()).is_ok()
     }
 }
