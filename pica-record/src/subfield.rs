@@ -1,3 +1,4 @@
+use std::io::{self, Write};
 use std::str::Utf8Error;
 
 use bstr::{BStr, BString, ByteSlice};
@@ -148,6 +149,33 @@ impl<'a> SubfieldRef<'a> {
 
         std::str::from_utf8(self.1)?;
         Ok(())
+    }
+
+    /// Write the subfield into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::Subfield;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let subfield = Subfield::new('0', "123456789X");
+    ///     subfield.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "\x1f0123456789X"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, mut out: impl Write) -> io::Result<()> {
+        write!(out, "\x1f{}{}", self.0, self.1)
     }
 }
 
@@ -307,6 +335,34 @@ impl Subfield {
         std::str::from_utf8(&self.1)?;
         Ok(())
     }
+
+    /// Write the subfield into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::Subfield;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let subfield = Subfield::new('0', "123456789X");
+    ///     subfield.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "\x1f0123456789X"
+    ///     # );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, mut out: impl Write) -> io::Result<()> {
+        write!(out, "\x1f{}{}", self.0, self.1)
+    }
 }
 
 impl From<SubfieldRef<'_>> for Subfield {
@@ -318,6 +374,7 @@ impl From<SubfieldRef<'_>> for Subfield {
 
 #[cfg(test)]
 mod tests {
+    use std::io::Cursor;
 
     use nom_test_helpers::prelude::*;
 
@@ -373,6 +430,20 @@ mod tests {
     }
 
     #[test]
+    fn test_subfield_ref_write_to() -> anyhow::Result<()> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let subfield = SubfieldRef::new('0', "123456789X");
+        subfield.write_to(&mut writer)?;
+
+        assert_eq!(
+            String::from_utf8(writer.into_inner())?,
+            "\x1f0123456789X"
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn test_subfield_new() {
         let subfield = Subfield::new('a', "abc");
         assert_eq!(subfield.code(), 'a');
@@ -417,6 +488,20 @@ mod tests {
     #[should_panic]
     fn test_subfield_invalid_value2() {
         Subfield::new('0', "\x1e");
+    }
+
+    #[test]
+    fn test_subfield_write_to() -> anyhow::Result<()> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let subfield = Subfield::new('0', "123456789X");
+        subfield.write_to(&mut writer)?;
+
+        assert_eq!(
+            String::from_utf8(writer.into_inner())?,
+            "\x1f0123456789X"
+        );
+
+        Ok(())
     }
 
     #[test]
