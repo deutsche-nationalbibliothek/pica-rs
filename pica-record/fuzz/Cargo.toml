@@ -23,3 +23,9 @@ name = "fuzz_subfield_ref"
 path = "fuzz_targets/fuzz_subfield_ref.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "fuzz_tag_ref"
+path = "fuzz_targets/fuzz_tag_ref.rs"
+test = false
+doc = false

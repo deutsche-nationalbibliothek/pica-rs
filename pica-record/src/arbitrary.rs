@@ -1,7 +1,7 @@
 use bstr::BString;
 use quickcheck::{Arbitrary, Gen};
 
-use crate::Subfield;
+use crate::{Subfield, Tag};
 
 impl Arbitrary for Subfield {
     fn arbitrary(g: &mut Gen) -> Self {
@@ -20,5 +20,16 @@ impl Arbitrary for Subfield {
         let code = self.0;
 
         Box::new(values.map(move |value| Subfield(code, value)))
+    }
+}
+
+impl Arbitrary for Tag {
+    fn arbitrary(g: &mut Gen) -> Self {
+        let p1 = *g.choose(b"012").unwrap();
+        let p2 = *g.choose(b"0123456789").unwrap();
+        let p3 = *g.choose(b"0123456789").unwrap();
+        let p4 = *g.choose(b"ABCDEFGHIJKLMNOPQRSTUVWXYZ@").unwrap();
+
+        Tag::from_bytes(&[p1, p2, p3, p4]).unwrap()
     }
 }

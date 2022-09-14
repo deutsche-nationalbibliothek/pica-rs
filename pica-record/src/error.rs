@@ -5,4 +5,6 @@ use thiserror::Error;
 pub enum ParsePicaError {
     #[error("invalid subfield")]
     InvalidSubfield,
+    #[error("invalid tag")]
+    InvalidTag,
 }
