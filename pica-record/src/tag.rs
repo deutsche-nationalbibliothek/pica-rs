@@ -7,7 +7,7 @@ use nom::sequence::tuple;
 use nom::Finish;
 
 use crate::parser::ParseResult;
-use crate::ParsePicaError;
+use crate::{OccurrenceRef, ParsePicaError};
 
 /// A immutable PICA+ tag.
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -66,6 +66,13 @@ impl<'a> TagRef<'a> {
     /// Converts the immutable subfield into its mutable counterpart.
     pub fn to_owned(&self) -> Tag {
         self.clone().into()
+    }
+}
+
+impl PartialEq<&str> for OccurrenceRef<'_> {
+    #[inline]
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
     }
 }
 

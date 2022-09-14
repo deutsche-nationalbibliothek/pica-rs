@@ -8,10 +8,12 @@ extern crate quickcheck_macros;
 
 mod arbitrary;
 mod error;
+mod occurrence;
 mod subfield;
 mod tag;
 
 pub use error::ParsePicaError;
+pub use occurrence::{Occurrence, OccurrenceRef};
 pub use subfield::{Subfield, SubfieldRef};
 pub use tag::{Tag, TagRef};
 
