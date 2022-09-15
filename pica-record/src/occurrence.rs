@@ -2,9 +2,8 @@ use std::ops::Deref;
 
 use bstr::{BStr, BString, ByteSlice};
 use nom::character::complete::{char, satisfy};
-use nom::combinator::{all_consuming, cut, map, recognize};
-use nom::multi::many_m_n;
-use nom::sequence::preceded;
+use nom::combinator::{all_consuming, map, opt, recognize};
+use nom::sequence::{preceded, tuple};
 use nom::Finish;
 
 use crate::parser::ParseResult;
@@ -70,18 +69,24 @@ impl<'a> OccurrenceRef<'a> {
     }
 }
 
+/// Parse the digits of an PICA+ occurrence.
+#[inline]
 pub fn parse_occurrence_digits(i: &[u8]) -> ParseResult<&BStr> {
     map(
-        recognize(many_m_n(2, 3, satisfy(|c| c.is_ascii_digit()))),
+        recognize(tuple((
+            satisfy(|c| c.is_ascii_digit()),
+            satisfy(|c| c.is_ascii_digit()),
+            opt(satisfy(|c| c.is_ascii_digit())),
+        ))),
         ByteSlice::as_bstr,
     )(i)
 }
 
+/// Parse a PICA+ occurrence (read-only).
 pub fn parse_occurrence_ref(i: &[u8]) -> ParseResult<OccurrenceRef> {
-    map(
-        preceded(char('/'), cut(recognize(parse_occurrence_digits))),
-        |digits| OccurrenceRef(ByteSlice::as_bstr(digits)),
-    )(i)
+    map(preceded(char('/'), parse_occurrence_digits), |digits| {
+        OccurrenceRef(digits.into())
+    })(i)
 }
 
 /// A mutable PICA+ occurrence.
@@ -105,9 +110,23 @@ impl Deref for Occurrence {
 
 #[cfg(test)]
 mod tests {
-    // use nom_test_helpers::prelude::*;
+    use nom_test_helpers::prelude::*;
 
     use super::*;
+
+    #[test]
+    fn test_parse_occurrence_ref() {
+        for occurrence in ["/00", "/01", "/000", "/123"] {
+            assert_done_and_eq!(
+                parse_occurrence_ref(occurrence.as_bytes()),
+                OccurrenceRef(occurrence.into())
+            )
+        }
+
+        for occurrence in ["00", "/0A", "/!0", "/9x"] {
+            assert_error!(parse_occurrence_ref(occurrence.as_bytes()))
+        }
+    }
 
     #[quickcheck]
     fn test_parse_arbitrary_occurrence(occurrence: Occurrence) -> bool {

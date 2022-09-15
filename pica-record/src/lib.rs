@@ -28,6 +28,9 @@ pub mod parser {
     /// variant. The type only depends the output type `O`.
     pub type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 
+    pub use super::occurrence::{
+        parse_occurrence_digits, parse_occurrence_ref,
+    };
     pub use super::subfield::{
         parse_subfield_code, parse_subfield_value,
     };

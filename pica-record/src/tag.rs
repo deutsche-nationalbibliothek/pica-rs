@@ -76,7 +76,7 @@ impl PartialEq<&str> for OccurrenceRef<'_> {
     }
 }
 
-/// Parse a PICA+ tag.
+/// Parse a PICA+ tag (read-only).
 pub fn parse_tag_ref(i: &[u8]) -> ParseResult<TagRef<'_>> {
     map(
         recognize(tuple((
