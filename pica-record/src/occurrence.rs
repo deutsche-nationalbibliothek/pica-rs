@@ -119,7 +119,7 @@ mod tests {
         for occurrence in ["/00", "/01", "/000", "/123"] {
             assert_done_and_eq!(
                 parse_occurrence_ref(occurrence.as_bytes()),
-                OccurrenceRef(occurrence.into())
+                OccurrenceRef(occurrence[1..].into())
             )
         }
 
