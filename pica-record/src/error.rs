@@ -7,4 +7,6 @@ pub enum ParsePicaError {
     InvalidSubfield,
     #[error("invalid tag")]
     InvalidTag,
+    #[error("invalid occurrence")]
+    InvalidOccurrence,
 }

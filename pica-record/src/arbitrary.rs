@@ -1,7 +1,7 @@
 use bstr::BString;
 use quickcheck::{Arbitrary, Gen};
 
-use crate::{Subfield, Tag};
+use crate::{Occurrence, Subfield, Tag};
 
 impl Arbitrary for Subfield {
     fn arbitrary(g: &mut Gen) -> Self {
@@ -31,5 +31,19 @@ impl Arbitrary for Tag {
         let p4 = *g.choose(b"ABCDEFGHIJKLMNOPQRSTUVWXYZ@").unwrap();
 
         Tag::from_bytes(&[p1, p2, p3, p4]).unwrap()
+    }
+}
+
+impl Arbitrary for Occurrence {
+    fn arbitrary(g: &mut Gen) -> Self {
+        let mut occurrence = vec![];
+        occurrence.push(*g.choose(b"0123456789").unwrap());
+        occurrence.push(*g.choose(b"0123456789").unwrap());
+
+        if bool::arbitrary(g) {
+            occurrence.push(*g.choose(b"0123456789").unwrap());
+        }
+
+        Occurrence(occurrence.into())
     }
 }

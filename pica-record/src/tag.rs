@@ -7,7 +7,7 @@ use nom::sequence::tuple;
 use nom::Finish;
 
 use crate::parser::ParseResult;
-use crate::ParsePicaError;
+use crate::{OccurrenceRef, ParsePicaError};
 
 /// A immutable PICA+ tag.
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -69,7 +69,14 @@ impl<'a> TagRef<'a> {
     }
 }
 
-/// Parse a PICA+ tag.
+impl PartialEq<&str> for OccurrenceRef<'_> {
+    #[inline]
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
+    }
+}
+
+/// Parse a PICA+ tag (read-only).
 pub fn parse_tag_ref(i: &[u8]) -> ParseResult<TagRef<'_>> {
     map(
         recognize(tuple((

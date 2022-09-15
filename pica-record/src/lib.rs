@@ -8,10 +8,12 @@ extern crate quickcheck_macros;
 
 mod arbitrary;
 mod error;
+mod occurrence;
 mod subfield;
 mod tag;
 
 pub use error::ParsePicaError;
+pub use occurrence::{Occurrence, OccurrenceRef};
 pub use subfield::{Subfield, SubfieldRef};
 pub use tag::{Tag, TagRef};
 
@@ -26,6 +28,9 @@ pub mod parser {
     /// variant. The type only depends the output type `O`.
     pub type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 
+    pub use super::occurrence::{
+        parse_occurrence_digits, parse_occurrence_ref,
+    };
     pub use super::subfield::{
         parse_subfield_code, parse_subfield_value,
     };
