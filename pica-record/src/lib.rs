@@ -20,9 +20,11 @@ pub use subfield::{Subfield, SubfieldRef};
 pub use tag::{Tag, TagRef};
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
+#[rustfmt::skip]
 pub mod parser {
     pub(crate) const RS: u8 = b'\x1E'; // Record Separator
     pub(crate) const US: u8 = b'\x1F'; // Unit Separator
+    pub(crate) const SP: u8 = b' ';    // Space
 
     /// Holds the result of a parsing function.
     ///
@@ -30,11 +32,10 @@ pub mod parser {
     /// variant. The type only depends the output type `O`.
     pub type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 
-    pub use super::occurrence::{
-        parse_occurrence_digits, parse_occurrence_ref,
-    };
-    pub use super::subfield::{
-        parse_subfield_code, parse_subfield_value,
-    };
+    pub use super::field::parse_field_ref;
+    pub use super::occurrence::parse_occurrence_ref;
+    pub use super::occurrence::parse_occurrence_digits;
+    pub use super::subfield::parse_subfield_code;
+    pub use super::subfield::parse_subfield_value;
     pub use super::tag::parse_tag_ref;
 }
