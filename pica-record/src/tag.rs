@@ -172,6 +172,13 @@ impl PartialEq<&str> for Tag {
     }
 }
 
+impl PartialEq<str> for Tag {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use nom_test_helpers::prelude::*;

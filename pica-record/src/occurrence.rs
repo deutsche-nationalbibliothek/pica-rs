@@ -15,7 +15,7 @@ use crate::ParsePicaError;
 pub struct OccurrenceRef<'a>(pub(crate) &'a BStr);
 
 impl<'a> OccurrenceRef<'a> {
-    /// Creates an immutable PICA+ tag from a byte slice.
+    /// Creates an immutable PICA+ occurrence from a byte slice.
     ///
     /// If an invalid tag is given, an error is returned.
     ///
@@ -135,10 +135,23 @@ pub fn parse_occurrence_ref(i: &[u8]) -> ParseResult<OccurrenceRef> {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Occurrence(pub(crate) BString);
 
-impl From<OccurrenceRef<'_>> for Occurrence {
-    #[inline]
-    fn from(occurrence: OccurrenceRef<'_>) -> Self {
-        Self(occurrence.0.into())
+impl Occurrence {
+    /// Creates an mutable PICA+ occurrence from a byte slice.
+    ///
+    /// If an invalid tag is given, an error is returned.
+    ///
+    /// ```rust
+    /// use pica_record::Occurrence;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let occurrence = Occurrence::new("01");
+    ///     assert_eq!(occurrence, "01");
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn new(digits: impl Into<BString>) -> Self {
+        OccurrenceRef::new(digits.into().as_bstr()).into_owned()
     }
 }
 
@@ -147,6 +160,27 @@ impl Deref for Occurrence {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl From<OccurrenceRef<'_>> for Occurrence {
+    #[inline]
+    fn from(occurrence: OccurrenceRef<'_>) -> Self {
+        Self(occurrence.0.into())
+    }
+}
+
+impl PartialEq<&str> for Occurrence {
+    #[inline]
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
+    }
+}
+
+impl PartialEq<str> for Occurrence {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
     }
 }
 

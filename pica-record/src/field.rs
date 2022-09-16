@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use bstr::BStr;
+use bstr::{BStr, BString};
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
@@ -220,6 +220,111 @@ pub struct Field {
     tag: Tag,
     occurrence: Option<Occurrence>,
     subfields: Vec<Subfield>,
+}
+
+impl Field {
+    /// Create a new field.
+    ///
+    /// # Panics
+    ///
+    /// This method panics if a parameter is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Field;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = Field::new("003@", None, vec![('0', "123456789X")]);
+    ///     assert_eq!(field.tag(), "003@");
+    ///     assert!(field.occurrence().is_none());
+    ///     assert_eq!(field.subfields().len(), 1);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn new<T: Into<BString>>(
+        tag: T,
+        occurrence: Option<T>,
+        subfields: Vec<(char, T)>,
+    ) -> Self {
+        let occurrence =
+            occurrence.map(|digits| Occurrence::new(digits.into()));
+        let subfields = subfields
+            .into_iter()
+            .map(|(code, value)| Subfield::new(code, value))
+            .collect();
+
+        Field {
+            tag: Tag::new(tag),
+            occurrence,
+            subfields,
+        }
+    }
+
+    /// Returns the tag of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Field;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = Field::new("003@", None, vec![('0', "123456789X")]);
+    ///     assert_eq!(field.tag(), "003@");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn tag(&self) -> &Tag {
+        &self.tag
+    }
+
+    /// Returns a reference to the occurrence of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{Field, Occurrence};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = Field::new("012A", Some("01"), vec![]);
+    ///     let occurrence = field.occurrence().unwrap();
+    ///     assert_eq!(occurrence, "01");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn occurrence(&self) -> Option<&Occurrence> {
+        self.occurrence.as_ref()
+    }
+
+    /// Returns the subfields of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Field;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = Field::new(
+    ///         "012A",
+    ///         Some("01"),
+    ///         vec![('a', "b"), ('c', "d")],
+    ///     );
+    ///
+    ///     assert_eq!(field.subfields().len(), 2);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn subfields(&self) -> &Vec<Subfield> {
+        self.subfields.as_ref()
+    }
 }
 
 impl From<FieldRef<'_>> for Field {
