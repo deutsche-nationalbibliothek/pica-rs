@@ -76,6 +76,13 @@ impl PartialEq<&str> for OccurrenceRef<'_> {
     }
 }
 
+impl PartialEq<str> for OccurrenceRef<'_> {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
 /// Parse the digits of an PICA+ occurrence.
 #[inline]
 pub fn parse_occurrence_digits(i: &[u8]) -> ParseResult<&BStr> {

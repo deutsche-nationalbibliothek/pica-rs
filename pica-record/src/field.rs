@@ -50,15 +50,68 @@ impl<'a> FieldRef<'a> {
             subfields,
         }
     }
+
+    /// Returns the tag of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field =
+    ///         FieldRef::new("003@", None, vec![('0', "123456789X")]);
+    ///     assert_eq!(field.tag(), "003@");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn tag(&self) -> &TagRef {
         &self.tag
     }
 
+    /// Returns a reference to the occurrence of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, OccurrenceRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = FieldRef::new("012A", Some("01"), vec![]);
+    ///     let occurrence = field.occurrence().unwrap();
+    ///     assert_eq!(occurrence, "01");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn occurrence(&self) -> Option<&OccurrenceRef> {
         self.occurrence.as_ref()
     }
 
+    /// Returns the subfields of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = FieldRef::new(
+    ///         "012A",
+    ///         Some("01"),
+    ///         vec![('a', "b"), ('c', "d")],
+    ///     );
+    ///
+    ///     assert_eq!(field.subfields().len(), 2);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn subfields(&self) -> &Vec<SubfieldRef> {
-        &self.subfields
+        self.subfields.as_ref()
     }
 }
