@@ -263,6 +263,24 @@ impl Field {
         }
     }
 
+    /// Creates an mutable PICA+ field from a byte slice.
+    ///
+    /// If an invalid subfield is given, an error is returned.
+    ///
+    /// ```rust
+    /// use pica_record::Field;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     assert!(Field::from_bytes(b"003@ \x1f0123456789X\x1e").is_ok());
+    ///     assert!(Field::from_bytes(b"003@ \x1f0123456789X").is_err());
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes(data: &[u8]) -> Result<Self, ParsePicaError> {
+        Ok(Self::from(FieldRef::from_bytes(data)?))
+    }
+
     /// Returns the tag of the field.
     ///
     /// # Example
@@ -325,6 +343,39 @@ impl Field {
     pub fn subfields(&self) -> &Vec<Subfield> {
         self.subfields.as_ref()
     }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::Field;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let field = Field::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
+    ///     field.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "012A/01 \x1fab\x1fcd\x1e"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "{}", self.tag.0)?;
+        self.occurrence().map(|o| o.write_to(out));
+        write!(out, " ")?;
+        for subfield in self.subfields.iter() {
+            subfield.write_to(out)?;
+        }
+        write!(out, "\x1e")
+    }
 }
 
 impl From<FieldRef<'_>> for Field {
@@ -343,5 +394,116 @@ impl From<FieldRef<'_>> for Field {
                 .map(|s| s.into())
                 .collect(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::Cursor;
+
+    use nom_test_helpers::prelude::*;
+
+    use super::*;
+
+    #[test]
+    fn test_field_ref_new() {
+        let field =
+            FieldRef::new("012A", Some("01"), vec![('a', "bcd")]);
+        assert_eq!(field.tag(), "012A");
+        assert_eq!(field.occurrence(), Some(&OccurrenceRef::new("01")));
+        assert_eq!(field.subfields().len(), 1);
+        assert_eq!(
+            field.subfields().iter().next().unwrap(),
+            &SubfieldRef::new('a', "bcd")
+        );
+    }
+
+    #[test]
+    fn test_field_ref_write_to() -> anyhow::Result<()> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let field = FieldRef::new(
+            "012A",
+            Some("01"),
+            vec![('a', "bcd"), ('e', "fgh")],
+        );
+        field.write_to(&mut writer)?;
+
+        assert_eq!(
+            String::from_utf8(writer.into_inner())?,
+            "012A/01 \x1fabcd\x1fefgh\x1e"
+        );
+
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let field = FieldRef::new("003@", None, vec![('0', "123")]);
+        field.write_to(&mut writer)?;
+
+        assert_eq!(
+            String::from_utf8(writer.into_inner())?,
+            "003@ \x1f0123\x1e"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_field_new() {
+        let field = Field::new("012A", Some("01"), vec![('a', "bcd")]);
+        assert_eq!(field.tag(), "012A");
+        assert_eq!(field.occurrence(), Some(&Occurrence::new("01")));
+        assert_eq!(field.subfields().len(), 1);
+        assert_eq!(
+            field.subfields().iter().next().unwrap(),
+            &Subfield::new('a', "bcd")
+        );
+    }
+
+    #[test]
+    fn test_field_write_to() -> anyhow::Result<()> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let field = Field::new(
+            "012A",
+            Some("01"),
+            vec![('a', "bcd"), ('e', "fgh")],
+        );
+        field.write_to(&mut writer)?;
+
+        assert_eq!(
+            String::from_utf8(writer.into_inner())?,
+            "012A/01 \x1fabcd\x1fefgh\x1e"
+        );
+
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let field = Field::new("003@", None, vec![('0', "123")]);
+        field.write_to(&mut writer)?;
+
+        assert_eq!(
+            String::from_utf8(writer.into_inner())?,
+            "003@ \x1f0123\x1e"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_field_value() {
+        assert_done_and_eq!(
+            parse_field_ref(b"012A/01 \x1fabc\x1e"),
+            FieldRef::new("012A", Some("01"), vec![('a', "bc")])
+        );
+        assert_done_and_eq!(
+            parse_field_ref(b"012A \x1fabc\x1e"),
+            FieldRef::new("012A", None, vec![('a', "bc")])
+        );
+        assert_done_and_eq!(
+            parse_field_ref(b"012A \x1e"),
+            FieldRef::new("012A", None, vec![])
+        );
+
+        assert_error!(parse_field_ref(b"012!/01 \x1fabc\x1e"));
+        assert_error!(parse_field_ref(b"012A/0! \x1fabc\x1e"));
+        assert_error!(parse_field_ref(b"012A/00\x1fabc\x1e"));
+        assert_error!(parse_field_ref(b"012A/00 abc\x1e"));
+        assert_error!(parse_field_ref(b"012A/00 \x1f!bc\x1e"));
+        assert_error!(parse_field_ref(b"012A/00 \x1fabc"));
     }
 }

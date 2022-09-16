@@ -153,6 +153,33 @@ impl Occurrence {
     pub fn new(digits: impl Into<BString>) -> Self {
         OccurrenceRef::new(digits.into().as_bstr()).into_owned()
     }
+
+    /// Write the occurrence into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::Occurrence;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let occurrence = Occurrence::new("01");
+    ///     occurrence.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "/01"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "/{}", self.0)
+    }
 }
 
 impl Deref for Occurrence {

@@ -371,7 +371,7 @@ impl Subfield {
     /// }
     /// ```
     #[inline]
-    pub fn write_to(&self, mut out: impl Write) -> io::Result<()> {
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
         write!(out, "\x1f{}{}", self.0, self.1)
     }
 }
