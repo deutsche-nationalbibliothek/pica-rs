@@ -34,7 +34,7 @@ impl<'a> OccurrenceRef<'a> {
                 .finish()
                 .unwrap();
 
-        Self(&result.1)
+        Self(result.1)
     }
     /// Creates an immutable PICA+ tag from a byte slice.
     ///
@@ -92,7 +92,7 @@ pub fn parse_occurrence_digits(i: &[u8]) -> ParseResult<&BStr> {
 /// Parse a PICA+ occurrence (read-only).
 pub fn parse_occurrence_ref(i: &[u8]) -> ParseResult<OccurrenceRef> {
     map(preceded(char('/'), parse_occurrence_digits), |digits| {
-        OccurrenceRef(digits.into())
+        OccurrenceRef(digits)
     })(i)
 }
 
