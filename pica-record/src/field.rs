@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 use bstr::BStr;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -9,9 +11,12 @@ use crate::occurrence::parse_occurrence_ref;
 use crate::parser::{ParseResult, RS, SP};
 use crate::subfield::parse_subfield_ref;
 use crate::tag::parse_tag_ref;
-use crate::{OccurrenceRef, ParsePicaError, SubfieldRef, TagRef};
+use crate::{
+    Occurrence, OccurrenceRef, ParsePicaError, Subfield, SubfieldRef,
+    Tag, TagRef,
+};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FieldRef<'a> {
     pub(crate) tag: TagRef<'a>,
     pub(crate) occurrence: Option<OccurrenceRef<'a>>,
@@ -146,6 +151,50 @@ impl<'a> FieldRef<'a> {
     pub fn subfields(&self) -> &Vec<SubfieldRef> {
         self.subfields.as_ref()
     }
+
+    /// Converts the immutable subfield into its mutable counterpart by
+    /// consuming the source.
+    pub fn into_owned(self) -> Field {
+        self.into()
+    }
+
+    /// Converts the immutable subfield into its mutable counterpart.
+    pub fn to_owned(&self) -> Field {
+        self.clone().into()
+    }
+
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::FieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let field = FieldRef::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
+    ///     field.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "012A/01 \x1fab\x1fcd\x1e"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "{}", self.tag.0)?;
+        self.occurrence().map(|o| o.write_to(out));
+        write!(out, " ")?;
+        for subfield in self.subfields.iter() {
+            subfield.write_to(out)?;
+        }
+        write!(out, "\x1e")
+    }
 }
 
 /// Parse a PICA+ field (read-only).
@@ -164,4 +213,30 @@ pub fn parse_field_ref(i: &[u8]) -> ParseResult<FieldRef> {
             subfields,
         },
     )(i)
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Field {
+    tag: Tag,
+    occurrence: Option<Occurrence>,
+    subfields: Vec<Subfield>,
+}
+
+impl From<FieldRef<'_>> for Field {
+    fn from(field_ref: FieldRef<'_>) -> Self {
+        let FieldRef {
+            tag,
+            occurrence,
+            subfields,
+        } = field_ref;
+
+        Field {
+            tag: tag.into(),
+            occurrence: occurrence.map(|o| o.into()),
+            subfields: subfields
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
 }

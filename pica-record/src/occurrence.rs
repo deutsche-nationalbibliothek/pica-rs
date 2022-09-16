@@ -1,3 +1,4 @@
+use std::io::{self, Write};
 use std::ops::Deref;
 
 use bstr::{BStr, BString, ByteSlice};
@@ -66,6 +67,33 @@ impl<'a> OccurrenceRef<'a> {
     /// Converts the immutable subfield into its mutable counterpart.
     pub fn to_owned(&self) -> Occurrence {
         self.clone().into()
+    }
+
+    /// Write the occurrence into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let occurrence = OccurrenceRef::new("01");
+    ///     occurrence.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "/01"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "/{}", self.0)
     }
 }
 
