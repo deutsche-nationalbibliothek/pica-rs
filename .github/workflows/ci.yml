@@ -132,9 +132,6 @@ jobs:
     strategy:
       matrix:
         item:
-          - { name: subfield_ref, fuzz-dir: pica-record/fuzz, target: fuzz_subfield_ref, max-total-time: 300 }
-          - { name: tag_ref, fuzz-dir: pica-record/fuzz, target: fuzz_tag_ref, max-total-time: 300 }
-          - { name: occurrence_ref, fuzz-dir: pica-record/fuzz, target: fuzz_occurrence_ref, max-total-time: 300 }
           - { name: field_ref, fuzz-dir: pica-record/fuzz, target: fuzz_field_ref, max-total-time: 300 }
           - { name: byte_record, fuzz-dir: fuzz, target: fuzz_byte_record, max-total-time: 300 }
           - { name: fuzz_path, fuzz-dir: fuzz, target: fuzz_path, max-total-time: 300 }
