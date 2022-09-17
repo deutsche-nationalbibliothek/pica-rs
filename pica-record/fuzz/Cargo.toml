@@ -19,19 +19,7 @@ path = ".."
 members = ["."]
 
 [[bin]]
-name = "fuzz_subfield_ref"
-path = "fuzz_targets/fuzz_subfield_ref.rs"
-test = false
-doc = false
-
-[[bin]]
-name = "fuzz_tag_ref"
-path = "fuzz_targets/fuzz_tag_ref.rs"
-test = false
-doc = false
-
-[[bin]]
-name = "fuzz_occurrence_ref"
-path = "fuzz_targets/fuzz_occurrence_ref.rs"
+name = "fuzz_field_ref"
+path = "fuzz_targets/fuzz_field_ref.rs"
 test = false
 doc = false

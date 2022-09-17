@@ -9,4 +9,6 @@ pub enum ParsePicaError {
     InvalidTag,
     #[error("invalid occurrence")]
     InvalidOccurrence,
+    #[error("invalid field")]
+    InvalidField,
 }
