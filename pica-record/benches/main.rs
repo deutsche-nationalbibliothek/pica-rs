@@ -1,7 +1,10 @@
 use criterion::{
     black_box, criterion_group, criterion_main, Criterion,
 };
-use pica_record::{SubfieldMut, SubfieldRef, TagMut, TagRef};
+use pica_record::{
+    OccurrenceMut, OccurrenceRef, SubfieldMut, SubfieldRef, TagMut,
+    TagRef,
+};
 // use pica_record::{FieldRef, OccurrenceRef, SubfieldRef, TagRef};
 
 pub fn criterion_benchmark(c: &mut Criterion) {
@@ -25,9 +28,13 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| TagMut::from_bytes(black_box(b"003@")))
     });
 
-    // c.bench_function("OccurrenceRef::from_bytes", |b| {
-    //     b.iter(|| OccurrenceRef::from_bytes(black_box(b"/001")))
-    // });
+    c.bench_function("OccurrenceRef::from_bytes", |b| {
+        b.iter(|| OccurrenceRef::from_bytes(black_box(b"/001")))
+    });
+
+    c.bench_function("OccurrenceMut::from_bytes", |b| {
+        b.iter(|| OccurrenceMut::from_bytes(black_box(b"/001")))
+    });
 
     // c.bench_function("FieldRef::from_bytes", |b| {
     //     b.iter(|| {
