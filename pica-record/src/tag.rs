@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::ops::Deref;
 
 use bstr::{BStr, BString, ByteSlice};
@@ -9,12 +10,18 @@ use nom::Finish;
 use crate::parser::ParseResult;
 use crate::ParsePicaError;
 
-/// A immutable PICA+ tag.
+/// A PICA+ tag.
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub struct TagRef<'a>(pub(crate) &'a BStr);
+pub struct Tag<T>(pub(crate) T);
 
-impl<'a> TagRef<'a> {
-    /// Create a new tag reference.
+/// A immutable PICA+ tag.
+pub type TagRef<'a> = Tag<&'a BStr>;
+
+/// A mutable PICA+ tag.
+pub type TagMut = Tag<BString>;
+
+impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Tag<T> {
+    /// Create a new PICA+ tag.
     ///
     /// # Panics
     ///
@@ -29,14 +36,21 @@ impl<'a> TagRef<'a> {
     /// fn example() -> anyhow::Result<()> {
     ///     let tag = TagRef::new("003@");
     ///     assert_eq!(tag, "003@");
+    ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(value: impl Into<&'a BStr>) -> Self {
-        Self::from_bytes(value.into()).unwrap()
+    pub fn new(value: impl Into<T>) -> Self {
+        let value = value.into();
+
+        all_consuming(parse_tag)(value.as_ref())
+            .map_err(|_| ParsePicaError::InvalidTag)
+            .unwrap();
+
+        Self(value)
     }
 
-    /// Creates an immutable PICA+ tag from a byte slice.
+    /// Creates an PICA+ tag from a byte slice.
     ///
     /// If an invalid tag is given, an error is returned.
     ///
@@ -51,26 +65,15 @@ impl<'a> TagRef<'a> {
     /// }
     /// ```
     pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
-        all_consuming(parse_tag_ref)(data)
+        all_consuming(parse_tag)(data)
             .finish()
             .map_err(|_| ParsePicaError::InvalidTag)
-            .map(|(_, tag)| tag)
-    }
-
-    /// Converts the immutable subfield into its mutable counterpart by
-    /// consuming the source.
-    pub fn into_owned(self) -> Tag {
-        self.into()
-    }
-
-    /// Converts the immutable subfield into its mutable counterpart.
-    pub fn to_owned(&self) -> Tag {
-        self.clone().into()
+            .map(|(_, tag)| Tag(tag.into()))
     }
 }
 
-/// Parse a PICA+ tag (read-only).
-pub fn parse_tag_ref(i: &[u8]) -> ParseResult<TagRef<'_>> {
+/// Parse a PICA+ tag.
+pub fn parse_tag(i: &[u8]) -> ParseResult<&BStr> {
     map(
         recognize(tuple((
             satisfy(|c| matches!(c, '0'..='2')),
@@ -78,104 +81,68 @@ pub fn parse_tag_ref(i: &[u8]) -> ParseResult<TagRef<'_>> {
             satisfy(|c| c.is_ascii_digit()),
             satisfy(|c| matches!(c, 'A'..='Z' | '@')),
         ))),
-        |value| TagRef(ByteSlice::as_bstr(value)),
+        ByteSlice::as_bstr,
     )(i)
 }
 
-impl PartialEq<&str> for TagRef<'_> {
+impl<T: AsRef<[u8]>> PartialEq<&str> for Tag<T> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
-        self.0 == *other
+        self.0.as_ref() == other.as_bytes()
     }
 }
 
-impl PartialEq<str> for TagRef<'_> {
-    #[inline]
-    fn eq(&self, other: &str) -> bool {
-        self.0 == other
-    }
-}
-
-impl Deref for TagRef<'_> {
-    type Target = BStr;
-
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-
-/// A mutable PICA+ tag.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Tag(pub(crate) BString);
-
-impl Tag {
-    /// Create a new tag.
-    ///
-    /// # Panics
-    ///
-    /// This method panics if the tag is invalid.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::Tag;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let tag = Tag::new("003@");
-    ///     assert_eq!(tag, "003@");
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn new(value: impl Into<BString>) -> Self {
-        Self::from_bytes(&value.into()).unwrap()
-    }
-
-    /// Creates an immutable PICA+ tag from a byte slice.
-    ///
-    /// If an invalid tag is given, an error is returned.
-    ///
-    /// ```rust
-    /// use pica_record::Tag;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     assert!(Tag::from_bytes(b"003@").is_ok());
-    ///     assert!(Tag::from_bytes(b"003!").is_err());
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn from_bytes(data: &[u8]) -> Result<Self, ParsePicaError> {
-        Ok(TagRef::from_bytes(data)?.into())
-    }
-}
-
-impl Deref for Tag {
-    type Target = BString;
+impl<T> Deref for Tag<T> {
+    type Target = T;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl From<TagRef<'_>> for Tag {
+impl<'a> From<Tag<&'a BStr>> for TagMut {
     #[inline]
-    fn from(tag: TagRef<'_>) -> Self {
+    fn from(tag: Tag<&'a BStr>) -> Self {
         Self(tag.0.into())
     }
 }
 
-impl PartialEq<&str> for Tag {
-    #[inline]
-    fn eq(&self, other: &&str) -> bool {
-        self.0 == *other
+impl<'a> Tag<&'a BStr> {
+    /// Converts the immutable tag into its mutable counterpart by
+    /// consuming the source.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::TagRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let tag = TagRef::new("003@").into_owned();
+    ///     assert_eq!(tag, "003@");
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn into_owned(self) -> TagMut {
+        self.into()
     }
-}
 
-impl PartialEq<str> for Tag {
-    #[inline]
-    fn eq(&self, other: &str) -> bool {
-        self.0 == other
+    /// Converts the immutable tag into its mutable counterpart.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::TagRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let tag = TagRef::new("003@").to_owned();
+    ///     assert_eq!(tag, "003@");
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn to_owned(&self) -> TagMut {
+        self.clone().into()
     }
 }
 
@@ -188,7 +155,6 @@ mod tests {
     #[test]
     fn test_tag_ref_new() {
         let tag = TagRef::new("003@");
-        assert_eq!(tag, TagRef("003@".into()));
         assert_eq!(tag, "003@")
     }
 
@@ -199,34 +165,29 @@ mod tests {
     }
 
     #[test]
-    fn test_tag_new() {
-        let tag = Tag::new("003@");
+    fn test_tag_mut_new() {
+        let tag = TagMut::new("003@");
         assert_eq!(tag, Tag("003@".into()));
         assert_eq!(tag, "003@")
     }
 
     #[test]
     #[should_panic(expected = "InvalidTag")]
-    fn test_tag_invalid() {
-        Tag::new("003!");
+    fn test_tag_mut_invalid() {
+        TagMut::new("003!");
     }
 
     #[test]
     fn test_parse_tag_ref() {
         for tag in ["003@", "002@", "123@", "247C"] {
             assert_done_and_eq!(
-                parse_tag_ref(tag.as_bytes()),
-                TagRef::new(tag)
+                parse_tag(tag.as_bytes()),
+                tag.as_bytes()
             )
         }
 
         for tag in ["456@", "0A2A", "01AA", "01Aa"] {
-            assert_error!(parse_tag_ref(tag.as_bytes()))
+            assert_error!(parse_tag(tag.as_bytes()))
         }
-    }
-
-    #[quickcheck]
-    fn test_parse_arbitrary_tag(tag: Tag) -> bool {
-        TagRef::from_bytes(tag.to_string().as_bytes()).is_ok()
     }
 }
