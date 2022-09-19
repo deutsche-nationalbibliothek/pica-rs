@@ -2,11 +2,6 @@
 //! bibliographic records encoded in PICA+. There exists a read-only
 //! (immutable) and mutable variant of each primitive.
 
-#[cfg(test)]
-#[macro_use(quickcheck)]
-extern crate quickcheck_macros;
-
-mod arbitrary;
 mod error;
 mod field;
 mod occurrence;
@@ -14,10 +9,10 @@ mod subfield;
 mod tag;
 
 pub use error::ParsePicaError;
-pub use field::{Field, FieldRef};
-pub use occurrence::{Occurrence, OccurrenceRef};
-pub use subfield::{Subfield, SubfieldRef};
-pub use tag::{Tag, TagRef};
+pub use field::{Field, FieldMut, FieldRef};
+pub use occurrence::{Occurrence, OccurrenceMut, OccurrenceRef};
+pub use subfield::{Subfield, SubfieldMut, SubfieldRef};
+pub use tag::{Tag, TagMut, TagRef};
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
 #[rustfmt::skip]
@@ -32,10 +27,10 @@ pub mod parser {
     /// variant. The type only depends the output type `O`.
     pub type ParseResult<'a, O> = Result<(&'a [u8], O), nom::Err<()>>;
 
-    pub use super::field::parse_field_ref;
-    pub use super::occurrence::parse_occurrence_ref;
+    pub use super::field::parse_field;
+    pub use super::occurrence::parse_occurrence;
     pub use super::occurrence::parse_occurrence_digits;
     pub use super::subfield::parse_subfield_code;
     pub use super::subfield::parse_subfield_value;
-    pub use super::tag::parse_tag_ref;
+    pub use super::tag::parse_tag;
 }
