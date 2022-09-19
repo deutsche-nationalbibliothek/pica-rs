@@ -2,11 +2,6 @@
 //! bibliographic records encoded in PICA+. There exists a read-only
 //! (immutable) and mutable variant of each primitive.
 
-// #[cfg(test)]
-// #[macro_use(quickcheck)]
-// extern crate quickcheck_macros;
-
-// mod arbitrary;
 mod error;
 mod field;
 mod occurrence;
