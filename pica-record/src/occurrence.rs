@@ -125,6 +125,13 @@ impl<T: AsRef<[u8]>> PartialEq<&str> for Occurrence<T> {
     }
 }
 
+impl<T: AsRef<[u8]>> PartialEq<str> for Occurrence<T> {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        self == other
+    }
+}
+
 impl<'a> From<OccurrenceRef<'a>> for OccurrenceMut {
     #[inline]
     fn from(occurrence: Occurrence<&'a BStr>) -> Self {

@@ -2,8 +2,8 @@ use criterion::{
     black_box, criterion_group, criterion_main, Criterion,
 };
 use pica_record::{
-    OccurrenceMut, OccurrenceRef, SubfieldMut, SubfieldRef, TagMut,
-    TagRef,
+    FieldMut, FieldRef, OccurrenceMut, OccurrenceRef, SubfieldMut,
+    SubfieldRef, TagMut, TagRef,
 };
 // use pica_record::{FieldRef, OccurrenceRef, SubfieldRef, TagRef};
 
@@ -36,11 +36,17 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| OccurrenceMut::from_bytes(black_box(b"/001")))
     });
 
-    // c.bench_function("FieldRef::from_bytes", |b| {
-    //     b.iter(|| {
-    //         FieldRef::from_bytes(black_box(b"003@
-    // \x1f0123456789X\x1e"))     })
-    // });
+    c.bench_function("FieldRef::from_bytes", |b| {
+        b.iter(|| {
+            FieldRef::from_bytes(black_box(b"003@ \x1f0123456789X\x1e"))
+        })
+    });
+
+    c.bench_function("FieldMut::from_bytes", |b| {
+        b.iter(|| {
+            FieldMut::from_bytes(black_box(b"003@ \x1f0123456789X\x1e"))
+        })
+    });
 }
 
 criterion_group!(benches, criterion_benchmark);

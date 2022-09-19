@@ -92,6 +92,13 @@ impl<T: AsRef<[u8]>> PartialEq<&str> for Tag<T> {
     }
 }
 
+impl<T: AsRef<[u8]>> PartialEq<str> for Tag<T> {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        self == other
+    }
+}
+
 impl<T> Deref for Tag<T> {
     type Target = T;
 
