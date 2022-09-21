@@ -11,4 +11,6 @@ pub enum ParsePicaError {
     InvalidOccurrence,
     #[error("invalid field")]
     InvalidField,
+    #[error("invalid record")]
+    InvalidRecord,
 }
