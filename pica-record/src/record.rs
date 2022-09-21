@@ -2,8 +2,15 @@ use std::fmt::Display;
 use std::slice::Iter;
 
 use bstr::{BStr, BString};
+use nom::character::complete::char;
+use nom::combinator::{all_consuming, opt};
+use nom::multi::many1;
+use nom::sequence::terminated;
+use nom::Finish;
 
-use crate::Field;
+use crate::field::{parse_field, RawField};
+use crate::parser::{ParseResult, LF};
+use crate::{Field, ParsePicaError};
 
 /// A PICA+ record.
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -47,6 +54,37 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
             .collect();
 
         Self(fields)
+    }
+
+    /// Creates an PICA+ record from a byte slice.
+    ///
+    /// If an invalid record is given, an error is returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::RecordRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let record = RecordRef::from_bytes(b"003@ \x1f0abc\x1e");
+    ///     assert_eq!(record.iter().len(), 1);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
+        parse_record(data)
+            .finish()
+            .map_err(|_| ParsePicaError::InvalidRecord)
+            .map(|(_, fields)| {
+                Self(
+                    fields
+                        .into_iter()
+                        .map(|(t, o, s)| Field::new(t, o, s))
+                        .collect(),
+                )
+            })
     }
 
     /// Returns an iterator over the fields of the record.
@@ -94,4 +132,11 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
     pub fn is_empty(&self) -> bool {
         self.0.len() == 0
     }
+}
+
+#[inline]
+pub fn parse_record(i: &[u8]) -> ParseResult<Vec<RawField>> {
+    all_consuming(terminated(many1(parse_field), opt(char(LF as char))))(
+        i,
+    )
 }

@@ -259,7 +259,8 @@ impl<'a> FieldRef<'a> {
     }
 }
 
-type RawField<'a> = (&'a BStr, Option<&'a BStr>, Vec<(char, &'a BStr)>);
+pub(crate) type RawField<'a> =
+    (&'a BStr, Option<&'a BStr>, Vec<(char, &'a BStr)>);
 
 /// Parse a PICA+ field.
 pub fn parse_field(i: &[u8]) -> ParseResult<RawField> {
