@@ -77,7 +77,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
     pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
         parse_record(data)
             .finish()
-            .map_err(|_| ParsePicaError::InvalidRecord)
+            .map_err(|_| ParsePicaError::InvalidRecord(data.into()))
             .map(|(_, fields)| {
                 Self(
                     fields
