@@ -43,6 +43,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
     ///     Ok(())
     /// }
     /// ```
+    #[allow(clippy::type_complexity)]
     pub fn new<U: Into<T>>(
         fields: Vec<(U, Option<U>, Vec<(char, U)>)>,
     ) -> Self {
