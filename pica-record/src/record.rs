@@ -3,7 +3,7 @@ use std::slice::Iter;
 
 use bstr::{BStr, BString};
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, opt};
+use nom::combinator::all_consuming;
 use nom::multi::many1;
 use nom::sequence::terminated;
 use nom::Finish;
@@ -68,7 +68,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let record = RecordRef::from_bytes(b"003@ \x1f0abc\x1e");
+    ///     let record = RecordRef::from_bytes(b"003@ \x1f0abc\x1e\n");
     ///     assert_eq!(record.iter().len(), 1);
     ///
     ///     Ok(())
@@ -137,7 +137,23 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
 
 #[inline]
 pub fn parse_record(i: &[u8]) -> ParseResult<Vec<RawField>> {
-    all_consuming(terminated(many1(parse_field), opt(char(LF as char))))(
-        i,
-    )
+    all_consuming(terminated(many1(parse_field), char(LF as char)))(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use nom_test_helpers::prelude::*;
+
+    use super::*;
+
+    #[test]
+    fn test_parse_field_value() {
+        assert_done!(parse_record(b"003@ \x1f0123456789X\x1e\n"));
+        assert_done!(parse_record(
+            b"003@ \x1f0123456789X\x1e002@ \x1fOaf\x1e\n"
+        ));
+
+        assert_error!(parse_record(b"003@ \x1f0123456789X\x1e"));
+        assert_error!(parse_record(b"\n"));
+    }
 }
