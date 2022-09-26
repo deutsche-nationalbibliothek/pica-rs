@@ -5,21 +5,24 @@
 mod error;
 mod field;
 mod occurrence;
+mod record;
 mod subfield;
 mod tag;
 
 pub use error::ParsePicaError;
 pub use field::{Field, FieldMut, FieldRef};
 pub use occurrence::{Occurrence, OccurrenceMut, OccurrenceRef};
+pub use record::{Record, RecordMut, RecordRef};
 pub use subfield::{Subfield, SubfieldMut, SubfieldRef};
 pub use tag::{Tag, TagMut, TagRef};
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
 #[rustfmt::skip]
 pub mod parser {
+    pub(crate) const LF: u8 = b'\x0A'; // Line Feed
     pub(crate) const RS: u8 = b'\x1E'; // Record Separator
     pub(crate) const US: u8 = b'\x1F'; // Unit Separator
-    pub(crate) const SP: u8 = b' ';    // Space
+    pub(crate) const SP: u8 = b'\x20'; // Space
 
     /// Holds the result of a parsing function.
     ///

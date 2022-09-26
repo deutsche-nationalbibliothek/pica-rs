@@ -19,7 +19,7 @@ path = ".."
 members = ["."]
 
 [[bin]]
-name = "fuzz_field_ref"
-path = "fuzz_targets/fuzz_field_ref.rs"
+name = "fuzz_record_ref"
+path = "fuzz_targets/fuzz_record_ref.rs"
 test = false
 doc = false
