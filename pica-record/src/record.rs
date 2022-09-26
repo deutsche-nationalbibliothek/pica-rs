@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::ops::Deref;
 use std::slice::Iter;
 
 use bstr::{BStr, BString};
@@ -21,6 +22,9 @@ pub type RecordRef<'a> = Record<&'a BStr>;
 
 /// A mutable PICA+ tag.
 pub type RecordMut = Record<BString>;
+
+/// A PICA+ record, that may contian invalid UTF-8 data.
+pub struct ByteRecord<'a>(RecordRef<'a>);
 
 impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
     /// Create a new record.
@@ -140,11 +144,51 @@ pub fn parse_record(i: &[u8]) -> ParseResult<Vec<RawField>> {
     all_consuming(terminated(many1(parse_field), char(LF as char)))(i)
 }
 
+impl<'a> ByteRecord<'a> {
+    /// Creates an PICA+ record from a byte slice.
+    ///
+    /// If an invalid record is given, an error is returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::ByteRecord;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let record = ByteRecord::from_bytes(b"003@ \x1f0abc\x1e\n");
+    ///     assert_eq!(record.iter().len(), 1);
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
+        Ok(Self(RecordRef::from_bytes(data)?))
+    }
+}
+impl<'a> Deref for ByteRecord<'a> {
+    type Target = RecordRef<'a>;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use nom_test_helpers::prelude::*;
 
     use super::*;
+
+    #[test]
+    fn test_byte_record() -> anyhow::Result<()> {
+        let record: ByteRecord =
+            ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e\n")?;
+
+        assert!(!record.is_empty());
+
+        Ok(())
+    }
 
     #[test]
     fn test_parse_field_value() {

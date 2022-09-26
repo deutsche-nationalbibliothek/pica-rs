@@ -12,7 +12,7 @@ mod tag;
 pub use error::ParsePicaError;
 pub use field::{Field, FieldMut, FieldRef};
 pub use occurrence::{Occurrence, OccurrenceMut, OccurrenceRef};
-pub use record::{Record, RecordMut, RecordRef};
+pub use record::{ByteRecord, Record, RecordMut, RecordRef};
 pub use subfield::{Subfield, SubfieldMut, SubfieldRef};
 pub use tag::{Tag, TagMut, TagRef};
 
