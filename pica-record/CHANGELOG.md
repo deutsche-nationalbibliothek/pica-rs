@@ -8,5 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Add `Field` and `FieldRef`
 * Add `OccurenceRef` and `OccurenceRef`
+* Add `RecordRef` and `Record`
 * Add `SubfieldRef` and `Subfield`
 * Add `TagRef` and `Tag`
