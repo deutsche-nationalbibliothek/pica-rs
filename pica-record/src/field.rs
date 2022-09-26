@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::io::{self, Write};
+use std::str::Utf8Error;
 
 use bstr::{BStr, BString};
 use nom::character::complete::char;
@@ -166,6 +167,33 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
     pub fn subfields(&self) -> &Vec<Subfield<T>> {
         self.subfields.as_ref()
     }
+
+    /// Returns an [`std::str::Utf8Error`](Utf8Error) if the field
+    /// contains invalid UTF-8 data, otherwise the unit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = FieldRef::from_bytes(b"003@ \x1f0123\x1e")?;
+    ///     assert!(field.validate().is_ok());
+    ///
+    ///     let field = FieldRef::from_bytes(b"003@ \x1f0\x00\x9F\x1e")?;
+    ///     assert!(field.validate().is_err());
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn validate(&self) -> Result<(), Utf8Error> {
+        for subfield in self.subfields() {
+            subfield.validate()?;
+        }
+
+        Ok(())
+    }
+
     /// Write the field into the given writer.
     ///
     /// # Example
