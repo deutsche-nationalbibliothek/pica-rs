@@ -1,48 +1,75 @@
-#[macro_use]
 extern crate clap;
 extern crate csv;
 extern crate regex;
 extern crate serde;
 extern crate termcolor;
 
-mod cli;
-mod cmds;
-mod common;
+// mod cli;
+mod commands;
+// mod common;
 mod config;
 mod macros;
-mod translit;
+// mod translit;
 mod util;
 
+use std::path::PathBuf;
 use std::{io, process};
 
+use clap::{Parser, Subcommand};
+use commands::Cat;
 use config::Config;
 use util::{CliError, CliResult};
 
+#[derive(Debug, Parser)]
+#[clap(version, author, infer_subcommands = true)]
+#[command(name = "pica")]
+#[command(
+    about = "Tools to work with bibliographic records encoded in PICA+."
+)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+
+    #[arg(short, long)]
+    config: Option<PathBuf>,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Concatenate records from multiple files
+    Cat(Cat),
+}
+
 fn run() -> CliResult<()> {
-    let mut app = cli::build_cli();
-    let m = app.clone().get_matches();
-    let name = m.subcommand_name().unwrap();
-    let args = m.subcommand_matches(name).unwrap();
+    let args = Cli::parse();
+    let config = Config::from_path_or_default(args.config)?;
 
-    let config = Config::from_path_or_default(m.value_of("config"))?;
-
-    match name {
-        "cat" => cmds::cat::run(args, &config),
-        "completions" => cmds::completions::run(args, &mut app),
-        "count" => cmds::count::run(args, &config),
-        "filter" => cmds::filter::run(args, &config),
-        "frequency" => cmds::frequency::run(args, &config),
-        "invalid" => cmds::invalid::run(args),
-        "json" => cmds::json::run(args, &config),
-        "partition" => cmds::partition::run(args, &config),
-        "print" => cmds::print::run(args, &config),
-        "sample" => cmds::sample::run(args, &config),
-        "select" => cmds::select::run(args, &config),
-        "slice" => cmds::slice::run(args, &config),
-        "split" => cmds::split::run(args, &config),
-        "xml" => cmds::xml::run(args, &config),
-        _ => unreachable!(),
+    match args.command {
+        Commands::Cat(cat) => cat.run(&config),
     }
+
+    // let mut app = cli::build_cli();
+    // let m = app.clone().get_matches();
+    // let name = m.subcommand_name().unwrap();
+    // let args = m.subcommand_matches(name).unwrap();
+
+    // match name {
+    //     "cat" => cmds::cat::run(args, &config),
+    //     "completions" => cmds::completions::run(args, &mut app),
+    //     "count" => cmds::count::run(args, &config),
+    //     "filter" => cmds::filter::run(args, &config),
+    //     "frequency" => cmds::frequency::run(args, &config),
+    //     "invalid" => cmds::invalid::run(args),
+    //     "json" => cmds::json::run(args, &config),
+    //     "partition" => cmds::partition::run(args, &config),
+    //     "print" => cmds::print::run(args, &config),
+    //     "sample" => cmds::sample::run(args, &config),
+    //     "select" => cmds::select::run(args, &config),
+    //     "slice" => cmds::slice::run(args, &config),
+    //     "split" => cmds::split::run(args, &config),
+    //     "xml" => cmds::xml::run(args, &config),
+    //     _ => unreachable!(),
+    // }
 }
 
 fn main() {
