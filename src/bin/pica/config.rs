@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
-use crate::commands::CatConfig;
+use crate::commands::{CatConfig, CountConfig};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -18,7 +18,7 @@ pub(crate) struct Config {
     pub(crate) path: Option<PathBuf>,
     pub(crate) global: Option<GlobalConfig>,
     pub(crate) cat: Option<CatConfig>,
-    // pub(crate) count: Option<crate::cmds::count::CountConfig>,
+    pub(crate) count: Option<CountConfig>,
     // pub(crate) filter: Option<crate::cmds::filter::FilterConfig>,
     // pub(crate) frequency:
     // Option<crate::cmds::frequency::FrequencyConfig>,

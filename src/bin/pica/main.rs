@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{Parser, Subcommand};
-use commands::Cat;
+use commands::{Cat, Count};
 use config::Config;
 use util::{CliError, CliResult};
 
@@ -38,6 +38,9 @@ struct Cli {
 enum Commands {
     /// Concatenate records from multiple files
     Cat(Cat),
+
+    /// Count records, fields and subfields
+    Count(Count),
 }
 
 fn run() -> CliResult<()> {
@@ -46,6 +49,7 @@ fn run() -> CliResult<()> {
 
     match args.command {
         Commands::Cat(cat) => cat.run(&config),
+        Commands::Count(count) => count.run(&config),
     }
 
     // let mut app = cli::build_cli();
