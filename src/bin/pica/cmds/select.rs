@@ -123,7 +123,7 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
 
     let flags = MatcherFlags::default();
     let filter = match args.value_of("filter") {
-        Some(filter_str) => match RecordMatcher::new(&filter_str) {
+        Some(filter_str) => match RecordMatcher::new(filter_str) {
             Ok(f) => f,
             _ => {
                 return Err(CliError::Other(format!(
