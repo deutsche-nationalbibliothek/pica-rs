@@ -93,12 +93,14 @@ pub(crate) fn cli() -> Command {
         .arg(
             Arg::new("allow-list")
                 .long("--allow-list")
+                .short('A')
                 .takes_value(true)
                 .multiple_occurrences(true)
         )
         .arg(
             Arg::new("deny-list")
                 .long("--deny-list")
+                .short('D')
                 .takes_value(true)
                 .multiple_occurrences(true)
         )
