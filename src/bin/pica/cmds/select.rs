@@ -5,6 +5,7 @@ use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 
 use clap::Arg;
+use pica::matcher::{MatcherFlags, RecordMatcher};
 use pica::{Outcome, ReaderBuilder, Selectors};
 use serde::{Deserialize, Serialize};
 
@@ -66,6 +67,12 @@ pub(crate) fn cli() -> Command {
                 .help("Comma-separated list of column names."),
         )
         .arg(
+            Arg::new("filter")
+                .long("where")
+                .help("A expression used for filtering records.")
+                .takes_value(true),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("--output")
@@ -114,8 +121,27 @@ pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
         writer.write_record(header.split(',').map(|s| s.trim()))?;
     }
 
+    let flags = MatcherFlags::default();
+    let filter = match args.value_of("filter") {
+        Some(filter_str) => match RecordMatcher::new(filter_str) {
+            Ok(f) => f,
+            _ => {
+                return Err(CliError::Other(format!(
+                    "invalid filter: \"{}\"",
+                    filter_str
+                )))
+            }
+        },
+        None => RecordMatcher::True,
+    };
+
     for result in reader.records() {
         let record = result?;
+
+        if !filter.is_match(&record, &flags) {
+            continue;
+        }
+
         let outcome = selectors
             .iter()
             .map(|selector| record.select(selector, ignore_case))
