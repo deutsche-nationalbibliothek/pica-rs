@@ -451,6 +451,28 @@ fn pica_select_translit() -> TestResult {
 
     Ok(())
 }
+#[test]
+fn pica_select_where() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("--skip-invalid")
+        .arg("003@.0")
+        .arg("--where")
+        .arg("003@.0 =^ '0'")
+        .arg("tests/data/dump.dat.gz")
+        .assert();
+
+    assert.success().stderr(predicate::str::is_empty()).stdout(
+        r#"000008672
+000016586
+000016756
+000009229
+"#,
+    );
+
+    Ok(())
+}
 
 #[test]
 fn pica_select_skip_invalid() -> TestResult {
