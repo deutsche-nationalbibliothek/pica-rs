@@ -2,7 +2,7 @@ use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 
-use clap::{Arg, Parser};
+use clap::Parser;
 use pica::{Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
 
