@@ -23,7 +23,7 @@ pub(crate) struct Config {
     pub(crate) frequency: Option<FrequencyConfig>,
     pub(crate) json: Option<JsonConfig>,
     pub(crate) partition: Option<PartitionConfig>,
-    // pub(crate) print: Option<crate::cmds::print::PrintConfig>,
+    pub(crate) print: Option<PrintConfig>,
     // pub(crate) sample: Option<crate::cmds::sample::SampleConfig>,
     // pub(crate) select: Option<crate::cmds::select::SelectConfig>,
     // pub(crate) slice: Option<crate::cmds::slice::SliceConfig>,

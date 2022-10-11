@@ -6,6 +6,7 @@ mod frequency;
 mod invalid;
 mod json;
 mod partition;
+mod print;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
@@ -15,8 +16,8 @@ pub(crate) use frequency::{Frequency, FrequencyConfig};
 pub(crate) use invalid::Invalid;
 pub(crate) use json::{Json, JsonConfig};
 pub(crate) use partition::{Partition, PartitionConfig};
+pub(crate) use print::{Print, PrintConfig};
 
-// pub(crate) mod print;
 // pub(crate) mod sample;
 // pub(crate) mod select;
 // pub(crate) mod slice;

@@ -18,7 +18,7 @@ use std::{io, process};
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
     Cat, Completions, Count, Filter, Frequency, Invalid, Json,
-    Partition,
+    Partition, Print,
 };
 use config::Config;
 use util::{CliError, CliResult};
@@ -62,6 +62,9 @@ enum Commands {
 
     /// Partition a list of records by subfield value
     Partition(Partition),
+
+    /// Print records in human readable format
+    Print(Print),
 }
 
 fn run() -> CliResult<()> {
@@ -77,6 +80,7 @@ fn run() -> CliResult<()> {
         Commands::Invalid(cmd) => cmd.run(),
         Commands::Json(cmd) => cmd.run(&config),
         Commands::Partition(cmd) => cmd.run(&config),
+        Commands::Print(cmd) => cmd.run(&config),
     }
 
     // let mut app = cli::build_cli();
