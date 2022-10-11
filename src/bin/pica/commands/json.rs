@@ -36,7 +36,7 @@ pub(crate) struct Json {
     output: Option<OsString>,
 
     /// Read one or more files in normalized PICA+ format.
-    #[arg(default_value = "-")]
+    #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
 

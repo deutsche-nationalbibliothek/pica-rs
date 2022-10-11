@@ -105,7 +105,7 @@ pub(crate) struct Filter {
     filter: String,
 
     /// Read one or more files in normalized PICA+ format.
-    #[arg(default_value = "-")]
+    #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
 
