@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{CommandFactory, Parser, Subcommand};
-use commands::{Cat, Completions, Count, Filter, Frequency};
+use commands::{Cat, Completions, Count, Filter, Frequency, Invalid};
 use config::Config;
 use util::{CliError, CliResult};
 
@@ -45,11 +45,14 @@ enum Commands {
     /// Count records, fields and subfields
     Count(Count),
 
-    // Filter records by whether the given query matches
+    /// Filter records by whether the given query matches
     Filter(Filter),
 
     /// Compute a frequency table of a subfield
     Frequency(Frequency),
+
+    /// Filter out invalid records, which can't be decoded
+    Invalid(Invalid),
 }
 
 fn run() -> CliResult<()> {
@@ -62,6 +65,7 @@ fn run() -> CliResult<()> {
         Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),
+        Commands::Invalid(cmd) => cmd.run(),
     }
 
     // let mut app = cli::build_cli();
