@@ -15,8 +15,8 @@ mod util;
 use std::path::PathBuf;
 use std::{io, process};
 
-use clap::{Parser, Subcommand};
-use commands::{Cat, Count};
+use clap::{CommandFactory, Parser, Subcommand};
+use commands::{Cat, Completions, Count};
 use config::Config;
 use util::{CliError, CliResult};
 
@@ -39,6 +39,9 @@ enum Commands {
     /// Concatenate records from multiple files
     Cat(Cat),
 
+    /// Generate shell completions (e.g. Bash, ZSH)
+    Completions(Completions),
+
     /// Count records, fields and subfields
     Count(Count),
 }
@@ -48,8 +51,9 @@ fn run() -> CliResult<()> {
     let config = Config::from_path_or_default(args.config)?;
 
     match args.command {
-        Commands::Cat(cat) => cat.run(&config),
-        Commands::Count(count) => count.run(&config),
+        Commands::Cat(cmd) => cmd.run(&config),
+        Commands::Count(cmd) => cmd.run(&config),
+        Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
     }
 
     // let mut app = cli::build_cli();
