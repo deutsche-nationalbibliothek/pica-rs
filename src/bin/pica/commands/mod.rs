@@ -2,14 +2,14 @@ mod cat;
 mod completions;
 mod count;
 mod filter;
+mod frequency;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
 pub(crate) use count::{Count, CountConfig};
 pub(crate) use filter::{Filter, FilterConfig};
+pub(crate) use frequency::{Frequency, FrequencyConfig};
 
-// pub(crate) mod filter;
-// pub(crate) mod frequency;
 // pub(crate) mod invalid;
 // pub(crate) mod json;
 // pub(crate) mod partition;

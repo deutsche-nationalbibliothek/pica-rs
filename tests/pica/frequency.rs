@@ -126,11 +126,8 @@ fn pica_frequency_limit() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert.failure().stdout(predicate::str::is_empty()).stderr(
-        predicate::eq(
-            "error: Invalid limit value, expected unsigned integer.\n",
-        ),
-    );
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }
@@ -213,12 +210,8 @@ fn pica_frequency_threshold() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq(
-        "error: Invalid threshold value, expected unsigned integer.\n",
-    ));
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }

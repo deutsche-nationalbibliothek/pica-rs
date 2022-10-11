@@ -9,14 +9,14 @@ mod commands;
 mod common;
 mod config;
 mod macros;
-// mod translit;
+mod translit;
 mod util;
 
 use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{CommandFactory, Parser, Subcommand};
-use commands::{Cat, Completions, Count, Filter};
+use commands::{Cat, Completions, Count, Filter, Frequency};
 use config::Config;
 use util::{CliError, CliResult};
 
@@ -47,6 +47,9 @@ enum Commands {
 
     // Filter records by whether the given query matches
     Filter(Filter),
+
+    /// Compute a frequency table of a subfield
+    Frequency(Frequency),
 }
 
 fn run() -> CliResult<()> {
@@ -58,6 +61,7 @@ fn run() -> CliResult<()> {
         Commands::Count(cmd) => cmd.run(&config),
         Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
         Commands::Filter(cmd) => cmd.run(&config),
+        Commands::Frequency(cmd) => cmd.run(&config),
     }
 
     // let mut app = cli::build_cli();
@@ -66,11 +70,6 @@ fn run() -> CliResult<()> {
     // let args = m.subcommand_matches(name).unwrap();
 
     // match name {
-    //     "cat" => cmds::cat::run(args, &config),
-    //     "completions" => cmds::completions::run(args, &mut app),
-    //     "count" => cmds::count::run(args, &config),
-    //     "filter" => cmds::filter::run(args, &config),
-    //     "frequency" => cmds::frequency::run(args, &config),
     //     "invalid" => cmds::invalid::run(args),
     //     "json" => cmds::json::run(args, &config),
     //     "partition" => cmds::partition::run(args, &config),

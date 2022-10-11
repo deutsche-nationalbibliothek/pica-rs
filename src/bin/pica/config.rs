@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
-use crate::commands::{CatConfig, CountConfig, FilterConfig};
+use crate::commands::{
+    CatConfig, CountConfig, FilterConfig, FrequencyConfig,
+};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -20,8 +22,7 @@ pub(crate) struct Config {
     pub(crate) cat: Option<CatConfig>,
     pub(crate) count: Option<CountConfig>,
     pub(crate) filter: Option<FilterConfig>,
-    // pub(crate) frequency:
-    // Option<crate::cmds::frequency::FrequencyConfig>,
+    pub(crate) frequency: Option<FrequencyConfig>,
     // pub(crate) json: Option<crate::cmds::json::JsonConfig>,
     // pub(crate) partition:
     // Option<crate::cmds::partition::PartitionConfig>,
