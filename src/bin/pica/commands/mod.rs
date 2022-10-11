@@ -10,6 +10,7 @@ mod print;
 mod sample;
 mod select;
 mod slice;
+mod split;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
@@ -23,8 +24,8 @@ pub(crate) use print::{Print, PrintConfig};
 pub(crate) use sample::{Sample, SampleConfig};
 pub(crate) use select::{Select, SelectConfig};
 pub(crate) use slice::{Slice, SliceConfig};
+pub(crate) use split::{Split, SplitConfig};
 
-// pub(crate) mod split;
 // pub(crate) mod xml;
 
 // use crate::util::Command;

@@ -27,7 +27,7 @@ pub(crate) struct Config {
     pub(crate) sample: Option<SampleConfig>,
     pub(crate) select: Option<SelectConfig>,
     pub(crate) slice: Option<SliceConfig>,
-    // pub(crate) split: Option<crate::cmds::split::SplitConfig>,
+    pub(crate) split: Option<SplitConfig>,
     // pub(crate) xml: Option<crate::cmds::xml::XmlConfig>,
 }
 

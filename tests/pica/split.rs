@@ -476,11 +476,8 @@ fn pica_split_invalid_chunk_size() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stderr("error: chunk size < 1\n")
-        .stdout(predicate::str::is_empty());
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -489,11 +486,8 @@ fn pica_split_invalid_chunk_size() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_empty())
-        .stderr("error: invalid chunk size\n");
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }

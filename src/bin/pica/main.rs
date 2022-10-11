@@ -18,7 +18,7 @@ use std::{io, process};
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
     Cat, Completions, Count, Filter, Frequency, Invalid, Json,
-    Partition, Print, Sample, Select, Slice,
+    Partition, Print, Sample, Select, Slice, Split,
 };
 use config::Config;
 use util::{CliError, CliResult};
@@ -74,6 +74,9 @@ enum Commands {
 
     /// Return records within a range (half-open interval)
     Slice(Slice),
+
+    /// Splits a stream of records into chunks
+    Split(Split),
 }
 
 fn run() -> CliResult<()> {
@@ -93,6 +96,7 @@ fn run() -> CliResult<()> {
         Commands::Sample(cmd) => cmd.run(&config),
         Commands::Select(cmd) => cmd.run(&config),
         Commands::Slice(cmd) => cmd.run(&config),
+        Commands::Split(cmd) => cmd.run(&config),
     }
 
     // let mut app = cli::build_cli();
@@ -101,7 +105,6 @@ fn run() -> CliResult<()> {
     // let args = m.subcommand_matches(name).unwrap();
 
     // match name {
-    //     "split" => cmds::split::run(args, &config),
     //     "xml" => cmds::xml::run(args, &config),
     //     _ => unreachable!(),
     // }
