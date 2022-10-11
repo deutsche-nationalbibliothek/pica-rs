@@ -361,6 +361,25 @@ fn pica_select_unique() -> TestResult {
 }
 
 #[test]
+fn pica_select_multiple_files() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("003@.0, 002@.0")
+        .arg("tests/data/119232022.dat.gz")
+        .arg("tests/data/1004916019.dat.gz")
+        .assert();
+
+    assert.success().stdout(
+        r#"119232022,Tp1
+1004916019,Ts1
+"#,
+    );
+
+    Ok(())
+}
+
+#[test]
 fn pica_select_write_output() -> TestResult {
     let filename = Builder::new().suffix(".csv").tempfile()?;
     let filename_str = filename.path();
