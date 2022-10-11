@@ -7,6 +7,7 @@ mod invalid;
 mod json;
 mod partition;
 mod print;
+mod sample;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
@@ -17,8 +18,8 @@ pub(crate) use invalid::Invalid;
 pub(crate) use json::{Json, JsonConfig};
 pub(crate) use partition::{Partition, PartitionConfig};
 pub(crate) use print::{Print, PrintConfig};
+pub(crate) use sample::{Sample, SampleConfig};
 
-// pub(crate) mod sample;
 // pub(crate) mod select;
 // pub(crate) mod slice;
 // pub(crate) mod split;

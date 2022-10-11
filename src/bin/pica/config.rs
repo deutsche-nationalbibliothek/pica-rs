@@ -24,7 +24,7 @@ pub(crate) struct Config {
     pub(crate) json: Option<JsonConfig>,
     pub(crate) partition: Option<PartitionConfig>,
     pub(crate) print: Option<PrintConfig>,
-    // pub(crate) sample: Option<crate::cmds::sample::SampleConfig>,
+    pub(crate) sample: Option<SampleConfig>,
     // pub(crate) select: Option<crate::cmds::select::SelectConfig>,
     // pub(crate) slice: Option<crate::cmds::slice::SliceConfig>,
     // pub(crate) split: Option<crate::cmds::split::SplitConfig>,
