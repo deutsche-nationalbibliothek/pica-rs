@@ -208,9 +208,8 @@ fn pica_sample_size_invalid() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert.failure().stdout(predicate::str::is_empty()).stderr(
-        "error: invalid sample size \'0\'. expected non-zero usize.\n",
-    );
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -220,9 +219,8 @@ fn pica_sample_size_invalid() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert.failure().stdout(predicate::str::is_empty()).stderr(
-        "error: invalid sample size \'a\'. expected non-zero usize.\n",
-    );
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }

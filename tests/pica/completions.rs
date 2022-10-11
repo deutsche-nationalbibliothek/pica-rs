@@ -29,14 +29,14 @@ fn pica_bash_completion() -> TestResult {
 }
 
 #[test]
-fn pica_evlish_completion() -> TestResult {
+fn pica_elvish_completion() -> TestResult {
     let filename = Builder::new().tempfile()?;
     let filename_str = filename.path();
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("completions")
-        .arg("evlish")
+        .arg("elvish")
         .arg("--output")
         .arg(filename_str)
         .assert();
@@ -44,7 +44,7 @@ fn pica_evlish_completion() -> TestResult {
     assert!(predicates::path::is_file().eval(filename_str));
 
     let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd.arg("completions").arg("evlish").assert();
+    let assert = cmd.arg("completions").arg("elvish").assert();
     assert
         .success()
         .stdout(predicate::path::eq_file(filename_str));

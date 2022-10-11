@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! skip_invalid_flag {
-    ($args: expr, $local:expr, $global:expr) => {
-        if $args.is_present("skip-invalid") {
+    ($skip_invalid: expr, $local:expr, $global:expr) => {
+        if $skip_invalid {
             true
         } else if let Some(ref config) = $local {
             config.skip_invalid.unwrap_or_default()
@@ -15,8 +15,8 @@ macro_rules! skip_invalid_flag {
 
 #[macro_export]
 macro_rules! gzip_flag {
-    ($args: expr, $local:expr) => {
-        if $args.is_present("gzip") {
+    ($gzip: expr, $local:expr) => {
+        if $gzip {
             true
         } else if let Some(ref config) = $local {
             config.gzip.unwrap_or_default()
@@ -29,8 +29,8 @@ macro_rules! gzip_flag {
 #[macro_export]
 macro_rules! template_opt {
     ($args: expr, $local:expr, $default:expr) => {
-        if $args.is_present("template") {
-            $args.value_of("template").unwrap().to_string()
+        if let Some(filename_template) = $args {
+            filename_template
         } else if let Some(ref config) = $local {
             config
                 .template

@@ -333,11 +333,8 @@ fn pica_slice_start() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_empty())
-        .stderr("error: invalid start option\n");
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }
@@ -437,11 +434,8 @@ fn pica_slice_end() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_empty())
-        .stderr("error: invalid end option\n");
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }
@@ -542,11 +536,8 @@ fn pica_slice_length() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_empty())
-        .stderr("error: invalid length option\n");
+    // status code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }
