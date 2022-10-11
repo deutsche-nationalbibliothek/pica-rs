@@ -16,7 +16,9 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{CommandFactory, Parser, Subcommand};
-use commands::{Cat, Completions, Count, Filter, Frequency, Invalid};
+use commands::{
+    Cat, Completions, Count, Filter, Frequency, Invalid, Json,
+};
 use config::Config;
 use util::{CliError, CliResult};
 
@@ -53,6 +55,9 @@ enum Commands {
 
     /// Filter out invalid records, which can't be decoded
     Invalid(Invalid),
+
+    /// Serialize records to JSON
+    Json(Json),
 }
 
 fn run() -> CliResult<()> {
@@ -66,6 +71,7 @@ fn run() -> CliResult<()> {
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),
         Commands::Invalid(cmd) => cmd.run(),
+        Commands::Json(cmd) => cmd.run(&config),
     }
 
     // let mut app = cli::build_cli();
