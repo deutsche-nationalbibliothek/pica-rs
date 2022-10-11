@@ -1,18 +1,18 @@
 use std::ffi::OsString;
 use std::fs::read_to_string;
 use std::io::{self, Read};
+use std::path::PathBuf;
 use std::str::FromStr;
 
-use clap::Arg;
+use clap::{value_parser, Parser};
 use lazy_static::lazy_static;
 use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
 use pica::{Path, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
-use crate::config::Config;
-use crate::util::{CliArgs, CliError, CliResult, Command};
-use crate::{gzip_flag, skip_invalid_flag};
+use crate::util::{CliError, CliResult};
+use crate::{gzip_flag, skip_invalid_flag, Config};
 
 lazy_static! {
     static ref IDN_PATH: Path = Path::from_str("003@.0").unwrap();
@@ -25,318 +25,255 @@ pub(crate) struct FilterConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-pub(crate) fn cli() -> Command {
-    Command::new("filter")
-        .about("Filter records by whether the given query matches.")
-        .arg(
-            Arg::new("skip-invalid")
-                .short('s')
-                .long("skip-invalid")
-                .help("skip invalid records"),
-        )
-        .arg(
-            Arg::new("expr-file")
-                .short('f')
-                .long("file")
-                .value_name("file")
-                .help("Take filter expressions from file.")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("invert-match")
-                .short('v')
-                .long("invert-match")
-                .help("Filter only records that did not match."),
-        )
-        .arg(
-            Arg::new("ignore-case")
-                .short('i')
-                .long("--ignore-case")
-                .help("When this flag is provided, comparision operations will be search case insensitive."),
-        )
-        .arg(
-            Arg::new("strsim-threshold")
-                .long("--strsim-threshold")
-                .default_value("0.75")
-                .help("The minimum score for string similarity comparisons (range from 0.0..1.0).")
-        )
-        .arg(
-            Arg::new("append")
-                .long("--append")
-                .help("Append to the given <file>, do not overwrite.")
-       )
-        .arg(
-            Arg::new("reduce")
-                .long("reduce")
-                .help("Reduce the record to the following fields.")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("and")
-                .long("and")
-                .takes_value(true)
-                .multiple_occurrences(true)
-        )
-        .arg(
-            Arg::new("not")
-                .long("not")
-                .takes_value(true)
-                .multiple_occurrences(true)
-        )
-        .arg(
-            Arg::new("or")
-                .long("or")
-                .takes_value(true)
-                .multiple_occurrences(true)
-                .conflicts_with_all(&["and", "not"])
-        )
-        .arg(
-            Arg::new("allow-list")
-                .long("--allow-list")
-                .short('A')
-                .takes_value(true)
-                .multiple_occurrences(true)
-        )
-        .arg(
-            Arg::new("deny-list")
-                .long("--deny-list")
-                .short('D')
-                .takes_value(true)
-                .multiple_occurrences(true)
-        )
-        .arg(
-            Arg::new("limit")
-                .short('l')
-                .long("--limit")
-                .value_name("n")
-                .help("Limit the result to first <n> records."),
-        )
-        .arg(
-            Arg::new("gzip")
-                .short('g')
-                .long("gzip")
-                .help("compress output with gzip"),
-        )
-        .arg(
-            Arg::new("tee")
-            .help(
-                "This option allows to write simultaneously to <file> and to \
-                standard output (stdout)."
-            )
-            .long("--tee")
-            .value_name("filename")
-            .conflicts_with("output")
-        )
-        .arg(
-            Arg::new("output")
-                .short('o')
-                .long("--output")
-                .value_name("file")
-                .help("Write output to <file> instead of stdout."),
-        )
-        .arg(
-            Arg::new("filter")
-                .help("A filter expression used for searching.")
-                .required(true),
-        )
-        .arg(
-            Arg::new("filenames")
-                .help(
-                    "Read one or more files in normalized PICA+ format. If the file \
-                    ends with .gz the content is automatically decompressed. With no \
-                    <filenames>, or when filename is -, read from standard input (stdin).")
-                .value_name("filenames")
-                .multiple_values(true)
-        )
+#[derive(Parser, Debug)]
+pub(crate) struct Filter {
+    /// Skip invalid records that can't be decoded
+    #[arg(short, long)]
+    skip_invalid: bool,
+
+    /// Filter only records that did not match
+    #[arg(long, short = 'v')]
+    invert_match: bool,
+
+    /// When this flag is provided, comparision operations will be
+    /// search case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// The minimum score for string similarity comparisons
+    /// (range: 0.0..1.0)
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+        default_value = "75")]
+    strsim_threshold: u8,
+
+    /// Reduce the record to fields which are specified in <REDUCE>
+    #[arg(long, default_value = "")]
+    reduce: String,
+
+    /// Take filter expressions from <EXPR_FILE>
+    #[arg(long = "file", short = 'f')]
+    expr_file: Option<PathBuf>,
+
+    /// Ignore records which are *not* explicitly listed in one of the
+    /// given allow-lists. An allow-list must be an CSV, whereby the
+    /// first column contains the IDN (003@.0).
+    #[arg(long, short = 'A')]
+    allow_list: Vec<PathBuf>,
+
+    /// Ignore records which are explicitly listed in one of the
+    /// given deny-lists. An deny-list must be an CSV, whereby the
+    /// first column contains the IDN (003@.0).
+    #[arg(long, short = 'D')]
+    deny_list: Vec<PathBuf>,
+
+    /// Limit the result to first <n> records
+    #[arg(long, short, value_name = "n", default_value = "0")]
+    limit: usize,
+
+    /// Connects the filter with additional expressions using the
+    /// logical AND-operator (conjunction)
+    #[arg(long, conflicts_with_all = ["or", "not"])]
+    and: Vec<String>,
+
+    /// Connects the filter with additional expressions using the
+    /// logical OR-operator (disjunction)
+    #[arg(long, conflicts_with_all = ["and", "not"])]
+    or: Vec<String>,
+
+    /// Connects the filter with additional expressions using the
+    /// logical NOT-operator (negation)
+    #[arg(long, conflicts_with_all = ["and", "or"])]
+    not: Vec<String>,
+
+    /// Compress output in gzip format
+    #[arg(long, short)]
+    gzip: bool,
+
+    /// Append to the given file, do not overwrite
+    #[arg(long)]
+    append: bool,
+
+    /// Write simultaneously to the file <filename> and stdout
+    #[arg(long, value_name = "filename", conflicts_with = "output")]
+    tee: Option<PathBuf>,
+
+    /// Write output to <filename> instead of stdout
+    #[arg(short, long, value_name = "filename")]
+    output: Option<OsString>,
+
+    /// A filter expression used for searching
+    filter: String,
+
+    /// Read one or more files in normalized PICA+ format.
+    filenames: Vec<OsString>,
 }
 
-pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid =
-        skip_invalid_flag!(args, config.filter, config.global);
-    let gzip_compression = gzip_flag!(args, config.filter);
-    let ignore_case = args.is_present("ignore-case");
-    let append = args.is_present("append");
+impl Filter {
+    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        // let limit = self.limit.unwrap_or_default();
+        let gzip_compression = gzip_flag!(self.gzip, config.filter);
+        let skip_invalid = skip_invalid_flag!(
+            self.skip_invalid,
+            config.filter,
+            config.global
+        );
 
-    let mut allow_list = FilterList::default();
-    let mut deny_list = FilterList::default();
+        let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+            .gzip(gzip_compression)
+            .append(self.append)
+            .from_path_or_stdout(self.output)?;
 
-    let limit =
-        match args.value_of("limit").unwrap_or("0").parse::<usize>() {
-            Ok(limit) => limit,
-            Err(_) => {
-                return Err(CliError::Other(
-                    "Invalid limit value, expected unsigned integer."
-                        .to_string(),
-                ));
-            }
+        let mut tee_writer = match self.tee {
+            Some(path) => Some(
+                WriterBuilder::new()
+                    .gzip(gzip_compression)
+                    .append(self.append)
+                    .from_path(path)?,
+            ),
+            None => None,
         };
 
-    let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
-        .gzip(gzip_compression)
-        .append(append)
-        .from_path_or_stdout(args.value_of("output"))?;
-
-    let mut tee_writer = match args.value_of("tee") {
-        Some(path) => Some(
-            WriterBuilder::new()
-                .gzip(gzip_compression)
-                .append(append)
-                .from_path(path)?,
-        ),
-        None => None,
-    };
-
-    let strsim_threshold = args.value_of("strsim-threshold").unwrap();
-    let strsim_threshold = match strsim_threshold.parse::<f64>() {
-        Err(_) => {
-            return Err(CliError::Other(format!(
-                "expected threshold to be a f64, got '{}'.",
-                strsim_threshold,
-            )));
-        }
-        Ok(t) if !(0.0..=1.0).contains(&t) => {
-            return Err(CliError::Other(format!(
-                "expected threshold between 0.0 and 1.0, got {}.",
-                strsim_threshold,
-            )));
-        }
-        Ok(threshold) => threshold,
-    };
-
-    let mut reducers = vec![];
-    if let Some(reduce_expr) = args.value_of("reduce") {
-        reducers = reduce_expr
+        let reducers = self
+            .reduce
             .split(',')
             .map(str::trim)
+            .filter(|item| !item.is_empty())
             .map(TagMatcher::new)
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| {
                 CliError::Other("invalid reduce value".to_string())
             })?;
-    }
 
-    let filter_str = if let Some(filename) = args.value_of("expr-file")
-    {
-        read_to_string(filename).unwrap()
-    } else {
-        args.value_of("filter").unwrap().to_owned()
-    };
-
-    let mut filter = match RecordMatcher::new(&filter_str) {
-        Ok(f) => f,
-        _ => {
-            return Err(CliError::Other(format!(
-                "invalid filter: \"{}\"",
-                filter_str
-            )))
-        }
-    };
-
-    if args.is_present("and") {
-        let predicates = args
-            .values_of("and")
-            .unwrap()
-            .map(RecordMatcher::new)
-            .collect::<Result<Vec<_>, _>>()?;
-
-        for expr in predicates.into_iter() {
-            filter = filter & expr;
-        }
-    }
-
-    if args.is_present("not") {
-        let predicates = args
-            .values_of("not")
-            .unwrap()
-            .map(RecordMatcher::new)
-            .collect::<Result<Vec<_>, _>>()?;
-
-        for expr in predicates.into_iter() {
-            filter = filter & !expr;
-        }
-    }
-
-    if args.is_present("or") {
-        let predicates = args
-            .values_of("or")
-            .unwrap()
-            .map(RecordMatcher::new)
-            .collect::<Result<Vec<_>, _>>()?;
-
-        for expr in predicates.into_iter() {
-            filter = filter | expr;
-        }
-    }
-
-    if let Some(allow_lists) = args.values_of("allow-list") {
-        allow_list =
-            FilterList::new(allow_lists.collect::<Vec<&str>>())?
-    }
-
-    if let Some(deny_lists) = args.values_of("deny-list") {
-        deny_list = FilterList::new(deny_lists.collect::<Vec<&str>>())?
-    }
-
-    let mut count = 0;
-    let flags = MatcherFlags {
-        ignore_case,
-        strsim_threshold,
-    };
-
-    let filenames = args
-        .values_of_t::<OsString>("filenames")
-        .unwrap_or_else(|_| vec![OsString::from("-")]);
-
-    for filename in filenames {
-        let builder = ReaderBuilder::new().skip_invalid(skip_invalid);
-        let mut reader: Reader<Box<dyn Read>> = match filename.to_str()
-        {
-            Some("-") => builder.from_reader(Box::new(io::stdin())),
-            _ => builder.from_path(filename)?,
+        let filter_str = if let Some(filename) = self.expr_file {
+            read_to_string(filename).unwrap()
+        } else {
+            self.filter
         };
 
-        for result in reader.byte_records() {
-            let mut record = result?;
-            let idn = record.path(&IDN_PATH);
-            let idn = idn.first().unwrap();
-
-            if !allow_list.is_empty() && !allow_list.contains(*idn) {
-                continue;
+        let mut filter = match RecordMatcher::new(&filter_str) {
+            Ok(f) => f,
+            _ => {
+                return Err(CliError::Other(format!(
+                    "invalid filter: \"{}\"",
+                    filter_str
+                )))
             }
-            if !deny_list.is_empty() && deny_list.contains(*idn) {
-                continue;
-            }
+        };
 
-            let mut is_match = filter.is_match(&record, &flags);
-            if args.is_present("invert-match") {
-                is_match = !is_match;
-            }
+        if !self.and.is_empty() {
+            let predicates = self
+                .and
+                .iter()
+                .map(RecordMatcher::new)
+                .collect::<Result<Vec<_>, _>>()?;
 
-            if is_match {
-                if !reducers.is_empty() {
-                    record.reduce(&reducers);
-                }
-
-                writer.write_byte_record(&record)?;
-
-                if let Some(ref mut writer) = tee_writer {
-                    writer.write_byte_record(&record)?;
-                }
-
-                count += 1;
-            }
-
-            if limit > 0 && count >= limit {
-                break;
+            for expr in predicates.into_iter() {
+                filter = filter & expr;
             }
         }
-    }
 
-    writer.finish()?;
+        if !self.not.is_empty() {
+            let predicates = self
+                .not
+                .iter()
+                .map(RecordMatcher::new)
+                .collect::<Result<Vec<_>, _>>()?;
 
-    if let Some(ref mut writer) = tee_writer {
+            for expr in predicates.into_iter() {
+                filter = filter & !expr;
+            }
+        }
+
+        if !self.or.is_empty() {
+            let predicates = self
+                .or
+                .iter()
+                .map(RecordMatcher::new)
+                .collect::<Result<Vec<_>, _>>()?;
+
+            for expr in predicates.into_iter() {
+                filter = filter | expr;
+            }
+        }
+
+        let allow_list = if !self.allow_list.is_empty() {
+            FilterList::new(self.allow_list)?
+        } else {
+            FilterList::default()
+        };
+
+        let deny_list = if !self.deny_list.is_empty() {
+            FilterList::new(self.deny_list)?
+        } else {
+            FilterList::default()
+        };
+
+        let mut count = 0;
+        let flags = MatcherFlags {
+            strsim_threshold: self.strsim_threshold as f64 / 100.0,
+            ignore_case: self.ignore_case,
+        };
+
+        let filenames = if self.filenames.is_empty() {
+            vec![OsString::from("-")]
+        } else {
+            self.filenames
+        };
+
+        for filename in filenames {
+            let builder =
+                ReaderBuilder::new().skip_invalid(skip_invalid);
+            let mut reader: Reader<Box<dyn Read>> = match filename
+                .to_str()
+            {
+                Some("-") => builder.from_reader(Box::new(io::stdin())),
+                _ => builder.from_path(filename)?,
+            };
+
+            for result in reader.byte_records() {
+                let mut record = result?;
+                let idn = record.path(&IDN_PATH);
+                let idn = idn.first().unwrap();
+
+                if !allow_list.is_empty() && !allow_list.contains(*idn)
+                {
+                    continue;
+                }
+
+                if !deny_list.is_empty() && deny_list.contains(*idn) {
+                    continue;
+                }
+
+                let mut is_match = filter.is_match(&record, &flags);
+                if self.invert_match {
+                    is_match = !is_match;
+                }
+
+                if is_match {
+                    if !reducers.is_empty() {
+                        record.reduce(&reducers);
+                    }
+
+                    writer.write_byte_record(&record)?;
+
+                    if let Some(ref mut writer) = tee_writer {
+                        writer.write_byte_record(&record)?;
+                    }
+
+                    count += 1;
+                }
+
+                if self.limit > 0 && count >= self.limit {
+                    break;
+                }
+            }
+        }
+
         writer.finish()?;
-    }
+        if let Some(ref mut writer) = tee_writer {
+            writer.finish()?;
+        }
 
-    Ok(())
+        Ok(())
+    }
 }

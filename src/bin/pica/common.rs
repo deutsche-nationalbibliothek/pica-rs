@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 use std::ops::Deref;
+use std::path::PathBuf;
 
 use bstr::BString;
 use csv::ReaderBuilder;
@@ -18,7 +19,7 @@ impl Deref for FilterList {
 }
 
 impl FilterList {
-    pub(crate) fn new(filenames: Vec<&str>) -> CliResult<Self> {
+    pub(crate) fn new(filenames: Vec<PathBuf>) -> CliResult<Self> {
         let mut ids: BTreeSet<BString> = BTreeSet::new();
 
         for filename in filenames {

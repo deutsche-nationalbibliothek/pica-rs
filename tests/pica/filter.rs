@@ -1427,13 +1427,8 @@ fn pica_filter_limit() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq(
-            "error: Invalid limit value, expected unsigned integer.\n",
-        ));
+    // error code "2" is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }
@@ -2027,7 +2022,7 @@ fn pica_filter_strsim() -> TestResult {
     let assert = cmd
         .arg("filter")
         .arg("--strsim-threshold")
-        .arg("0.99")
+        .arg("99")
         .arg("028A.d =* 'Heiko'")
         .arg("tests/data/121169502.dat")
         .assert();
@@ -2041,20 +2036,13 @@ fn pica_filter_strsim() -> TestResult {
     let assert = cmd
         .arg("filter")
         .arg("--strsim-threshold")
-        .arg("1.1")
+        .arg("110")
         .arg("028A.d =* 'Heiko'")
         .arg("tests/data/121169502.dat")
         .assert();
 
-    let expected = predicate::eq(
-        "error: expected threshold between 0.0 and 1.0, got 1.1.\n",
-    );
-
-    assert
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_empty())
-        .stderr(expected);
+    // error code 2 is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -2065,15 +2053,8 @@ fn pica_filter_strsim() -> TestResult {
         .arg("tests/data/121169502.dat")
         .assert();
 
-    let expected = predicate::eq(
-        "error: expected threshold to be a f64, got \'abc\'.\n",
-    );
-
-    assert
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_empty())
-        .stderr(expected);
+    // error code 2 is set by clap-rs
+    assert.failure().code(2).stdout(predicate::str::is_empty());
 
     Ok(())
 }

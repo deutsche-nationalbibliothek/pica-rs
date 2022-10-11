@@ -1,10 +1,12 @@
 mod cat;
 mod completions;
 mod count;
+mod filter;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
 pub(crate) use count::{Count, CountConfig};
+pub(crate) use filter::{Filter, FilterConfig};
 
 // pub(crate) mod filter;
 // pub(crate) mod frequency;

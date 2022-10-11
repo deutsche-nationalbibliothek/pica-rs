@@ -6,7 +6,7 @@ extern crate termcolor;
 
 // mod cli;
 mod commands;
-// mod common;
+mod common;
 mod config;
 mod macros;
 // mod translit;
@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{CommandFactory, Parser, Subcommand};
-use commands::{Cat, Completions, Count};
+use commands::{Cat, Completions, Count, Filter};
 use config::Config;
 use util::{CliError, CliResult};
 
@@ -44,6 +44,9 @@ enum Commands {
 
     /// Count records, fields and subfields
     Count(Count),
+
+    // Filter records by whether the given query matches
+    Filter(Filter),
 }
 
 fn run() -> CliResult<()> {
@@ -54,6 +57,7 @@ fn run() -> CliResult<()> {
         Commands::Cat(cmd) => cmd.run(&config),
         Commands::Count(cmd) => cmd.run(&config),
         Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
+        Commands::Filter(cmd) => cmd.run(&config),
     }
 
     // let mut app = cli::build_cli();
