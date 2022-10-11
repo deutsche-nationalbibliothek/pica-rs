@@ -18,7 +18,7 @@ use std::{io, process};
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
     Cat, Completions, Count, Filter, Frequency, Invalid, Json,
-    Partition, Print, Sample, Select, Slice, Split,
+    Partition, Print, Sample, Select, Slice, Split, Xml,
 };
 use config::Config;
 use util::{CliError, CliResult};
@@ -77,6 +77,9 @@ enum Commands {
 
     /// Splits a stream of records into chunks
     Split(Split),
+
+    // Serialize records to PICA XML
+    Xml(Xml),
 }
 
 fn run() -> CliResult<()> {
@@ -97,17 +100,8 @@ fn run() -> CliResult<()> {
         Commands::Select(cmd) => cmd.run(&config),
         Commands::Slice(cmd) => cmd.run(&config),
         Commands::Split(cmd) => cmd.run(&config),
+        Commands::Xml(cmd) => cmd.run(&config),
     }
-
-    // let mut app = cli::build_cli();
-    // let m = app.clone().get_matches();
-    // let name = m.subcommand_name().unwrap();
-    // let args = m.subcommand_matches(name).unwrap();
-
-    // match name {
-    //     "xml" => cmds::xml::run(args, &config),
-    //     _ => unreachable!(),
-    // }
 }
 
 fn main() {
