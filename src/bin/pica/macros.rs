@@ -29,8 +29,8 @@ macro_rules! gzip_flag {
 #[macro_export]
 macro_rules! template_opt {
     ($args: expr, $local:expr, $default:expr) => {
-        if $args.is_present("template") {
-            $args.value_of("template").unwrap().to_string()
+        if let Some(filename_template) = $args {
+            filename_template
         } else if let Some(ref config) = $local {
             config
                 .template

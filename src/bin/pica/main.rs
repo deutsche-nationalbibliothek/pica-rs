@@ -18,6 +18,7 @@ use std::{io, process};
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
     Cat, Completions, Count, Filter, Frequency, Invalid, Json,
+    Partition,
 };
 use config::Config;
 use util::{CliError, CliResult};
@@ -58,6 +59,9 @@ enum Commands {
 
     /// Serialize records to JSON
     Json(Json),
+
+    /// Partition a list of records by subfield value
+    Partition(Partition),
 }
 
 fn run() -> CliResult<()> {
@@ -72,6 +76,7 @@ fn run() -> CliResult<()> {
         Commands::Frequency(cmd) => cmd.run(&config),
         Commands::Invalid(cmd) => cmd.run(),
         Commands::Json(cmd) => cmd.run(&config),
+        Commands::Partition(cmd) => cmd.run(&config),
     }
 
     // let mut app = cli::build_cli();
