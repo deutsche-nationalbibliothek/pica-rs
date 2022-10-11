@@ -1,10 +1,11 @@
 use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeSet;
+use std::ffi::OsString;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 
-use clap::Arg;
+use clap::Parser;
 use pica::matcher::{MatcherFlags, RecordMatcher};
 use pica::{Outcome, ReaderBuilder, Selectors};
 use serde::{Deserialize, Serialize};
@@ -12,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::translit::translit_maybe;
-use crate::util::{CliArgs, CliError, CliResult, Command};
+use crate::util::{CliError, CliResult};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -20,169 +21,162 @@ pub(crate) struct SelectConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
-pub(crate) fn cli() -> Command {
-    Command::new("select")
-        .about("Select subfield values from records.")
-        .arg(
-            Arg::new("skip-invalid")
-                .short('s')
-                .long("skip-invalid")
-                .help("skip invalid records"),
-        )
-        .arg(
-            Arg::new("no-empty-columns")
-                .long("no-empty-columns")
-                .help("disallow empty columns"),
-        )
-        .arg(
-            Arg::new("unique")
-                .long("unique")
-                .short('u')
-                .help("When this flag is provided, duplicate rows will be skipped."),
-        )
-        .arg(
-            Arg::new("ignore-case")
-                .short('i')
-                .long("--ignore-case")
-                .help("When this flag is provided, comparision operations will be search case insensitive."),
-        )
-        .arg(
-            Arg::new("tsv")
-                .short('t')
-                .long("tsv")
-                .help("use tabs as field delimiter"),
-        )
-        .arg(
-            Arg::new("translit")
-                .long("--translit")
-                .value_name("translit")
-                .possible_values(["nfd", "nfkd", "nfc", "nfkc"])
-                .help("If present, transliterate output into the selected normalform.")
-        )
-        .arg(
-            Arg::new("header")
-                .short('H')
-                .long("--header")
-                .value_name("header")
-                .help("Comma-separated list of column names."),
-        )
-        .arg(
-            Arg::new("filter")
-                .long("where")
-                .help("A expression used for filtering records.")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("output")
-                .short('o')
-                .long("--output")
-                .value_name("file")
-                .help("Write output to <file> instead of stdout."),
-        )
-        .arg(Arg::new("selectors").required(true))
-        .arg(Arg::new("filename"))
+#[derive(Parser, Debug)]
+pub(crate) struct Select {
+    /// Skip invalid records that can't be decoded
+    #[arg(short, long)]
+    skip_invalid: bool,
+
+    /// Disallow empty columns
+    #[arg(long)]
+    no_empty_columns: bool,
+
+    /// Skip duplicate rows
+    #[arg(long, short)]
+    unique: bool,
+
+    /// When this flag is provided, comparision operations will be
+    /// search case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// Write output tab-separated (TSV)
+    #[arg(long, short)]
+    tsv: bool,
+
+    /// Transliterate output into the selected normalform <NF>
+    /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
+    #[arg(long,
+          value_name = "NF", 
+          value_parser = ["nfd", "nfkd", "nfc", "nfkc"],
+          hide_possible_values = true,
+    )]
+    translit: Option<String>,
+
+    /// Comma-separated list of column names
+    #[arg(long, short = 'H')]
+    header: Option<String>,
+
+    /// A filter expression used for searching
+    #[arg(long = "where")]
+    filter: Option<String>,
+
+    /// Write output to <filename> instead of stdout
+    #[arg(short, long, value_name = "filename")]
+    output: Option<OsString>,
+
+    ///
+    selectors: String,
+
+    /// Read file in normalized PICA+ format
+    filename: Option<OsString>,
 }
 
-fn writer(filename: Option<&str>) -> CliResult<Box<dyn Write>> {
+fn writer(filename: Option<OsString>) -> CliResult<Box<dyn Write>> {
     Ok(match filename {
         Some(filename) => Box::new(File::create(filename)?),
         None => Box::new(io::stdout()),
     })
 }
 
-pub(crate) fn run(args: &CliArgs, config: &Config) -> CliResult<()> {
-    let skip_invalid =
-        skip_invalid_flag!(args, config.select, config.global);
-    let no_empty_columns = args.is_present("no-empty-columns");
-    let ignore_case = args.is_present("ignore-case");
-    let unique = args.is_present("unique");
-    let mut seen = BTreeSet::new();
+impl Select {
+    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        let skip_invalid = skip_invalid_flag!(
+            self.skip_invalid,
+            config.select,
+            config.global
+        );
 
-    let mut reader = ReaderBuilder::new()
-        .skip_invalid(skip_invalid)
-        .from_path_or_stdin(args.value_of("filename"))?;
+        let mut seen = BTreeSet::new();
+        let mut reader = ReaderBuilder::new()
+            .skip_invalid(skip_invalid)
+            .from_path_or_stdin(self.filename)?;
 
-    let mut writer = csv::WriterBuilder::new()
-        .delimiter(if args.is_present("tsv") { b'\t' } else { b',' })
-        .from_writer(writer(args.value_of("output"))?);
+        let mut writer = csv::WriterBuilder::new()
+            .delimiter(if self.tsv { b'\t' } else { b',' })
+            .from_writer(writer(self.output)?);
 
-    let selectors_str = args.value_of("selectors").unwrap();
-    let selectors = match Selectors::decode(selectors_str) {
-        Ok(val) => val,
-        _ => {
-            return Err(CliError::Other(format!(
-                "invalid select list: {}",
-                selectors_str
-            )))
-        }
-    };
-
-    if let Some(header) = args.value_of("header") {
-        writer.write_record(header.split(',').map(|s| s.trim()))?;
-    }
-
-    let flags = MatcherFlags::default();
-    let filter = match args.value_of("filter") {
-        Some(filter_str) => match RecordMatcher::new(filter_str) {
-            Ok(f) => f,
+        let selectors = match Selectors::decode(&self.selectors) {
+            Ok(val) => val,
             _ => {
                 return Err(CliError::Other(format!(
-                    "invalid filter: \"{}\"",
-                    filter_str
+                    "invalid select list: {}",
+                    self.selectors
                 )))
             }
-        },
-        None => RecordMatcher::True,
-    };
+        };
 
-    for result in reader.records() {
-        let record = result?;
-
-        if !filter.is_match(&record, &flags) {
-            continue;
+        if let Some(header) = self.header {
+            writer.write_record(header.split(',').map(|s| s.trim()))?;
         }
 
-        let outcome = selectors
-            .iter()
-            .map(|selector| record.select(selector, ignore_case))
-            .fold(Outcome::default(), |acc, x| acc * x);
+        let flags = MatcherFlags::default();
+        let filter = match self.filter {
+            Some(filter_str) => match RecordMatcher::new(&filter_str) {
+                Ok(f) => f,
+                _ => {
+                    return Err(CliError::Other(format!(
+                        "invalid filter: \"{}\"",
+                        filter_str
+                    )))
+                }
+            },
+            None => RecordMatcher::True,
+        };
 
-        for row in outcome.iter() {
-            if no_empty_columns
-                && row.iter().any(|column| column.is_empty())
-            {
+        for result in reader.records() {
+            let record = result?;
+
+            if !filter.is_match(&record, &flags) {
                 continue;
             }
 
-            if unique {
-                let mut hasher = DefaultHasher::new();
-                row.hash(&mut hasher);
-                let hash = hasher.finish();
+            let outcome = selectors
+                .iter()
+                .map(|selector| {
+                    record.select(selector, self.ignore_case)
+                })
+                .fold(Outcome::default(), |acc, x| acc * x);
 
-                if seen.contains(&hash) {
+            for row in outcome.iter() {
+                if self.no_empty_columns
+                    && row.iter().any(|column| column.is_empty())
+                {
                     continue;
                 }
 
-                seen.insert(hash);
-            }
+                if self.unique {
+                    let mut hasher = DefaultHasher::new();
+                    row.hash(&mut hasher);
+                    let hash = hasher.finish();
 
-            if !row.iter().all(|col| col.is_empty()) {
-                if args.value_of("translit").is_some() {
-                    writer.write_record(
-                        row.iter().map(ToString::to_string).map(|s| {
-                            translit_maybe(
-                                &s,
-                                args.value_of("translit"),
-                            )
-                        }),
-                    )?;
-                } else {
-                    writer.write_record(row)?;
-                };
+                    if seen.contains(&hash) {
+                        continue;
+                    }
+
+                    seen.insert(hash);
+                }
+
+                if !row.iter().all(|col| col.is_empty()) {
+                    if self.translit.is_some() {
+                        writer.write_record(
+                            row.iter().map(ToString::to_string).map(
+                                |s| {
+                                    translit_maybe(
+                                        &s,
+                                        self.translit.as_deref(),
+                                    )
+                                },
+                            ),
+                        )?;
+                    } else {
+                        writer.write_record(row)?;
+                    };
+                }
             }
         }
-    }
 
-    writer.flush()?;
-    Ok(())
+        writer.flush()?;
+        Ok(())
+    }
 }

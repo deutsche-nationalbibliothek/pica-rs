@@ -18,7 +18,7 @@ use std::{io, process};
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
     Cat, Completions, Count, Filter, Frequency, Invalid, Json,
-    Partition, Print, Sample,
+    Partition, Print, Sample, Select,
 };
 use config::Config;
 use util::{CliError, CliResult};
@@ -68,6 +68,9 @@ enum Commands {
 
     /// Selects a random permutation of records
     Sample(Sample),
+
+    /// Select subfield values from records
+    Select(Select),
 }
 
 fn run() -> CliResult<()> {
@@ -85,6 +88,7 @@ fn run() -> CliResult<()> {
         Commands::Partition(cmd) => cmd.run(&config),
         Commands::Print(cmd) => cmd.run(&config),
         Commands::Sample(cmd) => cmd.run(&config),
+        Commands::Select(cmd) => cmd.run(&config),
     }
 
     // let mut app = cli::build_cli();
@@ -93,12 +97,6 @@ fn run() -> CliResult<()> {
     // let args = m.subcommand_matches(name).unwrap();
 
     // match name {
-    //     "invalid" => cmds::invalid::run(args),
-    //     "json" => cmds::json::run(args, &config),
-    //     "partition" => cmds::partition::run(args, &config),
-    //     "print" => cmds::print::run(args, &config),
-    //     "sample" => cmds::sample::run(args, &config),
-    //     "select" => cmds::select::run(args, &config),
     //     "slice" => cmds::slice::run(args, &config),
     //     "split" => cmds::split::run(args, &config),
     //     "xml" => cmds::xml::run(args, &config),

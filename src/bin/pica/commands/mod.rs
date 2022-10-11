@@ -8,6 +8,7 @@ mod json;
 mod partition;
 mod print;
 mod sample;
+mod select;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
@@ -19,8 +20,8 @@ pub(crate) use json::{Json, JsonConfig};
 pub(crate) use partition::{Partition, PartitionConfig};
 pub(crate) use print::{Print, PrintConfig};
 pub(crate) use sample::{Sample, SampleConfig};
+pub(crate) use select::{Select, SelectConfig};
 
-// pub(crate) mod select;
 // pub(crate) mod slice;
 // pub(crate) mod split;
 // pub(crate) mod xml;
