@@ -59,6 +59,7 @@ pub(crate) struct Count {
     output: Option<OsString>,
 
     /// Read one or more files in normalized PICA+ format.
+    #[arg(default_value = "-")]
     filenames: Vec<OsString>,
 }
 
@@ -86,13 +87,7 @@ impl Count {
         let mut fields = 0;
         let mut subfields = 0;
 
-        let filenames = if self.filenames.is_empty() {
-            vec![OsString::from("-")]
-        } else {
-            self.filenames
-        };
-
-        for filename in filenames {
+        for filename in self.filenames {
             let builder =
                 ReaderBuilder::new().skip_invalid(skip_invalid);
             let mut reader: Reader<Box<dyn Read>> = match filename

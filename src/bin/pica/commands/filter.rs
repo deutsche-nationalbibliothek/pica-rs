@@ -105,6 +105,7 @@ pub(crate) struct Filter {
     filter: String,
 
     /// Read one or more files in normalized PICA+ format.
+    #[arg(default_value = "-")]
     filenames: Vec<OsString>,
 }
 
@@ -214,13 +215,7 @@ impl Filter {
             ignore_case: self.ignore_case,
         };
 
-        let filenames = if self.filenames.is_empty() {
-            vec![OsString::from("-")]
-        } else {
-            self.filenames
-        };
-
-        for filename in filenames {
+        for filename in self.filenames {
             let builder =
                 ReaderBuilder::new().skip_invalid(skip_invalid);
             let mut reader: Reader<Box<dyn Read>> = match filename

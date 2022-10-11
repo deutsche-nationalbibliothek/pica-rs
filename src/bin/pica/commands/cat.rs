@@ -43,6 +43,7 @@ pub(crate) struct Cat {
     output: Option<OsString>,
 
     /// Read one or more files in normalized PICA+ format.
+    #[arg(default_value = "-")]
     filenames: Vec<OsString>,
 }
 
@@ -70,13 +71,7 @@ impl Cat {
             None => None,
         };
 
-        let filenames = if self.filenames.is_empty() {
-            vec![OsString::from("-")]
-        } else {
-            self.filenames
-        };
-
-        for filename in filenames {
+        for filename in self.filenames {
             let builder =
                 ReaderBuilder::new().skip_invalid(skip_invalid);
             let mut reader: Reader<Box<dyn Read>> = match filename
