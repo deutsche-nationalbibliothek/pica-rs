@@ -409,6 +409,66 @@ fn pica_select_write_output() -> TestResult {
 }
 
 #[test]
+fn pica_select_append() -> TestResult {
+    let filename = Builder::new().suffix(".csv").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("-o")
+        .arg(filename_str)
+        .arg("003@.0, 002@.0")
+        .arg("tests/data/119232022.dat.gz")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("--append")
+        .arg("-o")
+        .arg(filename_str)
+        .arg("003@.0, 002@.0")
+        .arg("tests/data/1004916019.dat.gz")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    assert_eq!(
+        read_to_string(filename).unwrap(),
+        "119232022,Tp1\n1004916019,Ts1\n"
+    );
+
+    // cross check
+    let filename = Builder::new().suffix(".csv").tempfile()?;
+    let filename_str = filename.path();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("-o")
+        .arg(filename_str)
+        .arg("003@.0, 002@.0")
+        .arg("tests/data/119232022.dat.gz")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("-o")
+        .arg(filename_str)
+        .arg("003@.0, 002@.0")
+        .arg("tests/data/1004916019.dat.gz")
+        .assert();
+    assert.success().stdout(predicate::str::is_empty());
+
+    assert_eq!(read_to_string(filename).unwrap(), "1004916019,Ts1\n");
+
+    Ok(())
+}
+
+#[test]
 fn pica_select_translit() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
