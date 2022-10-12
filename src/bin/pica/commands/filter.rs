@@ -6,7 +6,9 @@ use std::str::FromStr;
 
 use clap::{value_parser, Parser};
 use lazy_static::lazy_static;
-use pica::matcher::{MatcherFlags, RecordMatcher, TagMatcher};
+use pica::matcher::{
+    MatcherFlags, OccurrenceMatcher, RecordMatcher, TagMatcher,
+};
 use pica::{Path, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
@@ -134,16 +136,30 @@ impl Filter {
             None => None,
         };
 
-        let reducers = self
+        let items = self
             .reduce
             .split(',')
             .map(str::trim)
-            .filter(|item| !item.is_empty())
-            .map(TagMatcher::new)
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|_| {
+            .filter(|s| !s.is_empty());
+
+        let mut reducers = vec![];
+        for item in items {
+            let (tag, occ) = if let Some(pos) = item.rfind('/') {
+                (&item[0..pos], &item[pos..])
+            } else {
+                (item, "/*")
+            };
+
+            let tag = TagMatcher::new(tag).map_err(|_| {
                 CliError::Other("invalid reduce value".to_string())
             })?;
+
+            let occ = OccurrenceMatcher::new(occ).map_err(|_| {
+                CliError::Other("invalid reduce value".to_string())
+            })?;
+
+            reducers.push((tag, occ));
+        }
 
         let filter_str = if let Some(filename) = self.expr_file {
             read_to_string(filename).unwrap()
