@@ -27,6 +27,8 @@ toml = "0.5"
 unicode-normalization = "0.1"
 xml-rs = "0.8"
 
+pica-record = { version = "0.1", path = "pica-record" }
+
 [dev-dependencies]
 assert_cmd = "2.0"
 predicates = "2.1"
