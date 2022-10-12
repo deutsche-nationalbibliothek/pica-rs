@@ -1,7 +1,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeSet;
 use std::ffi::OsString;
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Read, Write};
 
@@ -57,6 +57,10 @@ pub(crate) struct Select {
     #[arg(long, short = 'H')]
     header: Option<String>,
 
+    /// Append to the given file, do not overwrite
+    #[arg(long)]
+    append: bool,
+
     /// A filter expression used for searching
     #[arg(long = "where")]
     filter: Option<String>,
@@ -73,9 +77,19 @@ pub(crate) struct Select {
     filenames: Vec<OsString>,
 }
 
-fn writer(filename: Option<OsString>) -> CliResult<Box<dyn Write>> {
+fn writer(
+    filename: Option<OsString>,
+    append: bool,
+) -> CliResult<Box<dyn Write>> {
     Ok(match filename {
-        Some(filename) => Box::new(File::create(filename)?),
+        Some(filename) => Box::new(
+            OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(!append)
+                .append(append)
+                .open(filename)?,
+        ),
         None => Box::new(io::stdout()),
     })
 }
@@ -91,7 +105,7 @@ impl Select {
         let mut seen = BTreeSet::new();
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
-            .from_writer(writer(self.output)?);
+            .from_writer(writer(self.output, self.append)?);
 
         let selectors = match Selectors::decode(&self.selectors) {
             Ok(val) => val,
