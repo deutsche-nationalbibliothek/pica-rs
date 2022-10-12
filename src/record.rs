@@ -354,7 +354,7 @@ impl ByteRecord {
     /// ```rust
     /// use std::str::FromStr;
     ///
-    /// use pica::matcher::TagMatcher;
+    /// use pica::matcher::{OccurrenceMatcher, TagMatcher};
     /// use pica::{ByteRecord, Field, Subfield, Tag};
     ///
     /// # fn main() { example().unwrap(); }
@@ -363,8 +363,8 @@ impl ByteRecord {
     ///         "012A \x1fa123\x1e013A \x1fa456\x1e",
     ///     )?;
     ///     record.reduce(&[
-    ///         TagMatcher::new("003@")?,
-    ///         TagMatcher::new("012A")?,
+    ///         (TagMatcher::new("003@")?, OccurrenceMatcher::Any),
+    ///         (TagMatcher::new("012A")?, OccurrenceMatcher::Any),
     ///     ]);
     ///
     ///     assert_eq!(

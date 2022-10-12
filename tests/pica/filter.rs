@@ -1259,6 +1259,81 @@ fn pica_filter_reduce() -> TestResult {
         ))
         .stdout(predicate::str::is_empty());
 
+    // Keep 003@ and all 041A
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--reduce")
+        .arg("003@, 041A")
+        .arg("003@?")
+        .arg("tests/data/1029350469.dat.gz")
+        .assert();
+
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1029350469_r1.dat",
+    ));
+    assert.success().stdout(expected);
+
+    // Keep 003@ and 041A/*
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--reduce")
+        .arg("003@, 041A/*")
+        .arg("003@?")
+        .arg("tests/data/1029350469.dat.gz")
+        .assert();
+
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1029350469_r1.dat",
+    ));
+    assert.success().stdout(expected);
+
+    // Keep 003@ and 041A/01
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--reduce")
+        .arg("003@, 041A/01")
+        .arg("003@?")
+        .arg("tests/data/1029350469.dat.gz")
+        .assert();
+
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1029350469_r2.dat",
+    ));
+    assert.success().stdout(expected);
+
+    // Keep 003@ and 041A/01-09
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--reduce")
+        .arg("003@, 041A/01-09")
+        .arg("003@?")
+        .arg("tests/data/1029350469.dat.gz")
+        .assert();
+
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1029350469_r3.dat",
+    ));
+    assert.success().stdout(expected);
+
+    // Keep 003@, 041A/01-09 and 041A/20-29
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--reduce")
+        .arg("003@, 041A/01-09, 041A/20-29")
+        .arg("003@?")
+        .arg("tests/data/1029350469.dat.gz")
+        .assert();
+
+    let expected = predicate::path::eq_file(Path::new(
+        "tests/data/1029350469_r4.dat",
+    ));
+    assert.success().stdout(expected);
+
     Ok(())
 }
 
