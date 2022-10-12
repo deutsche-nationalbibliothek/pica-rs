@@ -8,7 +8,7 @@ use bstr::BString;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 use crate::error::Result;
-use crate::matcher::{MatcherFlags, TagMatcher};
+use crate::matcher::{MatcherFlags, OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_fields, ParsePicaError};
 use crate::select::{Outcome, Selector};
 use crate::{Field, Path};
@@ -379,7 +379,12 @@ impl ByteRecord {
     ///     Ok(())
     /// }
     /// ```
-    pub fn reduce(&mut self, matchers: &[TagMatcher]) {
+    pub fn reduce(
+        &mut self,
+        matchers: &[(TagMatcher, OccurrenceMatcher)],
+    ) {
+        // eprintln!("matcher = {:?}", matchers);
+
         if !matchers.is_empty() {
             self.raw_data = None;
             self.fields = self
@@ -387,7 +392,10 @@ impl ByteRecord {
                 .clone()
                 .into_iter()
                 .filter(|field| {
-                    matchers.iter().any(|m| m.is_match(&field.tag))
+                    matchers.iter().any(|m| {
+                        m.1.is_match(field.occurrence.as_ref())
+                            && m.0.is_match(&field.tag)
+                    })
                 })
                 .collect();
         }
