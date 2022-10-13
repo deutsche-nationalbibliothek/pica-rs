@@ -11,7 +11,7 @@
     - [count](guide/cmds/count.md)
     - [filter]()
     - [frequency](guide/cmds/frequency.md)
-    - [invalid]()
+    - [invalid](guide/cmds/invalid.md)
     - [partition]()
     - [print]()
     - [sample]()
