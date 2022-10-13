@@ -356,15 +356,19 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-      - uses: actions-rs/cargo@v1
+      - uses: actions-rs/install@v0.1
         with:
-          command: doc
-          args: --all --no-deps --workspace
+          version: latest
+          crate: mdbook
       - run: |
-          echo '<meta http-equiv=refresh content=0;url=pica/index.html>' > target/doc/index.html
+          mkdir -p target/docs
+          cargo doc --all --no-deps --workspace --target-dir target/docs/api
+          mdbook build docs/book --dest-dir ../../target/docs/book
+          echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' >> target/docs/api/index.html
+          echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: target/doc
+          publish_dir: target/docs
           keep_files: false
           force_orphan: true
