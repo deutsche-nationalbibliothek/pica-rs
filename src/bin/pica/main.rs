@@ -78,7 +78,7 @@ enum Commands {
     /// Splits a stream of records into chunks
     Split(Split),
 
-    // Serialize records to PICA XML
+    /// Serialize records to PICA XML
     Xml(Xml),
 }
 
