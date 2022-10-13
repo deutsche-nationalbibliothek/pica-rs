@@ -326,7 +326,7 @@ jobs:
           mdbook test docs/book
 
   gh-pages:
-    # if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     needs:
       - audit
       - book
