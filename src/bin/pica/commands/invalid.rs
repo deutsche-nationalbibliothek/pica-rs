@@ -1,11 +1,14 @@
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fs::File;
-use std::io::{self, BufWriter, Read, Write};
+use std::io::{self, BufReader, BufWriter, Read, Write};
+use std::path::Path;
 
+use bstr::io::BufReadExt;
 use clap::Parser;
-use pica::{Error, ParsePicaError, Reader, ReaderBuilder};
+use flate2::read::GzDecoder;
+use pica_record::{ByteRecord, ParsePicaError};
 
-use crate::util::{CliError, CliResult};
+use crate::util::CliResult;
 
 #[derive(Parser, Debug)]
 pub(crate) struct Invalid {
@@ -28,26 +31,31 @@ impl Invalid {
         let mut writer = BufWriter::new(writer);
 
         for filename in self.filenames {
-            let builder = ReaderBuilder::new().skip_invalid(false);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
-
-            for result in reader.records() {
-                match result {
-                    Err(Error::InvalidRecord(ParsePicaError {
-                        data,
-                        ..
-                    })) => {
-                        writer.write_all(&data)?;
+            let path = Path::new(&filename);
+            let reader: Box<dyn Read> =
+                match path.extension().and_then(OsStr::to_str) {
+                    Some("gz") => {
+                        Box::new(GzDecoder::new(File::open(filename)?))
                     }
-                    Err(e) => return Err(CliError::from(e)),
-                    _ => continue,
+                    _ => {
+                        if filename != "-" {
+                            Box::new(File::open(filename)?)
+                        } else {
+                            Box::new(io::stdin())
+                        }
+                    }
+                };
+
+            let mut reader = BufReader::new(reader);
+            reader.for_byte_line_with_terminator(|line| {
+                match ByteRecord::from_bytes(line) {
+                    Err(ParsePicaError::InvalidRecord(data)) => {
+                        writer.write_all(&data)?;
+                        Ok(true)
+                    }
+                    _ => Ok(true),
                 }
-            }
+            })?;
         }
 
         writer.flush()?;
