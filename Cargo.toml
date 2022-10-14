@@ -1,6 +1,6 @@
 [package]
 name = "pica"
-version = "0.13.0"
+version = "0.12.1"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "MIT OR Unlicense"
