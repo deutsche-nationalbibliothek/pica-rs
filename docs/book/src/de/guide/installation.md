@@ -9,11 +9,13 @@ bereit.
 
 Beginnend mit der Version `0.10.0` stehen für die Linux-Distributionen
 [Debian](https://www.debian.org/) sowie [Ubuntu](https://ubuntu.com/) fertige
-`DEB`-Pakete zum Download bereit. Diese können mit folgendem Kommando installiert
+`DEB`-Pakete zum Download bereit. Diese können mit folgendem Kommando heruntergeladen und installiert
 werden:
 
 ```bash
-$ dpkg -i pica_0.10.0-1_amd64.deb
+$ wget https://github.com/deutsche-nationalbibliothek/pica-rs/releases/download/v0.12.1/pica_0.12.1-1_amd64.deb
+$ dpkg -i pica_0.12.1-1_amd64.deb
+$ rm pica_0.12.1-1_amd64.deb
 ```
 
 ## RedHat & SUSE & CentOS
