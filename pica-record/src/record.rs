@@ -16,7 +16,7 @@ use crate::{Field, ParsePicaError};
 
 /// A PICA+ record.
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub struct Record<T>(pub(crate) Vec<Field<T>>);
+pub struct Record<T>(Vec<Field<T>>);
 
 /// A immutable PICA+ record.
 pub type RecordRef<'a> = Record<&'a BStr>;
@@ -171,7 +171,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
 }
 
 #[inline]
-pub fn parse_record(i: &[u8]) -> ParseResult<Vec<RawField>> {
+fn parse_record(i: &[u8]) -> ParseResult<Vec<RawField>> {
     all_consuming(terminated(many1(parse_field), char(LF as char)))(i)
 }
 

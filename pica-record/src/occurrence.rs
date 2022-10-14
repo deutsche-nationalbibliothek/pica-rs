@@ -12,7 +12,7 @@ use crate::ParsePicaError;
 
 /// A PICA+ occurrence.
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub struct Occurrence<T>(pub(crate) T);
+pub struct Occurrence<T>(T);
 
 /// A immutable PICA+ occurrence.
 pub type OccurrenceRef<'a> = Occurrence<&'a BStr>;
@@ -70,6 +70,12 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Occurrence<T> {
             .finish()
             .map_err(|_| ParsePicaError::InvalidOccurrence)
             .map(|(_, digits)| Occurrence(digits.into()))
+    }
+
+    /// Creates a new Occurrence without checking the input
+    #[inline]
+    pub(crate) fn from_unchecked(value: impl Into<T>) -> Self {
+        Self(value.into())
     }
 
     /// Write the occurrence into the given writer.

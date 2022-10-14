@@ -8,7 +8,8 @@ on:
 env:
   CARGO_INCREMENTAL: 0
   RUSTUP_MAX_RETRIES: 10
-  RUSTFLAGS: -D warnings -W unreachable-pub -W rust-2021-compatibility
+  # RUSTFLAGS: -D warnings -W unreachable-pub -W rust-2021-compatibility
+  RUSTFLAGS: -D warnings -W rust-2021-compatibility
 
 jobs:
   create-release:

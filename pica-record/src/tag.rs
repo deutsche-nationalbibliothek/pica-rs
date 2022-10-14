@@ -12,7 +12,7 @@ use crate::ParsePicaError;
 
 /// A PICA+ tag.
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub struct Tag<T>(pub(crate) T);
+pub struct Tag<T>(T);
 
 /// A immutable PICA+ tag.
 pub type TagRef<'a> = Tag<&'a BStr>;
@@ -69,6 +69,11 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Tag<T> {
             .finish()
             .map_err(|_| ParsePicaError::InvalidTag)
             .map(|(_, tag)| Tag(tag.into()))
+    }
+
+    /// Creates a new Tag without checking the input.
+    pub(crate) fn from_unchecked(value: impl Into<T>) -> Self {
+        Self(value.into())
     }
 }
 
