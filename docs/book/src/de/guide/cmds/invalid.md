@@ -3,10 +3,9 @@
 Das Kommando `invalid` filtert aus einer Datei Zeilen heraus, die nicht
 dekodiert werden konnten und somit ungültig sind.
 
-> Hinweis: Das Kommando befindet sich im Beta-Status und wird gerade
-> intensiv getestet, bevor es als stabil freigegeben wird. Änderungen
-> am _command-line interface_ (CLI) sowie das Auftreten kleinerer Fehler
-> ist möglich.
+> Hinweis: Das Kommando ist im Beta-Status und wird aktuell getestet.
+> Änderungen am _command-line interface_ (CLI) sowie das Auftreten 
+> kleinerer Fehler sind möglich.
 
 ## Beschreibung
 
