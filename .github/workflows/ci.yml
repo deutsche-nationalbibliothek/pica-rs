@@ -18,7 +18,11 @@ defaults:
     shell: bash
 
 env:
+  CARGO_INCREMENTAL: 0
   CACHE_KEY: Linux-cargo-nightly-x86_64-unknown-linux-gnu
+  # RUSTFLAGS: -D warnings -W unreachable-pub -W rust-2021-compatibility
+  RUSTFLAGS: -D warnings -W rust-2021-compatibility
+  RUSTUP_MAX_RETRIES: 10
 
 jobs:
   check:

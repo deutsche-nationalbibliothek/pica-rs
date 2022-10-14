@@ -92,8 +92,8 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
             .finish()
             .map_err(|_| ParsePicaError::InvalidField)
             .map(|(_, (tag, occurrence, subfields))| Self {
-                tag: Tag(tag.into()),
-                occurrence: occurrence.map(|o| Occurrence(o.into())),
+                tag: Tag::from_unchecked(tag),
+                occurrence: occurrence.map(Occurrence::from_unchecked),
                 subfields: subfields
                     .into_iter()
                     .map(|(code, value)| Subfield {
@@ -218,7 +218,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
     /// ```
     #[inline]
     pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
-        write!(out, "{}", self.tag.0)?;
+        write!(out, "{}", *self.tag)?;
         self.occurrence().map(|o| o.write_to(out));
         write!(out, " ")?;
         for subfield in self.subfields.iter() {
