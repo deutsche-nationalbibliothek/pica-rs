@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* Add `write_to` function to `RecordRef` (#521)
+* Add `RecordRef::write_to` function (#521)
 
 ## 0.1.0 - 2022-10-14
 
