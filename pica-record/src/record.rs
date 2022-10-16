@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::io::{self, Write};
 use std::ops::Deref;
 use std::slice::Iter;
 use std::str::Utf8Error;
@@ -167,6 +168,36 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
         }
 
         Ok(())
+    }
+
+    /// Write the record into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::RecordRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let record = RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    ///     record.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #     String::from_utf8(writer.into_inner())?,
+    ///     #     "003@ \x1f0a\x1e\n"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        for field in self.iter() {
+            field.write_to(out)?;
+        }
+        write!(out, "\n")
     }
 }
 
