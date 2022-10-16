@@ -197,7 +197,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
         for field in self.iter() {
             field.write_to(out)?;
         }
-        write!(out, "\n")
+        writeln!(out)
     }
 }
 
