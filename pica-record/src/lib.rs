@@ -4,6 +4,7 @@
 
 mod error;
 mod field;
+pub mod io;
 mod occurrence;
 mod record;
 mod subfield;
