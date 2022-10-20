@@ -1,6 +1,5 @@
 use std::ffi::OsString;
-use std::fs::File;
-use std::io::{self, BufWriter, Write};
+use std::io::Write;
 
 use clap::Parser;
 use pica_record::io::BufReadExt;
@@ -22,12 +21,7 @@ pub(crate) struct Invalid {
 
 impl Invalid {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let writer: Box<dyn Write> = match self.output {
-            Some(filename) => Box::new(File::create(filename)?),
-            None => Box::new(io::stdout()),
-        };
-
-        let mut writer = BufWriter::new(writer);
+        let mut writer = config.writer(self.output)?;
 
         for filename in self.filenames {
             let mut reader = config.reader(filename)?;

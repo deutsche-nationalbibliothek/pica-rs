@@ -1,6 +1,6 @@
 use std::ffi::OsStr;
 use std::fs::{create_dir_all, read_to_string, File};
-use std::io::{self, BufReader, Read};
+use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 
 use directories::ProjectDirs;
@@ -100,5 +100,16 @@ impl Config {
         };
 
         Ok(BufReader::new(reader))
+    }
+
+    pub(crate) fn writer<P: AsRef<Path>>(
+        &self,
+        path: Option<P>,
+    ) -> io::Result<BufWriter<Box<dyn Write>>> {
+        if let Some(path) = path {
+            Ok(BufWriter::new(Box::new(File::create(path)?)))
+        } else {
+            Ok(BufWriter::new(Box::new(io::stdout())))
+        }
     }
 }
