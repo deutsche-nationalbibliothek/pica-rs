@@ -3,10 +3,10 @@ use std::fs::File;
 use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
-use bstr::io::BufReadExt;
 use clap::Parser;
 use flate2::read::GzDecoder;
-use pica_record::{ByteRecord, ParsePicaError};
+use pica_record::io::BufReadExt;
+use pica_record::ParsePicaError;
 
 use crate::util::CliResult;
 
@@ -47,14 +47,13 @@ impl Invalid {
                 };
 
             let mut reader = BufReader::new(reader);
-            reader.for_byte_line_with_terminator(|line| {
-                match ByteRecord::from_bytes(line) {
-                    Err(ParsePicaError::InvalidRecord(data)) => {
-                        writer.write_all(&data)?;
-                        Ok(true)
-                    }
-                    _ => Ok(true),
+            reader.for_pica_record(|result| match result {
+                Err(ParsePicaError::InvalidRecord(data)) => {
+                    writer.write_all(&data)?;
+                    Ok(true)
                 }
+                Err(e) => Err(e.into()),
+                _ => Ok(true),
             })?;
         }
 

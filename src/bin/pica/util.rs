@@ -1,8 +1,6 @@
 use std::convert::From;
 use std::{fmt, io};
 
-// pub(crate) type Command = clap::Command<'static>;
-// pub(crate) type CliArgs = clap::ArgMatches;
 pub(crate) type CliResult<T> = Result<T, CliError>;
 
 #[derive(Debug)]
@@ -11,6 +9,7 @@ pub(crate) enum CliError {
     Csv(csv::Error),
     Xml(xml::writer::Error),
     Pica(pica::Error),
+    ParsePica(pica_record::ParsePicaError),
     Other(String),
 }
 
@@ -21,6 +20,7 @@ impl fmt::Display for CliError {
             CliError::Xml(ref e) => e.fmt(f),
             CliError::Io(ref e) => e.fmt(f),
             CliError::Pica(ref e) => e.fmt(f),
+            CliError::ParsePica(ref e) => e.fmt(f),
             CliError::Other(ref s) => f.write_str(s),
         }
     }
@@ -47,5 +47,16 @@ impl From<csv::Error> for CliError {
 impl From<xml::writer::Error> for CliError {
     fn from(err: xml::writer::Error) -> CliError {
         CliError::Xml(err)
+    }
+}
+
+impl From<pica_record::io::ReadPicaError> for CliError {
+    fn from(err: pica_record::io::ReadPicaError) -> Self {
+        match err {
+            pica_record::io::ReadPicaError::Io(e) => CliError::Io(e),
+            pica_record::io::ReadPicaError::Parse(e) => {
+                CliError::ParsePica(e)
+            }
+        }
     }
 }
