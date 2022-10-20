@@ -92,7 +92,7 @@ fn run() -> CliResult<()> {
         Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),
-        Commands::Invalid(cmd) => cmd.run(),
+        Commands::Invalid(cmd) => cmd.run(&config),
         Commands::Json(cmd) => cmd.run(&config),
         Commands::Partition(cmd) => cmd.run(&config),
         Commands::Print(cmd) => cmd.run(&config),

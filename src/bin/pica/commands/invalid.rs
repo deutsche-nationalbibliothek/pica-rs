@@ -1,13 +1,11 @@
-use std::ffi::{OsStr, OsString};
-use std::fs::File;
-use std::io::{self, BufReader, BufWriter, Read, Write};
-use std::path::Path;
+use std::ffi::OsString;
+use std::io::Write;
 
 use clap::Parser;
-use flate2::read::GzDecoder;
 use pica_record::io::BufReadExt;
 use pica_record::ParsePicaError;
 
+use crate::config::Config;
 use crate::util::CliResult;
 
 #[derive(Parser, Debug)]
@@ -22,31 +20,12 @@ pub(crate) struct Invalid {
 }
 
 impl Invalid {
-    pub(crate) fn run(self) -> CliResult<()> {
-        let writer: Box<dyn Write> = match self.output {
-            Some(filename) => Box::new(File::create(filename)?),
-            None => Box::new(io::stdout()),
-        };
-
-        let mut writer = BufWriter::new(writer);
+    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        let mut writer = config.writer(self.output)?;
 
         for filename in self.filenames {
-            let path = Path::new(&filename);
-            let reader: Box<dyn Read> =
-                match path.extension().and_then(OsStr::to_str) {
-                    Some("gz") => {
-                        Box::new(GzDecoder::new(File::open(filename)?))
-                    }
-                    _ => {
-                        if filename != "-" {
-                            Box::new(File::open(filename)?)
-                        } else {
-                            Box::new(io::stdin())
-                        }
-                    }
-                };
+            let mut reader = config.reader(filename)?;
 
-            let mut reader = BufReader::new(reader);
             reader.for_pica_record(|result| match result {
                 Err(ParsePicaError::InvalidRecord(data)) => {
                     writer.write_all(&data)?;
