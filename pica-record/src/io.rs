@@ -2,6 +2,7 @@
 
 use std::io;
 
+use bstr::ByteSlice;
 use thiserror::Error;
 
 use crate::parser::LF;
@@ -72,23 +73,63 @@ pub trait BufReadExt: io::BufRead {
     where
         F: FnMut(ParseResult) -> ReadResult<bool>,
     {
-        let mut buf = vec![];
+        // The following code is based on the `io::BufReadExt` trait of
+        // the `bstr` crate. If was necessary to duplicate the code, in
+        // order to use a different result type.
+        //
+        // https://docs.rs/bstr/1.0.1/src/bstr/io.rs.html#289-341
 
-        loop {
-            let num_bytes = self.read_until(LF, &mut buf)?;
-            if num_bytes == 0 {
+        let mut bytes = vec![];
+        let mut res = Ok(());
+        let mut consumed = 0;
+
+        'outer: loop {
+            {
+                let mut buf = self.fill_buf()?;
+
+                while let Some(index) = buf.find_byte(LF) {
+                    let (line, rest) = buf.split_at(index + 1);
+                    buf = rest;
+                    consumed += line.len();
+
+                    let result = ByteRecord::from_bytes(&line);
+                    match f(result) {
+                        Ok(false) => break 'outer,
+                        Err(err) => {
+                            res = Err(err);
+                            break 'outer;
+                        }
+                        _ => (),
+                    }
+                }
+
+                bytes.extend_from_slice(&buf);
+                consumed += buf.len();
+            }
+
+            self.consume(consumed);
+            consumed = 0;
+
+            self.read_until(LF, &mut bytes)?;
+            if bytes.is_empty() {
                 break;
             }
 
-            let result = ByteRecord::from_bytes(&buf);
-            if let Ok(false) = f(result) {
-                break;
+            let result = ByteRecord::from_bytes(&bytes);
+            match f(result) {
+                Ok(false) => break,
+                Err(err) => {
+                    res = Err(err);
+                    break;
+                }
+                _ => (),
             }
 
-            buf.clear();
+            bytes.clear();
         }
 
-        Ok(())
+        self.consume(consumed);
+        res
     }
 }
 
