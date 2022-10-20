@@ -74,9 +74,8 @@ pub trait BufReadExt: io::BufRead {
         F: FnMut(ParseResult) -> ReadResult<bool>,
     {
         // The following code is based on the `io::BufReadExt` trait of
-        // the `bstr` crate. If was necessary to duplicate the code, in
+        // the `bstr` crate. It was necessary to duplicate the code, in
         // order to use a different result type.
-        //
         // https://docs.rs/bstr/1.0.1/src/bstr/io.rs.html#289-341
 
         let mut bytes = vec![];
