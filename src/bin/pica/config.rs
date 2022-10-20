@@ -1,7 +1,10 @@
-use std::fs::{create_dir_all, read_to_string};
+use std::ffi::OsStr;
+use std::fs::{create_dir_all, read_to_string, File};
+use std::io::{self, BufReader, Read};
 use std::path::{Path, PathBuf};
 
 use directories::ProjectDirs;
+use flate2::read::GzDecoder;
 use serde::{Deserialize, Serialize};
 
 use crate::commands::*;
@@ -74,5 +77,28 @@ impl Config {
             Some(path) => Self::from_path(path),
             None => Self::new(),
         }
+    }
+
+    pub(crate) fn reader<P: AsRef<Path>>(
+        &self,
+        path: P,
+    ) -> io::Result<BufReader<Box<dyn Read>>> {
+        let path = path.as_ref();
+
+        let reader: Box<dyn Read> = match path
+            .extension()
+            .and_then(OsStr::to_str)
+        {
+            Some("gz") => Box::new(GzDecoder::new(File::open(path)?)),
+            _ => {
+                if path.to_str() != Some("-") {
+                    Box::new(File::open(path)?)
+                } else {
+                    Box::new(io::stdin())
+                }
+            }
+        };
+
+        Ok(BufReader::new(reader))
     }
 }
