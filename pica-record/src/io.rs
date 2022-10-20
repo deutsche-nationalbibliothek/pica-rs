@@ -92,7 +92,7 @@ pub trait BufReadExt: io::BufRead {
                     buf = rest;
                     consumed += line.len();
 
-                    let result = ByteRecord::from_bytes(&line);
+                    let result = ByteRecord::from_bytes(line);
                     match f(result) {
                         Ok(false) => break 'outer,
                         Err(err) => {
@@ -103,7 +103,7 @@ pub trait BufReadExt: io::BufRead {
                     }
                 }
 
-                bytes.extend_from_slice(&buf);
+                bytes.extend_from_slice(buf);
                 consumed += buf.len();
             }
 
