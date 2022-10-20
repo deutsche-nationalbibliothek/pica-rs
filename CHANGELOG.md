@@ -9,5 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* #522 Use `BufReadExt` to process records (`invalid`)
-* #523 Move reader/writer logic to config (`invalid`)
+* Use `BufReadExt` to process records (`invalid`) #522
+* Move reader/writer logic to config (`invalid`) #523
