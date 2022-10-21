@@ -12,3 +12,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Use `BufReadExt` to process records (`invalid`) #522
 * Move reader/writer logic to config (`invalid`) #523
 * Add snapshot tests (`invalid`) #524
+* Add  long help (`invalid`) #525
