@@ -35,6 +35,7 @@ predicates = "2.1"
 quickcheck = "1.0"
 quickcheck_macros = "1.0"
 tempfile = "3.2"
+trycmd = "0.14"
 
 [lib]
 path = "src/lib.rs"

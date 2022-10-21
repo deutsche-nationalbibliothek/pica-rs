@@ -8,7 +8,6 @@ mod completions;
 mod count;
 mod filter;
 mod frequency;
-mod invalid;
 mod json;
 mod partition;
 mod print;

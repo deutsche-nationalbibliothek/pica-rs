@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "invalid DUMP.dat.gz"
+status = "success"
+stderr = ""
