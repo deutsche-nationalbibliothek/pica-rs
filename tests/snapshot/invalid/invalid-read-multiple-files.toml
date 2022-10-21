@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "invalid invalid.dat 118515551.dat.gz"
+status = "success"
+stderr = ""
