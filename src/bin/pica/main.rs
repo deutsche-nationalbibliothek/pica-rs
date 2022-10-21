@@ -54,7 +54,6 @@ enum Commands {
     /// Compute a frequency table of a subfield
     Frequency(Frequency),
 
-    /// Filter out invalid records, which can't be decoded
     Invalid(Invalid),
 
     /// Serialize records to JSON
