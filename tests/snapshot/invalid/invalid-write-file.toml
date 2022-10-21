@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "invalid -o out.dat"
+status = "success"
+stdout = ""
+stderr = ""
