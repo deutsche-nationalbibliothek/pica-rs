@@ -34,14 +34,14 @@ pub enum SubfieldListMatcher {
 impl fmt::Display for SubfieldListMatcher {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Singleton(expr) => write!(f, "{}", expr),
-            Self::Group(expr) => write!(f, "({})", expr),
-            Self::Not(expr) => write!(f, "!{}", expr),
+            Self::Singleton(expr) => write!(f, "{expr}"),
+            Self::Group(expr) => write!(f, "({expr})"),
+            Self::Not(expr) => write!(f, "!{expr}"),
             Self::Composite(lhs, op, rhs) => {
-                write!(f, "{} {} {}", lhs, op, rhs)
+                write!(f, "{lhs} {op} {rhs}")
             }
             Self::Cardinality(code, op, value) => {
-                write!(f, "#{} {} {}", code, op, value)
+                write!(f, "#{code} {op} {value}")
             }
         }
     }
@@ -75,8 +75,7 @@ impl SubfieldListMatcher {
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid subfield list matcher, got '{}'",
-                data
+                "Expected valid subfield list matcher, got '{data}'"
             ))),
         }
     }
