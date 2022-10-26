@@ -34,20 +34,16 @@ impl fmt::Display for RecordMatcher {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Singleton(expr) => expr.fmt(f),
-            Self::Group(expr) => write!(f, "({})", expr),
-            Self::Not(expr) => write!(f, "!{}", expr),
+            Self::Group(expr) => write!(f, "({expr})"),
+            Self::Not(expr) => write!(f, "!{expr}"),
             Self::Composite(lhs, op, rhs) => {
-                write!(f, "{} {} {}", lhs, op, rhs)
+                write!(f, "{lhs} {op} {rhs}")
             }
             Self::Cardinality(tm, om, sm, op, value) => {
                 if let Some(sm) = sm {
-                    write!(
-                        f,
-                        "#{}{}{{{}}} {} {}",
-                        tm, om, sm, op, value
-                    )
+                    write!(f, "#{tm}{om}{{{sm}}} {op} {value}")
                 } else {
-                    write!(f, "#{}{} {} {}", tm, om, op, value)
+                    write!(f, "#{tm}{om} {op} {value}")
                 }
             }
             Self::True => write!(f, "True"),
