@@ -217,7 +217,7 @@ impl Print {
                         // OCCURRENCE
                         if let Some(occurrence) = field.occurrence() {
                             stdout.set_color(&occurrence_color)?;
-                            write!(stdout, "/{}", occurrence)?;
+                            write!(stdout, "/{occurrence}")?;
                         }
 
                         if !add_spaces {
@@ -246,7 +246,7 @@ impl Print {
                             );
 
                             stdout.set_color(&value_color)?;
-                            write!(stdout, "{}", value)?;
+                            write!(stdout, "{value}")?;
                         }
 
                         writeln!(stdout)?;

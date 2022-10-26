@@ -24,8 +24,8 @@ pub enum OccurrenceMatcher {
 impl fmt::Display for OccurrenceMatcher {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Some(o) => write!(f, "/{}", o),
-            Self::Range(from, to) => write!(f, "/{}-{}", from, to),
+            Self::Some(o) => write!(f, "/{o}"),
+            Self::Range(from, to) => write!(f, "/{from}-{to}"),
             Self::Any => write!(f, "/*"),
             Self::None => write!(f, ""),
         }

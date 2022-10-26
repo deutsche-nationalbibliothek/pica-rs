@@ -24,10 +24,10 @@ impl fmt::Display for FieldMatcher {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Subield(t, o, SubfieldListMatcher::Singleton(s)) => {
-                write!(f, "{}{}.{}", t, o, s)
+                write!(f, "{t}{o}.{s}")
             }
-            Self::Subield(t, o, s) => write!(f, "{}{}{{{}}}", t, o, s),
-            Self::Exists(t, o) => write!(f, "{}{}?", t, o),
+            Self::Subield(t, o, s) => write!(f, "{t}{o}{{{s}}}"),
+            Self::Exists(t, o) => write!(f, "{t}{o}?"),
         }
     }
 }

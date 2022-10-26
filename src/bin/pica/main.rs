@@ -117,27 +117,27 @@ fn main() {
             process::exit(0); // no-coverage
         }
         Err(CliError::ParsePica(err)) => {
-            eprintln!("Parse Pica Error: {}", err);
+            eprintln!("Parse Pica Error: {err}");
             process::exit(1);
         }
         Err(CliError::Pica(err)) => {
-            eprintln!("Pica Error: {}", err);
+            eprintln!("Pica Error: {err}");
             process::exit(1);
         }
         Err(CliError::Io(err)) => {
-            eprintln!("IO Error: {}", err);
+            eprintln!("IO Error: {err}");
             process::exit(1);
         }
         Err(CliError::Csv(err)) => {
-            eprintln!("CSV Error: {}", err);
+            eprintln!("CSV Error: {err}");
             process::exit(1);
         }
         Err(CliError::Xml(err)) => {
-            eprintln!("XML Error: {}", err);
+            eprintln!("XML Error: {err}");
             process::exit(1);
         }
         Err(CliError::Other(err)) => {
-            eprintln!("error: {}", err);
+            eprintln!("error: {err}");
             process::exit(1);
         }
     }
