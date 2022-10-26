@@ -24,7 +24,7 @@ pub enum TagMatcher {
 impl fmt::Display for TagMatcher {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Some(tag) => write!(f, "{}", tag),
+            Self::Some(tag) => write!(f, "{tag}"),
             Self::Pattern(ref p1, ref p2, ref p3, ref p4) => {
                 let fmt_p = |p: &Vec<char>| -> String {
                     if p.len() > 1 {

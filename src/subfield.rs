@@ -308,7 +308,7 @@ mod tests {
     #[test]
     fn test_subfield_fmt() -> TestResult {
         let subfield = Subfield::new('0', "123456789X")?;
-        assert_eq!(format!("{}", subfield), "$0123456789X");
+        assert_eq!(format!("{subfield}"), "$0123456789X");
 
         Ok(())
     }

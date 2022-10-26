@@ -41,7 +41,7 @@ pub enum SubfieldMatcher {
 fn fmt_codes(codes: &Vec<char>) -> String {
     let result = String::from_iter(codes);
     if result.len() > 1 {
-        format!("[{}]", result)
+        format!("[{result}]")
     } else {
         result
     }
@@ -51,32 +51,27 @@ impl fmt::Display for SubfieldMatcher {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Comparison(codes, op, value) => {
-                write!(f, "{} {} '{}'", fmt_codes(codes), op, value)
+                write!(f, "{} {op} '{value}'", fmt_codes(codes))
             }
             Self::Exists(codes) => write!(f, "{}?", fmt_codes(codes)),
             Self::In(codes, values, invert) => {
                 let values: String = values
                     .iter()
-                    .map(|s| format!("'{}'", s))
+                    .map(|s| format!("'{s}'"))
                     .collect::<Vec<String>>()
                     .join(", ");
 
                 if *invert {
-                    write!(
-                        f,
-                        "{} not in [{}]",
-                        fmt_codes(codes),
-                        values
-                    )
+                    write!(f, "{} not in [{values}]", fmt_codes(codes))
                 } else {
-                    write!(f, "{} in [{}]", fmt_codes(codes), values)
+                    write!(f, "{} in [{values}]", fmt_codes(codes))
                 }
             }
             Self::Regex(codes, regex, invert) => {
                 if *invert {
-                    write!(f, "{} !~ '{}'", fmt_codes(codes), regex)
+                    write!(f, "{} !~ '{regex}'", fmt_codes(codes))
                 } else {
-                    write!(f, "{} =~ '{}'", fmt_codes(codes), regex)
+                    write!(f, "{} =~ '{regex}'", fmt_codes(codes))
                 }
             }
         }

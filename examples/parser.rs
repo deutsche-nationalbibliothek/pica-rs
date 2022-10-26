@@ -19,7 +19,7 @@ fn main() {
         let line = result.unwrap();
 
         match StringRecord::from_bytes(line) {
-            Ok(record) => println!("{}", record),
+            Ok(record) => println!("{record}"),
             Err(_) => eprintln!("invalid record!"),
         }
     }
