@@ -3,10 +3,6 @@
 Das Kommando `invalid` filtert aus einer Datei Zeilen heraus, die nicht
 dekodiert werden konnten und somit ungültig sind.
 
-> Hinweis: Das Kommando ist im Beta-Status und wird aktuell getestet.
-> Änderungen am _command-line interface_ (CLI) sowie das Auftreten
-> kleinerer Fehler sind möglich.
-
 ## Beschreibung
 
 Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in
