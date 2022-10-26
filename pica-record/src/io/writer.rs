@@ -15,18 +15,10 @@ pub trait ByteRecordWrite {
 }
 
 /// Configures and build a [ByteRecord] writer.
+#[derive(Default)]
 pub struct WriterBuilder {
     append: bool,
     gzip: bool,
-}
-
-impl Default for WriterBuilder {
-    fn default() -> Self {
-        Self {
-            append: false,
-            gzip: false,
-        }
-    }
 }
 
 impl WriterBuilder {
