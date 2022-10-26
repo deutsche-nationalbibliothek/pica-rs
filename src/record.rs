@@ -430,11 +430,11 @@ impl fmt::Display for ByteRecord {
         let fields = self
             .fields
             .iter()
-            .map(|f| format!("{}", f))
+            .map(|f| format!("{f}"))
             .collect::<Vec<_>>()
             .join("\n");
 
-        write!(f, "{}", fields)
+        write!(f, "{fields}")
     }
 }
 

@@ -110,25 +110,25 @@ impl Count {
         }
 
         if self.records {
-            writeln!(writer, "{}", records)?;
+            writeln!(writer, "{records}")?;
         } else if self.fields {
-            writeln!(writer, "{}", fields)?;
+            writeln!(writer, "{fields}")?;
         } else if self.subfields {
-            writeln!(writer, "{}", subfields)?;
+            writeln!(writer, "{subfields}")?;
         } else if self.csv {
             if !self.no_header {
                 writeln!(writer, "records,fields,subfields")?;
             }
-            writeln!(writer, "{},{},{}", records, fields, subfields)?;
+            writeln!(writer, "{records},{fields},{subfields}")?;
         } else if self.tsv {
             if !self.no_header {
                 writeln!(writer, "records\tfields\tsubfields")?;
             }
-            writeln!(writer, "{}\t{}\t{}", records, fields, subfields)?;
+            writeln!(writer, "{records}\t{fields}\t{subfields}")?;
         } else {
-            writeln!(writer, "records: {}", records)?;
-            writeln!(writer, "fields: {}", fields)?;
-            writeln!(writer, "subfields: {}", subfields)?;
+            writeln!(writer, "records: {records}")?;
+            writeln!(writer, "fields: {fields}")?;
+            writeln!(writer, "subfields: {subfields}")?;
         }
 
         writer.flush()?;
