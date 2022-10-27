@@ -10,7 +10,10 @@ use crate::ByteRecord;
 
 /// A tait that permits writing [ByteRecord]s.
 pub trait ByteRecordWrite {
+    /// Writes a [ByteRecord] into this writer.
     fn write_byte_record(&mut self, record: &ByteRecord) -> Result<()>;
+
+    /// Finish the underlying writer.
     fn finish(&mut self) -> Result<()>;
 }
 
@@ -21,15 +24,17 @@ pub struct WriterBuilder {
     gzip: bool,
 }
 
+type WriterResult = io::Result<Box<dyn ByteRecordWrite>>;
+
 impl WriterBuilder {
+    /// Creates a new builder with default settings.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn from_path<P: AsRef<Path>>(
-        &self,
-        path: P,
-    ) -> Result<Box<dyn ByteRecordWrite>> {
+    /// Builds a [ByteRecord] writer from this configuration that writes
+    /// to the given path.
+    pub fn from_path<P: AsRef<Path>>(&self, path: P) -> WriterResult {
         let path = path.as_ref();
 
         let file = OpenOptions::new()
@@ -48,10 +53,12 @@ impl WriterBuilder {
         }
     }
 
+    /// Builds a [ByteRecord] writer from this configuration that writes
+    /// to the given path, if given, otherwise write to `stdout`.
     pub fn from_path_or_stdout<P: AsRef<Path>>(
         &self,
         path: Option<P>,
-    ) -> Result<Box<dyn ByteRecordWrite>> {
+    ) -> WriterResult {
         match path {
             Some(path) => self.from_path(path),
             None => {
@@ -60,62 +67,74 @@ impl WriterBuilder {
         }
     }
 
+    /// Whether to use a gzip encoder or not.
+    ///
+    /// When this flag is set, the writer encode the records in gzip
+    /// format. This flag is disabled by default and has no effect when
+    /// writing to `stdout`.
+    ///
+    /// # Panics
+    ///
+    /// It's an error to use this flag in append-mode.
     pub fn gzip(mut self, yes: bool) -> Self {
+        assert!(!yes || (yes ^ self.append));
         self.gzip = yes;
         self
     }
 
+    /// Whether to append to a given file or not.
+    ///
+    /// When this flag is set, the writer appends to the given file. If
+    /// the file does not exists, the file is created. This flag has
+    /// no effect when writing to `stdout`. This option is disabled by
+    /// default.
+    ///
+    /// # Panics
+    ///
+    /// It's an error to use this flag in combination with a gzip
+    /// writer.
     pub fn append(mut self, yes: bool) -> Self {
+        assert!(!yes || (yes ^ self.gzip));
         self.append = yes;
         self
     }
 }
 
 /// A plain buffered [ByteRecord] writer.
-pub struct PlainWriter<W: Write> {
-    inner: BufWriter<W>,
-}
+pub struct PlainWriter<W: Write>(BufWriter<W>);
 
 impl<W: Write> PlainWriter<W> {
     pub fn new(inner: W) -> Self {
-        Self {
-            inner: BufWriter::new(inner),
-        }
+        Self(BufWriter::new(inner))
     }
 }
 
 impl<W: Write> ByteRecordWrite for PlainWriter<W> {
-    #[inline]
     fn write_byte_record(&mut self, record: &ByteRecord) -> Result<()> {
-        record.write_to(&mut self.inner)
+        record.write_to(&mut self.0)
     }
 
     fn finish(&mut self) -> Result<()> {
-        self.inner.flush()
+        self.0.flush()
     }
 }
 
 /// A [ByteRecord] writer that gzip encodes records.
-pub struct GzipWriter<W: Write> {
-    inner: GzEncoder<W>,
-}
+pub struct GzipWriter<W: Write>(GzEncoder<W>);
 
 impl<W: Write> GzipWriter<W> {
     pub fn new(inner: W) -> GzipWriter<W> {
-        Self {
-            inner: GzEncoder::new(inner, Compression::default()),
-        }
+        Self(GzEncoder::new(inner, Compression::default()))
     }
 }
 
 impl<W: Write> ByteRecordWrite for GzipWriter<W> {
-    #[inline]
     fn write_byte_record(&mut self, record: &ByteRecord) -> Result<()> {
-        record.write_to(&mut self.inner)
+        record.write_to(&mut self.0)
     }
 
     fn finish(&mut self) -> Result<()> {
-        self.inner.try_finish()?;
+        self.0.try_finish()?;
         Ok(())
     }
 }
