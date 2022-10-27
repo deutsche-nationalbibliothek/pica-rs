@@ -85,6 +85,7 @@ impl<W: Write> PlainWriter<W> {
 }
 
 impl<W: Write> ByteRecordWrite for PlainWriter<W> {
+    #[inline]
     fn write_byte_record(&mut self, record: &ByteRecord) -> Result<()> {
         record.write_to(&mut self.inner)
     }
@@ -108,6 +109,7 @@ impl<W: Write> GzipWriter<W> {
 }
 
 impl<W: Write> ByteRecordWrite for GzipWriter<W> {
+    #[inline]
     fn write_byte_record(&mut self, record: &ByteRecord) -> Result<()> {
         record.write_to(&mut self.inner)
     }

@@ -27,7 +27,10 @@ pub type RecordMut = Record<BString>;
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
 #[derive(Debug)]
-pub struct ByteRecord<'a>(RecordRef<'a>);
+pub struct ByteRecord<'a> {
+    record: RecordRef<'a>,
+    data: Option<&'a [u8]>,
+}
 
 /// A PICA+ record, that guarantees valid UTF-8 data.
 pub struct StringRecord<'a>(ByteRecord<'a>);
@@ -225,7 +228,18 @@ impl<'a> ByteRecord<'a> {
     /// }
     /// ```
     pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
-        Ok(Self(RecordRef::from_bytes(data)?))
+        Ok(Self {
+            record: RecordRef::from_bytes(data)?,
+            data: Some(data),
+        })
+    }
+
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        match self.data {
+            Some(raw_data) => out.write_all(raw_data),
+            None => self.record.write_to(out),
+        }
     }
 }
 
@@ -234,7 +248,7 @@ impl<'a> Deref for ByteRecord<'a> {
 
     #[inline]
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.record
     }
 }
 
