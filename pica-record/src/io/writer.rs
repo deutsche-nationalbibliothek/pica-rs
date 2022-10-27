@@ -77,7 +77,7 @@ impl WriterBuilder {
     ///
     /// It's an error to use this flag in append-mode.
     pub fn gzip(mut self, yes: bool) -> Self {
-        assert!(yes ^ self.append);
+        assert!(!yes || (yes ^ self.append));
         self.gzip = yes;
         self
     }
@@ -94,7 +94,7 @@ impl WriterBuilder {
     /// It's an error to use this flag in combination with a gzip
     /// writer.
     pub fn append(mut self, yes: bool) -> Self {
-        assert!(yes ^ self.gzip);
+        assert!(!yes || (yes ^ self.gzip));
         self.append = yes;
         self
     }
