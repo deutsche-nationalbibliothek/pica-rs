@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
 * Add `RecordRef::write_to` function #521
 * Add `BufReadExt` extension trait #520
 * Add `ByteRecord` writer API #528
 * Add `raw_data` field (`ByteRecord`) #530
+
+### Fixed
+
+* Fix wrong assert expression (`WriterBuilder`) #531
 
 ## 0.1.0 - 2022-10-14
 
