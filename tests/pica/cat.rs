@@ -270,8 +270,8 @@ fn pica_cat_skip_invalid() -> TestResult {
         .stdout(predicate::path::eq_file(Path::new(
             "tests/data/1004916019.dat",
         )))
-        .stderr(predicate::eq(
-            "Pica Error: Invalid record on line 2.\n",
+        .stderr(predicate::str::starts_with(
+            "Parse Pica Error: invalid record",
         ));
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -351,7 +351,7 @@ fn pica_cat_missing_file() -> TestResult {
 
     assert
         .failure()
-        .stderr(predicate::str::starts_with("Pica Error:"))
+        .stderr(predicate::str::starts_with("IO Error:"))
         .stdout(predicate::str::is_empty())
         .code(1);
     Ok(())
