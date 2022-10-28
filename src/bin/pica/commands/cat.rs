@@ -2,7 +2,7 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 
 use clap::Parser;
-use pica_record::io::{BufReadExt, ByteRecordWrite, WriterBuilder};
+use pica_record::io::{BufReadExt, WriterBuilder};
 use pica_record::ParsePicaError;
 use serde::{Deserialize, Serialize};
 
@@ -56,7 +56,7 @@ impl Cat {
             config.global
         );
 
-        let mut writer: Box<dyn ByteRecordWrite> = WriterBuilder::new()
+        let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .append(self.append)
             .from_path_or_stdout(self.output)?;
