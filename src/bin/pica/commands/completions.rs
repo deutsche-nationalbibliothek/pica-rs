@@ -46,8 +46,3 @@ impl Completions {
         Ok(())
     }
 }
-
-// use clap::Arg;
-// use clap_complete::{generate, Shell};
-
-// use crate::util::{CliArgs, CliResult, Command};
