@@ -1,4 +1,5 @@
 bin.name = "pica"
 args = "cat --gzip algebra.dat -o out.dat"
+status = "success"
 stderr = ""
 

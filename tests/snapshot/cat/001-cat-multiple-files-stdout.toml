@@ -1,3 +1,4 @@
 bin.name = "pica"
 args = "cat algebra.dat math.dat.gz"
+status = "success"
 stderr = ""
