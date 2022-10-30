@@ -4,10 +4,6 @@ Das `cat` Kommando liest Datensätze direkt von der Standardeingabe (`stdin`) od
 und fügt diese zu einem Stream zusammen, der entweder in eine Datei oder in die Standardausgabe
 (`stdout`) geschrieben wird.
 
-> Hinweis: Das Kommando befindet sich im Beta-Status und wird gerade intensiv getestet, bevor
-> es als stabil freigegeben wird. Änderungen am _command-line interface_ (CLI) sowie das
-> Auftreten kleinerer Fehler ist möglich.
-
 ## Beschreibung
 
 Der wichtigste Anwendungsfall des Kommandos cat besteht in der Kombination mit den Kommandos
