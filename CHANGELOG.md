@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* #534 Add `cat` snapshot tests
+* #524 Add `invalid` snapshot tests
+* #525 Add long help (`invalid`)
+
 ### Changed
 
-* Improve performance of `cat` command #532
-* Use `BufReadExt` to process records (`invalid`) #522
-* Move reader/writer logic to config (`invalid`) #523
-* Add snapshot tests (`invalid`) #524
-* Add long help (`invalid`) #525
+* #532 Improve performance of `cat` command
+* #522 Use `BufReadExt` to process records (`invalid`)
+* #523 Move reader/writer logic to config (`invalid`)
