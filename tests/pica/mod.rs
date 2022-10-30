@@ -3,7 +3,6 @@ use predicates::prelude::*;
 
 use crate::TestResult;
 
-mod cat;
 mod completions;
 mod count;
 mod filter;

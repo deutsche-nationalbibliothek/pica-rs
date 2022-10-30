@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "cat -"
+status = "success"
+stderr = ""

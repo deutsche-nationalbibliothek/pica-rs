@@ -1,0 +1,5 @@
+[global]
+skip-invalid = false
+
+[cat]
+skip-invalid = true
