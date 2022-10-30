@@ -11,8 +11,8 @@ use crate::util::CliResult;
 pub(crate) struct Completions {
     shell: Shell,
 
-    /// Write output to <OUTPUT> instead of stdout
-    #[arg(short, long)]
+    /// Write output to <filename> instead of stdout
+    #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 }
 
