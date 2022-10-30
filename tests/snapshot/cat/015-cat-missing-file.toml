@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "cat missing.dat"
+status = "failed"
+stdout = ""
+stderr = "IO Error: No such file or directory (os error 2)\n"
