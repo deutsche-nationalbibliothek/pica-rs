@@ -8,43 +8,6 @@ use tempfile::Builder;
 use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
-fn pica_cat_single_file() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("cat")
-        .arg("--skip-invalid")
-        .arg("tests/data/1004916019.dat")
-        .assert();
-
-    let expected = predicate::path::eq_file(Path::new(
-        "tests/data/1004916019.dat",
-    ));
-    assert.success().stdout(expected);
-
-    Ok(())
-}
-
-#[test]
-fn pica_cat_multiple_files() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("cat")
-        .arg("--skip-invalid")
-        .arg("tests/data/1004916019.dat")
-        .arg("tests/data/000009229.dat")
-        .assert();
-
-    let expected = format!(
-        "{}{}",
-        read_to_string("tests/data/1004916019.dat").unwrap(),
-        read_to_string("tests/data/000009229.dat").unwrap()
-    );
-    assert.success().stdout(expected);
-
-    Ok(())
-}
-
-#[test]
 fn pica_cat_stdin() -> TestResult {
     let data = read_to_string("tests/data/1004916019.dat").unwrap();
     let mut cmd = Command::cargo_bin("pica")?;
