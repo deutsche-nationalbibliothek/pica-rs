@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "cat math.dat.gz --append -o out.dat"
+stdout = ""
+stderr = ""
