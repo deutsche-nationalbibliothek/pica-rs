@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "cat algebra.dat -o out.dat.gz"
+stdout = ""
+stderr = ""
+
