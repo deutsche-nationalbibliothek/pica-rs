@@ -1,0 +1,3 @@
+bin.name = "pica"
+args = "cat algebra.dat --tee tee.dat"
+stderr = ""
