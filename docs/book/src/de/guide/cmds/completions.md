@@ -1,9 +1,5 @@
 # completions
 
-> Hinweis: Das Kommando befindet sich im Beta-Status und wird gerade intensiv getestet, bevor
-> es als stabil freigegeben wird. Änderungen am _command-line interface_ (CLI) sowie das
-> Auftreten kleinerer Fehler ist möglich.
-
 Das `completions`-Kommando erzeugt Dateien, die Anweisungen enthalten, welche Argumente
 und Optionen des pica-Kommandos für eine
 [Shell](https://de.wikipedia.org/wiki/Shell_(Betriebssystem)) zur Autovervollständigung

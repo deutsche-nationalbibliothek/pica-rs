@@ -36,7 +36,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | Command                 | Stability | Desciption                                                        |
 |-------------------------|-----------|-------------------------------------------------------------------|
 | [cat](#cat)             | stable    | concatenate records from multiple files                           |
-| completions             | beta      | generate a completions file for bash, fish or zsh                 |
+| completions             | stabl     | generate a completions file for bash, fish or zsh                 |
 | [count](#count)         | beta      | count records, fields and subfields                               |
 | [filter](#filter)       | beta      | filter records by query expressions                               |
 | [frequency](#frequency) | beta      | compute a frequency table of a subfield                           |
