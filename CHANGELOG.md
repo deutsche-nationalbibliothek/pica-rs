@@ -19,3 +19,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #522 Use `BufReadExt` to process records (`invalid`)
 * #523 Move reader/writer logic to config (`invalid`)
 * #537 Stabilize `cat` command
+* #538 Stabilize `completions` command
