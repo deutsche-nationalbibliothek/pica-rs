@@ -27,6 +27,7 @@ toml = "0.5"
 unicode-normalization = "0.1"
 xml-rs = "0.8"
 
+pica-matcher = { version = "0.1", path = "pica-matcher" }
 pica-record = { version = "0.1", path = "pica-record" }
 
 [dev-dependencies]
@@ -61,5 +62,6 @@ debug = 0
 [workspace]
 
 members = [
+    "pica-matcher",
     "pica-record"
 ]
