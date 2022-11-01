@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "completions zsh"
+status = "success"
+stderr = ""

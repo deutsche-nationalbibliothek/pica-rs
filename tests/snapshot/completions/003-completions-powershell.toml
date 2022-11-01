@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "completions powershell"
+status = "success"
+stderr = ""
