@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "-c Pica.toml cat algebra.dat invalid.dat"
+status = "success"
+stderr = ""
+

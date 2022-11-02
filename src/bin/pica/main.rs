@@ -39,7 +39,6 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    /// Concatenate records from multiple files
     Cat(Cat),
 
     /// Generate shell completions (e.g. Bash, ZSH)

@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "cat missing.dat"
+status = "failed"
+stdout = ""

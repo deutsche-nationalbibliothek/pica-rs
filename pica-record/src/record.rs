@@ -26,7 +26,11 @@ pub type RecordRef<'a> = Record<&'a BStr>;
 pub type RecordMut = Record<BString>;
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
-pub struct ByteRecord<'a>(RecordRef<'a>);
+#[derive(Debug)]
+pub struct ByteRecord<'a> {
+    raw_data: Option<&'a [u8]>,
+    record: RecordRef<'a>,
+}
 
 /// A PICA+ record, that guarantees valid UTF-8 data.
 pub struct StringRecord<'a>(ByteRecord<'a>);
@@ -224,7 +228,40 @@ impl<'a> ByteRecord<'a> {
     /// }
     /// ```
     pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
-        Ok(Self(RecordRef::from_bytes(data)?))
+        Ok(Self {
+            record: RecordRef::from_bytes(data)?,
+            raw_data: Some(data),
+        })
+    }
+
+    /// Write the record into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::ByteRecord;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let record = ByteRecord::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    ///     record.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #     String::from_utf8(writer.into_inner())?,
+    ///     #     "003@ \x1f0a\x1e\n"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        match self.raw_data {
+            Some(data) => out.write_all(data),
+            None => self.record.write_to(out),
+        }
     }
 }
 
@@ -233,7 +270,7 @@ impl<'a> Deref for ByteRecord<'a> {
 
     #[inline]
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.record
     }
 }
 

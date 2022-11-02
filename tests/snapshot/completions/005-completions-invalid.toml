@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "completions foo"
+status = "failed"
+stdout = ""

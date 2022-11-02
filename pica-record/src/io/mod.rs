@@ -1,4 +1,4 @@
-//! I/O utilities for reading PICA+ records.
+//! Utilities for reading and writing PICA+ records.
 
 use std::io;
 
@@ -10,6 +10,11 @@ use crate::{ByteRecord, ParsePicaError};
 
 type ParseResult<'a> = Result<ByteRecord<'a>, ParsePicaError>;
 type ReadResult<T> = Result<T, ReadPicaError>;
+
+mod writer;
+pub use writer::{
+    ByteRecordWrite, GzipWriter, PlainWriter, WriterBuilder,
+};
 
 /// An error that can occur when reading PICA+ records from a
 /// [BufReader](std::io::BufReader).

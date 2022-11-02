@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "completions elvish"
+status = "success"
+stderr = ""

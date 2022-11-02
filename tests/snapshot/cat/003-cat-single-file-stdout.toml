@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "cat math.dat.gz"
+status = "success"
+stderr = ""
+

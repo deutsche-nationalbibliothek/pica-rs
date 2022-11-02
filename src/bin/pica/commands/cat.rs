@@ -1,9 +1,9 @@
 use std::ffi::OsString;
-use std::io::{self, Read};
 use std::path::PathBuf;
 
 use clap::Parser;
-use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica_record::io::{BufReadExt, WriterBuilder};
+use pica_record::ParsePicaError;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -20,6 +20,7 @@ pub(crate) struct CatConfig {
     pub(crate) gzip: Option<bool>,
 }
 
+/// Concatenate records from multiple files
 #[derive(Parser, Debug)]
 pub(crate) struct Cat {
     /// Skip invalid records that can't be decoded.
@@ -42,7 +43,9 @@ pub(crate) struct Cat {
     #[arg(short, long)]
     output: Option<OsString>,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format. If no
+    /// filenames where given or a filename is "-", data is read from
+    /// standard input (stdin)
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
@@ -56,7 +59,7 @@ impl Cat {
             config.global
         );
 
-        let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+        let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .append(self.append)
             .from_path_or_stdout(self.output)?;
@@ -72,24 +75,24 @@ impl Cat {
         };
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader = config.reader(filename)?;
 
-            for result in reader.byte_records() {
-                let record = result?;
-
-                writer.write_byte_record(&record)?;
-
-                if let Some(ref mut writer) = tee_writer {
-                    writer.write_byte_record(&record)?;
+            reader.for_pica_record(|result| match result {
+                Err(ParsePicaError::InvalidRecord(_))
+                    if skip_invalid =>
+                {
+                    Ok(true)
                 }
-            }
+                Err(e) => Err(e.into()),
+                Ok(record) => {
+                    writer.write_byte_record(&record)?;
+                    if let Some(ref mut writer) = tee_writer {
+                        writer.write_byte_record(&record)?;
+                    }
+
+                    Ok(true)
+                }
+            })?;
         }
 
         writer.finish()?;

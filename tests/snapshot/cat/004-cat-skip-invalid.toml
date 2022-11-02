@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "cat -s algebra.dat invalid.dat -o out.dat"
+status = "success"
+stdout = ""
+stderr = ""
+
