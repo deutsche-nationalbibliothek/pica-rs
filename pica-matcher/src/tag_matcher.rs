@@ -14,12 +14,12 @@ use crate::ParseMatcherError;
 /// A matcher that matches against PICA+ [Tags](`pica_record::Tag`).
 #[derive(Debug)]
 pub struct TagMatcher {
-    matcher_str: String,
     kind: TagMatcherKind,
+    matcher_str: String,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum TagMatcherKind {
+pub(crate) enum TagMatcherKind {
     Simple(TagMut),
     Pattern([Vec<char>; 4]),
 }
@@ -132,8 +132,8 @@ fn parse_fragment<'a>(
                     ),
                     map(one_of(allowed), |c| vec![c]),
                 )),
-                Vec::<char>::new,
-                |mut acc: Vec<_>, item| {
+                Vec::new,
+                |mut acc, item| {
                     acc.extend(&item);
                     acc
                 },
