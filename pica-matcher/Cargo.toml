@@ -15,4 +15,5 @@ pica-record = { version = "0.1", path = "../pica-record" }
 
 [dev-dependencies]
 anyhow = "1.0"
+criterion = { version = "0.4", features = ["html_reports"] }
 nom-test-helpers = "6.1"

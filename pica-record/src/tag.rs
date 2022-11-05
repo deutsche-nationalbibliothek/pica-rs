@@ -1,5 +1,6 @@
-use std::fmt::Display;
-use std::ops::Deref;
+use std::fmt::{self, Display};
+use std::ops::{Deref, Index};
+use std::str;
 
 use bstr::{BStr, BString, ByteSlice};
 use nom::character::complete::satisfy;
@@ -11,8 +12,8 @@ use crate::parser::ParseResult;
 use crate::ParsePicaError;
 
 /// A PICA+ tag.
-#[derive(PartialEq, Eq, Debug, Clone)]
-pub struct Tag<T>(T);
+#[derive(Eq, Debug, Clone)]
+pub struct Tag<T: AsRef<[u8]>>(T);
 
 /// A immutable PICA+ tag.
 pub type TagRef<'a> = Tag<&'a BStr>;
@@ -72,7 +73,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Tag<T> {
     }
 
     /// Creates a new Tag without checking the input.
-    pub(crate) fn from_unchecked(value: impl Into<T>) -> Self {
+    pub fn from_unchecked(value: impl Into<T>) -> Self {
         Self(value.into())
     }
 }
@@ -90,6 +91,16 @@ pub fn parse_tag(i: &[u8]) -> ParseResult<&BStr> {
     )(i)
 }
 
+impl<S, T> PartialEq<Tag<S>> for Tag<T>
+where
+    S: AsRef<[u8]>,
+    T: AsRef<[u8]>,
+{
+    fn eq(&self, other: &Tag<S>) -> bool {
+        self.as_ref() == other.as_ref()
+    }
+}
+
 impl<T: AsRef<[u8]>> PartialEq<&str> for Tag<T> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
@@ -104,11 +115,28 @@ impl<T: AsRef<[u8]>> PartialEq<str> for Tag<T> {
     }
 }
 
-impl<T> Deref for Tag<T> {
+impl<T: AsRef<[u8]>> Deref for Tag<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<T: AsRef<[u8]>> Index<usize> for Tag<T> {
+    type Output = u8;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        assert!(index <= 3);
+
+        let bytes = self.0.as_ref();
+        &bytes[index]
+    }
+}
+
+impl<T: AsRef<[u8]>> Display for Tag<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", str::from_utf8(self.0.as_ref()).unwrap())
     }
 }
 
@@ -179,7 +207,7 @@ mod tests {
     #[test]
     fn test_tag_mut_new() {
         let tag = TagMut::new("003@");
-        assert_eq!(tag, Tag("003@".into()));
+        assert_eq!(tag, Tag(BString::from("003@")));
         assert_eq!(tag, "003@")
     }
 
@@ -201,5 +229,13 @@ mod tests {
         for tag in ["456@", "0A2A", "01AA", "01Aa"] {
             assert_error!(parse_tag(tag.as_bytes()))
         }
+    }
+
+    #[test]
+    fn test_display_tag() {
+        assert_eq!(
+            TagRef::from_bytes(b"003@").unwrap().to_string(),
+            "003@".to_string()
+        );
     }
 }

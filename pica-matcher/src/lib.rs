@@ -1,14 +1,8 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+//! This crate provides various matcher to filter PICA+ records, fields
+//! or subfields.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+mod error;
+mod tag_matcher;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub use error::ParseMatcherError;
+pub use tag_matcher::TagMatcher;

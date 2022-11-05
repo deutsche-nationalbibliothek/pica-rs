@@ -17,7 +17,7 @@ use crate::{Occurrence, ParsePicaError, Subfield, Tag};
 
 /// A PICA+ field.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Field<T> {
+pub struct Field<T: AsRef<[u8]>> {
     tag: Tag<T>,
     occurrence: Option<Occurrence<T>>,
     subfields: Vec<Subfield<T>>,

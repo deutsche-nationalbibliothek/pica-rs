@@ -14,7 +14,7 @@ use crate::ParsePicaError;
 
 /// A PICA+ subfield.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Subfield<T> {
+pub struct Subfield<T: AsRef<[u8]>> {
     pub(crate) code: char,
     pub(crate) value: T,
 }

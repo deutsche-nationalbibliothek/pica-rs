@@ -17,7 +17,7 @@ use crate::{Field, ParsePicaError};
 
 /// A PICA+ record.
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub struct Record<T>(Vec<Field<T>>);
+pub struct Record<T: AsRef<[u8]>>(Vec<Field<T>>);
 
 /// A immutable PICA+ record.
 pub type RecordRef<'a> = Record<&'a BStr>;
