@@ -5,4 +5,6 @@ use thiserror::Error;
 pub enum ParseMatcherError {
     #[error("invalid tag matcher")]
     InvalidTagMatcher,
+    #[error("invalid occurrence matcher (got `{0}`)")]
+    InvalidOccurrenceMatcher(String),
 }
