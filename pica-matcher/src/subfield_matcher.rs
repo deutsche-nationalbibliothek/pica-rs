@@ -4,8 +4,8 @@ use bstr::{BString, ByteSlice};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, map, value, verify};
-use nom::multi::many1;
+use nom::combinator::{all_consuming, map, opt, value, verify};
+use nom::multi::{many1, separated_list1};
 use nom::sequence::{delimited, terminated, tuple};
 use nom::Finish;
 use pica_record::parser::{parse_subfield_code, ParseResult};
@@ -35,6 +35,7 @@ enum SubfieldMatcherKind {
     Comparison(ComparisionMatcher),
     Regex(RegexMatcher),
     Exists(Vec<char>),
+    In(InMatcher),
 }
 
 impl SubfieldMatcher {
@@ -107,6 +108,9 @@ impl SubfieldMatcher {
                 codes.contains(&subfield.code())
             }
             SubfieldMatcherKind::Regex(matcher) => {
+                matcher.is_match(subfield, flags)
+            }
+            SubfieldMatcherKind::In(matcher) => {
                 matcher.is_match(subfield, flags)
             }
         }
@@ -225,6 +229,43 @@ impl RegexMatcher {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct InMatcher {
+    codes: Vec<char>,
+    values: Vec<BString>,
+    invert: bool,
+}
+
+impl InMatcher {
+    pub fn is_match<T>(
+        &self,
+        subfield: &Subfield<T>,
+        flags: &MatcherFlags,
+    ) -> bool
+    where
+        T: AsRef<[u8]>,
+    {
+        if !self.codes.contains(&subfield.code()) {
+            return false;
+        }
+
+        let result = self.values.iter().any(|value: &BString| {
+            if flags.case_ignore {
+                value.to_lowercase()
+                    == subfield.value().as_ref().to_lowercase()
+            } else {
+                value == subfield.value().as_ref()
+            }
+        });
+
+        if self.invert {
+            !result
+        } else {
+            result
+        }
+    }
+}
+
 fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
         delimited(char('['), many1(parse_subfield_code), char(']')),
@@ -269,6 +310,29 @@ fn parse_regex_matcher(i: &[u8]) -> ParseResult<RegexMatcher> {
     )(i)
 }
 
+fn parse_in_matcher(i: &[u8]) -> ParseResult<InMatcher> {
+    map(
+        tuple((
+            parse_subfield_codes,
+            map(opt(ws(tag("not"))), |not| not.is_some()),
+            ws(tag("in")),
+            delimited(
+                ws(char('[')),
+                separated_list1(
+                    ws(char(',')),
+                    map(parse_string, BString::from),
+                ),
+                ws(char(']')),
+            ),
+        )),
+        |(codes, invert, _, values)| InMatcher {
+            codes,
+            values,
+            invert,
+        },
+    )(i)
+}
+
 fn parse_exists_matcher(i: &[u8]) -> ParseResult<Vec<char>> {
     terminated(ws(parse_subfield_codes), char('?'))(i)
 }
@@ -279,6 +343,7 @@ fn parse_subfield_matcher_kind(
     alt((
         map(parse_comparision_matcher, SubfieldMatcherKind::Comparison),
         map(parse_regex_matcher, SubfieldMatcherKind::Regex),
+        map(parse_in_matcher, SubfieldMatcherKind::In),
         map(parse_exists_matcher, SubfieldMatcherKind::Exists),
     ))(i)
 }
@@ -504,6 +569,44 @@ mod tests {
             .is_match(&SubfieldRef::from_bytes(b"\x1f0def")?, &flags));
         assert!(!matcher
             .is_match(&SubfieldRef::from_bytes(b"\x1f1abc")?, &flags));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_in_matcher() -> anyhow::Result<()> {
+        // regular match
+        let matcher = SubfieldMatcher::new("0 in ['abc', 'def']")?;
+        let flags = MatcherFlags::default();
+
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &flags));
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0def")?, &flags));
+        assert!(!matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &flags));
+
+        // case ignore
+        let matcher = SubfieldMatcher::new("0 in ['abc', 'def']")?;
+        let flags = MatcherFlags::new().case_ignore(true);
+
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &flags));
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0def")?, &flags));
+        assert!(!matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0hij")?, &flags));
+
+        // inverted match
+        let matcher = SubfieldMatcher::new("0 not in ['abc', 'def']")?;
+        let flags = MatcherFlags::default();
+
+        assert!(!matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &flags));
+        assert!(!matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0def")?, &flags));
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &flags));
 
         Ok(())
     }
