@@ -11,8 +11,8 @@ use crate::parser::ParseResult;
 use crate::ParsePicaError;
 
 /// A PICA+ occurrence.
-#[derive(PartialEq, Eq, Debug, Clone)]
-pub struct Occurrence<T>(T);
+#[derive(Eq, Debug, Clone)]
+pub struct Occurrence<T: AsRef<[u8]>>(T);
 
 /// A immutable PICA+ occurrence.
 pub type OccurrenceRef<'a> = Occurrence<&'a BStr>;
@@ -74,7 +74,7 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Occurrence<T> {
 
     /// Creates a new Occurrence without checking the input
     #[inline]
-    pub(crate) fn from_unchecked(value: impl Into<T>) -> Self {
+    pub fn from_unchecked(value: impl Into<T>) -> Self {
         Self(value.into())
     }
 
@@ -106,6 +106,29 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Occurrence<T> {
     }
 }
 
+impl<S, T> PartialEq<Occurrence<S>> for Occurrence<T>
+where
+    S: AsRef<[u8]>,
+    T: AsRef<[u8]>,
+{
+    fn eq(&self, other: &Occurrence<S>) -> bool {
+        self.0.as_ref() == other.0.as_ref()
+    }
+}
+
+impl<S, T> PartialOrd<Occurrence<S>> for Occurrence<T>
+where
+    S: AsRef<[u8]>,
+    T: AsRef<[u8]>,
+{
+    fn partial_cmp(
+        &self,
+        other: &Occurrence<S>,
+    ) -> Option<std::cmp::Ordering> {
+        self.0.as_ref().partial_cmp(other.0.as_ref())
+    }
+}
+
 /// Parse the digits of an PICA+ occurrence.
 #[inline]
 pub fn parse_occurrence_digits(i: &[u8]) -> ParseResult<&BStr> {
@@ -134,7 +157,7 @@ impl<T: AsRef<[u8]>> PartialEq<&str> for Occurrence<T> {
 impl<T: AsRef<[u8]>> PartialEq<str> for Occurrence<T> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
-        self == other
+        self.0.as_ref() == other.as_bytes()
     }
 }
 

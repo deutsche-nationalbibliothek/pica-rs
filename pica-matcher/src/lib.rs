@@ -2,7 +2,9 @@
 //! or subfields.
 
 mod error;
+mod occurrence_matcher;
 mod tag_matcher;
 
 pub use error::ParseMatcherError;
+pub use occurrence_matcher::OccurrenceMatcher;
 pub use tag_matcher::TagMatcher;
