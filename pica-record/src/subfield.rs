@@ -25,6 +25,45 @@ pub type SubfieldRef<'a> = Subfield<&'a BStr>;
 /// A mutable PICA+ subfield.
 pub type SubfieldMut = Subfield<BString>;
 
+impl<T: AsRef<[u8]>> Subfield<T> {
+    /// Returns the code of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = SubfieldRef::new('0', "0123456789X");
+    ///     assert_eq!(subfield.code(), '0');
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn code(&self) -> char {
+        self.code
+    }
+
+    /// Returns the value of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = SubfieldRef::new('0', "123456789X");
+    ///     assert_eq!(subfield.value(), &"123456789X".as_bytes());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn value(&self) -> &T {
+        &self.value
+    }
+}
+
 impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Subfield<T> {
     /// Create a new subfield.
     ///
@@ -84,43 +123,6 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Subfield<T> {
                 code,
                 value: value.into(),
             })
-    }
-
-    /// Returns the code of the subfield.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::SubfieldRef;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = SubfieldRef::new('0', "0123456789X");
-    ///     assert_eq!(subfield.code(), '0');
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn code(&self) -> char {
-        self.code
-    }
-
-    /// Returns the value of the subfield.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::SubfieldRef;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = SubfieldRef::new('0', "123456789X");
-    ///     assert_eq!(subfield.value(), &"123456789X".as_bytes());
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn value(&self) -> &T {
-        &self.value
     }
 
     /// Returns true if the subfield value is empty.
