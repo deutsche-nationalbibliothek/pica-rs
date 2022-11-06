@@ -276,8 +276,7 @@ mod tests {
     }
 
     #[test]
-    fn test_comparison_matcher_is_match() -> anyhow::Result<()> {
-        // Eq, `==`
+    fn test_comparison_matcher_eq() -> anyhow::Result<()> {
         let matcher = SubfieldMatcher::new("0 == 'abc'")?;
         assert!(matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1f0abc")?,
@@ -296,7 +295,11 @@ mod tests {
             &MatcherFlags::new().case_ignore(true)
         ));
 
-        // Ne, `!=`
+        Ok(())
+    }
+
+    #[test]
+    fn test_comparison_matcher_ne() -> anyhow::Result<()> {
         let matcher = SubfieldMatcher::new("0 != 'abc'")?;
         assert!(!matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1f0abc")?,
@@ -319,7 +322,11 @@ mod tests {
             &MatcherFlags::new().case_ignore(true)
         ));
 
-        // StartsWith, `=^`
+        Ok(())
+    }
+
+    #[test]
+    fn test_comparison_matcher_starts_with() -> anyhow::Result<()> {
         let matcher = SubfieldMatcher::new("10 =^ 'ab'")?;
         assert!(matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1f0abc")?,
@@ -338,7 +345,11 @@ mod tests {
             &MatcherFlags::new().case_ignore(true)
         ));
 
-        // StartsWith, `=$`
+        Ok(())
+    }
+
+    #[test]
+    fn test_comparison_matcher_ends_with() -> anyhow::Result<()> {
         let matcher = SubfieldMatcher::new("[01] =$ 'ba'")?;
         assert!(matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1f0abba")?,
@@ -353,7 +364,11 @@ mod tests {
             &MatcherFlags::new().case_ignore(true)
         ));
 
-        // Similar, `=*`
+        Ok(())
+    }
+
+    #[test]
+    fn test_comparison_matcher_similar() -> anyhow::Result<()> {
         let matcher = SubfieldMatcher::new("a =* 'Heike'")?;
         assert!(matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1faHeike")?,
