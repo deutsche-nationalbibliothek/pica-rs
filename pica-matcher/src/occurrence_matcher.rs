@@ -81,10 +81,10 @@ impl OccurrenceMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn is_match<T: AsRef<[u8]>>(
-        &self,
-        occurrence: &Occurrence<T>,
-    ) -> bool {
+    pub fn is_match<T>(&self, occurrence: &Occurrence<T>) -> bool
+    where
+        T: AsRef<[u8]>,
+    {
         match &self.kind {
             OccurrenceMatcherKind::Any => true,
             OccurrenceMatcherKind::None => occurrence == "00",
