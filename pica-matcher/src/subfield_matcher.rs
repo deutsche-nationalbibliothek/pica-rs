@@ -5,7 +5,7 @@ use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{all_consuming, map, value};
 use nom::multi::many1;
-use nom::sequence::{delimited, tuple};
+use nom::sequence::{delimited, terminated, tuple};
 use nom::Finish;
 use pica_record::parser::{parse_subfield_code, ParseResult};
 use pica_record::Subfield;
@@ -30,6 +30,7 @@ pub struct SubfieldMatcher {
 #[derive(Debug, PartialEq, Eq)]
 enum SubfieldMatcherKind {
     Comparison(ComparisionMatcher),
+    Exists(Vec<char>),
 }
 
 impl SubfieldMatcher {
@@ -97,6 +98,9 @@ impl SubfieldMatcher {
         match &self.kind {
             SubfieldMatcherKind::Comparison(matcher) => {
                 matcher.is_match(subfield, flags)
+            }
+            SubfieldMatcherKind::Exists(codes) => {
+                codes.contains(&subfield.code())
             }
         }
     }
@@ -205,10 +209,17 @@ fn parse_comparision_matcher(
     )(i)
 }
 
+fn parse_exists_matcher(i: &[u8]) -> ParseResult<Vec<char>> {
+    terminated(ws(parse_subfield_codes), char('?'))(i)
+}
+
 fn parse_subfield_matcher_kind(
     i: &[u8],
 ) -> ParseResult<SubfieldMatcherKind> {
-    map(parse_comparision_matcher, SubfieldMatcherKind::Comparison)(i)
+    alt((
+        map(parse_comparision_matcher, SubfieldMatcherKind::Comparison),
+        map(parse_exists_matcher, SubfieldMatcherKind::Exists),
+    ))(i)
 }
 
 #[cfg(test)]
@@ -382,6 +393,29 @@ mod tests {
             &SubfieldRef::from_bytes(b"\x1faHeiko")?,
             &MatcherFlags::new().strsim_threshold(0.7)
         ));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_exists_matcher() -> anyhow::Result<()> {
+        let matcher = SubfieldMatcher::new("0?")?;
+        let flags = MatcherFlags::default();
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &flags));
+        assert!(!matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1fAabc")?, &flags));
+
+        let matcher = SubfieldMatcher::new("[012]?")?;
+        let flags = MatcherFlags::default();
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &flags));
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f1abc")?, &flags));
+        assert!(matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f2abc")?, &flags));
+        assert!(!matcher
+            .is_match(&SubfieldRef::from_bytes(b"\x1f3abc")?, &flags));
 
         Ok(())
     }
