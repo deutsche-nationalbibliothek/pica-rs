@@ -7,4 +7,6 @@ pub enum ParseMatcherError {
     InvalidTagMatcher,
     #[error("invalid occurrence matcher (got `{0}`)")]
     InvalidOccurrenceMatcher(String),
+    #[error("invalid subfield matcher (got `{0}`)")]
+    InvalidSubfieldMatcher(String),
 }
