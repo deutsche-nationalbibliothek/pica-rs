@@ -3,13 +3,13 @@
 
 mod common;
 mod error;
-mod flags;
 mod occurrence_matcher;
+mod options;
 mod subfield_matcher;
 mod tag_matcher;
 
 pub use error::ParseMatcherError;
-pub use flags::MatcherFlags;
 pub use occurrence_matcher::OccurrenceMatcher;
+pub use options::MatcherOptions;
 pub use subfield_matcher::SubfieldMatcher;
 pub use tag_matcher::TagMatcher;

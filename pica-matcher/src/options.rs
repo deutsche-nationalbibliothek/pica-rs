@@ -1,10 +1,11 @@
+/// Options and flags which can be used to configure a matcher.
 #[derive(Debug)]
-pub struct MatcherFlags {
+pub struct MatcherOptions {
     pub case_ignore: bool,
     pub strsim_threshold: f64,
 }
 
-impl Default for MatcherFlags {
+impl Default for MatcherOptions {
     fn default() -> Self {
         Self {
             case_ignore: false,
@@ -13,10 +14,10 @@ impl Default for MatcherFlags {
     }
 }
 
-impl MatcherFlags {
+impl MatcherOptions {
     /// Create new matcher flags.
     pub fn new() -> Self {
-        MatcherFlags::default()
+        Self::default()
     }
 
     /// Whether to ignore case when comparing strings or not.
