@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::io::{self, Write};
+use std::iter;
 use std::str::Utf8Error;
 
 use bstr::{BStr, BString, ByteSlice};
@@ -61,6 +62,33 @@ impl<T: AsRef<[u8]>> Subfield<T> {
     /// ```
     pub fn value(&self) -> &T {
         &self.value
+    }
+}
+
+impl<'a, T: AsRef<[u8]>> IntoIterator for &'a Subfield<T> {
+    type Item = &'a Subfield<T>;
+    type IntoIter = iter::Once<Self::Item>;
+
+    /// Creates an iterator from a single subfield. The iterator just
+    /// returns the subfield once.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let subfield = SubfieldRef::new('0', "123456789X");
+    ///     let mut iter = subfield.into_iter();
+    ///     assert_eq!(iter.next(), Some(&subfield));
+    ///     assert_eq!(iter.next(), None);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    fn into_iter(self) -> Self::IntoIter {
+        iter::once(self)
     }
 }
 

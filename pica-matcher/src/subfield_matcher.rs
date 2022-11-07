@@ -19,7 +19,7 @@ use crate::common::{
 };
 use crate::{MatcherOptions, ParseMatcherError};
 
-const SUBFILED_CODES: &'static str =
+const SUBFILED_CODES: &str =
     "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /// A matcher that matches against PICA+
@@ -92,27 +92,25 @@ impl SubfieldMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn is_match<T>(
+    pub fn is_match<'a, T>(
         &self,
-        subfield: &Subfield<T>,
+        subfields: impl IntoIterator<Item = &'a Subfield<T>>,
         flags: &MatcherOptions,
     ) -> bool
     where
-        T: AsRef<[u8]>,
+        T: AsRef<[u8]> + 'a,
     {
+        let mut subfields = subfields.into_iter();
+
         match &self.kind {
-            SubfieldMatcherKind::Comparison(matcher) => {
-                matcher.is_match(subfield, flags)
-            }
-            SubfieldMatcherKind::Exists(codes) => {
-                codes.contains(&subfield.code())
-            }
-            SubfieldMatcherKind::Regex(matcher) => {
-                matcher.is_match(subfield, flags)
-            }
-            SubfieldMatcherKind::In(matcher) => {
-                matcher.is_match(subfield, flags)
-            }
+            SubfieldMatcherKind::Comparison(matcher) => subfields
+                .any(|subfield| matcher.is_match(subfield, flags)),
+            SubfieldMatcherKind::Exists(codes) => subfields
+                .any(|subfield| codes.contains(&subfield.code())),
+            SubfieldMatcherKind::Regex(matcher) => subfields
+                .any(|subfield| matcher.is_match(subfield, flags)),
+            SubfieldMatcherKind::In(matcher) => subfields
+                .any(|subfield| matcher.is_match(subfield, flags)),
         }
     }
 }
@@ -150,7 +148,7 @@ pub(crate) struct ComparisionMatcher {
 impl ComparisionMatcher {
     /// Returns `true` if the given subfield matches against the
     /// comparison matcher.
-    pub fn is_match<T>(
+    fn is_match<T>(
         &self,
         subfield: &Subfield<T>,
         options: &MatcherOptions,
@@ -202,13 +200,12 @@ impl ComparisionMatcher {
                 } else {
                     normalized_levenshtein(
                         &self.value.to_string(),
-                        &value.to_str_lossy().to_string(),
+                        &value.to_str_lossy(),
                     )
                 };
 
                 score > options.strsim_threshold
-            }
-            _ => unreachable!(),
+            } // _ => unreachable!(),
         }
     }
 }
@@ -224,7 +221,7 @@ pub(crate) struct RegexMatcher {
 impl RegexMatcher {
     /// Returns `true` if given subfield matches against the regular
     /// expression.
-    pub fn is_match<T>(
+    fn is_match<T>(
         &self,
         subfield: &Subfield<T>,
         options: &MatcherOptions,
@@ -262,7 +259,7 @@ pub(crate) struct InMatcher {
 impl InMatcher {
     /// Returns `true` if the given subfield value is in the values
     /// list.
-    pub fn is_match<T>(
+    fn is_match<T>(
         &self,
         subfield: &Subfield<T>,
         options: &MatcherOptions,
@@ -492,6 +489,16 @@ mod tests {
             &MatcherOptions::new().case_ignore(true)
         ));
 
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("0 == 'abc'")?;
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+                &SubfieldRef::from_bytes(b"\x1f0abc")?
+            ],
+            &MatcherOptions::default()
+        ));
+
         Ok(())
     }
 
@@ -519,6 +526,16 @@ mod tests {
             &MatcherOptions::new().case_ignore(true)
         ));
 
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("0 != 'abc'")?;
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+                &SubfieldRef::from_bytes(b"\x1f0abc")?
+            ],
+            &MatcherOptions::default()
+        ));
+
         Ok(())
     }
 
@@ -542,6 +559,16 @@ mod tests {
             &MatcherOptions::new().case_ignore(true)
         ));
 
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("10 =^ 'ab'")?;
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+                &SubfieldRef::from_bytes(b"\x1f0cba")?,
+            ],
+            &MatcherOptions::default()
+        ));
+
         Ok(())
     }
 
@@ -561,6 +588,16 @@ mod tests {
             &MatcherOptions::new().case_ignore(true)
         ));
 
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("[01] =$ 'ba'")?;
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0baab")?,
+                &SubfieldRef::from_bytes(b"\x1f0abba")?
+            ],
+            &MatcherOptions::default()
+        ));
+
         Ok(())
     }
 
@@ -577,6 +614,33 @@ mod tests {
         ));
         assert!(matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1faHeiko")?,
+            &MatcherOptions::new().strsim_threshold(0.7)
+        ));
+
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("a =* 'Heike'")?;
+
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1faHeike")?,
+                &SubfieldRef::from_bytes(b"\x1faHeino")?,
+            ],
+            &MatcherOptions::default()
+        ));
+
+        assert!(!matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1faHeiko")?,
+                &SubfieldRef::from_bytes(b"\x1faHeino")?,
+            ],
+            &MatcherOptions::default()
+        ));
+
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1faHeiko")?,
+                &SubfieldRef::from_bytes(b"\x1faHeino")?,
+            ],
             &MatcherOptions::new().strsim_threshold(0.7)
         ));
 
@@ -612,6 +676,26 @@ mod tests {
         ));
         assert!(!matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1f3abc")?,
+            &options
+        ));
+
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("0?")?;
+        let options = MatcherOptions::default();
+
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1fA123")?,
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            ],
+            &options
+        ));
+
+        assert!(!matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1fA123")?,
+                &SubfieldRef::from_bytes(b"\x1f1abc")?,
+            ],
             &options
         ));
 
@@ -652,6 +736,16 @@ mod tests {
         assert!(!matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1f1abc")?,
             &options
+        ));
+
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("0 =~ '^ab'")?;
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            ],
+            &MatcherOptions::default()
         ));
 
         Ok(())
@@ -708,6 +802,16 @@ mod tests {
         assert!(matcher.is_match(
             &SubfieldRef::from_bytes(b"\x1f0ABC")?,
             &options
+        ));
+
+        // multiple subfields
+        let matcher = SubfieldMatcher::new("0 in ['abc', 'def']")?;
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0xyz")?,
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            ],
+            &MatcherOptions::default()
         ));
 
         Ok(())
