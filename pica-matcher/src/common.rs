@@ -12,12 +12,12 @@ use pica_record::parser::ParseResult;
 /// Comparison Operators
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ComparisonOp {
-    Eq,         // equal, "=="
-    Ne,         // not equal, "!="
-    Gt,         // greater than, ">"
-    Ge,         // greater than or equal, ">="
-    Lt,         // less than, "<"
-    Le,         // less than or equal, "<="
+    Eq, // equal, "=="
+    Ne, // not equal, "!="
+    // Gt,         // greater than, ">"
+    // Ge,         // greater than or equal, ">="
+    // Lt,         // less than, "<"
+    // Le,         // less than or equal, "<="
     StartsWith, // starts with, "=^"
     EndsWith,   // ends with, "=$"
     Similar,    // similar, "=*"
@@ -28,10 +28,10 @@ impl Display for ComparisonOp {
         match *self {
             Self::Eq => write!(f, "=="),
             Self::Ne => write!(f, "!="),
-            Self::Gt => write!(f, ">"),
-            Self::Ge => write!(f, ">="),
-            Self::Lt => write!(f, "<"),
-            Self::Le => write!(f, "<="),
+            // Self::Gt => write!(f, ">"),
+            // Self::Ge => write!(f, ">="),
+            // Self::Lt => write!(f, "<"),
+            // Self::Le => write!(f, "<="),
             Self::StartsWith => write!(f, "=^"),
             Self::EndsWith => write!(f, "=$"),
             Self::Similar => write!(f, "=*"),
