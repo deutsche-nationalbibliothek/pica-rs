@@ -3,10 +3,12 @@ use std::fmt::{self, Display};
 use bstr::{BString, ByteSlice};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{all_consuming, map, opt, value, verify};
+use nom::character::complete::{char, digit1};
+use nom::combinator::{
+    all_consuming, cut, map, map_res, opt, value, verify,
+};
 use nom::multi::{many1, separated_list1};
-use nom::sequence::{delimited, terminated, tuple};
+use nom::sequence::{delimited, preceded, terminated, tuple};
 use nom::Finish;
 use pica_record::parser::{parse_subfield_code, ParseResult};
 use pica_record::Subfield;
@@ -15,7 +17,8 @@ use regex::Regex;
 use strsim::normalized_levenshtein;
 
 use crate::common::{
-    parse_comparison_op_str, parse_string, ws, ComparisonOp,
+    parse_comparison_op_str, parse_comparison_op_usize, parse_string,
+    ws, ComparisonOp,
 };
 use crate::{MatcherOptions, ParseMatcherError};
 
@@ -33,6 +36,7 @@ pub struct SubfieldMatcher {
 #[derive(Debug, PartialEq, Eq)]
 enum SubfieldMatcherKind {
     Comparison(ComparisionMatcher),
+    Cardinality(CardinalityMatcher),
     Regex(RegexMatcher),
     Exists(Vec<char>),
     In(InMatcher),
@@ -111,6 +115,21 @@ impl SubfieldMatcher {
                 .any(|subfield| matcher.is_match(subfield, flags)),
             SubfieldMatcherKind::In(matcher) => subfields
                 .any(|subfield| matcher.is_match(subfield, flags)),
+            SubfieldMatcherKind::Cardinality(matcher) => {
+                let count = subfields
+                    .filter(|s| s.code() == matcher.code)
+                    .count();
+
+                match matcher.op {
+                    ComparisonOp::Eq => count == matcher.value,
+                    ComparisonOp::Ne => count != matcher.value,
+                    ComparisonOp::Ge => count >= matcher.value,
+                    ComparisonOp::Gt => count > matcher.value,
+                    ComparisonOp::Le => count <= matcher.value,
+                    ComparisonOp::Lt => count < matcher.value,
+                    _ => unreachable!(),
+                }
+            }
         }
     }
 }
@@ -205,7 +224,8 @@ impl ComparisionMatcher {
                 };
 
                 score > options.strsim_threshold
-            } // _ => unreachable!(),
+            }
+            _ => unreachable!(),
         }
     }
 }
@@ -288,6 +308,14 @@ impl InMatcher {
     }
 }
 
+/// A matcher that checks the cardinality of a subfield.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct CardinalityMatcher {
+    code: char,
+    op: ComparisonOp,
+    value: usize,
+}
+
 /// Parse a single or list of subfield codes.
 fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
@@ -363,6 +391,24 @@ fn parse_exists_matcher(i: &[u8]) -> ParseResult<Vec<char>> {
     terminated(ws(parse_subfield_codes), char('?'))(i)
 }
 
+fn parse_cardinality_matcher(
+    i: &[u8],
+) -> ParseResult<CardinalityMatcher> {
+    map(
+        preceded(
+            char('#'),
+            cut(tuple((
+                ws(parse_subfield_code),
+                ws(parse_comparison_op_usize),
+                map_res(digit1, |s| {
+                    std::str::from_utf8(s).unwrap().parse::<usize>()
+                }),
+            ))),
+        ),
+        |(code, op, value)| CardinalityMatcher { code, op, value },
+    )(i)
+}
+
 /// Parse a `SubfieldMatcherKind` matcher.
 fn parse_subfield_matcher_kind(
     i: &[u8],
@@ -372,6 +418,10 @@ fn parse_subfield_matcher_kind(
         map(parse_regex_matcher, SubfieldMatcherKind::Regex),
         map(parse_in_matcher, SubfieldMatcherKind::In),
         map(parse_exists_matcher, SubfieldMatcherKind::Exists),
+        map(
+            parse_cardinality_matcher,
+            SubfieldMatcherKind::Cardinality,
+        ),
     ))(i)
 }
 
@@ -812,6 +862,127 @@ mod tests {
                 &SubfieldRef::from_bytes(b"\x1f0abc")?,
             ],
             &MatcherOptions::default()
+        ));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_cardinality_matcher() -> anyhow::Result<()> {
+        // Equal, `==`
+        let matcher = SubfieldMatcher::new("#0 == 1")?;
+        let options = MatcherOptions::default();
+
+        assert!(matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &options
+        ));
+        assert!(!matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+            ],
+            &options
+        ));
+
+        let matcher = SubfieldMatcher::new("#0 == 0")?;
+        let options = MatcherOptions::default();
+
+        assert!(!matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &options
+        ));
+
+        assert!(matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1fXabc")?,
+            &options
+        ));
+
+        // Not Equal, `!=`
+        let matcher = SubfieldMatcher::new("#0 != 1")?;
+        let options = MatcherOptions::default();
+
+        assert!(!matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &options
+        ));
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+            ],
+            &options
+        ));
+
+        // Greater than or equal, `>=`
+        let matcher = SubfieldMatcher::new("#0 >= 2")?;
+        let options = MatcherOptions::default();
+
+        assert!(!matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &options
+        ));
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+            ],
+            &options
+        ));
+
+        // Greater than, `>`
+        let matcher = SubfieldMatcher::new("#0 > 1")?;
+        let options = MatcherOptions::default();
+
+        assert!(!matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &options
+        ));
+        assert!(matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+            ],
+            &options
+        ));
+
+        // Less than or equal, `<=`
+        let matcher = SubfieldMatcher::new("#0 <= 1")?;
+        let options = MatcherOptions::default();
+
+        assert!(matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &options
+        ));
+        assert!(!matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+            ],
+            &options
+        ));
+
+        // Less than or equal, `<=`
+        let matcher = SubfieldMatcher::new("#0 < 2")?;
+        let options = MatcherOptions::default();
+
+        assert!(matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &options
+        ));
+        assert!(!matcher.is_match(
+            vec![
+                &SubfieldRef::from_bytes(b"\x1f0abc")?,
+                &SubfieldRef::from_bytes(b"\x1f0def")?,
+            ],
+            &options
+        ));
+
+        let matcher = SubfieldMatcher::new("#0 < 1")?;
+        let options = MatcherOptions::default();
+        assert!(matcher.is_match(
+            &SubfieldRef::from_bytes(b"\x1fXabc")?,
+            &options
         ));
 
         Ok(())
