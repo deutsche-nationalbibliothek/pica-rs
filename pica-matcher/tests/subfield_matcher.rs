@@ -1,5 +1,5 @@
 use pica_matcher::subfield_matcher::{
-    ExistsMatcher, Matcher, RegexMatcher, RelationMatcher,
+    ExistsMatcher, InMatcher, Matcher, RegexMatcher, RelationMatcher,
 };
 use pica_matcher::MatcherOptions;
 use pica_record::SubfieldRef;
@@ -329,6 +329,45 @@ fn regex_matcher() -> anyhow::Result<()> {
         vec![
             &SubfieldRef::from_bytes(b"\x1f0foo")?,
             &SubfieldRef::from_bytes(b"\x1f0bar")?
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn in_matcher() -> anyhow::Result<()> {
+    // case sensitive
+    let matcher = InMatcher::new("0 in ['abc', 'def']")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0def")?, &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0hij")?, &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0DEF")?, &options));
+
+    // case insensitive
+    let matcher = InMatcher::new("0 in ['abc', 'def']")?;
+    let options = MatcherOptions::new().case_ignore(true);
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &options));
+
+    // multiple subfields
+    let matcher = InMatcher::new("0 in ['abc', 'def']")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0hij")?,
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
         ],
         &options
     ));

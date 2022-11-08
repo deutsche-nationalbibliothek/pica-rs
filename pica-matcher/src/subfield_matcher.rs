@@ -4,8 +4,8 @@ use bstr::{BString, ByteSlice};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, map, value, verify};
-use nom::multi::many1;
+use nom::combinator::{all_consuming, map, opt, value, verify};
+use nom::multi::{many1, separated_list1};
 use nom::sequence::{delimited, terminated, tuple};
 use nom::Finish;
 use pica_record::parser::{parse_subfield_code, ParseResult};
@@ -245,6 +245,71 @@ impl Matcher for RegexMatcher {
             |(codes, invert, pattern)| RegexMatcher {
                 codes,
                 pattern,
+                invert,
+            },
+        )(i)
+    }
+}
+
+/// A matcher that tests if a subfield value is in a list.
+#[derive(Debug, PartialEq, Eq)]
+pub struct InMatcher {
+    codes: Vec<char>,
+    values: Vec<BString>,
+    invert: bool,
+}
+
+impl Matcher for InMatcher {
+    fn is_match<'a, T: AsRef<[u8]> + 'a>(
+        &self,
+        subfields: impl IntoIterator<Item = &'a Subfield<T>>,
+        options: &MatcherOptions,
+    ) -> bool {
+        for subfield in subfields {
+            if !self.codes.contains(&subfield.code()) {
+                continue;
+            }
+
+            let mut result =
+                self.values.iter().any(|value: &BString| {
+                    if options.case_ignore {
+                        subfield.value().as_ref().to_lowercase()
+                            == value.to_lowercase()
+                    } else {
+                        subfield.value().as_ref() == value
+                    }
+                });
+
+            if self.invert {
+                result = !result;
+            }
+
+            if result {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn parse(i: &[u8]) -> ParseResult<Self> {
+        map(
+            tuple((
+                parse_subfield_codes,
+                map(opt(ws(tag("not"))), |not| not.is_some()),
+                ws(tag("in")),
+                delimited(
+                    ws(char('[')),
+                    separated_list1(
+                        ws(char(',')),
+                        map(parse_string, BString::from),
+                    ),
+                    ws(char(']')),
+                ),
+            )),
+            |(codes, invert, _, values)| InMatcher {
+                codes,
+                values,
                 invert,
             },
         )(i)
