@@ -3,10 +3,12 @@
 use bstr::{BString, ByteSlice};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
-use nom::combinator::{all_consuming, map, opt, value, verify};
+use nom::character::complete::{char, digit1};
+use nom::combinator::{
+    all_consuming, cut, map, map_res, opt, value, verify,
+};
 use nom::multi::{many1, separated_list1};
-use nom::sequence::{delimited, terminated, tuple};
+use nom::sequence::{delimited, preceded, terminated, tuple};
 use nom::Finish;
 use pica_record::parser::{parse_subfield_code, ParseResult};
 use pica_record::Subfield;
@@ -15,7 +17,8 @@ use regex::Regex;
 use strsim::normalized_levenshtein;
 
 use crate::common::{
-    parse_relational_op_str, parse_string, ws, RelationalOp,
+    parse_relational_op_str, parse_relational_op_usize, parse_string,
+    ws, RelationalOp,
 };
 use crate::{MatcherOptions, ParseMatcherError};
 
@@ -172,6 +175,7 @@ impl Matcher for RelationMatcher {
 
                     score > options.strsim_threshold
                 }
+                _ => unreachable!(),
             };
 
             if result {
@@ -251,7 +255,7 @@ impl Matcher for RegexMatcher {
     }
 }
 
-/// A matcher that tests if a subfield value is in a list.
+/// A matcher that tests if a subfield value is in a predefined list.
 #[derive(Debug, PartialEq, Eq)]
 pub struct InMatcher {
     codes: Vec<char>,
@@ -324,6 +328,53 @@ fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
         map(parse_subfield_code, |code| vec![code]),
         value(SUBFIELD_CODES.chars().collect(), char('*')),
     ))(i)
+}
+
+/// A matcher that tests the number of occurrences of a subfield.
+#[derive(Debug, PartialEq, Eq)]
+pub struct CardinalityMatcher {
+    code: char,
+    op: RelationalOp,
+    value: usize,
+}
+
+impl Matcher for CardinalityMatcher {
+    fn is_match<'a, T: AsRef<[u8]> + 'a>(
+        &self,
+        subfields: impl IntoIterator<Item = &'a Subfield<T>>,
+        _options: &MatcherOptions,
+    ) -> bool {
+        let count = subfields
+            .into_iter()
+            .filter(|s| self.code == s.code())
+            .count();
+
+        match self.op {
+            RelationalOp::Eq => count == self.value,
+            RelationalOp::Ne => count != self.value,
+            RelationalOp::Ge => count >= self.value,
+            RelationalOp::Gt => count > self.value,
+            RelationalOp::Le => count <= self.value,
+            RelationalOp::Lt => count < self.value,
+            _ => unreachable!(),
+        }
+    }
+
+    fn parse(i: &[u8]) -> ParseResult<Self> {
+        map(
+            preceded(
+                char('#'),
+                cut(tuple((
+                    ws(parse_subfield_code),
+                    ws(parse_relational_op_usize),
+                    map_res(digit1, |s| {
+                        std::str::from_utf8(s).unwrap().parse::<usize>()
+                    }),
+                ))),
+            ),
+            |(code, op, value)| CardinalityMatcher { code, op, value },
+        )(i)
+    }
 }
 
 #[cfg(test)]

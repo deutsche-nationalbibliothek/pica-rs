@@ -22,12 +22,12 @@ where
 /// Relational Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum RelationalOp {
-    Eq, // equal, "=="
-    Ne, // not equal, "!="
-    // Gt,         // greater than, ">"
-    // Ge,         // greater than or equal, ">="
-    // Lt,         // less than, "<"
-    // Le,         // less than or equal, "<="
+    Eq,         // equal, "=="
+    Ne,         // not equal, "!="
+    Gt,         // greater than, ">"
+    Ge,         // greater than or equal, ">="
+    Lt,         // less than, "<"
+    Le,         // less than or equal, "<="
     StartsWith, // starts with, "=^"
     EndsWith,   // ends with, "=$"
     Similar,    // similar, "=*"
@@ -36,15 +36,15 @@ pub(crate) enum RelationalOp {
 impl Display for RelationalOp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::Eq => write!(f, "=="),
-            Self::Ne => write!(f, "!="),
-            // Self::Gt => write!(f, ">"),
-            // Self::Ge => write!(f, ">="),
-            // Self::Lt => write!(f, "<"),
-            // Self::Le => write!(f, "<="),
-            Self::StartsWith => write!(f, "=^"),
-            Self::EndsWith => write!(f, "=$"),
-            Self::Similar => write!(f, "=*"),
+            RelationalOp::Eq => write!(f, "=="),
+            RelationalOp::Ne => write!(f, "!="),
+            RelationalOp::Gt => write!(f, ">"),
+            RelationalOp::Ge => write!(f, ">="),
+            RelationalOp::Lt => write!(f, "<"),
+            RelationalOp::Le => write!(f, "<="),
+            RelationalOp::StartsWith => write!(f, "=^"),
+            RelationalOp::EndsWith => write!(f, "=$"),
+            RelationalOp::Similar => write!(f, "=*"),
         }
     }
 }
@@ -59,6 +59,20 @@ pub(crate) fn parse_relational_op_str(
         value(RelationalOp::StartsWith, tag("=^")),
         value(RelationalOp::EndsWith, tag("=$")),
         value(RelationalOp::Similar, tag("=*")),
+    ))(i)
+}
+
+/// Parse RelationalOp which can be used for usize comparisons.
+pub(crate) fn parse_relational_op_usize(
+    i: &[u8],
+) -> ParseResult<RelationalOp> {
+    alt((
+        value(RelationalOp::Eq, tag("==")),
+        value(RelationalOp::Ne, tag("!=")),
+        value(RelationalOp::Ge, tag(">=")),
+        value(RelationalOp::Gt, tag(">")),
+        value(RelationalOp::Le, tag("<=")),
+        value(RelationalOp::Lt, tag("<")),
     ))(i)
 }
 
@@ -153,6 +167,34 @@ mod tests {
         assert_finished_and_eq!(
             parse_relational_op_str(b"=*"),
             RelationalOp::Similar
+        );
+    }
+
+    #[test]
+    fn test_parse_relational_op_usize() {
+        assert_done_and_eq!(
+            parse_relational_op_usize(b"=="),
+            RelationalOp::Eq
+        );
+        assert_done_and_eq!(
+            parse_relational_op_usize(b"!="),
+            RelationalOp::Ne
+        );
+        assert_done_and_eq!(
+            parse_relational_op_usize(b">="),
+            RelationalOp::Ge
+        );
+        assert_done_and_eq!(
+            parse_relational_op_usize(b">"),
+            RelationalOp::Gt
+        );
+        assert_done_and_eq!(
+            parse_relational_op_usize(b"<="),
+            RelationalOp::Le
+        );
+        assert_done_and_eq!(
+            parse_relational_op_usize(b"<"),
+            RelationalOp::Lt
         );
     }
 

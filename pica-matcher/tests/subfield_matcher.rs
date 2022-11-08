@@ -1,5 +1,6 @@
 use pica_matcher::subfield_matcher::{
-    ExistsMatcher, InMatcher, Matcher, RegexMatcher, RelationMatcher,
+    CardinalityMatcher, ExistsMatcher, InMatcher, Matcher,
+    RegexMatcher, RelationMatcher,
 };
 use pica_matcher::MatcherOptions;
 use pica_record::SubfieldRef;
@@ -368,6 +369,174 @@ fn in_matcher() -> anyhow::Result<()> {
         vec![
             &SubfieldRef::from_bytes(b"\x1f0hij")?,
             &SubfieldRef::from_bytes(b"\x1f0abc")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_eq() -> anyhow::Result<()> {
+    let matcher = CardinalityMatcher::new("#0 == 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1fXabc"), &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc"), &options));
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+            &SubfieldRef::from_bytes(b"\x1f0hij")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_ne() -> anyhow::Result<()> {
+    let matcher = CardinalityMatcher::new("#0 != 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1fXabc"), &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc"), &options));
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+            &SubfieldRef::from_bytes(b"\x1f0hij")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_ge() -> anyhow::Result<()> {
+    let matcher = CardinalityMatcher::new("#0 >= 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1fXabc"), &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc"), &options));
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+            &SubfieldRef::from_bytes(b"\x1f0hij")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_gt() -> anyhow::Result<()> {
+    let matcher = CardinalityMatcher::new("#0 > 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1fXabc"), &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc"), &options));
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+            &SubfieldRef::from_bytes(b"\x1f0hij")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_le() -> anyhow::Result<()> {
+    let matcher = CardinalityMatcher::new("#0 <= 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1fXabc"), &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc"), &options));
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+            &SubfieldRef::from_bytes(b"\x1f0hij")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_lt() -> anyhow::Result<()> {
+    let matcher = CardinalityMatcher::new("#0 < 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1fXabc"), &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abc"), &options));
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0abc")?,
+            &SubfieldRef::from_bytes(b"\x1f0def")?,
+            &SubfieldRef::from_bytes(b"\x1f0hij")?,
         ],
         &options
     ));
