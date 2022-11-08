@@ -1,12 +1,17 @@
+//! This module contains a bunch of matcher, to test
+//! [Subfields](pica_record::Subfield).
 use bstr::{BString, ByteSlice};
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, map, value};
+use nom::combinator::{all_consuming, map, value, verify};
 use nom::multi::many1;
 use nom::sequence::{delimited, terminated, tuple};
 use nom::Finish;
 use pica_record::parser::{parse_subfield_code, ParseResult};
 use pica_record::Subfield;
+use regex::bytes::RegexBuilder;
+use regex::Regex;
 use strsim::normalized_levenshtein;
 
 use crate::common::{
@@ -17,6 +22,7 @@ use crate::{MatcherOptions, ParseMatcherError};
 const SUBFIELD_CODES: &str =
     "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+/// A trait that provides the basic matcher API.
 pub trait Matcher: Sized {
     /// Create a new matcher from a string slice.
     fn new(data: &str) -> Result<Self, ParseMatcherError> {
@@ -40,7 +46,7 @@ pub trait Matcher: Sized {
     ) -> bool;
 }
 
-/// A matcher that checks the existance of subfield.
+/// A matcher that tests for the existance of subfield.
 ///
 /// This matcher can be used to determine if a single subfield or a list
 /// of subfields contains at least one subfield with a code, that is
@@ -91,8 +97,7 @@ fn case_compare(lhs: &[u8], rhs: &[u8], case_ignore: bool) -> bool {
     }
 }
 
-/// A matcher that checks if a relations between a subfield's and the
-/// matcher value exists.
+/// A matcher that tests a relations between values.
 ///
 /// This matcher provides the following relational operators:
 /// * Equal (`==`)
@@ -186,6 +191,62 @@ impl Matcher for RelationMatcher {
                 map(ws(parse_string), BString::from),
             )),
             |(codes, op, value)| RelationMatcher { codes, op, value },
+        )(i)
+    }
+}
+
+/// A matcher that tests against a regular expression.
+#[derive(Debug, PartialEq, Eq)]
+pub struct RegexMatcher {
+    codes: Vec<char>,
+    pattern: String,
+    invert: bool,
+}
+
+impl Matcher for RegexMatcher {
+    fn is_match<'a, T: AsRef<[u8]> + 'a>(
+        &self,
+        subfields: impl IntoIterator<Item = &'a Subfield<T>>,
+        options: &MatcherOptions,
+    ) -> bool {
+        let re = RegexBuilder::new(&self.pattern)
+            .case_insensitive(options.case_ignore)
+            .build()
+            .unwrap();
+
+        for subfield in subfields {
+            if !self.codes.contains(&subfield.code()) {
+                continue;
+            }
+
+            let mut result = re.is_match(subfield.value().as_ref());
+            if self.invert {
+                result = !result;
+            }
+
+            if result {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn parse(i: &[u8]) -> ParseResult<Self> {
+        map(
+            tuple((
+                parse_subfield_codes,
+                alt((
+                    value(false, ws(tag("=~"))),
+                    value(true, ws(tag("!~"))),
+                )),
+                verify(parse_string, |x| Regex::new(x).is_ok()),
+            )),
+            |(codes, invert, pattern)| RegexMatcher {
+                codes,
+                pattern,
+                invert,
+            },
         )(i)
     }
 }

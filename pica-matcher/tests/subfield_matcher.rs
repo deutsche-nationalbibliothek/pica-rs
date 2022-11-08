@@ -1,5 +1,5 @@
 use pica_matcher::subfield_matcher::{
-    ExistsMatcher, Matcher, RelationMatcher,
+    ExistsMatcher, Matcher, RegexMatcher, RelationMatcher,
 };
 use pica_matcher::MatcherOptions;
 use pica_record::SubfieldRef;
@@ -275,6 +275,60 @@ fn relational_matcher_similar() -> anyhow::Result<()> {
         vec![
             &SubfieldRef::from_bytes(b"\x1faHeiko")?,
             &SubfieldRef::from_bytes(b"\x1faHeike")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn regex_matcher() -> anyhow::Result<()> {
+    // case sensitive
+    let matcher = RegexMatcher::new("0 =~ '^ab'")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abba")?, &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0ABBA")?, &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faabba")?, &options));
+
+    // case insensitive
+    let matcher = RegexMatcher::new("0 =~ '^ab'")?;
+    let options = MatcherOptions::new().case_ignore(true);
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abba")?, &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0ABBA")?, &options));
+
+    // invert match
+    let matcher = RegexMatcher::new("0 !~ '^ab'")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0baba")?, &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1f0abba")?, &options));
+
+    // multiple subfields
+    let matcher = RegexMatcher::new("0 =~ '^ab'")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0foobar")?,
+            &SubfieldRef::from_bytes(b"\x1f0abba")?
+        ],
+        &options
+    ));
+
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1f0foo")?,
+            &SubfieldRef::from_bytes(b"\x1f0bar")?
         ],
         &options
     ));
