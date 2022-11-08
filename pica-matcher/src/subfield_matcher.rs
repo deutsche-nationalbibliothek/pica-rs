@@ -1,13 +1,17 @@
+use bstr::{BString, ByteSlice};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{all_consuming, map, value};
 use nom::multi::many1;
-use nom::sequence::{delimited, terminated};
+use nom::sequence::{delimited, terminated, tuple};
 use nom::Finish;
 use pica_record::parser::{parse_subfield_code, ParseResult};
 use pica_record::Subfield;
+use strsim::normalized_levenshtein;
 
-use crate::common::ws;
+use crate::common::{
+    parse_relational_op_str, parse_string, ws, RelationalOp,
+};
 use crate::{MatcherOptions, ParseMatcherError};
 
 const SUBFIELD_CODES: &str =
@@ -79,7 +83,114 @@ impl Matcher for ExistsMatcher {
     }
 }
 
-/// Parse a list of subfield codes.
+fn case_compare(lhs: &[u8], rhs: &[u8], case_ignore: bool) -> bool {
+    if case_ignore {
+        lhs.to_lowercase() == rhs.to_lowercase()
+    } else {
+        lhs == rhs
+    }
+}
+
+/// A matcher that checks if a relations between a subfield's and the
+/// matcher value exists.
+///
+/// This matcher provides the following relational operators:
+/// * Equal (`==`)
+/// * Not Equal (`!=`)
+/// * StartsWith (`=^`)
+/// * EndsWith (`=$`)
+/// * Similar (`=*`)
+#[derive(Debug, PartialEq, Eq)]
+pub struct RelationMatcher {
+    codes: Vec<char>,
+    op: RelationalOp,
+    value: BString,
+}
+
+impl Matcher for RelationMatcher {
+    /// Returns true if at least one subfield is found, when the
+    /// subfield's value and the matcher value are related. The two
+    /// values are related iff the relation defined by the operator
+    /// exists.
+    fn is_match<'a, T: AsRef<[u8]> + 'a>(
+        &self,
+        subfields: impl IntoIterator<Item = &'a Subfield<T>>,
+        options: &MatcherOptions,
+    ) -> bool {
+        for subfield in subfields {
+            if !self.codes.contains(&subfield.code()) {
+                continue;
+            }
+
+            let value = subfield.value().as_ref();
+            let result = match self.op {
+                RelationalOp::Eq => case_compare(
+                    &self.value,
+                    value,
+                    options.case_ignore,
+                ),
+                RelationalOp::Ne => !case_compare(
+                    &self.value,
+                    value,
+                    options.case_ignore,
+                ),
+                RelationalOp::StartsWith => {
+                    if options.case_ignore {
+                        value
+                            .to_lowercase()
+                            .starts_with(&self.value.to_lowercase())
+                    } else {
+                        value.starts_with(&self.value)
+                    }
+                }
+                RelationalOp::EndsWith => {
+                    if options.case_ignore {
+                        value
+                            .to_lowercase()
+                            .ends_with(&self.value.to_lowercase())
+                    } else {
+                        value.ends_with(&self.value)
+                    }
+                }
+                RelationalOp::Similar => {
+                    let score = if options.case_ignore {
+                        normalized_levenshtein(
+                            &self.value.to_string().to_lowercase(),
+                            &value.to_str_lossy().to_lowercase(),
+                        )
+                    } else {
+                        normalized_levenshtein(
+                            &self.value.to_string(),
+                            &value.to_str_lossy(),
+                        )
+                    };
+
+                    score > options.strsim_threshold
+                }
+            };
+
+            if result {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    /// Parse a relational expression
+    fn parse(i: &[u8]) -> ParseResult<RelationMatcher> {
+        map(
+            tuple((
+                ws(parse_subfield_codes),
+                ws(parse_relational_op_str),
+                map(ws(parse_string), BString::from),
+            )),
+            |(codes, op, value)| RelationMatcher { codes, op, value },
+        )(i)
+    }
+}
+
+/// Parse a list of subfield codes
 fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
         delimited(char('['), many1(parse_subfield_code), char(']')),
