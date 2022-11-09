@@ -9,6 +9,8 @@ edition = "2021"
 [dependencies]
 bstr = "1.0"
 nom = "7.1"
+regex = "1.7"
+strsim = "0.10"
 thiserror = "1.0"
 
 pica-record = { version = "0.1", path = "../pica-record" }
