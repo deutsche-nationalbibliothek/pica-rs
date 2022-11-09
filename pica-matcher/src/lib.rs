@@ -11,5 +11,5 @@ mod tag_matcher;
 pub use error::ParseMatcherError;
 pub use occurrence_matcher::OccurrenceMatcher;
 pub use options::MatcherOptions;
-// pub use subfield_matcher::SubfieldMatcher;
+pub use subfield_matcher::SubfieldMatcher;
 pub use tag_matcher::TagMatcher;

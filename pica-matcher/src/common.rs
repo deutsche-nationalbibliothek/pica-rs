@@ -9,6 +9,13 @@ use nom::sequence::{delimited, preceded};
 use nom::IResult;
 use pica_record::parser::ParseResult;
 
+/// Boolean Operators.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BooleanOp {
+    And, // and, "&&"
+    Or,  // or, "||"
+}
+
 /// Strip whitespaces from the beginning and end.
 pub(crate) fn ws<'a, F: 'a, O, E: nom::error::ParseError<&'a [u8]>>(
     inner: F,
