@@ -11,4 +11,6 @@ pub enum ParseMatcherError {
     InvalidSubfieldMatcher(String),
     #[error("invalid field matcher (got `{0}`)")]
     InvalidFieldMatcher(String),
+    #[error("invalid record matcher (got `{0}`)")]
+    InvalidRecordMatcher(String),
 }
