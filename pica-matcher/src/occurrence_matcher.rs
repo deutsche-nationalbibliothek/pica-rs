@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt::Display;
 
 use bstr::BStr;
 use nom::branch::alt;
@@ -14,14 +14,8 @@ use crate::ParseMatcherError;
 
 /// A matcher that matches against PICA+
 /// [Occurrence](`pica_record::Occurrence`).
-#[derive(Debug)]
-pub struct OccurrenceMatcher {
-    kind: OccurrenceMatcherKind,
-    matcher_str: String,
-}
-
 #[derive(Clone, Debug, PartialEq, Eq)]
-enum OccurrenceMatcherKind {
+pub enum OccurrenceMatcher {
     Any,
     Some(OccurrenceMut),
     Range(OccurrenceMut, OccurrenceMut),
@@ -50,17 +44,14 @@ impl OccurrenceMatcher {
     where
         T: AsRef<[u8]> + Display,
     {
-        all_consuming(parse_occurrence_matcher_kind)(expr.as_ref())
+        all_consuming(parse_occurrence_matcher)(expr.as_ref())
             .finish()
             .map_err(|_| {
                 ParseMatcherError::InvalidOccurrenceMatcher(
                     expr.to_string(),
                 )
             })
-            .map(|(_, kind)| Self {
-                matcher_str: expr.to_string(),
-                kind,
-            })
+            .map(|(_, matcher)| matcher)
     }
 
     /// Returns `true` if the given occurrence matches against the
@@ -85,26 +76,14 @@ impl OccurrenceMatcher {
     where
         T: AsRef<[u8]>,
     {
-        match &self.kind {
-            OccurrenceMatcherKind::Any => true,
-            OccurrenceMatcherKind::None => occurrence == "00",
-            OccurrenceMatcherKind::Some(rhs) => occurrence == rhs,
-            OccurrenceMatcherKind::Range(min, max) => {
+        match self {
+            Self::Any => true,
+            Self::None => occurrence == "00",
+            Self::Some(rhs) => occurrence == rhs,
+            Self::Range(min, max) => {
                 (occurrence >= min) && (occurrence <= max)
             }
         }
-    }
-}
-
-impl Display for OccurrenceMatcher {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.matcher_str)
-    }
-}
-
-impl PartialEq for OccurrenceMatcher {
-    fn eq(&self, other: &Self) -> bool {
-        self.kind == other.kind
     }
 }
 
@@ -120,11 +99,7 @@ impl<T: AsRef<[u8]>> PartialEq<Option<Occurrence<T>>>
     fn eq(&self, other: &Option<Occurrence<T>>) -> bool {
         match other {
             Some(occurrence) => self.is_match(occurrence),
-            None => matches!(
-                self.kind,
-                OccurrenceMatcherKind::Any
-                    | OccurrenceMatcherKind::None
-            ),
+            None => matches!(self, Self::Any | Self::None),
         }
     }
 }
@@ -135,15 +110,15 @@ impl<T: AsRef<[u8]>> PartialEq<OccurrenceMatcher> for Occurrence<T> {
     }
 }
 
-impl From<OccurrenceMut> for OccurrenceMatcherKind {
+impl From<OccurrenceMut> for OccurrenceMatcher {
     fn from(value: OccurrenceMut) -> Self {
-        OccurrenceMatcherKind::Some(value)
+        OccurrenceMatcher::Some(value)
     }
 }
 
-fn parse_occurrence_matcher_kind(
+fn parse_occurrence_matcher(
     i: &[u8],
-) -> ParseResult<OccurrenceMatcherKind> {
+) -> ParseResult<OccurrenceMatcher> {
     preceded(
         char('/'),
         cut(alt((
@@ -157,7 +132,7 @@ fn parse_occurrence_matcher_kind(
                     |(min, max)| min.len() == max.len() && min < max,
                 ),
                 |(min, max)| {
-                    OccurrenceMatcherKind::Range(
+                    OccurrenceMatcher::Range(
                         OccurrenceMut::from_unchecked(min),
                         OccurrenceMut::from_unchecked(max),
                     )
@@ -169,8 +144,8 @@ fn parse_occurrence_matcher_kind(
                 }),
                 |value| OccurrenceMut::from_unchecked(value).into(),
             ),
-            value(OccurrenceMatcherKind::None, tag("00")),
-            value(OccurrenceMatcherKind::Any, char('*')),
+            value(OccurrenceMatcher::None, tag("00")),
+            value(OccurrenceMatcher::Any, char('*')),
         ))),
     )(i)
 }
