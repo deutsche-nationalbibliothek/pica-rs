@@ -158,34 +158,32 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_occurrence_matcher_kind() -> anyhow::Result<()> {
+    fn test_parse_occurrence_matcher() -> anyhow::Result<()> {
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/*"),
-            OccurrenceMatcherKind::Any
+            parse_occurrence_matcher(b"/*"),
+            OccurrenceMatcher::Any
         );
 
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/00"),
-            OccurrenceMatcherKind::None
+            parse_occurrence_matcher(b"/00"),
+            OccurrenceMatcher::None
         );
 
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/01"),
-            OccurrenceMatcherKind::Some(OccurrenceMut::from_bytes(
-                b"/01"
-            )?)
+            parse_occurrence_matcher(b"/01"),
+            OccurrenceMatcher::Some(OccurrenceMut::new("01"))
         );
 
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/01-03"),
-            OccurrenceMatcherKind::Range(
-                OccurrenceMut::from_bytes(b"/01")?,
-                OccurrenceMut::from_bytes(b"/03")?,
+            parse_occurrence_matcher(b"/01-03"),
+            OccurrenceMatcher::Range(
+                OccurrenceMut::new("01"),
+                OccurrenceMut::new("03"),
             )
         );
 
-        assert_error!(parse_occurrence_matcher_kind(b"/0A"));
-        assert_error!(parse_occurrence_matcher_kind(b"/A"));
+        assert_error!(parse_occurrence_matcher(b"/0A"));
+        assert_error!(parse_occurrence_matcher(b"/A"));
 
         Ok(())
     }
@@ -193,23 +191,23 @@ mod tests {
     #[test]
     fn test_is_match() -> anyhow::Result<()> {
         let matcher = OccurrenceMatcher::new("/01")?;
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
+        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
 
         let matcher = OccurrenceMatcher::new("/01-03")?;
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/02")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/03")?));
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/04")?));
+        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
+        assert!(matcher.is_match(&OccurrenceRef::new("02")));
+        assert!(matcher.is_match(&OccurrenceRef::new("03")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("04")));
 
         let matcher = OccurrenceMatcher::new("/*")?;
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
+        assert!(matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
 
         let matcher = OccurrenceMatcher::new("/00")?;
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
+        assert!(matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("01")));
 
         Ok(())
     }
@@ -217,28 +215,28 @@ mod tests {
     #[test]
     fn test_partial_eq() -> anyhow::Result<()> {
         let matcher = OccurrenceMatcher::new("/01")?;
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/01")?);
+        assert_ne!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
         assert_ne!(matcher, Option::<OccurrenceRef>::None);
 
         let matcher = OccurrenceMatcher::new("/01-03")?;
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/01")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/02")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/03")?);
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/04")?);
+        assert_ne!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
+        assert_eq!(matcher, OccurrenceRef::new("02"));
+        assert_eq!(matcher, OccurrenceRef::new("03"));
+        assert_ne!(matcher, OccurrenceRef::new("04"));
         assert_ne!(matcher, Option::<OccurrenceRef>::None);
 
         let matcher = OccurrenceMatcher::new("/*")?;
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/000")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/001")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/01")?);
+        assert_eq!(matcher, OccurrenceRef::new("000"));
+        assert_eq!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("001"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
         assert_eq!(matcher, Option::<OccurrenceRef>::None);
 
         let matcher = OccurrenceMatcher::new("/00")?;
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/01")?);
+        assert_eq!(matcher, OccurrenceRef::new("00"));
+        assert_ne!(matcher, OccurrenceRef::new("01"));
         assert_eq!(matcher, Option::<OccurrenceRef>::None);
 
         Ok(())
