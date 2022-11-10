@@ -1,10 +1,12 @@
-use std::fmt::{self, Display};
+use std::fmt::Display;
 
 use bstr::BStr;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map, value, verify};
+use nom::combinator::{
+    all_consuming, cut, map, success, value, verify,
+};
 use nom::sequence::{preceded, separated_pair};
 use nom::Finish;
 use pica_record::parser::{parse_occurrence_digits, ParseResult};
@@ -14,14 +16,8 @@ use crate::ParseMatcherError;
 
 /// A matcher that matches against PICA+
 /// [Occurrence](`pica_record::Occurrence`).
-#[derive(Debug)]
-pub struct OccurrenceMatcher {
-    kind: OccurrenceMatcherKind,
-    matcher_str: String,
-}
-
 #[derive(Clone, Debug, PartialEq, Eq)]
-enum OccurrenceMatcherKind {
+pub enum OccurrenceMatcher {
     Any,
     Some(OccurrenceMut),
     Range(OccurrenceMut, OccurrenceMut),
@@ -50,17 +46,14 @@ impl OccurrenceMatcher {
     where
         T: AsRef<[u8]> + Display,
     {
-        all_consuming(parse_occurrence_matcher_kind)(expr.as_ref())
+        all_consuming(parse_occurrence_matcher)(expr.as_ref())
             .finish()
             .map_err(|_| {
                 ParseMatcherError::InvalidOccurrenceMatcher(
                     expr.to_string(),
                 )
             })
-            .map(|(_, kind)| Self {
-                matcher_str: expr.to_string(),
-                kind,
-            })
+            .map(|(_, matcher)| matcher)
     }
 
     /// Returns `true` if the given occurrence matches against the
@@ -85,26 +78,14 @@ impl OccurrenceMatcher {
     where
         T: AsRef<[u8]>,
     {
-        match &self.kind {
-            OccurrenceMatcherKind::Any => true,
-            OccurrenceMatcherKind::None => occurrence == "00",
-            OccurrenceMatcherKind::Some(rhs) => occurrence == rhs,
-            OccurrenceMatcherKind::Range(min, max) => {
+        match self {
+            Self::Any => true,
+            Self::None => occurrence == "00",
+            Self::Some(rhs) => occurrence == rhs,
+            Self::Range(min, max) => {
                 (occurrence >= min) && (occurrence <= max)
             }
         }
-    }
-}
-
-impl Display for OccurrenceMatcher {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.matcher_str)
-    }
-}
-
-impl PartialEq for OccurrenceMatcher {
-    fn eq(&self, other: &Self) -> bool {
-        self.kind == other.kind
     }
 }
 
@@ -120,11 +101,7 @@ impl<T: AsRef<[u8]>> PartialEq<Option<Occurrence<T>>>
     fn eq(&self, other: &Option<Occurrence<T>>) -> bool {
         match other {
             Some(occurrence) => self.is_match(occurrence),
-            None => matches!(
-                self.kind,
-                OccurrenceMatcherKind::Any
-                    | OccurrenceMatcherKind::None
-            ),
+            None => matches!(self, Self::Any | Self::None),
         }
     }
 }
@@ -135,44 +112,55 @@ impl<T: AsRef<[u8]>> PartialEq<OccurrenceMatcher> for Occurrence<T> {
     }
 }
 
-impl From<OccurrenceMut> for OccurrenceMatcherKind {
+impl From<OccurrenceMut> for OccurrenceMatcher {
     fn from(value: OccurrenceMut) -> Self {
-        OccurrenceMatcherKind::Some(value)
+        OccurrenceMatcher::Some(value)
     }
 }
 
-fn parse_occurrence_matcher_kind(
-    i: &[u8],
-) -> ParseResult<OccurrenceMatcherKind> {
-    preceded(
-        char('/'),
-        cut(alt((
-            map(
-                verify(
-                    separated_pair(
-                        parse_occurrence_digits,
-                        char('-'),
-                        parse_occurrence_digits,
-                    ),
-                    |(min, max)| min.len() == max.len() && min < max,
-                ),
-                |(min, max)| {
-                    OccurrenceMatcherKind::Range(
-                        OccurrenceMut::from_unchecked(min),
-                        OccurrenceMut::from_unchecked(max),
-                    )
-                },
+#[inline]
+fn parse_occurrence_range(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
+    map(
+        verify(
+            separated_pair(
+                parse_occurrence_digits,
+                char('-'),
+                parse_occurrence_digits,
             ),
-            map(
-                verify(parse_occurrence_digits, |x: &BStr| {
-                    x.to_vec() != b"00"
-                }),
-                |value| OccurrenceMut::from_unchecked(value).into(),
-            ),
-            value(OccurrenceMatcherKind::None, tag("00")),
-            value(OccurrenceMatcherKind::Any, char('*')),
-        ))),
+            |(min, max)| min.len() == max.len() && min < max,
+        ),
+        |(min, max)| {
+            OccurrenceMatcher::Range(
+                OccurrenceMut::from_unchecked(min),
+                OccurrenceMut::from_unchecked(max),
+            )
+        },
     )(i)
+}
+
+#[inline]
+fn parse_occurrence_exact(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
+    map(
+        verify(parse_occurrence_digits, |x: &BStr| x.to_vec() != b"00"),
+        |value| OccurrenceMut::from_unchecked(value).into(),
+    )(i)
+}
+
+fn parse_occurrence_matcher(
+    i: &[u8],
+) -> ParseResult<OccurrenceMatcher> {
+    alt((
+        preceded(
+            char('/'),
+            cut(alt((
+                parse_occurrence_range,
+                parse_occurrence_exact,
+                value(OccurrenceMatcher::None, tag("00")),
+                value(OccurrenceMatcher::Any, char('*')),
+            ))),
+        ),
+        success(OccurrenceMatcher::None),
+    ))(i)
 }
 
 #[cfg(test)]
@@ -183,34 +171,37 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_occurrence_matcher_kind() -> anyhow::Result<()> {
+    fn test_parse_occurrence_matcher() -> anyhow::Result<()> {
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/*"),
-            OccurrenceMatcherKind::Any
+            parse_occurrence_matcher(b"/*"),
+            OccurrenceMatcher::Any
         );
 
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/00"),
-            OccurrenceMatcherKind::None
+            parse_occurrence_matcher(b"/00"),
+            OccurrenceMatcher::None
         );
 
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/01"),
-            OccurrenceMatcherKind::Some(OccurrenceMut::from_bytes(
-                b"/01"
-            )?)
+            parse_occurrence_matcher(b"/01"),
+            OccurrenceMatcher::Some(OccurrenceMut::new("01"))
         );
 
         assert_done_and_eq!(
-            parse_occurrence_matcher_kind(b"/01-03"),
-            OccurrenceMatcherKind::Range(
-                OccurrenceMut::from_bytes(b"/01")?,
-                OccurrenceMut::from_bytes(b"/03")?,
+            parse_occurrence_matcher(b"/01-03"),
+            OccurrenceMatcher::Range(
+                OccurrenceMut::new("01"),
+                OccurrenceMut::new("03"),
             )
         );
 
-        assert_error!(parse_occurrence_matcher_kind(b"/0A"));
-        assert_error!(parse_occurrence_matcher_kind(b"/A"));
+        assert_done_and_eq!(
+            parse_occurrence_matcher(b""),
+            OccurrenceMatcher::None,
+        );
+
+        assert_error!(parse_occurrence_matcher(b"/0A"));
+        assert_error!(parse_occurrence_matcher(b"/A"));
 
         Ok(())
     }
@@ -218,23 +209,23 @@ mod tests {
     #[test]
     fn test_is_match() -> anyhow::Result<()> {
         let matcher = OccurrenceMatcher::new("/01")?;
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
+        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
 
         let matcher = OccurrenceMatcher::new("/01-03")?;
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/02")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/03")?));
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/04")?));
+        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
+        assert!(matcher.is_match(&OccurrenceRef::new("02")));
+        assert!(matcher.is_match(&OccurrenceRef::new("03")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("04")));
 
         let matcher = OccurrenceMatcher::new("/*")?;
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
+        assert!(matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
 
         let matcher = OccurrenceMatcher::new("/00")?;
-        assert!(matcher.is_match(&OccurrenceRef::from_bytes(b"/00")?));
-        assert!(!matcher.is_match(&OccurrenceRef::from_bytes(b"/01")?));
+        assert!(matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("01")));
 
         Ok(())
     }
@@ -242,28 +233,28 @@ mod tests {
     #[test]
     fn test_partial_eq() -> anyhow::Result<()> {
         let matcher = OccurrenceMatcher::new("/01")?;
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/01")?);
+        assert_ne!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
         assert_ne!(matcher, Option::<OccurrenceRef>::None);
 
         let matcher = OccurrenceMatcher::new("/01-03")?;
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/01")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/02")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/03")?);
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/04")?);
+        assert_ne!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
+        assert_eq!(matcher, OccurrenceRef::new("02"));
+        assert_eq!(matcher, OccurrenceRef::new("03"));
+        assert_ne!(matcher, OccurrenceRef::new("04"));
         assert_ne!(matcher, Option::<OccurrenceRef>::None);
 
         let matcher = OccurrenceMatcher::new("/*")?;
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/000")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/001")?);
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/01")?);
+        assert_eq!(matcher, OccurrenceRef::new("000"));
+        assert_eq!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("001"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
         assert_eq!(matcher, Option::<OccurrenceRef>::None);
 
         let matcher = OccurrenceMatcher::new("/00")?;
-        assert_eq!(matcher, OccurrenceRef::from_bytes(b"/00")?);
-        assert_ne!(matcher, OccurrenceRef::from_bytes(b"/01")?);
+        assert_eq!(matcher, OccurrenceRef::new("00"));
+        assert_ne!(matcher, OccurrenceRef::new("01"));
         assert_eq!(matcher, Option::<OccurrenceRef>::None);
 
         Ok(())
