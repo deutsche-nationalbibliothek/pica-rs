@@ -29,7 +29,7 @@ pub type FieldRef<'a> = Field<&'a BStr>;
 /// A mutable PICA+ field.
 pub type FieldMut = Field<BString>;
 
-impl<'a, T: AsRef<[u8]>> Field<T> {
+impl<T: AsRef<[u8]>> Field<T> {
     /// Returns the tag of the field.
     ///
     /// # Example
