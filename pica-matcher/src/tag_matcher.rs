@@ -140,7 +140,7 @@ fn parse_simple(i: &[u8]) -> ParseResult<TagMatcher> {
     })(i)
 }
 
-fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
+pub(crate) fn parse_tag_matcher(i: &[u8]) -> ParseResult<TagMatcher> {
     alt((parse_simple, parse_pattern))(i)
 }
 

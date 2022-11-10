@@ -694,7 +694,7 @@ fn parse_subfield_exists_matcher(
 }
 
 #[inline]
-fn parse_subfield_singleton_matcher(
+pub(crate) fn parse_subfield_singleton_matcher(
     i: &[u8],
 ) -> ParseResult<SubfieldMatcher> {
     map(parse_singleton_matcher, SubfieldMatcher::Singleton)(i)
@@ -793,7 +793,9 @@ fn parse_composite_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     alt((parse_or_matcher, parse_and_matcher))(i)
 }
 
-fn parse_subfield_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
+pub(crate) fn parse_subfield_matcher(
+    i: &[u8],
+) -> ParseResult<SubfieldMatcher> {
     alt((
         parse_composite_matcher,
         parse_group_matcher,
