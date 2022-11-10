@@ -4,7 +4,9 @@ use bstr::BStr;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
-use nom::combinator::{all_consuming, cut, map, value, verify};
+use nom::combinator::{
+    all_consuming, cut, map, success, value, verify,
+};
 use nom::sequence::{preceded, separated_pair};
 use nom::Finish;
 use pica_record::parser::{parse_occurrence_digits, ParseResult};
@@ -116,38 +118,49 @@ impl From<OccurrenceMut> for OccurrenceMatcher {
     }
 }
 
+#[inline]
+fn parse_occurrence_range(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
+    map(
+        verify(
+            separated_pair(
+                parse_occurrence_digits,
+                char('-'),
+                parse_occurrence_digits,
+            ),
+            |(min, max)| min.len() == max.len() && min < max,
+        ),
+        |(min, max)| {
+            OccurrenceMatcher::Range(
+                OccurrenceMut::from_unchecked(min),
+                OccurrenceMut::from_unchecked(max),
+            )
+        },
+    )(i)
+}
+
+#[inline]
+fn parse_occurrence_exact(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
+    map(
+        verify(parse_occurrence_digits, |x: &BStr| x.to_vec() != b"00"),
+        |value| OccurrenceMut::from_unchecked(value).into(),
+    )(i)
+}
+
 fn parse_occurrence_matcher(
     i: &[u8],
 ) -> ParseResult<OccurrenceMatcher> {
-    preceded(
-        char('/'),
-        cut(alt((
-            map(
-                verify(
-                    separated_pair(
-                        parse_occurrence_digits,
-                        char('-'),
-                        parse_occurrence_digits,
-                    ),
-                    |(min, max)| min.len() == max.len() && min < max,
-                ),
-                |(min, max)| {
-                    OccurrenceMatcher::Range(
-                        OccurrenceMut::from_unchecked(min),
-                        OccurrenceMut::from_unchecked(max),
-                    )
-                },
-            ),
-            map(
-                verify(parse_occurrence_digits, |x: &BStr| {
-                    x.to_vec() != b"00"
-                }),
-                |value| OccurrenceMut::from_unchecked(value).into(),
-            ),
-            value(OccurrenceMatcher::None, tag("00")),
-            value(OccurrenceMatcher::Any, char('*')),
-        ))),
-    )(i)
+    alt((
+        preceded(
+            char('/'),
+            cut(alt((
+                parse_occurrence_range,
+                parse_occurrence_exact,
+                value(OccurrenceMatcher::None, tag("00")),
+                value(OccurrenceMatcher::Any, char('*')),
+            ))),
+        ),
+        success(OccurrenceMatcher::None),
+    ))(i)
 }
 
 #[cfg(test)]
@@ -180,6 +193,11 @@ mod tests {
                 OccurrenceMut::new("01"),
                 OccurrenceMut::new("03"),
             )
+        );
+
+        assert_done_and_eq!(
+            parse_occurrence_matcher(b""),
+            OccurrenceMatcher::None,
         );
 
         assert_error!(parse_occurrence_matcher(b"/0A"));
