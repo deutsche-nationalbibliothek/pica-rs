@@ -90,6 +90,13 @@ impl<T: AsRef<[u8]>> PartialEq<Tag<T>> for TagMatcher {
     }
 }
 
+impl<T: AsRef<[u8]>> PartialEq<&Tag<T>> for TagMatcher {
+    #[inline]
+    fn eq(&self, tag: &&Tag<T>) -> bool {
+        self.is_match(tag)
+    }
+}
+
 #[inline]
 fn parse_fragment<'a>(
     allowed: &'a str,

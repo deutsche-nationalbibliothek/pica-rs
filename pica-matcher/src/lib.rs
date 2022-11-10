@@ -3,7 +3,7 @@
 
 mod common;
 mod error;
-mod field_matcher;
+pub mod field_matcher;
 mod occurrence_matcher;
 mod options;
 pub mod subfield_matcher;

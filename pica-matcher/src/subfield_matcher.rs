@@ -1,5 +1,4 @@
 //! Matcher that works on [Subfields](pica_record::Subfield).
-// use std::ops::{BitAnd, BitOr};
 
 use std::ops::{BitAnd, BitOr};
 
