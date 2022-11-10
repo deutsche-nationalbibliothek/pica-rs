@@ -95,10 +95,10 @@ impl<T: AsRef<[u8]>> PartialEq<Occurrence<T>> for OccurrenceMatcher {
     }
 }
 
-impl<T: AsRef<[u8]>> PartialEq<Option<Occurrence<T>>>
+impl<T: AsRef<[u8]>> PartialEq<Option<&Occurrence<T>>>
     for OccurrenceMatcher
 {
-    fn eq(&self, other: &Option<Occurrence<T>>) -> bool {
+    fn eq(&self, other: &Option<&Occurrence<T>>) -> bool {
         match other {
             Some(occurrence) => self.is_match(occurrence),
             None => matches!(self, Self::Any | Self::None),
@@ -146,7 +146,7 @@ fn parse_occurrence_exact(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
     )(i)
 }
 
-fn parse_occurrence_matcher(
+pub(crate) fn parse_occurrence_matcher(
     i: &[u8],
 ) -> ParseResult<OccurrenceMatcher> {
     alt((
@@ -235,7 +235,7 @@ mod tests {
         let matcher = OccurrenceMatcher::new("/01")?;
         assert_ne!(matcher, OccurrenceRef::new("00"));
         assert_eq!(matcher, OccurrenceRef::new("01"));
-        assert_ne!(matcher, Option::<OccurrenceRef>::None);
+        assert_ne!(matcher, Option::<OccurrenceRef>::None.as_ref());
 
         let matcher = OccurrenceMatcher::new("/01-03")?;
         assert_ne!(matcher, OccurrenceRef::new("00"));
@@ -243,19 +243,19 @@ mod tests {
         assert_eq!(matcher, OccurrenceRef::new("02"));
         assert_eq!(matcher, OccurrenceRef::new("03"));
         assert_ne!(matcher, OccurrenceRef::new("04"));
-        assert_ne!(matcher, Option::<OccurrenceRef>::None);
+        assert_ne!(matcher, Option::<OccurrenceRef>::None.as_ref());
 
         let matcher = OccurrenceMatcher::new("/*")?;
         assert_eq!(matcher, OccurrenceRef::new("000"));
         assert_eq!(matcher, OccurrenceRef::new("00"));
         assert_eq!(matcher, OccurrenceRef::new("001"));
         assert_eq!(matcher, OccurrenceRef::new("01"));
-        assert_eq!(matcher, Option::<OccurrenceRef>::None);
+        assert_eq!(matcher, Option::<OccurrenceRef>::None.as_ref());
 
         let matcher = OccurrenceMatcher::new("/00")?;
         assert_eq!(matcher, OccurrenceRef::new("00"));
         assert_ne!(matcher, OccurrenceRef::new("01"));
-        assert_eq!(matcher, Option::<OccurrenceRef>::None);
+        assert_eq!(matcher, Option::<OccurrenceRef>::None.as_ref());
 
         Ok(())
     }
