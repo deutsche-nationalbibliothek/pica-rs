@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::io::{self, Write};
+use std::iter;
 use std::str::Utf8Error;
 
 use bstr::{BStr, BString};
@@ -227,6 +228,34 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
             subfield.write_to(out)?;
         }
         write!(out, "\x1e")
+    }
+}
+
+impl<'a, T: AsRef<[u8]>> IntoIterator for &'a Field<T> {
+    type Item = &'a Field<T>;
+    type IntoIter = iter::Once<Self::Item>;
+
+    /// Creates an iterator from a single field. The iterator just
+    /// returns the field once.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field =
+    ///         FieldRef::new("003@", None, vec![('0', "123456789X")]);
+    ///     let mut iter = field.into_iter();
+    ///     assert_eq!(iter.next(), Some(&field));
+    ///     assert_eq!(iter.next(), None);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    fn into_iter(self) -> Self::IntoIter {
+        iter::once(self)
     }
 }
 
