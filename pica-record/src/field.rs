@@ -29,6 +29,72 @@ pub type FieldRef<'a> = Field<&'a BStr>;
 /// A mutable PICA+ field.
 pub type FieldMut = Field<BString>;
 
+impl<T: AsRef<[u8]>> Field<T> {
+    /// Returns the tag of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, TagRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field =
+    ///         FieldRef::new("003@", None, vec![('0', "123456789X")]);
+    ///     assert_eq!(field.tag(), &TagRef::new("003@"));
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn tag(&self) -> &Tag<T> {
+        &self.tag
+    }
+
+    /// Returns a reference to the occurrence of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, OccurrenceRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = FieldRef::new("012A", Some("01"), vec![]);
+    ///     let occurrence = field.occurrence().unwrap();
+    ///     assert_eq!(*occurrence, "01");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn occurrence(&self) -> Option<&Occurrence<T>> {
+        self.occurrence.as_ref()
+    }
+
+    /// Returns the subfields of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = FieldRef::new(
+    ///         "012A",
+    ///         Some("01"),
+    ///         vec![('a', "b"), ('c', "d")],
+    ///     );
+    ///
+    ///     assert_eq!(field.subfields().len(), 2);
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn subfields(&self) -> &Vec<Subfield<T>> {
+        self.subfields.as_ref()
+    }
+}
+
 impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
     /// Create a new field.
     ///
@@ -39,13 +105,13 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::FieldRef;
+    /// use pica_record::{FieldRef, TagRef};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let field =
     ///         FieldRef::new("003@", None, vec![('0', "123456789X")]);
-    ///     assert_eq!(field.tag(), &"003@".as_bytes());
+    ///     assert_eq!(field.tag(), &TagRef::new("003@"));
     ///     assert!(field.occurrence().is_none());
     ///     assert_eq!(field.subfields().len(), 1);
     ///
@@ -102,70 +168,6 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
                     })
                     .collect(),
             })
-    }
-
-    /// Returns the tag of the field.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::FieldRef;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let field =
-    ///         FieldRef::new("003@", None, vec![('0', "123456789X")]);
-    ///     assert_eq!(field.tag(), &"003@".as_bytes());
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn tag(&self) -> &T {
-        &self.tag
-    }
-
-    /// Returns a reference to the occurrence of the field.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::{FieldRef, OccurrenceRef};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let field = FieldRef::new("012A", Some("01"), vec![]);
-    ///     let occurrence = field.occurrence().unwrap();
-    ///     assert_eq!(*occurrence, "01");
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn occurrence(&self) -> Option<&Occurrence<T>> {
-        self.occurrence.as_ref()
-    }
-
-    /// Returns the subfields of the field.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::FieldRef;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let field = FieldRef::new(
-    ///         "012A",
-    ///         Some("01"),
-    ///         vec![('a', "b"), ('c', "d")],
-    ///     );
-    ///
-    ///     assert_eq!(field.subfields().len(), 2);
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn subfields(&self) -> &Vec<Subfield<T>> {
-        self.subfields.as_ref()
     }
 
     /// Returns an [`std::str::Utf8Error`](Utf8Error) if the field
