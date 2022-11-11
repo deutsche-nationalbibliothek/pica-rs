@@ -4,10 +4,13 @@ use std::str::FromStr;
 use nom::combinator::all_consuming;
 use nom::Finish;
 use pica_record::Record;
+#[cfg(feature = "serde")]
+use serde::Deserialize;
 
 use crate::field_matcher::parse_field_matcher;
 use crate::{FieldMatcher, MatcherOptions, ParseMatcherError};
 
+/// A Matcher that works on PICA+ [Records](pica_record::Record).
 #[derive(Debug, PartialEq, Eq)]
 pub struct RecordMatcher {
     field_matcher: FieldMatcher,
@@ -67,5 +70,16 @@ impl FromStr for RecordMatcher {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::new(s)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for RecordMatcher {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        RecordMatcher::from_str(&s).map_err(serde::de::Error::custom)
     }
 }
