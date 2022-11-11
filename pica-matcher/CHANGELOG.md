@@ -14,3 +14,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - #541 Add `SubfieldMatcher` matcher
 - #547 Add `FieldMatcher` matcher
 - #548 Add `RecordMatcher` matcher
+- #549 Add `Deserialize` for `RecordMatcher`
