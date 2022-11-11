@@ -47,7 +47,7 @@ impl RecordMatcher {
 
     /// Returns `true` if the given record matches against the record
     /// matcher.
-    pub fn is_match<'a, T: AsRef<[u8]> + 'a>(
+    pub fn is_match<T: AsRef<[u8]>>(
         &self,
         record: &Record<T>,
         options: &MatcherOptions,

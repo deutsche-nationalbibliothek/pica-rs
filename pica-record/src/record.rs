@@ -35,7 +35,7 @@ pub struct ByteRecord<'a> {
 /// A PICA+ record, that guarantees valid UTF-8 data.
 pub struct StringRecord<'a>(ByteRecord<'a>);
 
-impl<'a, T: AsRef<[u8]>> Record<T> {
+impl<T: AsRef<[u8]>> Record<T> {
     /// Returns `true` if the record contains no fields, otherwise
     /// `false`.
     ///
