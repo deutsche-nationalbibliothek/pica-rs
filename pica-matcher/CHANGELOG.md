@@ -13,3 +13,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - #530 Add `OccurrenceMatcher` matcher
 - #541 Add `SubfieldMatcher` matcher
 - #547 Add `FieldMatcher` matcher
+- #548 Add `RecordMatcher` matcher
