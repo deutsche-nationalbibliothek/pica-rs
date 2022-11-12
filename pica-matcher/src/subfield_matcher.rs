@@ -71,7 +71,9 @@ pub struct ExistsMatcher {
 /// subfield-code-wildcard ::= '*'
 /// subfield-code ::= [A-Z] | [a-z] | [0-9]
 /// ```
-fn parse_exists_matcher(i: &[u8]) -> ParseResult<ExistsMatcher> {
+pub(crate) fn parse_exists_matcher(
+    i: &[u8],
+) -> ParseResult<ExistsMatcher> {
     map(terminated(ws(parse_subfield_codes), char('?')), |codes| {
         ExistsMatcher { codes }
     })(i)

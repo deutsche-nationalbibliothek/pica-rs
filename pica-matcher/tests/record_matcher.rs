@@ -104,6 +104,9 @@ fn record_matcher_not() -> anyhow::Result<()> {
     let matcher =
         RecordMatcher::new("!(002@.0 == 'Ts1' || 002@.0 =^ 'Tu')")?;
     assert!(matcher.is_match(&record, &Default::default()));
+
+    let matcher = RecordMatcher::new("!012A.0?")?;
+    assert!(matcher.is_match(&record, &Default::default()));
     Ok(())
 }
 
