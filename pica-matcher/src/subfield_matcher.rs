@@ -792,7 +792,7 @@ fn parse_composite_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     alt((parse_or_matcher, parse_and_matcher))(i)
 }
 
-pub(crate) fn parse_subfield_matcher(
+pub fn parse_subfield_matcher(
     i: &[u8],
 ) -> ParseResult<SubfieldMatcher> {
     alt((

@@ -17,3 +17,11 @@ pub use options::MatcherOptions;
 pub use record_matcher::RecordMatcher;
 pub use subfield_matcher::SubfieldMatcher;
 pub use tag_matcher::TagMatcher;
+
+/// Parsers recognizing matcher for PICA+ primitves.
+pub mod parser {
+    pub use super::field_matcher::parse_field_matcher;
+    pub use super::occurrence_matcher::parse_occurrence_matcher;
+    pub use super::subfield_matcher::parse_subfield_matcher;
+    pub use super::tag_matcher::parse_tag_matcher;
+}
