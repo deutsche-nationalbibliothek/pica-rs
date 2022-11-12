@@ -28,6 +28,13 @@ fn test_path_simple() -> anyhow::Result<()> {
 }
 
 #[test]
+fn test_path_idn() -> anyhow::Result<()> {
+    let record = ByteRecord::from_bytes(ada_lovelace())?;
+    assert_eq!(record.idn(), Some(&b"119232022".as_bstr()));
+    Ok(())
+}
+
+#[test]
 fn test_path_codes() -> anyhow::Result<()> {
     let record = ByteRecord::from_bytes(ada_lovelace())?;
     let path = Path::new("047A/03.[er]");

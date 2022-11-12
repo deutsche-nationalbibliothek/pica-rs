@@ -105,6 +105,30 @@ fn parse_path(i: &[u8]) -> ParseResult<Path> {
 
 pub trait PathExt<T: AsRef<[u8]>> {
     fn path(&self, path: &Path) -> Vec<&T>;
+
+    /// Returns the idn of the record.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use bstr::ByteSlice;
+    /// use pica_path::{Path, PathExt};
+    /// use pica_record::ByteRecord;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let record =
+    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e\n")?;
+    ///     assert_eq!(record.idn(), Some(&b"123456789X".as_bstr()));
+    ///
+    ///     let record = ByteRecord::from_bytes(b"002@ \x1f0Olfo\x1e\n")?;
+    ///     assert_eq!(record.idn(), None);
+    ///     Ok(())
+    /// }
+    /// ```
+    fn idn(&self) -> Option<&T> {
+        self.path(&Path::new("003@.0")).iter().next().copied()
+    }
 }
 
 impl<T: AsRef<[u8]>> PathExt<T> for Record<T> {
