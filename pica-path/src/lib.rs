@@ -12,6 +12,8 @@ use pica_matcher::parser::{
 use pica_matcher::{OccurrenceMatcher, TagMatcher};
 use pica_record::parser::{parse_subfield_code, ParseResult};
 use pica_record::Record;
+#[cfg(feature = "serde")]
+use serde::Deserialize;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -174,5 +176,16 @@ impl<T: AsRef<[u8]>> PathExt<T> for Record<T> {
                 }
             })
             .collect()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for Path {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Path::from_str(&s).map_err(serde::de::Error::custom)
     }
 }
