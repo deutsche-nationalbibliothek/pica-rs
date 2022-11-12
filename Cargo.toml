@@ -63,5 +63,6 @@ debug = 0
 
 members = [
     "pica-matcher",
+    "pica-path",
     "pica-record"
 ]

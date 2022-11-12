@@ -146,7 +146,7 @@ fn parse_occurrence_exact(i: &[u8]) -> ParseResult<OccurrenceMatcher> {
     )(i)
 }
 
-pub(crate) fn parse_occurrence_matcher(
+pub fn parse_occurrence_matcher(
     i: &[u8],
 ) -> ParseResult<OccurrenceMatcher> {
     alt((

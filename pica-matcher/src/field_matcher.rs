@@ -579,9 +579,7 @@ fn parse_field_matcher_composite(
 }
 
 /// Parse a field matcher expression.
-pub(crate) fn parse_field_matcher(
-    i: &[u8],
-) -> ParseResult<FieldMatcher> {
+pub fn parse_field_matcher(i: &[u8]) -> ParseResult<FieldMatcher> {
     alt((
         ws(parse_field_matcher_composite),
         ws(parse_field_matcher_group),
