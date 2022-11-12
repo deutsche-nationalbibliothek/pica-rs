@@ -19,7 +19,8 @@ use crate::occurrence_matcher::{
     parse_occurrence_matcher, OccurrenceMatcher,
 };
 use crate::subfield_matcher::{
-    parse_subfield_matcher, parse_subfield_singleton_matcher, Matcher,
+    self, parse_subfield_matcher, parse_subfield_singleton_matcher,
+    Matcher,
 };
 use crate::tag_matcher::parse_tag_matcher;
 use crate::{
@@ -468,9 +469,34 @@ fn parse_field_matcher_singleton(
 /// Parse field matcher exists expression.
 #[inline]
 fn parse_field_matcher_exists(i: &[u8]) -> ParseResult<FieldMatcher> {
-    map(parse_exists_matcher, |matcher| {
-        FieldMatcher::Singleton(SingletonMatcher::Exists(matcher))
-    })(i)
+    alt((
+        map(parse_exists_matcher, |matcher| {
+            FieldMatcher::Singleton(SingletonMatcher::Exists(matcher))
+        }),
+        map(
+            tuple((
+                parse_tag_matcher,
+                parse_occurrence_matcher,
+                preceded(
+                    ws(char('.')),
+                    subfield_matcher::parse_exists_matcher,
+                ),
+            )),
+            |(t, o, s)| {
+                FieldMatcher::Singleton(SingletonMatcher::Subfields(
+                    SubfieldsMatcher {
+                        tag_matcher: t,
+                        occurrence_matcher: o,
+                        subfield_matcher: SubfieldMatcher::Singleton(
+                            subfield_matcher::SingletonMatcher::Exists(
+                                s,
+                            ),
+                        ),
+                    },
+                ))
+            },
+        ),
+    ))(i)
 }
 
 /// Parse field matcher cardinality expression.
