@@ -141,10 +141,14 @@ impl<T: AsRef<[u8]>> PathExt<T> for Record<T> {
                 path.tag_matcher == field.tag()
                     && path.occurrence_matcher == field.occurrence()
             })
-            .map(|field| field.subfields())
-            .flatten()
-            .filter(|subfield| path.codes.contains(&subfield.code()))
-            .map(|subfield| subfield.value())
-            .collect::<Vec<&T>>()
+            .flat_map(|field| field.subfields())
+            .filter_map(|subfield| {
+                if path.codes.contains(&subfield.code()) {
+                    Some(subfield.value())
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }
