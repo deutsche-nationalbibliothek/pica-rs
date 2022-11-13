@@ -1,0 +1,22 @@
+id = "FE"
+
+[rule.FE0001]
+check.type = "iso639"
+check.path = "010@.a"
+
+[rule.FE0002]
+check = { type = "filter", filter = "021A.a =^ ' '" }
+
+
+[rule.FE0003]
+description = """
+Dieser Check überprüft, ob die Satzart zu StatFOE passt (die Satzart
+darf nicht dreistellig sein).
+"""
+check.type = "filter"
+check.filter = "220C.z == 'StatFOE' && 220C.D =^ '2022' && 002@.0 !~ '^[A-Za-z]{3}$'"
+
+[rule.FE0004]
+description = ""
+check.type = "filter"
+check.filter = "006U.0 =~ '^22t0[123]$' && #220C{z == 'StatFOE'} == 0"

@@ -1,0 +1,50 @@
+id = "AEN"
+scope = "002@.0 =^ 'O'"
+
+[rule.AEN00100]
+check.type = "filter"
+check.filter = "044H.E not in ['i', 'm']"
+
+[rule.AEN00101]
+check.type = "filter"
+check.filter = "044H.H not in ['aepgnd', 'aeplcsh', 'emagnd']"
+
+[rule.AEN00102]
+check.type = "filter"
+check.filter = "044H.R not in ['0', '1', '2', '3']"
+
+[rule.AEN00103]
+check = { type = "date", path = "044H.[DT]" }
+
+[rule.AEN00104]
+description = """
+Dieser Check überprüft, ob in Olfo-Datensätzen die Zählung der Einheit
+eine vierstellige Zahl enthält.
+"""
+check.type = "filter"
+check.filter = "002@.0 == 'Olfo' && 002M.b == 'Webformular' && 031A.d =~ '[0-9]{4}'"
+severity = "warning" # TODO: notice
+ 
+[rule.AEN00105]
+description = """
+Dieser Check überprüft, ob Oaf-Datensätze mit dem Titel Jahresbericht
+vorhanden sind. 
+
+Hintergrund: Dieser Titel weist auf eine Zeitschrift hin, die Ablieferung 
+geschah aber monografisch als Oaf.
+"""
+check.type = "filter"
+check.filter = "002@.0 == 'Oaf' && 021A.a =~ 'Jahresbericht'"
+severity = "warning" # TODO: notice
+ 
+[rule.AEN00106]
+description = """
+Dieser Check überprüft, ob Oaf-Datensätze mit dem Titel Jahresbericht 
+vorhanden sind - bezogen auf Titel PICA 4000 und Gesamttitel PICA 4180. 
+
+Hintergrund: Dieser Titel weist auf eine Zeitschrift hin, die Ablieferung 
+geschah aber monografisch als Oaf.
+"""
+check.type = "filter"
+check.filter = "002@.0 == 'Oaf' && 021A.a =~ 'Jahresbericht' && 036F.a =~ 'Jahresbericht'"
+severity = "warning" # TODO: notice

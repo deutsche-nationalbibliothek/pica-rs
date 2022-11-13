@@ -1,0 +1,32 @@
+id = "DNB"
+
+[rule.DNB0001]
+description = "Test, ob die PPN/IDN im Feld `003@.0` gültig ist."
+check = { type = "checksum", path = "003@.0" }
+
+[rule.DNB0002]
+description = "Test, ob alle Werte gültige UTF-8 Zeichenketten sind."
+check.type = "unicode"
+
+[rule.DNB0003]
+description = "Test, ob das Feld `003@` und/oder das Unterfeld `0` nicht wiederholt sind."
+check = { lint = "filter", filter = "#003@ > 1 || 003@{ #0 > 1 }" }
+
+[rule.DNB0004]
+description = "Test, ob das Feld `002@` und/oder das Unterfeld `0` nicht wiederholt sind."
+check = { lint = "filter", filter = "#002@ > 1 || 002@{ #0 > 1 }" }
+
+# [rule.DNB0005]
+# description = """
+# Test, ob das Feld `002@` und/oder das Unterfeld `0` nicht wiederholt
+# sind.
+
+# Link zur Formatbeschreibung:
+#     https://wiki.dnb.de/display/ILTIS/0500
+# """
+# check.type = "filter"
+# check.filter = "002@.0 !~ '^([A-Za-z]{2,4}|T[bfgpsu][1-6z])$'"
+
+[rule.DNB006]
+description = "Test, ob das Feld `001A.a` ein gültiges Datum enthält."
+check = { lint = "date", path = "001A.0", format = "%d-%m-%y", offset = 5 }

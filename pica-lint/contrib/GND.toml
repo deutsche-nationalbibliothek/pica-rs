@@ -1,0 +1,54 @@
+id = "GND"
+scope = "002@.0 =~ '^T[bfgnpsu].*'"
+
+# [rule.GND0001]
+# check.type = "filter"
+# check.filter = "002@.0 !~ '^T[bfgnpsu][1-7z]e?$'"
+
+# # Änderungscodierung
+# [rule.GND0002]
+# check.type = "filter"
+# check.filter = "008@.a not in ['d', 'g', 'p', 's', 'u', 'zd', 'zu']"
+
+# # Teilbestandskennzeichen
+# [rule.GND0003]
+# check.type = "filter"
+# check.filter = "008A.a not in ['a', 'd', 'e', 'f', 'g', 'h', 'l', 'm', 'n', 'o', 'p', 's', 't', 'z']"
+
+# # Nutzungskennzeichen
+# [rule.GND0004]
+# check.type = "filter"
+# check.filter = "008B.a not in ['e', 'h', 'k', 'm', 'o', 'r', 'v', 'w', 'z']"
+
+# [rule.GND0005]
+# check.type = "iso639"
+# check.path = "02[29]@.L"
+
+# [rule.GND0006]
+# check.type = "iso639"
+# check.path = "030@.L"
+
+# [rule.GND0007]
+# check.type = "iso639"
+# check.path = "041@.L"
+
+# [rule.GND0008]
+# check.type = "iso639"
+# check.path = "065@.L"
+
+# [rule.GND0009]
+# description = """
+# Dieser Check überprüft, ob in Tb-Sätzen mit bevorzugtem Namen mit 
+# Belegung des Unterfelds $g mit "Musikgruppe" die Verknüpfung zum 
+# Sachbegriff "Musikgruppe" oder das Unterfeld $X mit dem Inhalt "1" 
+# fehlt.
+# """
+# check.type = "filter"
+# check.filter = """
+#     002@.0 in ['Tb1', 'Tb3'] 
+# &&  029A.g =^ 'Musikgruppe' 
+# && (#041R{9 == '04170827X'} == 0 || #041R{X == '1'} == 0)
+# """
+
+[rule.GND0010]
+check = { lint = "iri", path = "003U.a" }

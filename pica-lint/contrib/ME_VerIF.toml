@@ -1,0 +1,9 @@
+id = "ME_VerIF"
+scope = "001A.0 =~ '1199:[0-9]{2}-[0-9]{2}-22'"
+
+[rule.ME0001]
+description = "Feld `0600 $a` (`017A.a`) enthält keinen Reihencode"
+check.type = "filter"
+check.filter = "017A.a not in ['yy', 'ra', 'rb', 'rc', 'rh', 'rm', 'ro', 'rt']"
+
+

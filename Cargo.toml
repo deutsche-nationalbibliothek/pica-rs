@@ -62,6 +62,7 @@ debug = 0
 [workspace]
 
 members = [
+    "pica-lint",
     "pica-matcher",
     "pica-path",
     "pica-record"

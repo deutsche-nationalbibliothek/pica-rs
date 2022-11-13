@@ -1,0 +1,10 @@
+id = "ME_Mono"
+scope = "002@.0 in ['Aaa', 'Aam', 'Aac', 'Gamm', 'Gaam', 'Maam', 'Mamm', 'Sac', 'Kac']"
+
+
+[rule.ME0101]
+description = """
+Dieser Check prüft, ob ein inventarisiertes Medienwerk das Feld 
+`1700 $0` (`019@.0`) besitzt.
+"""
+check = { type = "filter", filter = "!019@.0?" }
