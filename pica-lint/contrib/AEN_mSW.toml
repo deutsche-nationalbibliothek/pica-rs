@@ -1,0 +1,18 @@
+id = "AEN"
+scope = "002@.0 =^ 'O' && 044H?"
+
+[rule.AEN000001]
+check = { lint = "filter", filter = "044H.E not in ['i', 'm']" }
+
+[rule.AEN000002]
+check.lint = "filter"
+check.filter = "044H.H not in ['aepgnd', 'aeplcsh', 'emagnd']"
+
+[rule.AEN000003]
+check = { lint = "filter", filter = "044H.R not in ['0', '1', '2', '3']" }
+
+[rule.AEN000004]
+description = """Prüft, ob in den Felder `044H $D` und `044H $T` ein
+gültiges Datum steht.
+"""
+check = { lint = "date", path = "044H.[DT]" }

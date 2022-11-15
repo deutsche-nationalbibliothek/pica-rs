@@ -1,22 +1,46 @@
 id = "FE"
+scope = "002@.0 !~ '^T'"
 
-[rule.FE0001]
-check.type = "iso639"
-check.path = "010@.a"
-
-[rule.FE0002]
-check = { type = "filter", filter = "021A.a =^ ' '" }
-
-
-[rule.FE0003]
+[rule.FE000001]
 description = """
-Dieser Check überprüft, ob die Satzart zu StatFOE passt (die Satzart
+Test, ob im Feld `010@.a` ein ungültiger Sprachencode vorkommt.
+"""
+check = { lint = "iso639", path = "010@.a" }
+
+[rule.FE000002]
+description = """
+Dieser Check überprüft, ob die Satzart zu StatFOE passt (die Satzart 
 darf nicht dreistellig sein).
 """
-check.type = "filter"
-check.filter = "220C.z == 'StatFOE' && 220C.D =^ '2022' && 002@.0 !~ '^[A-Za-z]{3}$'"
+severity = "error"
+check.lint = "filter"
+check.filter = """
+    220C.z == 'StatFOE' && 220C.D =^ '2022' && 002@.0 =~ '^[A-Za-z]{3}$'
+"""
 
-[rule.FE0004]
-description = ""
-check.type = "filter"
-check.filter = "006U.0 =~ '^22t0[123]$' && #220C{z == 'StatFOE'} == 0"
+[rule.FE000003]
+description = """
+Dieser Check überprüft, ob StatFOE für einen bestimmten Zeitraum fehlt 
+(hier Q1 2022 anhand der WV-Nummern).
+"""
+severity = "error"
+check.lint = "filter"
+check.filter = """
+    006U.0 in ['22,T01', '22,T02', '22,T03']  && 
+    #220C{z == 'StatFOE'} == 0
+"""
+
+[rule.FE000004]
+description = """
+Dieser Check überprüft, ob StatFOE für einen bestimmten Zeitraum fehlt 
+(hier Oktober 2022 anhand der WV-Nummer).
+"""
+severity = "error"
+check.lint = "filter"
+check.filter = "006U.0 == '22,T10' && #220C{z == 'StatFOE'} == 0"
+
+[rule.FE000005]
+description = """Dieser Check überprüft, dass der Hauptsachtitel nicht
+mit einem Leerzeichen beginnt.
+"""
+check = { lint = "filter", filter = "021A.a =^ ' '" }

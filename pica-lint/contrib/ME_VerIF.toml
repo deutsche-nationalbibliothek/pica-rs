@@ -1,9 +1,25 @@
-id = "ME_VerIF"
+id = "ME"
 scope = "001A.0 =~ '1199:[0-9]{2}-[0-9]{2}-22'"
 
-[rule.ME0001]
-description = "Feld `0600 $a` (`017A.a`) enthält keinen Reihencode"
-check.type = "filter"
-check.filter = "017A.a not in ['yy', 'ra', 'rb', 'rc', 'rh', 'rm', 'ro', 'rt']"
+[rule.ME000001]
+description = "Test, ob der Datensatz einen falschen Reihencode enthält."
+check.lint = "filter"
+check.filter = "017A.a not in ['yy', 'ra', 'rb', 'rc', 'rh', 'rm', 'ro', 'rt', 'ru', 'rg', 'zs']"
 
+[rule.ME000002]
+description = """
+Check prüft, ob statt einem validen Erscheinungsjahr eine Zählung 
+vergeben wurde.
+"""
+severity = "error"
+check = { lint = "filter", filter = "011@.a !~ '^[0-9]{4}$'" }
 
+[rule.ME000003]
+description = "Test, ob bei Reihe u die Sprache des Originals fehlt."
+severity = "error"
+check = { lint = "filter", filter = "017A.a == 'ru' && 010@.c != 'ger'" }
+
+[rule.ME000004]
+description = "Test, ob das Feld Begleitmaterial nicht befüllt ist."
+severity = "error"
+check = { lint = "filter", filter = "!034K.a?" }
