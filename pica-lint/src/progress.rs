@@ -16,7 +16,9 @@ struct Stats {
 pub struct Progress {
     stats: HashMap<String, Stats>,
     bars: HashMap<String, ProgressBar>,
+    summary: ProgressBar,
     footer: ProgressBar,
+    records: u64,
 }
 
 impl Progress {
@@ -34,18 +36,22 @@ impl Progress {
             bars.insert(id.to_string(), bar);
         }
 
+        let summary = root.add(ProgressBar::new_spinner());
+        summary
+            .set_style(ProgressStyle::with_template("{msg}").unwrap());
+
         let footer = root.add(ProgressBar::new_spinner());
         footer.set_style(
-            ProgressStyle::with_template(
-                "\n{msg}, elapsed: {elapsed_precise}.",
-            )
-            .unwrap(),
+            ProgressStyle::with_template("⏱ {elapsed_precise}")
+                .unwrap(),
         );
 
         Self {
+            summary,
             footer,
             stats,
             bars,
+            records: 0,
         }
     }
 
@@ -66,11 +72,12 @@ impl Progress {
         });
     }
 
-    pub fn update(&self) {
+    pub fn update(&mut self) {
         let mut checks = 0;
         let mut errors = 0;
         let mut warnings = 0;
         let mut infos = 0;
+        self.records += 1;
 
         for (key, bar) in self.bars.iter() {
             let stats = self.stats.get(key).unwrap();
@@ -80,7 +87,7 @@ impl Progress {
             infos += stats.infos;
 
             bar.set_message(format!(
-                "{}: {} records, {} errors, {} warnings, {} infos.",
+                "{}: {} records, {} errors, {} warnings, {} infos",
                 key,
                 HumanCount(stats.records),
                 HumanCount(stats.errors),
@@ -89,14 +96,17 @@ impl Progress {
             ));
         }
 
-        self.footer.inc(1);
-        self.footer.set_message(format!(
-            "total: {} checks, {} errors, {} warnings, {} infos",
+        self.summary.inc(1);
+        self.summary.set_message(format!(
+            "⇒ {} records, {} checks\n⇒ {} errors, {} warnings, {} infos",
+            HumanCount(self.records),
             HumanCount(checks),
             HumanCount(errors),
             HumanCount(warnings),
             HumanCount(infos),
         ));
+
+        self.footer.inc(1);
     }
 
     pub fn finish(&self) {
@@ -104,6 +114,7 @@ impl Progress {
             bar.finish();
         }
 
+        self.summary.finish();
         self.footer.finish();
     }
 }
