@@ -2,6 +2,7 @@
 #![allow(unused_variables)]
 
 use std::collections::HashMap;
+use std::fmt::{self, Display};
 use std::fs::read_to_string;
 use std::io;
 use std::path::PathBuf;
@@ -67,6 +68,20 @@ pub enum Severity {
     Info,
 }
 
+impl Display for Severity {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Error => "error",
+                Self::Warning => "warning",
+                Self::Info => "info",
+            }
+        )
+    }
+}
+
 impl Manifest {
     pub fn from_path(path: &PathBuf) -> io::Result<Self> {
         Ok(toml::from_str(&read_to_string(path)?)?)
@@ -94,7 +109,7 @@ impl Manifest {
         let mut infos = 0;
 
         for (id, severity) in results.iter() {
-            fmt.fmt(id, record)?;
+            fmt.fmt(id, record, severity)?;
             match severity {
                 Severity::Warning => warnings += 1,
                 Severity::Error => errors += 1,
