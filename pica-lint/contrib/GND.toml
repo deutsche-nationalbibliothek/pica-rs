@@ -50,15 +50,14 @@ check = { lint = "iso639", path = "065@.L" }
 
 [rule.GND000010]
 description = """
-Dieser Check überprüft, ob in Tb-Sätzen mit bevorzugtem Namen mit 
-Belegung des Unterfelds $g mit "Musikgruppe" die Verknüpfung zum 
-Sachbegriff "Musikgruppe" oder das Unterfeld $X mit dem Inhalt "1" 
-fehlt.
+Dieser Check überprüft, ob in Tb-Sätzen, bei denen im Feld 
+"Bevorzugter Name" das Unterfeld $g mit "Musikgruppe" belegt ist, 
+die Verknüpfung zum Sachbegriff "Musikgruppe" fehlt.
 """
 check.lint = "filter"
 check.filter = """
-    002@.0 in ['Tb1', 'Tb3'] 
-&&  029A.g =^ 'Musikgruppe' 
-&& (#041R{9 == '04170827X'} == 0 || #041R{X == '1'} == 0)
+   002@.0 in ['Tb1', 'Tb3'] 
+&& 029A.g =^ 'Musikgruppe' 
+&& #041R{9 == '04170827X'} == 0
 """
 

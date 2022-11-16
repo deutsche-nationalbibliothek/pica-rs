@@ -26,8 +26,8 @@ Dieser Check überprüft, ob StatFOE für einen bestimmten Zeitraum fehlt
 severity = "error"
 check.lint = "filter"
 check.filter = """
-    006U.0 in ['22,T01', '22,T02', '22,T03']  && 
-    #220C{z == 'StatFOE'} == 0
+    006U.0 in ['22,T01', '22,T02', '22,T03']  
+ && #220C{z == 'StatFOE'} == 0
 """
 
 [rule.FE000004]

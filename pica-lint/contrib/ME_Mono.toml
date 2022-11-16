@@ -3,8 +3,8 @@ id = "ME"
 # Prüfung auf Satzart (002@), AKZ-Vergabe (209C), Bearbeitung durch
 # ME-L (047A).
 scope = """
-    002@.0 in ['Aaa', 'Aam', 'Aac', 'Gamm', 'Gaam', 'Maam', 'Mamm', 'Sac', 'Kac']
- && 209C/01.a? && 047A.S == 'ME-L'
+   002@.0 in ['Aaa','Aam','Aac','Gamm','Gaam','Maam','Mamm','Sac','Kac']
+&& 209C/01.a? && 047A.S == 'ME-L'
 """
 
 [rule.ME000101]

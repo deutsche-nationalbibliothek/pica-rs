@@ -1,5 +1,5 @@
 id = "AEN"
-scope = "002@.0 =^ 'O' && 044H?"
+scope = "002@.0 =^ 'O'"
 
 [rule.AEN000001]
 check = { lint = "filter", filter = "044H.E not in ['i', 'm']" }
@@ -16,3 +16,23 @@ description = """Prüft, ob in den Felder `044H $D` und `044H $T` ein
 gültiges Datum steht.
 """
 check = { lint = "date", path = "044H.[DT]" }
+
+[rule.AEN000005]
+description = """
+Dieser Check überprüft, ob ein Datensatz gleichzeitig eine als 
+intellektuell erstellt gekennzeichnete Sachgruppe und eine aus dem 
+Parallelabgleich stammende Sachgruppe enthält.
+"""
+severity = "info"
+check.lint = "filter"
+check.filter = "045E.H == 'dnb' && 045E.H == 'dnb-pa'"
+
+[rule.AEN000006]
+description = """
+Dieser Check überprüft, ob in NP-Datensätzen in Personennamen oder 
+den dazugehörigen Beziehungskennzeichnungen eckige oder spitze Klammern 
+enthalten sind.
+"""
+severity = "error"
+check.lint = "filter"
+check.filter = "002@.0 =^ 'O' && 028[AC].[adB4] =~ '[\\\\[<]'"

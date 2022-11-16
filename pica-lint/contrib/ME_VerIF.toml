@@ -4,7 +4,9 @@ scope = "001A.0 =~ '1199:[0-9]{2}-[0-9]{2}-22'"
 [rule.ME000001]
 description = "Test, ob der Datensatz einen falschen Reihencode enthält."
 check.lint = "filter"
-check.filter = "017A.a not in ['yy', 'ra', 'rb', 'rc', 'rh', 'rm', 'ro', 'rt', 'ru', 'rg', 'zs']"
+check.filter = """
+    017A.a not in ['yy','ra','rb','rc','rh','rm','ro','rt','ru','rg','zs']
+"""
 
 [rule.ME000002]
 description = """
