@@ -28,12 +28,14 @@ impl Progress {
         let root = MultiProgress::new();
 
         for id in ids.into_iter() {
-            stats.insert(id.to_string(), Stats::default());
-            let bar = root.add(ProgressBar::new_spinner());
-            bar.set_style(
-                ProgressStyle::with_template("↪ {msg}").unwrap(),
-            );
-            bars.insert(id.to_string(), bar);
+            if !stats.contains_key(&id) {
+                stats.insert(id.to_string(), Stats::default());
+                let bar = root.add(ProgressBar::new_spinner());
+                bar.set_style(
+                    ProgressStyle::with_template("↪ {msg}").unwrap(),
+                );
+                bars.insert(id.to_string(), bar);
+            }
         }
 
         let summary = root.add(ProgressBar::new_spinner());
