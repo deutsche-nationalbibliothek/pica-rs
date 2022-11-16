@@ -24,11 +24,12 @@ impl Lint for Date {
     fn check(&self, record: &ByteRecord) -> bool {
         record.path(&self.path).iter().map(ToString::to_string).any(
             |value| {
-                NaiveDate::parse_from_str(
-                    &value[self.offset..],
-                    &self.format,
-                )
-                .is_err()
+                self.offset >= value.len()
+                    || NaiveDate::parse_from_str(
+                        &value[self.offset..],
+                        &self.format,
+                    )
+                    .is_err()
             },
         )
     }
