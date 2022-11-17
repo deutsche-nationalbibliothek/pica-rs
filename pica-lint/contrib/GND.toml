@@ -61,3 +61,14 @@ check.filter = """
 && #041R{9 == '04170827X'} == 0
 """
 
+# [rule.GND000011]
+# check = { lint = "gnd-subject-category", path = "042A.a" }
+
+[rule.GND000012]
+description = """
+Test, ob bei Personen eine gültige Geschlechtsangabe vorliegt.
+"""
+check.lint = "filter"
+check.filter = "002@.0 =^ 'Tp' && 032T.a not in ['m', 'f']"
+
+

@@ -17,8 +17,8 @@ description = "Test, ob das Feld `002@` und/oder das Unterfeld `0` mehrfach vork
 check = { lint = "filter", filter = "#002@ > 1 || 002@{ #0 > 1 }" }
 
 [rule.DNB000005]
-description = "Test, ob das Feld `002@.9` eine gültige Satzart enthält"
-check = { lint = "filter", filter = "002@.0 !~ '^([A-Za-z]{2,4}|T[bfgpsu][1-6z])$'" }
+description = "Test, ob das Feld `002@.0` eine gültige Satzart enthält"
+check = { lint = "filter", filter = "002@.0 !~ '[0-9A-za-z0-9]{2,4}$'" }
 
 [rule.DNB000006]
 description = "Test, ob das Feld `001A.a` ein ungültiges Datum enthält."
