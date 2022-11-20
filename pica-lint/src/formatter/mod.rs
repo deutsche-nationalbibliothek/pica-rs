@@ -1,17 +1,12 @@
 use std::io;
 
-use pica_record::ByteRecord;
+use bstr::BStr;
 
 mod csv;
 pub use self::csv::CsvFormatter;
-use crate::rules::Severity;
+use crate::rules::Rule;
 
-pub trait Formatter: Send + Sync {
-    fn fmt(
-        &mut self,
-        id: &str,
-        record: &ByteRecord,
-        severity: &Severity,
-    ) -> io::Result<()>;
+pub trait Formatter {
+    fn fmt(&mut self, rule: &Rule, idn: &BStr) -> io::Result<()>;
     fn finish(&mut self) -> io::Result<()>;
 }

@@ -2,7 +2,7 @@ use pica_matcher::{MatcherOptions, RecordMatcher};
 use pica_record::ByteRecord;
 use serde::Deserialize;
 
-use super::Lint;
+use super::{Lint, Status};
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
@@ -15,7 +15,7 @@ pub struct Filter {
 }
 
 impl Lint for Filter {
-    fn check(&self, record: &ByteRecord) -> bool {
+    fn check(&mut self, record: &ByteRecord) -> Status {
         let options =
             MatcherOptions::new().case_ignore(self.case_ignore);
 
@@ -24,6 +24,10 @@ impl Lint for Filter {
             result = !result;
         }
 
-        result
+        if result {
+            return Status::Hit;
+        }
+
+        Status::Miss
     }
 }

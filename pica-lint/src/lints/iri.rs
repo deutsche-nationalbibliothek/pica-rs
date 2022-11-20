@@ -4,7 +4,7 @@ use pica_path::{Path, PathExt};
 use pica_record::ByteRecord;
 use serde::Deserialize;
 
-use super::Lint;
+use super::{Lint, Status};
 
 #[derive(Deserialize, Debug)]
 pub struct Iri {
@@ -12,11 +12,12 @@ pub struct Iri {
 }
 
 impl Lint for Iri {
-    fn check(&self, record: &ByteRecord) -> bool {
+    fn check(&mut self, record: &ByteRecord) -> Status {
         record
             .path(&self.path)
             .iter()
             .map(ToString::to_string)
             .any(|value| sophia::iri::Iri::new(&value).is_err())
+            .into()
     }
 }

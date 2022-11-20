@@ -6,7 +6,7 @@ use pica_path::{Path, PathExt};
 use pica_record::ByteRecord;
 use serde::Deserialize;
 
-use super::Lint;
+use super::{Lint, Status};
 
 #[derive(Debug, Deserialize)]
 pub struct Iso639 {
@@ -84,11 +84,12 @@ static ISO639_CODES: Lazy<Mutex<BTreeSet<Vec<u8>>>> = Lazy::new(|| {
 });
 
 impl Lint for Iso639 {
-    fn check(&self, record: &ByteRecord) -> bool {
+    fn check(&mut self, record: &ByteRecord) -> Status {
         let codes = ISO639_CODES.lock().unwrap();
         record
             .path(&self.path)
             .iter()
             .any(|value| !codes.contains(&value.to_vec()))
+            .into()
     }
 }

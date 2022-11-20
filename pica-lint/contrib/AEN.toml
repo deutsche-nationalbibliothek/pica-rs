@@ -1,0 +1,60 @@
+organizational-unit = "AEN"
+name = "AEN"
+
+scope = "002@.0 =^ 'O'"
+
+# Gruppe "000" - Automatisch vergebenes Schlagwort
+#   https://wiki.dnb.de/display/ILTIS/5540
+
+[rule.AEN-000-001]
+description = "Ungültige Kennzeichnung der Erfassungsart"
+lint = { type = "filter", filter = "044H.E not in ['i', 'm']" }
+
+[rule.AEN-000-002]
+description = "Ungültige Herkunft (Code)"
+lint = { type = "filter", filter = "044H.H not in ['aepgnd', 'aeplcsh', 'emagnd']" }
+
+[rule.AEN-000-003]
+description = "Ungültiges Datum der automatischen Erstellung"
+lint = { type ="date", path = "044H.D" }
+
+[rule.AEN-000-004]
+description = "Ungültiger Wert in der Relevanzbewertung"
+lint = { type = "filter", filter = "044H.R not in ['0', '1', '2', '3']" }
+
+[rule.AEN-000-005]
+description = "Ungültiges Datum der Relevanzbewertung"
+lint = { type ="date", path = "044H.T" }
+
+[rule.AEN-000-006]
+description = "Ungültig vergebenes Sachschlagwort"
+lint = { type = "ref-check", filter = "002@.0 =~ '^T[bfgpsu][1z]$' && 008A.a == 's'", src = "044H.9", dst = "003@.0" }
+
+# Gruppe "001" - Sachgruppen der Deutschen Nationalbibliografie
+#   https://wiki.dnb.de/display/ILTIS/5050
+
+[rule.AEN-001-001]
+description = """
+Dieser Check überprüft, ob ein Datensatz gleichzeitig eine als
+intellektuell erstellt gekennzeichnete Sachgruppe und eine aus dem
+Parallelabgleich stammende Sachgruppe enthält.
+"""
+level = "info"
+lint = { type = "filter", filter = "045E.H == 'dnb' && 045E.H == 'dnb-pa'" }
+
+# Gruppe "002" - Beziehung auf Manifestationsebene - außer Reproduktionen
+#   https://wiki.dnb.de/display/ILTIS/4243
+[rule.AEN-002-001]
+description = "Findet verlinkte Bezugswerke, die nicht im Bestand existieren."
+lint = { type = "ref-check", src = "039D.9", dst = "003@.0" }
+
+# Gruppe "999" - Sonstiges
+
+[rule.AEN-999-001]
+description = """
+Dieser Check überprüft, ob in NP-Datensätzen in Personennamen oder
+den dazugehörigen Beziehungskennzeichnungen eckige oder spitze Klammern
+enthalten sind.
+"""
+level = "error"
+lint = { type = "filter", filter = "002@.0 =^ 'O' && 028[AC].[adB4] =~ '[\\\\[<]'" }

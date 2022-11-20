@@ -2,7 +2,7 @@ use pica_path::{Path, PathExt};
 use pica_record::ByteRecord;
 use serde::Deserialize;
 
-use super::Lint;
+use super::{Lint, Status};
 
 #[derive(Debug, Deserialize)]
 pub struct Checksum {
@@ -10,13 +10,13 @@ pub struct Checksum {
 }
 
 impl Lint for Checksum {
-    fn check(&self, record: &ByteRecord) -> bool {
+    fn check<'a>(&mut self, record: &ByteRecord) -> Status {
         for value in record.path(&self.path).iter() {
             let mut value =
                 value.iter().map(|i| i - 48).collect::<Vec<u8>>();
 
             if !(8..=11).contains(&value.len()) {
-                return false;
+                return Status::Hit;
             }
 
             let actual: u64 = value.pop().unwrap() as u64;
@@ -34,10 +34,10 @@ impl Lint for Checksum {
             }
 
             if expected != actual {
-                return true;
+                return Status::Hit;
             }
         }
 
-        false
+        Status::Miss
     }
 }

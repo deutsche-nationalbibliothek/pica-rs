@@ -4,14 +4,7 @@ use indicatif::{
     HumanCount, MultiProgress, ProgressBar, ProgressStyle,
 };
 
-#[derive(Default)]
-struct Stats {
-    records: u64,
-    errors: u64,
-    warnings: u64,
-    infos: u64,
-    checks: u64,
-}
+use crate::stats::Stats;
 
 pub struct Progress {
     stats: HashMap<String, Stats>,
@@ -57,36 +50,30 @@ impl Progress {
         }
     }
 
-    pub fn update_stats(
-        &mut self,
-        key: &str,
-        checks: usize,
-        errors: usize,
-        warnings: usize,
-        infos: usize,
-    ) {
-        self.stats.entry(key.into()).and_modify(|e| {
-            e.checks += checks as u64;
-            e.warnings += warnings as u64;
-            e.errors += errors as u64;
-            e.infos += infos as u64;
-            e.records += 1;
+    pub fn update_stats(&mut self, name: &str, stats: &Stats) {
+        self.stats.entry(name.into()).and_modify(|e| {
+            e.records += stats.records;
+            e.checks += stats.checks;
+            e.errors += stats.errors;
+            e.warnings += stats.warnings;
+            e.infos += stats.infos;
         });
     }
 
     pub fn update(&mut self) {
-        let mut checks = 0;
         let mut errors = 0;
         let mut warnings = 0;
         let mut infos = 0;
+        let mut checks = 0;
+
         self.records += 1;
 
         for (key, bar) in self.bars.iter() {
             let stats = self.stats.get(key).unwrap();
-            checks += stats.checks;
             errors += stats.errors;
             warnings += stats.warnings;
             infos += stats.infos;
+            checks += stats.checks;
 
             bar.set_message(format!(
                 "{}: {} records, {} errors, {} warnings, {} infos",
@@ -100,7 +87,7 @@ impl Progress {
 
         self.summary.inc(1);
         self.summary.set_message(format!(
-            "⇒ {} records, {} checks\n⇒ {} errors, {} warnings, {} infos",
+            "⇒ {} records, {} checks, {} errors, {} warnings, {} infos",
             HumanCount(self.records),
             HumanCount(checks),
             HumanCount(errors),
