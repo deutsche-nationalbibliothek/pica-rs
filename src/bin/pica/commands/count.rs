@@ -18,6 +18,7 @@ pub(crate) struct CountConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
+/// Count records, fields and subfields
 #[derive(Parser, Debug)]
 pub(crate) struct Count {
     /// Skip invalid records that can't be decoded
@@ -55,8 +56,8 @@ pub(crate) struct Count {
     #[arg(long)]
     no_header: bool,
 
-    /// Write output to <OUTPUT> instead of stdout
-    #[arg(short, long)]
+    /// Write output to <filename> instead of stdout
+    #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
     /// Read one or more files in normalized PICA+ format.
