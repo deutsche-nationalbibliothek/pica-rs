@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "count -s --subfields"
+status = "success"
+stderr = ""
+stdout = "56\n"

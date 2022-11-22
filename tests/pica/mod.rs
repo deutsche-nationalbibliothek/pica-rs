@@ -3,7 +3,6 @@ use predicates::prelude::*;
 
 use crate::TestResult;
 
-mod count;
 mod filter;
 mod frequency;
 mod json;

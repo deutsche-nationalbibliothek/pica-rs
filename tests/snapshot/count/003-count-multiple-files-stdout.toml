@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "count math.dat.gz algebra.dat"
+status = "success"
+stderr = ""
