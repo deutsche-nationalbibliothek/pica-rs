@@ -1,9 +1,10 @@
 use std::ffi::OsString;
 use std::fs::OpenOptions;
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
 
 use clap::Parser;
-use pica::{Reader, ReaderBuilder};
+use pica_record::io::BufReadExt;
+use pica_record::ParsePicaError;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -88,25 +89,26 @@ impl Count {
         let mut subfields = 0;
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader = config.reader(filename)?;
 
-            for result in reader.byte_records() {
-                let record = result?;
+            reader.for_pica_record(|result| match result {
+                Err(ParsePicaError::InvalidRecord(_))
+                    if skip_invalid =>
+                {
+                    Ok(true)
+                }
+                Err(e) => Err(e.into()),
+                Ok(record) => {
+                    records += 1;
+                    fields += record.iter().len();
+                    subfields += record
+                        .iter()
+                        .map(|field| field.subfields().len())
+                        .sum::<usize>();
 
-                records += 1;
-                fields += record.len();
-                subfields += record
-                    .iter()
-                    .map(|field| field.len())
-                    .sum::<usize>();
-            }
+                    Ok(true)
+                }
+            })?;
         }
 
         if self.records {
