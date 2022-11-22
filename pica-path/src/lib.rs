@@ -129,7 +129,7 @@ pub trait PathExt<T: AsRef<[u8]>> {
     /// }
     /// ```
     fn idn(&self) -> Option<&T> {
-        self.path(&Path::new("003@.0")).iter().next().copied()
+        self.path(&Path::new("003@.0")).first().copied()
     }
 }
 

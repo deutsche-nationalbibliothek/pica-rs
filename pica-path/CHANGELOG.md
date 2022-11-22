@@ -11,3 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - #550 Add initial `pica-path` crate
 - #551 Implement `Deserialize` for `Path`
+
+### Fixed
+
+- #555 Use `first()` instead of `iter().next()`
