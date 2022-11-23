@@ -216,7 +216,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          args: --workspace -- -D warnings -D rust-2021-compatibility -W unreachable-pub
 
   udeps:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
