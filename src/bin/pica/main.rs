@@ -44,7 +44,6 @@ enum Commands {
     /// Generate shell completions (e.g. Bash, ZSH)
     Completions(Completions),
 
-    /// Count records, fields and subfields
     Count(Count),
 
     /// Filter records by whether the given query matches

@@ -1,9 +1,5 @@
 # count
 
-> Hinweis: Das Kommando befindet sich im Beta-Status und wird gerade intensiv getestet, bevor
-> es als stabil freigegeben wird. Änderungen am _command-line interface_ (CLI) sowie das
-> Auftreten kleinerer Fehler ist möglich.
-
 Mithilfe des `count`-Kommandos lässt sich die Anzahl an Datensätzen (_records_), Feldern (_fields_)
 sowie Unterfeldern (_subfields_) ermitteln.
 

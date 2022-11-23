@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "count --skip-invalid dump.dat.gz -o count.txt"
+status = "success"
+stderr = ""

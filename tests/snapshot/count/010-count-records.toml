@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "count -s --records"
+status = "success"
+stderr = ""
+stdout = "1\n"

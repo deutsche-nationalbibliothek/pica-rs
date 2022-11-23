@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "count"
+status = "success"
+stderr = ""
