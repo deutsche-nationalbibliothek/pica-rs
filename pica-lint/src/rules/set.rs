@@ -7,7 +7,6 @@ use bstr::ByteSlice;
 use pica_matcher::RecordMatcher;
 use pica_path::PathExt;
 use pica_record::ByteRecord;
-use rayon::prelude::{IntoParallelRefMutIterator, ParallelIterator};
 use serde::Deserialize;
 
 use super::rule::Rule;
@@ -42,12 +41,8 @@ impl RuleSet {
 
     pub fn preprocess(&mut self, record: &ByteRecord) {
         self.rules
-            .par_iter_mut()
-            .map(|(_, rule)| {
-                rule.preprocess(record);
-                true
-            })
-            .collect::<Vec<bool>>();
+            .iter_mut()
+            .for_each(|(_, rule)| rule.preprocess(record));
     }
 
     pub fn check(
@@ -65,7 +60,7 @@ impl RuleSet {
 
         let rules: Vec<&Rule> = self
             .rules
-            .par_iter_mut()
+            .iter_mut()
             .filter_map(|(_, rule)| {
                 if rule.process(record) == Status::Hit {
                     Some(&*rule)
