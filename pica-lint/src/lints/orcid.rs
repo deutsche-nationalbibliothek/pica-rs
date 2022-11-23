@@ -34,8 +34,9 @@ impl Lint for Orcid {
                         return Status::Hit;
                     }
 
-                    let total =
-                        value.iter().fold(0_u64, |acc, item| {
+                    let total = value[0..=14]
+                        .iter()
+                        .fold(0_u64, |acc, item| {
                             (acc + *item as u64) * 2
                         });
 
