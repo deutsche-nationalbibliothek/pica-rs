@@ -24,7 +24,7 @@ impl Lint for Checksum {
                 .into_iter()
                 .rev()
                 .zip(2..=11)
-                .fold(0 as u64, |acc, (value, factor)| {
+                .fold(0_u64, |acc, (value, factor)| {
                     acc + (value as u64) * factor
                 });
 

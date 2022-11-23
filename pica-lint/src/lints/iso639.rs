@@ -15,7 +15,7 @@ pub struct Iso639 {
 
 macro_rules! codes {
     ($($x:expr),+ $(,)?) => (
-        (vec![$($x.as_bytes().to_vec()),*])
+        vec![$($x.as_bytes().to_vec()),*]
     );
 }
 

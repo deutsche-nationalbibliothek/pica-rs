@@ -50,7 +50,7 @@ impl Lint for RefCheck {
                 self.unseen
                     .entry(value.to_owned().into())
                     .and_modify(|e| e.push(idn.into()))
-                    .or_insert(vec![idn.into()]);
+                    .or_insert_with(|| vec![idn.into()]);
             }
         }
 

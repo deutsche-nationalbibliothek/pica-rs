@@ -74,10 +74,14 @@ impl Lint for Lints {
     }
 
     fn preprocess(&mut self, record: &ByteRecord) {
-        match self {
-            Self::RefCheck(ref mut l) => l.preprocess(record),
-            _ => (),
-        }
+        if let Self::RefCheck(ref mut l) = self {
+            l.preprocess(record)
+        };
+
+        // match self {
+        //     Self::RefCheck(ref mut l) => l.preprocess(record),
+        //     _ => (),
+        // }
     }
 
     fn finish(&mut self) -> Vec<(BString, Status)> {

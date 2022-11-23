@@ -2,7 +2,6 @@ use std::ffi::OsString;
 use std::fs::File;
 
 use bstr::BStr;
-use csv;
 use csv::Writer;
 
 use super::Formatter;
@@ -30,7 +29,7 @@ impl CsvFormatter {
 
 impl Formatter for CsvFormatter {
     fn fmt(&mut self, rule: &Rule, idn: &BStr) -> std::io::Result<()> {
-        self.writer.write_record(&[
+        self.writer.write_record([
             idn.as_ref(),
             rule.id.as_bytes(),
             rule.level.to_string().as_bytes(),

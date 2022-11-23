@@ -16,7 +16,7 @@ impl Lint for Orcid {
         let values = record.path(&self.path);
         if !values.is_empty() {
             for value in values {
-                if value.starts_with(&self.prefix.as_bytes()) {
+                if value.starts_with(self.prefix.as_bytes()) {
                     let value = value
                         .strip_prefix(self.prefix.as_bytes())
                         .unwrap()
@@ -34,11 +34,10 @@ impl Lint for Orcid {
                         return Status::Hit;
                     }
 
-                    let mut total: u64 = 0;
-
-                    for i in 0..=14 {
-                        total = (total + value[i] as u64) * 2;
-                    }
+                    let total =
+                        value.iter().fold(0_u64, |acc, item| {
+                            (acc + *item as u64) * 2
+                        });
 
                     let remainder = total % 11;
                     let mut result = (12 - remainder) % 11;
