@@ -11,7 +11,10 @@ use crate::{ByteRecord, ParsePicaError};
 type ParseResult<'a> = Result<ByteRecord<'a>, ParsePicaError>;
 type ReadResult<T> = Result<T, ReadPicaError>;
 
+mod reader;
 mod writer;
+
+pub use reader::{Reader, RecordsIterator};
 pub use writer::{
     ByteRecordWrite, GzipWriter, PlainWriter, WriterBuilder,
 };
