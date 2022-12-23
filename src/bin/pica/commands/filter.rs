@@ -49,7 +49,7 @@ pub(crate) struct Filter {
     strsim_threshold: u8,
 
     /// Reduce the record to fields which are specified in <REDUCE>
-    #[arg(long, default_value = "")]
+    #[arg(long, short = 'R', default_value = "")]
     reduce: String,
 
     /// Take filter expressions from <EXPR_FILE>

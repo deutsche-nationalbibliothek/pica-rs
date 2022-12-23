@@ -1246,7 +1246,7 @@ fn pica_filter_reduce() -> TestResult {
     let assert = cmd
         .arg("filter")
         .arg("--skip-invalid")
-        .arg("--reduce")
+        .arg("-R")
         .arg("003@,04[78]!")
         .arg("003@.0 == '1004916019'")
         .arg("tests/data/dump.dat.gz")
