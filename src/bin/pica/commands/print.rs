@@ -52,8 +52,7 @@ impl TryFrom<&PrintColorSpec> for ColorSpec {
                 Some(c)
             } else {
                 return Err(CliError::Other(format!(
-                    "invalid color '{}'",
-                    fg_color_str
+                    "invalid color '{fg_color_str}'"
                 )));
             }
         } else {
