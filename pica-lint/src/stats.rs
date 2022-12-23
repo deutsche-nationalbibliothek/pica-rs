@@ -2,11 +2,11 @@ use std::ops::AddAssign;
 
 #[derive(Debug, Default)]
 pub struct Stats {
-    pub(crate) records: u64,
-    pub(crate) checks: u64,
-    pub(crate) errors: u64,
-    pub(crate) warnings: u64,
-    pub(crate) infos: u64,
+    pub records: u64,
+    pub checks: u64,
+    pub errors: u64,
+    pub warnings: u64,
+    pub infos: u64,
 }
 
 impl Stats {

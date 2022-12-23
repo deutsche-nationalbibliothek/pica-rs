@@ -6,13 +6,13 @@ use crate::formatter::{CsvFormatter, Formatter};
 use crate::progress::Progress;
 use crate::rules::RuleSet;
 
-mod cli;
-mod formatter;
-mod lints;
-mod progress;
-mod rules;
-mod stats;
-mod util;
+pub mod cli;
+pub mod formatter;
+pub mod lints;
+pub mod progress;
+pub mod rules;
+pub mod stats;
+pub mod util;
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();

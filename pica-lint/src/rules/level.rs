@@ -19,6 +19,6 @@ impl Display for Level {
             Self::Info => "info",
         };
 
-        write!(f, "{}", level_str)
+        write!(f, "{level_str}")
     }
 }
