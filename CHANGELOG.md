@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- #557 Add short variant for reduce option (`filter`)
 * #534 Add `cat` snapshot tests
 * #524 Add `invalid` snapshot tests
 * #525 Add long help (`invalid`)
