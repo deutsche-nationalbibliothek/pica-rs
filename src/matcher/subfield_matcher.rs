@@ -103,8 +103,7 @@ impl SubfieldMatcher {
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid subfield matcher, got '{}'",
-                data
+                "Expected valid subfield matcher, got '{data}'"
             ))),
         }
     }

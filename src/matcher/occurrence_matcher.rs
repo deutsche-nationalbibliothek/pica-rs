@@ -59,8 +59,7 @@ impl OccurrenceMatcher {
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid occurrence matcher, got '{}'",
-                data
+                "Expected valid occurrence matcher, got '{data}'"
             ))),
         }
     }

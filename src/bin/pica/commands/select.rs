@@ -127,8 +127,7 @@ impl Select {
                 Ok(f) => f,
                 _ => {
                     return Err(CliError::Other(format!(
-                        "invalid filter: \"{}\"",
-                        filter_str
+                        "invalid filter: \"{filter_str}\""
                     )))
                 }
             },

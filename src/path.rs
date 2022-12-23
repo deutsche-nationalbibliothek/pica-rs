@@ -57,8 +57,7 @@ impl Path {
         for code in &codes {
             if !code.is_ascii_alphanumeric() {
                 return Err(Error::InvalidSubfield(format!(
-                    "Invalid subfield code '{}' in path expression.",
-                    code
+                    "Invalid subfield code '{code}' in path expression."
                 )));
             }
         }
