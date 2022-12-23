@@ -72,8 +72,7 @@ impl TagMatcher {
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid tag matcher, got '{}'",
-                data
+                "Expected valid tag matcher, got '{data}'"
             ))),
         }
     }

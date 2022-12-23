@@ -79,8 +79,7 @@ impl RecordMatcher {
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid record matcher, got '{}'",
-                data
+                "Expected valid record matcher, got '{data}'"
             ))),
         }
     }

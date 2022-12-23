@@ -68,8 +68,7 @@ impl Subfield {
     {
         if !code.is_ascii_alphanumeric() {
             return Err(Error::InvalidSubfield(format!(
-                "Invalid subfield code '{}'",
-                code
+                "Invalid subfield code '{code}'"
             )));
         }
 

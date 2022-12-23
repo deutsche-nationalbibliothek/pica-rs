@@ -57,8 +57,7 @@ impl FieldMatcher {
         {
             Ok((_, matcher)) => Ok(matcher),
             Err(_) => Err(Error::InvalidMatcher(format!(
-                "Expected valid field matcher, got '{}'",
-                data
+                "Expected valid field matcher, got '{data}'"
             ))),
         }
     }
