@@ -20,3 +20,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #523 Move reader/writer logic to config (`invalid`)
 * #537 Stabilize `cat` command
 * #538 Stabilize `completions` command
+* #554 Stabilize `count` command
