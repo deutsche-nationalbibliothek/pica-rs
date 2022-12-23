@@ -1,0 +1,26 @@
+organizational-unit = "DNB"
+name = "DNB"
+
+[rule.DNB-000-001]
+description = "Test, ob die PPN/IDN im Feld `003@.0` ungültig ist."
+lint = { type = "checksum", path = "003@.0" }
+
+[rule.DNB-000-002]
+description = "Test, ob der Datensatz ungültige UTF-8 Sequenzen enthält."
+lint = { type = "unicode" }
+
+[rule.DNB-000-003]
+description = "Test, ob das Feld `003@` und/oder das Unterfeld `0` mehrfach vorkommt."
+lint = { type = "filter", filter = "#003@ > 1 || 003@{ #0 > 1 }" }
+
+[rule.DNB-000-004]
+description = "Test, ob das Feld `002@` und/oder das Unterfeld `0` mehrfach vorkommt."
+lint = { type = "filter", filter = "#002@ > 1 || 002@{ #0 > 1 }" }
+
+[rule.DNB-000-005]
+description = "Test, ob das Feld `002@.0` eine gültige Satzart enthält"
+lint = { type = "filter", filter = "002@.0 !~ '[0-9A-za-z0-9]{2,4}$'" }
+
+[rule.DNB-000-006]
+description = "Test, ob das Feld `001A.a` ein ungültiges Datum enthält."
+lint = { type = "date", path = "001A.0", format = "%d-%m-%y", offset = 5 }
