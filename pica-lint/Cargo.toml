@@ -9,7 +9,7 @@ license = "MIT OR Unlicense"
 anyhow = "1.0"
 bstr = "1.0"
 clap = { version = "4.0", features = ["cargo", "derive", "wrap_help"] }
-chrono = "0.4"
+chrono = { version = "0.4.23", default-features = false, features = ["clock"] }
 csv = "1.1"
 flate2 = "1.0"
 indicatif = "0.17"
