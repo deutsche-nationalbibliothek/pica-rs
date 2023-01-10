@@ -16,7 +16,7 @@ impl CsvFormatter {
     pub fn new(output: OsString) -> Self {
         let mut writer = csv::Writer::from_path(output).unwrap();
         writer
-            .write_record(&[
+            .write_record([
                 b"idn".to_vec(),
                 b"rule".to_vec(),
                 b"level".to_vec(),
