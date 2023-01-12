@@ -9,22 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Add `RecordRef::write_to` function #521
-* Add `BufReadExt` extension trait #520
-* Add `ByteRecord` writer API #528
-* Add `raw_data` field (`ByteRecord`) #530
+* #521 Add `RecordRef::write_to` function
+* #520 Add `BufReadExt` extension trait
+* #528 Add `ByteRecord` writer API
+* #530 Add `raw_data` field (`ByteRecord`)
+* #562 Add `Reader` and `ReaderBuilder`
 
 ### Fixed
 
-* Fix wrong assert expression (`WriterBuilder`) #531
+* #531 Fix wrong assert expression (`WriterBuilder`)
 
 ## 0.1.0 - 2022-10-14
 
 ### Added
 
-* Add `ByteRecord` and `StringRecord` #489
-* Add `Field` and `FieldRef` #485
-* Add `OccurenceRef` and `OccurenceRef` #484
-* Add `RecordRef` and `Record` #487
-* Add `SubfieldRef` and `Subfield` #481
-* Add `TagRef` and `Tag` #483
+* #489 Add `ByteRecord` and `StringRecord`
+* #485 Add `Field` and `FieldRef`
+* #484 Add `OccurenceRef` and `OccurenceRef`
+* #487 Add `RecordRef` and `Record`
+* #481 Add `SubfieldRef` and `Subfield`
+* #483 Add `TagRef` and `Tag`

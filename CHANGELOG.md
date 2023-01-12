@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* #562 Use `Reader` and `ReaderBuilder` instead of `BufReadExt`
 * #532 Improve performance of `cat` command
 * #522 Use `BufReadExt` to process records (`invalid`)
 * #523 Move reader/writer logic to config (`invalid`)

@@ -2,7 +2,7 @@ use std::ffi::OsString;
 use std::io::Write;
 
 use clap::Parser;
-use pica_record::io::BufReadExt;
+use pica_record::io::{ReadPicaError, ReaderBuilder, RecordsIterator};
 use pica_record::ParsePicaError;
 
 use crate::config::Config;
@@ -29,16 +29,20 @@ impl Invalid {
         let mut writer = config.writer(self.output)?;
 
         for filename in self.filenames {
-            let mut reader = config.reader(filename)?;
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            reader.for_pica_record(|result| match result {
-                Err(ParsePicaError::InvalidRecord(data)) => {
-                    writer.write_all(&data)?;
-                    Ok(true)
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(ReadPicaError::Parse(
+                        ParsePicaError::InvalidRecord(data),
+                    )) => {
+                        writer.write_all(&data)?;
+                    }
+                    Err(e) => return Err(e.into()),
+                    _ => continue,
                 }
-                Err(e) => Err(e.into()),
-                _ => Ok(true),
-            })?;
+            }
         }
 
         writer.flush()?;

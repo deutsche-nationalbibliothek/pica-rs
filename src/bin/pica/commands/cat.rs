@@ -2,8 +2,7 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 
 use clap::Parser;
-use pica_record::io::{BufReadExt, WriterBuilder};
-use pica_record::ParsePicaError;
+use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -75,24 +74,26 @@ impl Cat {
         };
 
         for filename in self.filenames {
-            let mut reader = config.reader(filename)?;
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            reader.for_pica_record(|result| match result {
-                Err(ParsePicaError::InvalidRecord(_))
-                    if skip_invalid =>
-                {
-                    Ok(true)
-                }
-                Err(e) => Err(e.into()),
-                Ok(record) => {
-                    writer.write_byte_record(&record)?;
-                    if let Some(ref mut writer) = tee_writer {
-                        writer.write_byte_record(&record)?;
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
                     }
-
-                    Ok(true)
+                    Ok(record) => {
+                        writer.write_byte_record(&record)?;
+                        if let Some(ref mut writer) = tee_writer {
+                            writer.write_byte_record(&record)?;
+                        }
+                    }
                 }
-            })?;
+            }
         }
 
         writer.finish()?;
