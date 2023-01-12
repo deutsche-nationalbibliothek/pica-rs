@@ -14,7 +14,7 @@ type ReadResult<T> = Result<T, ReadPicaError>;
 mod reader;
 mod writer;
 
-pub use reader::{Reader, RecordsIterator};
+pub use reader::{Reader, ReaderBuilder, RecordsIterator};
 pub use writer::{
     ByteRecordWrite, GzipWriter, PlainWriter, WriterBuilder,
 };
@@ -28,6 +28,14 @@ pub enum ReadPicaError {
 
     #[error("io error")]
     Io(#[from] io::Error),
+}
+
+impl ReadPicaError {
+    /// Returns true, if the underlying error was caused by parsing an
+    /// invalid record.
+    pub fn is_invalid_record(&self) -> bool {
+        matches!(self, Self::Parse(ParsePicaError::InvalidRecord(_)))
+    }
 }
 
 /// An extension of [BufRead](`std::io::BufRead`) which provides a
