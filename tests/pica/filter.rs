@@ -448,6 +448,15 @@ fn pica_filter_not_in_operator() -> TestResult {
 
     assert.success().stdout(predicate::str::is_empty());
 
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("filter")
+        .arg("--skip-invalid")
+        .arg("007K.a not in ['gnd']")
+        .arg("tests/data/algebra.dat.gz")
+        .assert();
+
+    assert.success().stdout(predicate::str::is_empty());
     Ok(())
 }
 
