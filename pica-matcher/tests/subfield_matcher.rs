@@ -373,6 +373,28 @@ fn in_matcher() -> anyhow::Result<()> {
         &options
     ));
 
+    let matcher = InMatcher::new("a in ['000', '999']")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1fa000")?,
+            &SubfieldRef::from_bytes(b"\x1fzxyz")?,
+        ],
+        &options
+    ));
+
+    let matcher = InMatcher::new("a not in ['000', '999']")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1fa000")?,
+            &SubfieldRef::from_bytes(b"\x1fzxyz")?,
+        ],
+        &options
+    ));
+
     Ok(())
 }
 
