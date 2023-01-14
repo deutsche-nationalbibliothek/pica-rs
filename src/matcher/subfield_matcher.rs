@@ -210,16 +210,20 @@ impl SubfieldMatcher {
                 result
             }
             Self::In(codes, values, invert) => {
-                let mut result = codes.contains(&subfield.code())
-                    && values.iter().any(|x: &BString| {
-                        case_cmp(subfield.value(), x)
-                    });
+                if !codes.contains(&subfield.code()) {
+                    false
+                } else {
+                    let mut result =
+                        values.iter().any(|x: &BString| {
+                            case_cmp(subfield.value(), x)
+                        });
 
-                if *invert {
-                    result = !result;
+                    if *invert {
+                        result = !result;
+                    }
+
+                    result
                 }
-
-                result
             }
             Self::Exists(codes) => codes.contains(&subfield.code()),
         }
