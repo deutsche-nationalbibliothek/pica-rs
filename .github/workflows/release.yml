@@ -127,7 +127,7 @@ jobs:
         id: build-archive
         shell: bash
         run: |
-          staging="pica-${{ needs.version.outputs.VERSION }}-${{ matrix.target.triple }}-glibc${{ matrix.target.glibc }}"
+          staging="pica-${{ needs.version.outputs.VERSION }}-${{ matrix.target.triple }}"
           mkdir "$staging"
           cp README.md LICENSE UNLICENSE "$staging/"
           cp "target/release/pica.exe" "$staging/"
