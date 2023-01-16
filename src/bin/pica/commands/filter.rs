@@ -243,15 +243,24 @@ impl Filter {
             for result in reader.byte_records() {
                 let mut record = result?;
                 let idn = record.path(&IDN_PATH);
-                let idn = idn.first().unwrap();
+                let idn = idn.first();
 
-                if !allow_list.is_empty() && !allow_list.contains(*idn)
-                {
-                    continue;
+                if !allow_list.is_empty() {
+                    if let Some(idn) = idn {
+                        if !allow_list.contains(*idn) {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
                 }
 
-                if !deny_list.is_empty() && deny_list.contains(*idn) {
-                    continue;
+                if !deny_list.is_empty() {
+                    if let Some(idn) = idn {
+                        if deny_list.contains(*idn) {
+                            continue;
+                        }
+                    }
                 }
 
                 let mut is_match = filter.is_match(&record, &flags);
