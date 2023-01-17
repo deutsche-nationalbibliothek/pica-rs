@@ -8,11 +8,11 @@ use pica_record::ParsePicaError;
 use crate::config::Config;
 use crate::util::CliResult;
 
-/// Filter out invalid records, which can't be decoded
+/// Write input lines, which can't be decoded as normalized PICA+
 ///
-/// Read lines from files or stdin and filter out invalid records,
-/// which can't be decoded as normalized PICA+. The output is given in
-/// chronological order.
+/// Read lines from files or stdin and write input lines, which can't be
+/// decoded as normalized PICA+. The output is given in chronological
+/// order.
 #[derive(Parser, Debug)]
 pub(crate) struct Invalid {
     /// Write output to <filename> instead of stdout
