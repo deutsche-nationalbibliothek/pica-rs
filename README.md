@@ -40,7 +40,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [count](#count)         | stable    | count records, fields and subfields                               |
 | [filter](#filter)       | beta      | filter records by query expressions                               |
 | [frequency](#frequency) | beta      | compute a frequency table of a subfield                           |
-| invalid                 | stable    | write input lines, which can't be decoded as normalized PICA+     |
+| [invalid](#invalid)     | stable    | write input lines, which can't be decoded as normalized PICA+     |
 | [partition](#partition) | beta      | partition a list of records based on subfield values              |
 | [print](#print)         | beta      | print records in human readable format                            |
 | [sample](#sample)       | beta      | selects a random permutation of records                           |
@@ -128,6 +128,12 @@ ger,2888445
 eng,347171
 ...
 ```
+
+### Invalid
+
+Most commands support option `--skip-invalid` to skip invalid input lines,
+which can't be decoded as normalized PICA+. The `invalid` command can be used
+to extract these invalid lines only.
 
 ### Partition
 
