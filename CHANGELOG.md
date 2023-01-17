@@ -5,15 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.14.1
+
+### Fixed
+
+* #569 Properly handle records without an PPN (`filter`)
+
 ## 0.14.0
 
 ### Fixed
 
-- #563 Fix false positives of `not in` operator
+* #563 Fix false positives of `not in` operator
 
 ### Added
 
-- #557 Add short variant for reduce option (`filter`)
+* #557 Add short variant for reduce option (`filter`)
 * #534 Add `cat` snapshot tests
 * #524 Add `invalid` snapshot tests
 * #525 Add long help (`invalid`)
