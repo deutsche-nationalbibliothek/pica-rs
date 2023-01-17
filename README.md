@@ -40,7 +40,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [count](#count)         | stable    | count records, fields and subfields                               |
 | [filter](#filter)       | beta      | filter records by query expressions                               |
 | [frequency](#frequency) | beta      | compute a frequency table of a subfield                           |
-| invalid                 | stable    | filter out invalid records                                        |
+| invalid                 | stable    | write input lines, which can't be decoded as normalized PICA+     |
 | [partition](#partition) | beta      | partition a list of records based on subfield values              |
 | [print](#print)         | beta      | print records in human readable format                            |
 | [sample](#sample)       | beta      | selects a random permutation of records                           |
