@@ -13,9 +13,9 @@ Beginnend mit der Version `0.10.0` stehen für die Linux-Distributionen
 werden:
 
 ```bash
-$ wget https://github.com/deutsche-nationalbibliothek/pica-rs/releases/download/v0.14.0/pica_0.14.0-1_amd64.deb
-$ dpkg -i pica_0.13.0-1_amd64.deb
-$ rm pica_0.13.0-1_amd64.deb
+$ wget https://github.com/deutsche-nationalbibliothek/pica-rs/releases/download/v0.14.0/pica_0.14.1-glibc2.31-1_amd64.deb
+$ dpkg -i pica_0.14.1-glibc2.31-1_amd64.deb
+$ rm pica_0.14.1-glibc2.31-1_amd64.deb
 ```
 
 ## RedHat & SUSE & CentOS
@@ -26,10 +26,10 @@ Beginnend mit der Version `0.10.0` stehen für die Linux-Distributionen
 mit folgendem Kommando installiert werden:
 
 ```bash
-$ rpm -i pica-0.14.0-1.x86_64.rpm
+$ rpm -i pica-0.14.1-glibc2.31-1.x86_64.rpm
 ```
 
-Für CentOS 7 steht ein spezielles `RPM`-Paket bereit (`pica-0.14.0-glibc2.17-1.x86_64.rpm`),
+Für CentOS 7 steht ein spezielles `RPM`-Paket bereit (`pica-0.14.1-glibc2.17-1.x86_64.rpm`),
 dass die [GNU C Library (glibc)](https://www.gnu.org/software/libc) in der Version 2.17
 verwendet.
 
@@ -77,9 +77,9 @@ Wenn die Quelle nicht benötigt werden, kann das Projekt auch direkt über den P
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
      --branch main pica
 
-# Installation der Version 0.14.0
+# Installation der Version 0.14.1
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
-      --tag v0.13.0 pica
+      --tag v0.14.1 pica
 
 # Installation des Entwicklungszweigs "feat1"
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
