@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
 use std::str::FromStr;
 
 use bstr::BString;
 use clap::Parser;
-use pica::{Path, Reader, ReaderBuilder};
+use pica_path::{Path, PathExt};
+use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -57,7 +58,7 @@ pub(crate) struct Frequency {
     /// Transliterate output into the selected normalform <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
     #[arg(long,
-          value_name = "NF", 
+          value_name = "NF",
           value_parser = ["nfd", "nfkd", "nfc", "nfkc"],
           hide_possible_values = true,
     )]
@@ -94,20 +95,25 @@ impl Frequency {
         let mut writer = csv::WriterBuilder::new().from_writer(writer);
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.records() {
-                let record = result?;
-
-                for value in record.path(&path) {
-                    *ftable.entry(value.to_owned()).or_insert(0) += 1;
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        for value in record.path(&path) {
+                            *ftable
+                                .entry(BString::from(value.to_vec()))
+                                .or_insert(0) += 1;
+                        }
+                    }
                 }
             }
         }

@@ -348,8 +348,8 @@ fn pica_frequency_skip_invalid() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert.failure().code(1).stderr(predicate::eq(
-        "Pica Error: Invalid record on line 2.\n",
+    assert.failure().code(1).stderr(predicate::str::starts_with(
+        "Parse Pica Error: invalid record",
     ));
 
     let mut cmd = Command::cargo_bin("pica")?;
@@ -435,7 +435,9 @@ fn pica_frequency_invalid_path() -> TestResult {
     assert
         .failure()
         .code(1)
-        .stderr("Pica Error: Invalid path expression\n")
+        .stderr(
+            "Parse Path Error: invalid path expression, got `002@.!`\n",
+        )
         .stdout(predicate::str::is_empty());
 
     Ok(())
