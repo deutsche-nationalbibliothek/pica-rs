@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: "pica-rs"
+abstract: "pica-rs is a toolkit to process metadata records in PICA+ format."
+authors:
+  - family-names: Wagner
+    given-names: Nico
+    orcid: https://orcid.org/0000-0002-2033-1806
+  - family-names: Voß
+    given-names: Jakob
+    orcid: https://orcid.org/0000-0002-7613-4123
+version: 0.14.1
+date-released: 2023-01-17
