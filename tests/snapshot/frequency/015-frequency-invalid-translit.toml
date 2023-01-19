@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "frequency -s --translit foo \"029A.a\""
+status = "failed"
+stdout = ""

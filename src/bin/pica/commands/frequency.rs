@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::File;
@@ -21,17 +22,24 @@ pub(crate) struct FrequencyConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
+/// Compute a frequency table of a subfield
+///
+/// This command computes a frequency table over all subfield values of
+/// the given path expression. By default, the resulting frequency table
+/// is sorted in descending order by default (the most frequent value is
+/// printed first). If the count of two or more subfield values is
+/// euqal, these lines are given in lexicographical order.
 #[derive(Parser, Debug)]
 pub(crate) struct Frequency {
-    /// Skip invalid records that can't be decoded
+    /// Skip invalid records that can't be decoded as normalized PICA+.
     #[arg(long, short)]
     skip_invalid: bool,
 
-    /// Sort results in reverse order
+    /// Sort results in reverse order.
     #[arg(long, short)]
     reverse: bool,
 
-    /// Limit result to the <n> most common values
+    /// Limit result to the <n> most frequent subfield values.
     #[arg(
         long,
         short,
@@ -41,7 +49,7 @@ pub(crate) struct Frequency {
     )]
     limit: usize,
 
-    /// Ignore rows with a frequency ≤ <t>
+    /// Ignore rows with a frequency ≤ <t>.
     #[arg(
         long,
         short,
@@ -51,12 +59,12 @@ pub(crate) struct Frequency {
     )]
     threshold: u64,
 
-    /// Comma-separated list of column names
+    /// Comma-separated list of column names.
     #[arg(long, short = 'H')]
     header: Option<String>,
 
     /// Transliterate output into the selected normalform <NF>
-    /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
+    /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
     #[arg(long,
           value_name = "NF",
           value_parser = ["nfd", "nfkd", "nfc", "nfkc"],
@@ -64,14 +72,16 @@ pub(crate) struct Frequency {
     )]
     translit: Option<String>,
 
-    /// Write output to <filename> instead of stdout
+    /// Write output to <filename> instead of stdout.
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
     /// A PICA path expression
     path: String,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format. With no
+    /// files, or when a filename is '-', read from stanard input
+    /// (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
@@ -125,9 +135,15 @@ impl Frequency {
         let mut ftable_sorted: Vec<(&BString, &u64)> =
             ftable.iter().collect();
         if self.reverse {
-            ftable_sorted.sort_by(|a, b| a.1.cmp(b.1));
+            ftable_sorted.sort_by(|a, b| match a.1.cmp(b.1) {
+                Ordering::Equal => a.0.cmp(b.0),
+                ordering => ordering,
+            });
         } else {
-            ftable_sorted.sort_by(|a, b| b.1.cmp(a.1));
+            ftable_sorted.sort_by(|a, b| match b.1.cmp(a.1) {
+                Ordering::Equal => a.0.cmp(b.0),
+                ordering => ordering,
+            });
         }
 
         for (i, (value, frequency)) in ftable_sorted.iter().enumerate()

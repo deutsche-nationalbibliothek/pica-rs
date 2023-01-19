@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "frequency \"002@.!\""
+status = "failed"
+stdout = ""
+stderr = "Parse Path Error: invalid path expression, got `002@.!`\n"

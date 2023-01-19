@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "frequency -s --threshold abc \"008[AB].a\" dump.dat.gz"
+status = "failed"
+stdout = ""

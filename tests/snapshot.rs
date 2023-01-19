@@ -5,6 +5,8 @@ fn snapshots() {
         .case("tests/snapshot/cat/*.toml")
         .case("tests/snapshot/filter/*.trycmd")
         .case("tests/snapshot/filter/*.toml")
+        .case("tests/snapshot/frequency/*.trycmd")
+        .case("tests/snapshot/frequency/*.toml")
         .case("tests/snapshot/count/*.trycmd")
         .case("tests/snapshot/count/*.toml")
         .case("tests/snapshot/completions/*.trycmd")
