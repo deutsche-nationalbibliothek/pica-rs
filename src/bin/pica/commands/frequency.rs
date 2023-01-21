@@ -95,6 +95,7 @@ impl Frequency {
         );
 
         let mut ftable: HashMap<BString, u64> = HashMap::new();
+        let options = Default::default();
         let path = Path::from_str(&self.path)?;
 
         let writer: Box<dyn Write> = match self.output {
@@ -118,7 +119,7 @@ impl Frequency {
                         }
                     }
                     Ok(record) => {
-                        for value in record.path(&path) {
+                        for value in record.path(&path, &options) {
                             *ftable
                                 .entry(BString::from(value.to_vec()))
                                 .or_insert(0) += 1;
