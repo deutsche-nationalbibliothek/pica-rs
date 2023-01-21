@@ -30,6 +30,11 @@ pub(crate) struct FrequencyConfig {
 /// is sorted in descending order by default (the most frequent value is
 /// printed first). If the count of two or more subfield values is
 /// euqal, these lines are given in lexicographical order.
+///
+/// The set of fields, which are included in the result of a record, can
+/// be resricted by an optional subfield filter. A subfield filter
+/// requires the {}-notation and is expected at the first position (e.g.
+/// "044H/*{b == 'GND && 9?, 9}").
 #[derive(Parser, Debug)]
 pub(crate) struct Frequency {
     /// Skip invalid records that can't be decoded as normalized PICA+.
@@ -41,8 +46,8 @@ pub(crate) struct Frequency {
     #[arg(long, short)]
     ignore_case: bool,
 
-    /// The minimum score for string similarity comparisons
-    /// (0 <= score < 100).
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
     #[arg(long, value_parser = value_parser!(u8).range(0..100),
           default_value = "75")]
     strsim_threshold: u8,
