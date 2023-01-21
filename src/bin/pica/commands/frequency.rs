@@ -6,7 +6,8 @@ use std::io::{self, Write};
 use std::str::FromStr;
 
 use bstr::BString;
-use clap::Parser;
+use clap::{value_parser, Parser};
+use pica_matcher::MatcherOptions;
 use pica_path::{Path, PathExt};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
@@ -34,6 +35,17 @@ pub(crate) struct Frequency {
     /// Skip invalid records that can't be decoded as normalized PICA+.
     #[arg(long, short)]
     skip_invalid: bool,
+
+    /// When this flag is set, comparision operations will be search
+    /// case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// The minimum score for string similarity comparisons
+    /// (0 <= score < 100).
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+          default_value = "75")]
+    strsim_threshold: u8,
 
     /// Sort results in reverse order.
     #[arg(long, short)]
@@ -95,8 +107,10 @@ impl Frequency {
         );
 
         let mut ftable: HashMap<BString, u64> = HashMap::new();
-        let options = Default::default();
         let path = Path::from_str(&self.path)?;
+        let options = MatcherOptions::new()
+            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
+            .case_ignore(self.ignore_case);
 
         let writer: Box<dyn Write> = match self.output {
             Some(filename) => Box::new(File::create(filename)?),
