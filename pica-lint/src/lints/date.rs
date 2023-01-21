@@ -23,7 +23,7 @@ fn default_fmt() -> String {
 impl Lint for Date {
     fn check(&mut self, record: &ByteRecord) -> Status {
         let result = record
-            .path(&self.path)
+            .path(&self.path, &Default::default())
             .iter()
             .map(ToString::to_string)
             .any(|value| {

@@ -22,7 +22,7 @@ pub struct RefCheck {
 
 impl Lint for RefCheck {
     fn preprocess(&mut self, record: &ByteRecord) {
-        let values = record.path(&self.dst);
+        let values = record.path(&self.dst, &Default::default());
         if !values.is_empty() {
             let insert = if let Some(ref filter) = self.filter {
                 filter.is_match(record, &Default::default())
@@ -39,7 +39,7 @@ impl Lint for RefCheck {
     }
 
     fn check(&mut self, record: &ByteRecord) -> Status {
-        let values = record.path(&self.src);
+        let values = record.path(&self.src, &Default::default());
         let mut status = Status::Miss;
 
         if !values.is_empty() {
