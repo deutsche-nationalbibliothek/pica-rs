@@ -87,7 +87,7 @@ impl Lint for Iso639 {
     fn check(&mut self, record: &ByteRecord) -> Status {
         let codes = ISO639_CODES.lock().unwrap();
         record
-            .path(&self.path)
+            .path(&self.path, &Default::default())
             .iter()
             .any(|value| !codes.contains(&value.to_vec()))
             .into()

@@ -22,7 +22,23 @@ fn test_path_simple() -> anyhow::Result<()> {
     let record = ByteRecord::from_bytes(ada_lovelace())?;
     let path = Path::new("003@.0");
 
-    assert_eq!(record.path(&path), vec![&b"119232022".as_bstr()]);
+    assert_eq!(
+        record.path(&path, &Default::default()),
+        vec![&b"119232022".as_bstr()]
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_path_matcher() -> anyhow::Result<()> {
+    let record = ByteRecord::from_bytes(ada_lovelace())?;
+    let path = Path::new("065R{4 == 'ortg', 9}");
+
+    assert_eq!(
+        record.path(&path, &Default::default()),
+        vec![&b"040743357".as_bstr()]
+    );
 
     Ok(())
 }
@@ -40,7 +56,7 @@ fn test_path_codes() -> anyhow::Result<()> {
     let path = Path::new("047A/03.[er]");
 
     assert_eq!(
-        record.path(&path),
+        record.path(&path, &Default::default()),
         vec![&b"DE-386".as_bstr(), &b"DE-576".as_bstr()]
     );
 
