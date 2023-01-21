@@ -13,7 +13,7 @@ pub struct Orcid {
 
 impl Lint for Orcid {
     fn check(&mut self, record: &ByteRecord) -> Status {
-        let values = record.path(&self.path);
+        let values = record.path(&self.path, &Default::default());
         if !values.is_empty() {
             for value in values {
                 if value.starts_with(self.prefix.as_bytes()) {

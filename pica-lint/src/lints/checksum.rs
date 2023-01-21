@@ -11,7 +11,8 @@ pub struct Checksum {
 
 impl Lint for Checksum {
     fn check<'a>(&mut self, record: &ByteRecord) -> Status {
-        for value in record.path(&self.path).iter() {
+        for value in record.path(&self.path, &Default::default()).iter()
+        {
             let mut value =
                 value.iter().map(|i| i - 48).collect::<Vec<u8>>();
 
