@@ -69,7 +69,6 @@ pub(crate) struct Frequency {
     /// Ignore rows with a frequency ≤ <t>.
     #[arg(
         long,
-        short,
         value_name = "t",
         default_value = "0",
         hide_default_value = true
@@ -79,6 +78,10 @@ pub(crate) struct Frequency {
     /// Comma-separated list of column names.
     #[arg(long, short = 'H')]
     header: Option<String>,
+
+    /// Write output tab-separated (TSV)
+    #[arg(long, short)]
+    tsv: bool,
 
     /// Transliterate output into the selected normalform <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
@@ -122,7 +125,9 @@ impl Frequency {
             None => Box::new(io::stdout()),
         };
 
-        let mut writer = csv::WriterBuilder::new().from_writer(writer);
+        let mut writer = csv::WriterBuilder::new()
+            .delimiter(if self.tsv { b'\t' } else { b',' })
+            .from_writer(writer);
 
         for filename in self.filenames {
             let mut reader =
