@@ -10,13 +10,13 @@ Wertausprägungen eines Unterfelds zu bestimmen. Ist das zu untersuchende
 Feld bzw. Unterfeld wiederholbar, dann gehen alle Wertausprägungen eines
 Datensatzes in die Häufigkeitsverteilung ein. Aus der Ergebnisdatei lässt
 sich dann durch geeignete Tools eine grafische Darstellung (Histogramm)
-oder die relative Häufigkeitsverteilung berechnen. Die Ausgabe erfolgt 
+oder die relative Häufigkeitsverteilung berechnen. Die Ausgabe erfolgt
 standardmäßig im CSV-Format.
 
-Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds 
+Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds
 `010@.a` (Sprache des Textes) ermittelt. Sowohl das Feld `010@` als auch
-das Unterfeld `a` sind wiederholbar und somit werden Datensätze die sowohl
-einen Sprachencode `ger` als auch `eng` erhalten haben für jeden Wert
+das Unterfeld `a` sind wiederholbar und somit werden Datensätze, die sowohl
+einen Sprachencode `ger` als auch `eng` erhalten haben, für jeden Wert
 gezählt.
 
 ```bash
@@ -30,7 +30,7 @@ eng,347171
 
 Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen
 ist es häufig sinnvoll eine Kopfzeile hinzuzufügen. Dies erfolgt mit der
-Option `--header` bsw. `-H`. Die Namen der Spalten werden komma-separiert
+Option `--header` bzw. `-H`. Die Namen der Spalten werden komma-separiert
 angegeben. Die Angabe von mehr als zwei Spalten ist nicht erlaubt.
 
 ```bash
@@ -43,15 +43,17 @@ eng,347171
 
 ### Eingrenzung auf bestimmte Felder
 
-Häufig sollen nicht alle Felder in die Berechnung der Häufigkeiten mit
-einbezogen werden. Dies kann durch die Verwendung des Pfad-Ausdrucks in
-{}-Notation unter Verwendung eines Unterfeld-Filters erreicht werden.
+Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten mit
+einbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand
+eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der 
+Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation,
+können nur die Felder ausgewählt werden, die einem bestimmten Kriterium
+entsprechen.
 
-Im folgenden Beispiel werden von einem Datensatz nur die Felder `044H` in
+Im folgenden Beispiel werden von einem Datensatz nur die `044H` Felder in
 die Ergenisbereichnung mit einbezogen, die ein Unterfeld `b` besitzen, das
-gleich `'GND'` ist, und ein Unterfeld `H`, das mit der Zeichenkette `ema`
-beginnt. Felder, die nicht dem Filter entsprechen werden ignoriert.
-
+gleich `'GND'` ist, sowie ein Unterfeld `H`, das mit der Zeichenkette 
+`'ema'` beginnt. Felder, die nicht dem Filter entsprechen werden ignoriert.
 
 ```bash
 $ pica frequency "044H{b == 'GND' && H =^ 'ema', 9}" DUMP.dat
@@ -129,8 +131,8 @@ Ts1    1
 
 ### Änderung der Unicode-Normalform
 
-Die Unicode-Normalform in der Ausgabe lässt sich durch die Option 
-`--translit` ändern. Liegen die Daten in NFD-Normalform vor und sollen in 
+Die Unicode-Normalform in der Ausgabe lässt sich durch die Option
+`--translit` ändern. Liegen die Daten in NFD-Normalform vor und sollen in
 die NFC-Normalform transliteriert werden, kann dies mit dem folgenden
 Kommando erfolgen:
 
