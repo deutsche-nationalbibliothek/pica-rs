@@ -1,0 +1,3 @@
+bin.name = "pica"
+args = "-c Pica.toml frequency \"002@.0\""
+status = "failed"

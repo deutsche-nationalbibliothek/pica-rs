@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "frequency -s --limit abc \"002@.0\" dump.dat.gz"
+status = "failed"
+stdout = ""

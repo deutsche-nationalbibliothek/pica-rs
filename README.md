@@ -39,7 +39,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | completions             | stable    | generate a completions file for bash, fish or zsh                 |
 | [count](#count)         | stable    | count records, fields and subfields                               |
 | [filter](#filter)       | beta      | filter records by query expressions                               |
-| [frequency](#frequency) | beta      | compute a frequency table of a subfield                           |
+| [frequency](#frequency) | stable    | compute a frequency table of a subfield                           |
 | [invalid](#invalid)     | stable    | write input lines, which can't be decoded as normalized PICA+     |
 | [partition](#partition) | beta      | partition a list of records based on subfield values              |
 | [print](#print)         | beta      | print records in human readable format                            |

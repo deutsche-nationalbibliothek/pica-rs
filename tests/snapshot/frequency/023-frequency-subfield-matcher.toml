@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "frequency -s \"065R{4 =^ 'ort', 9}\" dump.dat.gz"
+status = "success"
+stdout = "041178548,2\n040660095,1\n040787044,1\n"
+stderr = ""

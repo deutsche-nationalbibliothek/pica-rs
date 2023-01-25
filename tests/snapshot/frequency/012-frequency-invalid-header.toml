@@ -1,0 +1,3 @@
+bin.name = "pica"
+args = "frequency -s -H \"code,count,foo\" \"008A.a\""
+status = "failed"

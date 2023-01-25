@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "frequency -s --translit nfd \"029A.a\""
+status = "success"
+stdout = "Goethe-Universität Frankfurt am Main,1\n"
+stderr = ""

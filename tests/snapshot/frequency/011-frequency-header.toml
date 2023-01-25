@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "frequency -s -H \"code,count\" \"008A.a\""
+status = "success"
+stdout = "code,count\ns,1\n"
+stderr = ""

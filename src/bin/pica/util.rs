@@ -10,6 +10,7 @@ pub(crate) enum CliError {
     Xml(xml::writer::Error),
     Pica(pica::Error),
     ParsePica(pica_record::ParsePicaError),
+    ParsePath(pica_path::ParsePathError),
     Other(String),
 }
 
@@ -21,6 +22,7 @@ impl fmt::Display for CliError {
             CliError::Io(ref e) => e.fmt(f),
             CliError::Pica(ref e) => e.fmt(f),
             CliError::ParsePica(ref e) => e.fmt(f),
+            CliError::ParsePath(ref e) => e.fmt(f),
             CliError::Other(ref s) => f.write_str(s),
         }
     }
@@ -58,5 +60,11 @@ impl From<pica_record::io::ReadPicaError> for CliError {
                 CliError::ParsePica(e)
             }
         }
+    }
+}
+
+impl From<pica_path::ParsePathError> for CliError {
+    fn from(err: pica_path::ParsePathError) -> Self {
+        CliError::ParsePath(err)
     }
 }

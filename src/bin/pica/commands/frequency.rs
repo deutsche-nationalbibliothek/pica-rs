@@ -1,12 +1,15 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
 use std::str::FromStr;
 
 use bstr::BString;
-use clap::Parser;
-use pica::{Path, Reader, ReaderBuilder};
+use clap::{value_parser, Parser};
+use pica_matcher::MatcherOptions;
+use pica_path::{Path, PathExt};
+use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -20,17 +23,40 @@ pub(crate) struct FrequencyConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
+/// Compute a frequency table of a subfield
+///
+/// This command computes a frequency table over all subfield values of
+/// the given path expression. By default, the resulting frequency table
+/// is sorted in descending order by default (the most frequent value is
+/// printed first). If the count of two or more subfield values is
+/// euqal, these lines are given in lexicographical order.
+///
+/// The set of fields, which are included in the result of a record, can
+/// be resricted by an optional subfield filter. A subfield filter
+/// requires the {}-notation and is expected at the first position (e.g.
+/// "044H/*{b == 'GND && 9?, 9}").
 #[derive(Parser, Debug)]
 pub(crate) struct Frequency {
-    /// Skip invalid records that can't be decoded
+    /// Skip invalid records that can't be decoded as normalized PICA+.
     #[arg(long, short)]
     skip_invalid: bool,
 
-    /// Sort results in reverse order
+    /// When this flag is set, comparision operations will be search
+    /// case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+          default_value = "75")]
+    strsim_threshold: u8,
+
+    /// Sort results in reverse order.
     #[arg(long, short)]
     reverse: bool,
 
-    /// Limit result to the <n> most common values
+    /// Limit result to the <n> most frequent subfield values.
     #[arg(
         long,
         short,
@@ -40,37 +66,42 @@ pub(crate) struct Frequency {
     )]
     limit: usize,
 
-    /// Ignore rows with a frequency ≤ <t>
+    /// Ignore rows with a frequency ≤ <t>.
     #[arg(
         long,
-        short,
         value_name = "t",
         default_value = "0",
         hide_default_value = true
     )]
     threshold: u64,
 
-    /// Comma-separated list of column names
+    /// Comma-separated list of column names.
     #[arg(long, short = 'H')]
     header: Option<String>,
 
+    /// Write output tab-separated (TSV)
+    #[arg(long, short)]
+    tsv: bool,
+
     /// Transliterate output into the selected normalform <NF>
-    /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
+    /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
     #[arg(long,
-          value_name = "NF", 
+          value_name = "NF",
           value_parser = ["nfd", "nfkd", "nfc", "nfkc"],
           hide_possible_values = true,
     )]
     translit: Option<String>,
 
-    /// Write output to <filename> instead of stdout
+    /// Write output to <filename> instead of stdout.
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
     /// A PICA path expression
     path: String,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format. With no
+    /// files, or when a filename is '-', read from stanard input
+    /// (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
@@ -85,29 +116,39 @@ impl Frequency {
 
         let mut ftable: HashMap<BString, u64> = HashMap::new();
         let path = Path::from_str(&self.path)?;
+        let options = MatcherOptions::new()
+            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
+            .case_ignore(self.ignore_case);
 
         let writer: Box<dyn Write> = match self.output {
             Some(filename) => Box::new(File::create(filename)?),
             None => Box::new(io::stdout()),
         };
 
-        let mut writer = csv::WriterBuilder::new().from_writer(writer);
+        let mut writer = csv::WriterBuilder::new()
+            .delimiter(if self.tsv { b'\t' } else { b',' })
+            .from_writer(writer);
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.records() {
-                let record = result?;
-
-                for value in record.path(&path) {
-                    *ftable.entry(value.to_owned()).or_insert(0) += 1;
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        for value in record.path(&path, &options) {
+                            *ftable
+                                .entry(BString::from(value.to_vec()))
+                                .or_insert(0) += 1;
+                        }
+                    }
                 }
             }
         }
@@ -119,9 +160,15 @@ impl Frequency {
         let mut ftable_sorted: Vec<(&BString, &u64)> =
             ftable.iter().collect();
         if self.reverse {
-            ftable_sorted.sort_by(|a, b| a.1.cmp(b.1));
+            ftable_sorted.sort_by(|a, b| match a.1.cmp(b.1) {
+                Ordering::Equal => a.0.cmp(b.0),
+                ordering => ordering,
+            });
         } else {
-            ftable_sorted.sort_by(|a, b| b.1.cmp(a.1));
+            ftable_sorted.sort_by(|a, b| match b.1.cmp(a.1) {
+                Ordering::Equal => a.0.cmp(b.0),
+                ordering => ordering,
+            });
         }
 
         for (i, (value, frequency)) in ftable_sorted.iter().enumerate()

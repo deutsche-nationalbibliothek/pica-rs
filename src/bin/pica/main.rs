@@ -48,10 +48,7 @@ enum Commands {
 
     /// Filter records by whether the given query matches
     Filter(Filter),
-
-    /// Compute a frequency table of a subfield
     Frequency(Frequency),
-
     Invalid(Invalid),
 
     /// Serialize records to JSON
@@ -116,6 +113,10 @@ fn main() {
         }
         Err(CliError::ParsePica(err)) => {
             eprintln!("Parse Pica Error: {err}");
+            process::exit(1);
+        }
+        Err(CliError::ParsePath(err)) => {
+            eprintln!("Parse Path Error: {err}");
             process::exit(1);
         }
         Err(CliError::Pica(err)) => {
