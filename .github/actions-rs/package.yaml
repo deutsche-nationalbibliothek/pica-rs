@@ -8,3 +8,15 @@ files:
     file: pica
     mode: "0755"
     user: "root"
+  "/usr/share/bash-completion/completions/pica.bash":
+    file: pica.bash
+    mode: "0755"
+    user: "root"
+  "/usr/share/zsh/vendor-completions/_pica":
+    file: pica.zsh
+    mode: "0755"
+    user: "root"
+  "/usr/share/fish/vendor_completions.d/pica.fish":
+    file: pica.fish
+    mode: "0755"
+    user: "root"
