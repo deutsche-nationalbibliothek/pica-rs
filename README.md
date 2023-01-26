@@ -77,25 +77,37 @@ subfields 549
 ### Filter
 
 The key component of the tool is the ability to filter for records, which meet
-a filter criterion. The basic building block are field expression, which
-consists of an field tag (ex. `003@`), an optional occurrence (ex. `/00`), and
-a subfield filter. These expressions can be combined to complex expressions by
-the boolean connectives AND (`&&`) and OR (`||`). Boolean expressions are
-evaluated lazy from left to right.
+an expression as filter criterion. The basic building block of these expressions
+are *field expressions*, which consists of a *field tag* (e.g.
+`003@`), an optional *occurrence* (e.g `/03`), and a *subfield filter*.
+
+A simple field tag consists of level number (`0`, `1`, or `2`) followed by two
+digits and a character (`A` to `Z` and `@`). The dot (`.`) can be used as
+wildcard for any character and square brackets can be used for alternative
+characters (e.g. `04[45].` matches all fields starting with `044` or `045` but
+no occurrence).
+
+Occurrence `/00` and no occurence are equivalent, `/*` matches all occurrences
+(including zero) and `/01-10` matches any occurrences between `/01` and `/10`.
 
 Simple subfield filter consists of the subfield code (single
 alpha-numerical character, ex `0`) a comparison operator (equal `==`,
 not equal `!=` not equal, starts with prefix `=^`, ends with suffix
 `=$`, regex `=~`/`!~`, `in` and `not in`) and a value enclosed in
 single quotes. These simple subfield expressions can be grouped in
-parentheses and combined with boolean connectives (ex. `(0 == 'abc' ||
-0 == 'def')`).
+parentheses and combined with boolean connectives (ex. `(0 == 'abc' || 0 == 'def')`).
 
-There is also a special existence operator to check if a given field
-(`012A/00?`) or a subfield (`002@.0?` or `002@{0?}`) exists. In order
-to test for the number of occurrence of a field or subfield use the
-cardinality operator `#` (`#010@ == 1` or `010@{ #a == 1 && a ==
-'ger'}`).
+A special existence operator can be used to check if a given field (`012A/00?`)
+or a subfield (`002@.0?` or `002@$0?`) exists.  To test for the number of times
+a field or subfield exists in a record or field respectively, use the
+cardinality operator `#` with a comparison operator (e.g. `#010@ > 1` or 
+`010@{#a == 1 && a == 'ger'}`).
+
+Field expressions can be combined to complex expressions by the boolean
+connectives AND (`&&`) and OR (`||`). Boolean expressions can be grouped
+with parenthesis. Precedence of AND is higher than OR, so `A || B && C` is
+equivalent to `A || (B && C)`. Expressions are evaluated lazy from left to
+right so given `A || B` if `A` is true than `B` will not be evaluated.
 
 Option `--reduce` can be used to reduce records to a limited set of fields.
 
