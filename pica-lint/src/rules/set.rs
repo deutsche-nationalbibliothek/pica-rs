@@ -30,7 +30,8 @@ pub struct RuleSet {
 impl RuleSet {
     /// Create a new rule set from a spec file.
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let mut rs: RuleSet = toml::from_str(&read_to_string(path)?)?;
+        let mut rs: RuleSet =
+            toml::from_str(&read_to_string(path)?).unwrap();
 
         for (id, rule) in rs.rules.iter_mut() {
             rule.set_id(id);
