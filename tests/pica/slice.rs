@@ -446,7 +446,7 @@ fn pica_slice_length() -> TestResult {
     let assert = cmd
         .arg("slice")
         .arg("--skip-invalid")
-        .arg("--length")
+        .arg("--limit")
         .arg("1")
         .arg("tests/data/dump.dat.gz")
         .assert();
@@ -461,7 +461,7 @@ fn pica_slice_length() -> TestResult {
     let assert = cmd
         .arg("slice")
         .arg("--skip-invalid")
-        .arg("--length")
+        .arg("--limit")
         .arg("2")
         .arg("tests/data/dump.dat.gz")
         .assert();
@@ -482,7 +482,7 @@ fn pica_slice_length() -> TestResult {
     let assert = cmd
         .arg("slice")
         .arg("--skip-invalid")
-        .arg("--length")
+        .arg("--limit")
         .arg("100")
         .arg("tests/data/dump.dat.gz")
         .assert();
@@ -515,7 +515,7 @@ fn pica_slice_length() -> TestResult {
         .arg("--skip-invalid")
         .arg("--start")
         .arg("1")
-        .arg("--length")
+        .arg("--limit")
         .arg("1")
         .arg("tests/data/dump.dat.gz")
         .assert();
@@ -526,12 +526,12 @@ fn pica_slice_length() -> TestResult {
         .stderr(predicate::str::is_empty())
         .stdout(expected);
 
-    // invalid length option
+    // invalid limit option
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("slice")
         .arg("--skip-invalid")
-        .arg("--length")
+        .arg("--limit")
         .arg("abc")
         .arg("tests/data/dump.dat.gz")
         .assert();

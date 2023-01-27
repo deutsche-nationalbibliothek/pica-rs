@@ -29,9 +29,9 @@ pub(crate) struct Slice {
     #[arg(long, default_value = "0")]
     end: usize,
 
-    /// The length of the slice
-    #[arg(long, default_value = "0", conflicts_with = "end")]
-    length: usize,
+    /// The length of the slice (stop after <n> records)
+    #[arg(long, short, value_name = "n", default_value = "0", conflicts_with = "end")]
+    limit: usize,
 
     /// Compress output in gzip format
     #[arg(long, short)]
@@ -61,8 +61,8 @@ impl Slice {
 
         let mut range = if self.end > 0 {
             self.start..self.end
-        } else if self.length > 0 {
-            self.start..(self.start + self.length)
+        } else if self.limit > 0 {
+            self.start..(self.start + self.limit)
         } else {
             self.start..::std::usize::MAX
         };
@@ -94,7 +94,7 @@ impl Slice {
                         return Err(CliError::from(e))
                     }
                     _ => {
-                        if self.length > 0
+                        if self.limit > 0
                             && range.end < std::usize::MAX
                         {
                             range.end += 1;

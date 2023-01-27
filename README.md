@@ -225,7 +225,7 @@ Examples:
 $ pica slice --skip-invalid --start 1 --end 4 -o slice.dat DUMP.dat
 
 # get 10 records from position 10
-$ pica slice --skip-invalid --start 10 --length 10 -o slice.dat DUMP.dat
+$ pica slice --skip-invalid --start 10 --limit 10 -o slice.dat DUMP.dat
 ```
 
 ### Split
