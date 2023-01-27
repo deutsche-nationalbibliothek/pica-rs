@@ -26,6 +26,10 @@ pub(crate) struct Cat {
     #[arg(short, long)]
     skip_invalid: bool,
 
+    /// Limit the result to first <n> records
+    #[arg(long, short = 'n', value_name = "n", default_value = "0")]
+    limit: usize,
+
     /// Append to the given file, do not overwrite
     #[arg(long)]
     append: bool,
@@ -73,7 +77,9 @@ impl Cat {
             None => None,
         };
 
-        for filename in self.filenames {
+        let mut count = 0;
+
+        'reading: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -90,6 +96,10 @@ impl Cat {
                         writer.write_byte_record(&record)?;
                         if let Some(ref mut writer) = tee_writer {
                             writer.write_byte_record(&record)?;
+                        }
+                        count += 1;
+                        if self.limit > 0 && count >= self.limit {
+                            break 'reading;
                         }
                     }
                 }

@@ -69,7 +69,7 @@ pub(crate) struct Filter {
     deny_list: Vec<PathBuf>,
 
     /// Limit the result to first <n> records
-    #[arg(long, short, value_name = "n", default_value = "0")]
+    #[arg(long, short = 'n', value_name = "n", default_value = "0")]
     limit: usize,
 
     /// Connects the filter with additional expressions using the

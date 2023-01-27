@@ -30,7 +30,7 @@ pub(crate) struct Slice {
     end: usize,
 
     /// The length of the slice (stop after <n> records)
-    #[arg(long, short, value_name = "n", default_value = "0", conflicts_with = "end")]
+    #[arg(long, short = 'n', value_name = "n", default_value = "0", conflicts_with = "end")]
     limit: usize,
 
     /// Compress output in gzip format

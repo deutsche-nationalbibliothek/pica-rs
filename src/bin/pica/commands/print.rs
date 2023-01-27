@@ -77,7 +77,7 @@ pub(crate) struct Print {
     skip_invalid: bool,
 
     /// Limit the result to first <n> records
-    #[arg(long, short, value_name = "n", default_value = "0")]
+    #[arg(long, short = 'n', value_name = "n", default_value = "0")]
     limit: usize,
 
     /// Transliterate output into the selected normalform <NF>

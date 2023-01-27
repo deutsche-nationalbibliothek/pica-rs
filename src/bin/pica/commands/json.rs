@@ -22,6 +22,10 @@ pub(crate) struct Json {
     #[arg(short, long)]
     skip_invalid: bool,
 
+    /// Limit the result to first <n> records
+    #[arg(long, short = 'n', value_name = "n", default_value = "0")]
+    limit: usize,
+
     /// Transliterate output into the selected normalform <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
     #[arg(long,
@@ -53,8 +57,10 @@ impl Json {
         writer.write_all(b"[")?;
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
+            let builder = ReaderBuilder::new()
+                .skip_invalid(skip_invalid)
+                .limit(self.limit);
+
             let mut reader: Reader<Box<dyn Read>> = match filename
                 .to_str()
             {

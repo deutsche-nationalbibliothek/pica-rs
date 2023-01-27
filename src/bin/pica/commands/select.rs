@@ -27,6 +27,10 @@ pub(crate) struct Select {
     #[arg(short, long)]
     skip_invalid: bool,
 
+    /// Limit selection to first <n> records
+    #[arg(long, short = 'n', value_name = "n", default_value = "0")]
+    limit: usize,
+
     /// Disallow empty columns
     #[arg(long)]
     no_empty_columns: bool,
@@ -135,8 +139,10 @@ impl Select {
         };
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
+            let builder = ReaderBuilder::new()
+                .skip_invalid(skip_invalid)
+                .limit(self.limit);
+
             let mut reader: Reader<Box<dyn Read>> = match filename
                 .to_str()
             {
