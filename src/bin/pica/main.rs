@@ -24,7 +24,7 @@ use config::Config;
 use util::{CliError, CliResult};
 
 #[derive(Debug, Parser)]
-#[clap(version, author, infer_subcommands = true)]
+#[clap(version, author, infer_subcommands = true, max_term_width = 72)]
 #[command(name = "pica")]
 #[command(
     about = "Tools to work with bibliographic records encoded in PICA+."
@@ -65,7 +65,6 @@ enum Commands {
 
     /// Select subfield values from records
     Select(Select),
-
     Slice(Slice),
 
     /// Splits a stream of records into chunks

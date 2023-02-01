@@ -15,34 +15,73 @@ pub(crate) struct SliceConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-/// Return records within a range (half-open interval)
+/// Return records within a range
+///
+/// The slice command returns records within a range. The range starts
+/// at position 0 and is specified as an half-open interval, which means
+/// that the end-position is not included.
+///
+/// Note: A slice might have less records than specified, if there are
+/// not enough records to read or a record within a range is invalid.
 #[derive(Parser, Debug)]
 pub(crate) struct Slice {
-    /// Skip invalid records that can't be decoded
-    #[arg(short, long)]
-    skip_invalid: bool,
-
-    /// The lower bound of the range (inclusive)
-    #[arg(long, default_value = "0")]
+    /// The start position of the slice
+    ///
+    /// If no start position is specified, then the slice starts from
+    /// the first record at position 0.
+    #[arg(long, default_value = "0", hide_default_value = true)]
     start: usize,
 
-    /// The upper bound of the range (exclusive)
-    #[arg(long, default_value = "0")]
+    /// The end position of the slice
+    ///
+    /// This option specifies the end position of the slice, which
+    /// isn't included in the output. If no end position is specified,
+    /// the slice continues to the last record. The resulting slice
+    /// may contain less records if invalid records are skipped.
+    ///
+    /// This options can't be combined with the `length` option.
+    #[arg(
+        long,
+        default_value = "0",
+        conflicts_with = "length",
+        hide_default_value = true
+    )]
     end: usize,
 
     /// The length of the slice
-    #[arg(long, default_value = "0", conflicts_with = "end")]
+    ///
+    /// This options specifies the maximum number of (valid) records
+    /// read from the start position.
+    ///
+    /// This options can't be combined with the `end` option.
+    #[arg(
+        long,
+        default_value = "0",
+        conflicts_with = "end",
+        hide_default_value = true
+    )]
     length: usize,
+
+    /// Skip invalid records that can't be decoded as normalized PICA+
+    #[arg(short, long)]
+    skip_invalid: bool,
 
     /// Compress output in gzip format
     #[arg(long, short)]
     gzip: bool,
 
+    /// Append to the given file, do not overwrite
+    #[arg(long, short)]
+    append: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format
+    ///
+    /// If no filenames where given or a filename is "-", data is read
+    /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
@@ -58,7 +97,7 @@ impl Slice {
 
         let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
-            // .append(self.append)
+            .append(self.append)
             .from_path_or_stdout(self.output)?;
 
         let mut range = if self.end > 0 {
