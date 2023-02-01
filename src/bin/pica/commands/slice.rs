@@ -1,12 +1,11 @@
 use std::ffi::OsString;
-use std::io::{self, Read};
 
 use clap::Parser;
-use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
-use crate::util::{CliError, CliResult};
+use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -16,6 +15,7 @@ pub(crate) struct SliceConfig {
     pub(crate) gzip: Option<bool>,
 }
 
+/// Return records within a range (half-open interval)
 #[derive(Parser, Debug)]
 pub(crate) struct Slice {
     /// Skip invalid records that can't be decoded
@@ -25,6 +25,7 @@ pub(crate) struct Slice {
     /// The lower bound of the range (inclusive)
     #[arg(long, default_value = "0")]
     start: usize,
+
     /// The upper bound of the range (exclusive)
     #[arg(long, default_value = "0")]
     end: usize,
@@ -55,8 +56,9 @@ impl Slice {
             config.global
         );
 
-        let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+        let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
+            // .append(self.append)
             .from_path_or_stdout(self.output)?;
 
         let mut range = if self.end > 0 {
@@ -69,16 +71,11 @@ impl Slice {
 
         let mut i = 0;
 
-        for filename in self.filenames {
-            let builder = ReaderBuilder::new().skip_invalid(false);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+        'outer: for filename in self.filenames {
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.byte_records() {
+            while let Some(result) = reader.next() {
                 match result {
                     Ok(record) => {
                         if range.contains(&i) {
@@ -87,17 +84,18 @@ impl Slice {
                             i += 1;
                             continue;
                         } else {
-                            break;
+                            break 'outer;
                         }
                     }
-                    Err(e) if !skip_invalid => {
-                        return Err(CliError::from(e))
-                    }
-                    _ => {
-                        if self.length > 0
-                            && range.end < std::usize::MAX
-                        {
-                            range.end += 1;
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            if self.length > 0
+                                && range.end < std::usize::MAX
+                            {
+                                range.end += 1;
+                            }
+                        } else {
+                            return Err(e.into());
                         }
                     }
                 }

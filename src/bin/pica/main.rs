@@ -66,7 +66,6 @@ enum Commands {
     /// Select subfield values from records
     Select(Select),
 
-    /// Return records within a range (half-open interval)
     Slice(Slice),
 
     /// Splits a stream of records into chunks

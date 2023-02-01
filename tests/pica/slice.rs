@@ -564,7 +564,9 @@ fn pica_slice_skip_invalid() -> TestResult {
         .failure()
         .code(1)
         .stdout(predicate::str::is_empty())
-        .stderr("Pica Error: Invalid record on line 1.\n");
+        .stderr(predicate::str::starts_with(
+            "Parse Pica Error: invalid record",
+        ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
