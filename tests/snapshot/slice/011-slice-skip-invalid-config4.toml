@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "-c Pica.toml slice"
+status = "failed"
+stdout = ""
