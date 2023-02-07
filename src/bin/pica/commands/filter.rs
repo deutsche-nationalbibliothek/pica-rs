@@ -171,7 +171,7 @@ impl Filter {
         let filter_str = if let Some(ref global) = config.global {
             translit_maybe2(&filter_str, global.translit)
         } else {
-            filter_str.to_string()
+            filter_str
         };
 
         let mut filter = match RecordMatcher::new(&filter_str) {

@@ -7,12 +7,12 @@ pub(crate) fn translit_maybe2(
     normalization_form: Option<NormalizationForm>,
 ) -> String {
     match normalization_form {
-        Some(NormalizationForm::NFC) => value.nfc().collect::<String>(),
-        Some(NormalizationForm::NFKC) => {
+        Some(NormalizationForm::Nfc) => value.nfc().collect::<String>(),
+        Some(NormalizationForm::Nfkc) => {
             value.nfkc().collect::<String>()
         }
-        Some(NormalizationForm::NFD) => value.nfd().collect::<String>(),
-        Some(NormalizationForm::NFKD) => {
+        Some(NormalizationForm::Nfd) => value.nfd().collect::<String>(),
+        Some(NormalizationForm::Nfkd) => {
             value.nfkd().collect::<String>()
         }
         None => value.to_string(),

@@ -10,13 +10,13 @@ use crate::commands::*;
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub(crate) enum NormalizationForm {
     #[serde(alias = "nfc")]
-    NFC,
+    Nfc,
     #[serde(alias = "nfkc")]
-    NFKC,
+    Nfkc,
     #[serde(alias = "nfd")]
-    NFD,
+    Nfd,
     #[serde(alias = "nfkd")]
-    NFKD,
+    Nfkd,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
