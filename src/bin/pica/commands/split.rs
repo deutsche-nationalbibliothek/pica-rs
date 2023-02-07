@@ -18,9 +18,15 @@ pub(crate) struct SplitConfig {
     pub(crate) template: Option<String>,
 }
 
+/// Splits a list of records into chunks
+///
+/// This command is used to split a list of records into chunks of a
+/// given size. To write all chunks in a directory, use the `--outdir`
+/// or `-o` option (if the directory doesn't exist, the directory will
+/// be created automatically).
 #[derive(Parser, Debug)]
 pub(crate) struct Split {
-    /// Skip invalid records that can't be decoded
+    /// Skip invalid records that can't be decoded as normalized PICA+
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -28,20 +34,23 @@ pub(crate) struct Split {
     #[arg(long, short)]
     gzip: bool,
 
-    /// Write partitions into <outdir> (default value ".")
+    /// Write partitions into <outdir>
     #[arg(long, short, value_name = "outdir", default_value = ".")]
     outdir: PathBuf,
 
-    /// Filename template ("{}" is replaced by subfield value)
-    #[arg(long, short, value_name = "template")]
+    /// Filename template ("{}" is replaced by the chunk number)
+    #[arg(long, value_name = "template")]
     template: Option<String>,
 
-    /// Split size
-    #[arg(default_value = "500", 
+    /// Chunk size
+    #[arg(default_value = "500",
           value_parser = value_parser!(u32).range(1..))]
     chunk_size: u32,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format
+    ///
+    /// If no filenames where given or a filename is "-", data is read
+    /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
