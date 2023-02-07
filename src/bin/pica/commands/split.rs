@@ -80,7 +80,6 @@ impl Split {
 
         let mut chunks: u32 = 0;
         let mut count = 0;
-
         let mut writer =
             WriterBuilder::new().gzip(gzip_compression).from_path(
                 self.outdir
