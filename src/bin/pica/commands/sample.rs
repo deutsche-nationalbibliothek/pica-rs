@@ -5,7 +5,8 @@ use clap::{value_parser, Parser};
 use pica::{
     ByteRecord, PicaWriter, Reader, ReaderBuilder, WriterBuilder,
 };
-use rand::{thread_rng, Rng};
+use rand::rngs::StdRng;
+use rand::{thread_rng, Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -33,6 +34,10 @@ pub(crate) struct Sample {
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
+    /// RNG seed
+    #[arg(long, value_name = "number")]
+    seed: Option<u64>,
+
     #[arg(value_parser = value_parser!(u16).range(1..))]
     sample_size: u16,
 
@@ -57,7 +62,12 @@ impl Sample {
         let sample_size = self.sample_size as usize;
         let mut reservoir: Vec<ByteRecord> =
             Vec::with_capacity(sample_size);
-        let mut rng = thread_rng();
+
+        let mut rng: StdRng = match self.seed {
+            None => StdRng::from_rng(thread_rng()).unwrap(),
+            Some(seed) => StdRng::seed_from_u64(seed),
+        };
+
         let mut i = 0;
 
         for filename in self.filenames {
