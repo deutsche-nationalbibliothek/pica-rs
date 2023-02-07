@@ -46,7 +46,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [sample](#sample)       | beta      | selects a random permutation of records                           |
 | [select](#select)       | beta      | select subfield values from records                               |
 | [slice](#slice)         | stable    | return records withing a range (half-open interval)               |
-| [split](#split)         | beta      | split a list of records into chunks                               |
+| [split](#split)         | stable    | split a list of records into chunks                               |
 | [json](#json)           | beta      | serialize records in JSON                                         |
 | [xml](#xml)             | unstable  | serialize records into [PICA XML](https://format.gbv.de/pica/xml) |
 
