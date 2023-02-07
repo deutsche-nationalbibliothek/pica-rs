@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "frequency \"029@{a =^ 'Städtische', a}\""
+status = "success"
+stdout = ""
+stderr = ""

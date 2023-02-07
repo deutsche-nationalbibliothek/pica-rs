@@ -1,5 +1,24 @@
 use unicode_normalization::UnicodeNormalization;
 
+use crate::config::NormalizationForm;
+
+pub(crate) fn translit_maybe2(
+    value: &str,
+    normalization_form: Option<NormalizationForm>,
+) -> String {
+    match normalization_form {
+        Some(NormalizationForm::NFC) => value.nfc().collect::<String>(),
+        Some(NormalizationForm::NFKC) => {
+            value.nfkc().collect::<String>()
+        }
+        Some(NormalizationForm::NFD) => value.nfd().collect::<String>(),
+        Some(NormalizationForm::NFKD) => {
+            value.nfkd().collect::<String>()
+        }
+        None => value.to_string(),
+    }
+}
+
 pub(crate) fn translit_maybe(
     value: &str,
     translit: Option<&str>,

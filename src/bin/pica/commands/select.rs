@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
-use crate::translit::translit_maybe;
+use crate::translit::{translit_maybe, translit_maybe2};
 use crate::util::{CliError, CliResult};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -107,7 +107,13 @@ impl Select {
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer(self.output, self.append)?);
 
-        let selectors = match Selectors::decode(&self.selectors) {
+        let selectors = if let Some(ref global) = config.global {
+            translit_maybe2(&self.selectors, global.translit)
+        } else {
+            self.selectors.to_string()
+        };
+
+        let selectors = match Selectors::decode(&selectors) {
             Ok(val) => val,
             _ => {
                 return Err(CliError::Other(format!(

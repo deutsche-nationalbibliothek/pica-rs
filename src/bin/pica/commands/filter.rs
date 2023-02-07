@@ -13,6 +13,7 @@ use pica::{Path, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
+use crate::translit::translit_maybe2;
 use crate::util::{CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag, Config};
 
@@ -165,6 +166,12 @@ impl Filter {
             read_to_string(filename).unwrap()
         } else {
             self.filter
+        };
+
+        let filter_str = if let Some(ref global) = config.global {
+            translit_maybe2(&filter_str, global.translit)
+        } else {
+            filter_str.to_string()
         };
 
         let mut filter = match RecordMatcher::new(&filter_str) {

@@ -7,9 +7,22 @@ use serde::{Deserialize, Serialize};
 
 use crate::commands::*;
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub(crate) enum NormalizationForm {
+    #[serde(alias = "nfc")]
+    NFC,
+    #[serde(alias = "nfkc")]
+    NFKC,
+    #[serde(alias = "nfd")]
+    NFD,
+    #[serde(alias = "nfkd")]
+    NFKD,
+}
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct GlobalConfig {
+    pub(crate) translit: Option<NormalizationForm>,
     pub(crate) skip_invalid: Option<bool>,
 }
 
