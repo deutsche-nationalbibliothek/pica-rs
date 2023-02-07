@@ -66,8 +66,6 @@ enum Commands {
     /// Select subfield values from records
     Select(Select),
     Slice(Slice),
-
-    /// Splits a stream of records into chunks
     Split(Split),
 
     /// Serialize records to PICA XML

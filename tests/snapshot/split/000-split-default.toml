@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "split -s 100 dump.dat.gz"
+status = "success"
+stdout = ""
+stderr = ""

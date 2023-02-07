@@ -9,7 +9,6 @@ mod partition;
 mod print;
 mod sample;
 mod select;
-mod split;
 mod xml;
 
 #[test]

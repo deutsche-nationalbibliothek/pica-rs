@@ -16,5 +16,7 @@ fn snapshots() {
         .case("tests/snapshot/select/*.toml")
         .case("tests/snapshot/select/*.trycmd")
         .case("tests/snapshot/slice/*.toml")
-        .case("tests/snapshot/slice/*.trycmd");
+        .case("tests/snapshot/slice/*.trycmd")
+        .case("tests/snapshot/split/*.toml")
+        .case("tests/snapshot/split/*.trycmd");
 }

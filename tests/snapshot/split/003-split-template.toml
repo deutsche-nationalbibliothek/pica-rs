@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "split -s --template \"FOO_{}.dat\" 2 dump.dat.gz"
+status = "success"
+stdout = ""
+stderr = ""

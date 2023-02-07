@@ -1,0 +1,5 @@
+[global]
+skip-invalid = false
+
+[split]
+skip-invalid = false

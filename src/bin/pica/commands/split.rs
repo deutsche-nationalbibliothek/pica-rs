@@ -1,10 +1,9 @@
 use std::ffi::OsString;
 use std::fs::create_dir;
-use std::io::{self, Read};
 use std::path::PathBuf;
 
 use clap::{value_parser, Parser};
-use pica::{Reader, ReaderBuilder, WriterBuilder};
+use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -19,9 +18,15 @@ pub(crate) struct SplitConfig {
     pub(crate) template: Option<String>,
 }
 
+/// Splits a list of records into chunks
+///
+/// This command is used to split a list of records into chunks of a
+/// given size. To write all chunks in a directory, use the `--outdir`
+/// or `-o` option (if the directory doesn't exist, the directory will
+/// be created automatically).
 #[derive(Parser, Debug)]
 pub(crate) struct Split {
-    /// Skip invalid records that can't be decoded
+    /// Skip invalid records that can't be decoded as normalized PICA+
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -29,20 +34,22 @@ pub(crate) struct Split {
     #[arg(long, short)]
     gzip: bool,
 
-    /// Write partitions into <outdir> (default value ".")
+    /// Write partitions into <outdir>
     #[arg(long, short, value_name = "outdir", default_value = ".")]
     outdir: PathBuf,
 
-    /// Filename template ("{}" is replaced by subfield value)
-    #[arg(long, short, value_name = "template")]
+    /// Filename template ("{}" is replaced by the chunk number)
+    #[arg(long, value_name = "template")]
     template: Option<String>,
 
-    /// Split size
-    #[arg(default_value = "500", 
-          value_parser = value_parser!(u32).range(1..))]
+    /// Chunk size
+    #[arg(value_parser = value_parser!(u32).range(1..))]
     chunk_size: u32,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format
+    ///
+    /// If no filenames where given or a filename is "-", data is read
+    /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
@@ -72,7 +79,6 @@ impl Split {
 
         let mut chunks: u32 = 0;
         let mut count = 0;
-
         let mut writer =
             WriterBuilder::new().gzip(gzip_compression).from_path(
                 self.outdir
@@ -85,38 +91,44 @@ impl Split {
             )?;
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.byte_records() {
-                let record = result?;
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        if count > 0
+                            && count as u32 % self.chunk_size == 0
+                        {
+                            writer.finish()?;
+                            chunks += 1;
 
-                if count > 0 && count as u32 % self.chunk_size == 0 {
-                    writer.finish()?;
-                    chunks += 1;
+                            writer = WriterBuilder::new()
+                                .gzip(gzip_compression)
+                                .from_path(
+                                    self.outdir
+                                        .join(
+                                            filename_template.replace(
+                                                "{}",
+                                                &chunks.to_string(),
+                                            ),
+                                        )
+                                        .to_str()
+                                        .unwrap(),
+                                )?;
+                        }
 
-                    writer =
-                        WriterBuilder::new()
-                            .gzip(gzip_compression)
-                            .from_path(
-                                self.outdir
-                                    .join(filename_template.replace(
-                                        "{}",
-                                        &chunks.to_string(),
-                                    ))
-                                    .to_str()
-                                    .unwrap(),
-                            )?;
+                        writer.write_byte_record(&record)?;
+                        count += 1;
+                    }
                 }
-
-                writer.write_byte_record(&record)?;
-                count += 1;
             }
         }
 

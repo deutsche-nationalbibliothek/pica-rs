@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "split 100 dump.dat.gz"
+status = "failed"
+stdout = ""
