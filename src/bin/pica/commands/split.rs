@@ -43,8 +43,7 @@ pub(crate) struct Split {
     template: Option<String>,
 
     /// Chunk size
-    #[arg(default_value = "500",
-          value_parser = value_parser!(u32).range(1..))]
+    #[arg(value_parser = value_parser!(u32).range(1..))]
     chunk_size: u32,
 
     /// Read one or more files in normalized PICA+ format

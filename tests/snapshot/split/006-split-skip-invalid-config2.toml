@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "-c Pica.toml split 100 dump.dat.gz"
+status = "success"
+stdout = ""
+stderr = ""
