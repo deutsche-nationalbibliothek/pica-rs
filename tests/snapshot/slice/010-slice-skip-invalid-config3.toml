@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "-c Pica.toml slice"
+status = "success"
+stdout = ""
+stderr = ""

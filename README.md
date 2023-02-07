@@ -45,7 +45,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [print](#print)         | beta      | print records in human readable format                            |
 | [sample](#sample)       | beta      | selects a random permutation of records                           |
 | [select](#select)       | beta      | select subfield values from records                               |
-| [slice](#slice)         | beta      | return records withing a range (half-open interval)               |
+| [slice](#slice)         | stable    | return records withing a range (half-open interval)               |
 | [split](#split)         | beta      | split a list of records into chunks                               |
 | [json](#json)           | beta      | serialize records in JSON                                         |
 | [xml](#xml)             | unstable  | serialize records into [PICA XML](https://format.gbv.de/pica/xml) |
@@ -100,7 +100,7 @@ parentheses and combined with boolean connectives (ex. `(0 == 'abc' || 0 == 'def
 A special existence operator can be used to check if a given field (`012A/00?`)
 or a subfield (`002@.0?` or `002@$0?`) exists.  To test for the number of times
 a field or subfield exists in a record or field respectively, use the
-cardinality operator `#` with a comparison operator (e.g. `#010@ > 1` or 
+cardinality operator `#` with a comparison operator (e.g. `#010@ > 1` or
 `010@{#a == 1 && a == 'ger'}`).
 
 Field expressions can be combined to complex expressions by the boolean
@@ -229,6 +229,12 @@ $ pica select -s --tsv "003@.0,012A{a,b,c}" DUMP.dat.gz
 
 The `slice` command returns records within a range. The lower bound is
 inclusive, whereas the upper bound is exclusive (half-open interval).
+The numbering of records is zero-based; the first record is at position
+0, the second at position 1, and so on. A range specified by `--start`
+and `--end` might contain less elements, if the range contains invalid
+records.
+
+See `pica slice --help` for a detailed description of all options.
 
 Examples:
 

@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "slice --skip-invalid"
+status = "success"
+stdout = ""
+stderr = ""
