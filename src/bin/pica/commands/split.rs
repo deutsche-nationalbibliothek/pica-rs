@@ -1,10 +1,9 @@
 use std::ffi::OsString;
 use std::fs::create_dir;
-use std::io::{self, Read};
 use std::path::PathBuf;
 
 use clap::{value_parser, Parser};
-use pica::{Reader, ReaderBuilder, WriterBuilder};
+use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -85,38 +84,44 @@ impl Split {
             )?;
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.byte_records() {
-                let record = result?;
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        if count > 0
+                            && count as u32 % self.chunk_size == 0
+                        {
+                            writer.finish()?;
+                            chunks += 1;
 
-                if count > 0 && count as u32 % self.chunk_size == 0 {
-                    writer.finish()?;
-                    chunks += 1;
+                            writer = WriterBuilder::new()
+                                .gzip(gzip_compression)
+                                .from_path(
+                                    self.outdir
+                                        .join(
+                                            filename_template.replace(
+                                                "{}",
+                                                &chunks.to_string(),
+                                            ),
+                                        )
+                                        .to_str()
+                                        .unwrap(),
+                                )?;
+                        }
 
-                    writer =
-                        WriterBuilder::new()
-                            .gzip(gzip_compression)
-                            .from_path(
-                                self.outdir
-                                    .join(filename_template.replace(
-                                        "{}",
-                                        &chunks.to_string(),
-                                    ))
-                                    .to_str()
-                                    .unwrap(),
-                            )?;
+                        writer.write_byte_record(&record)?;
+                        count += 1;
+                    }
                 }
-
-                writer.write_byte_record(&record)?;
-                count += 1;
             }
         }
 

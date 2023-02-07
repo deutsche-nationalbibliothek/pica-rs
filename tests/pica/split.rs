@@ -529,7 +529,9 @@ fn pica_split_skip_invalid() -> TestResult {
     assert
         .failure()
         .code(1)
-        .stderr("Pica Error: Invalid record on line 1.\n")
+        .stderr(predicate::str::starts_with(
+            "Parse Pica Error: invalid record",
+        ))
         .stdout(predicate::str::is_empty());
 
     let tempdir = Builder::new().tempdir().unwrap();
