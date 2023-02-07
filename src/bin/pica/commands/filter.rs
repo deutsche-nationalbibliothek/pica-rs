@@ -1,25 +1,17 @@
 use std::ffi::OsString;
 use std::fs::read_to_string;
-use std::io::{self, Read};
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use clap::{value_parser, Parser};
-use lazy_static::lazy_static;
-use pica::matcher::{
-    MatcherFlags, OccurrenceMatcher, RecordMatcher, TagMatcher,
-};
-use pica::{Path, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica_matcher::{MatcherOptions, RecordMatcher};
+use pica_path::PathExt;
+use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
 use crate::translit::translit_maybe2;
 use crate::util::{CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag, Config};
-
-lazy_static! {
-    static ref IDN_PATH: Path = Path::from_str("003@.0").unwrap();
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -122,7 +114,7 @@ impl Filter {
             config.global
         );
 
-        let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+        let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .append(self.append)
             .from_path_or_stdout(self.output)?;
@@ -137,30 +129,30 @@ impl Filter {
             None => None,
         };
 
-        let items = self
-            .reduce
-            .split(',')
-            .map(str::trim)
-            .filter(|s| !s.is_empty());
+        // let items = self
+        //     .reduce
+        //     .split(',')
+        //     .map(str::trim)
+        //     .filter(|s| !s.is_empty());
 
-        let mut reducers = vec![];
-        for item in items {
-            let (tag, occ) = if let Some(pos) = item.rfind('/') {
-                (&item[0..pos], &item[pos..])
-            } else {
-                (item, "/*")
-            };
+        // let mut reducers = vec![];
+        // for item in items {
+        //     let (tag, occ) = if let Some(pos) = item.rfind('/') {
+        //         (&item[0..pos], &item[pos..])
+        //     } else {
+        //         (item, "/*")
+        //     };
 
-            let tag = TagMatcher::new(tag).map_err(|_| {
-                CliError::Other("invalid reduce value".to_string())
-            })?;
+        //     let tag = TagMatcher::new(tag).map_err(|_| {
+        //         CliError::Other("invalid reduce value".to_string())
+        //     })?;
 
-            let occ = OccurrenceMatcher::new(occ).map_err(|_| {
-                CliError::Other("invalid reduce value".to_string())
-            })?;
+        //     let occ = OccurrenceMatcher::new(occ).map_err(|_| {
+        //         CliError::Other("invalid reduce value".to_string())
+        //     })?;
 
-            reducers.push((tag, occ));
-        }
+        //     reducers.push((tag, occ));
+        // }
 
         let filter_str = if let Some(filename) = self.expr_file {
             read_to_string(filename).unwrap()
@@ -184,38 +176,20 @@ impl Filter {
         };
 
         if !self.and.is_empty() {
-            let predicates = self
-                .and
-                .iter()
-                .map(RecordMatcher::new)
-                .collect::<Result<Vec<_>, _>>()?;
-
-            for expr in predicates.into_iter() {
-                filter = filter & expr;
+            for predicate in self.and.iter() {
+                filter = filter & RecordMatcher::new(predicate)?;
             }
         }
 
         if !self.not.is_empty() {
-            let predicates = self
-                .not
-                .iter()
-                .map(RecordMatcher::new)
-                .collect::<Result<Vec<_>, _>>()?;
-
-            for expr in predicates.into_iter() {
-                filter = filter & !expr;
+            for predicate in self.not.iter() {
+                filter = filter & !RecordMatcher::new(predicate)?;
             }
         }
 
         if !self.or.is_empty() {
-            let predicates = self
-                .or
-                .iter()
-                .map(RecordMatcher::new)
-                .collect::<Result<Vec<_>, _>>()?;
-
-            for expr in predicates.into_iter() {
-                filter = filter | expr;
+            for predicate in self.or.iter() {
+                filter = filter | RecordMatcher::new(predicate)?;
             }
         }
 
@@ -232,65 +206,67 @@ impl Filter {
         };
 
         let mut count = 0;
-        let flags = MatcherFlags {
-            strsim_threshold: self.strsim_threshold as f64 / 100.0,
-            ignore_case: self.ignore_case,
-        };
+        let options = MatcherOptions::new()
+            .strsim_threshold(self.strsim_threshold as f64 / 100.0)
+            .case_ignore(self.ignore_case);
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.byte_records() {
-                let mut record = result?;
-                let idn = record.path(&IDN_PATH);
-                let idn = idn.first();
-
-                if !allow_list.is_empty() {
-                    if let Some(idn) = idn {
-                        if !allow_list.contains(*idn) {
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
                             continue;
-                        }
-                    } else {
-                        continue;
-                    }
-                }
-
-                if !deny_list.is_empty() {
-                    if let Some(idn) = idn {
-                        if deny_list.contains(*idn) {
-                            continue;
+                        } else {
+                            return Err(e.into());
                         }
                     }
-                }
+                    Ok(record) => {
+                        if !allow_list.is_empty() {
+                            if let Some(idn) = record.idn() {
+                                if !allow_list.contains(*idn) {
+                                    continue;
+                                }
+                            } else {
+                                continue;
+                            }
+                        }
 
-                let mut is_match = filter.is_match(&record, &flags);
-                if self.invert_match {
-                    is_match = !is_match;
-                }
+                        if !deny_list.is_empty() {
+                            if let Some(idn) = record.idn() {
+                                if deny_list.contains(*idn) {
+                                    continue;
+                                }
+                            }
+                        }
 
-                if is_match {
-                    if !reducers.is_empty() {
-                        record.reduce(&reducers);
+                        let mut is_match =
+                            filter.is_match(&record, &options);
+
+                        if self.invert_match {
+                            is_match = !is_match;
+                        }
+
+                        if is_match {
+                            // if !reducers.is_empty() {
+                            //     record.reduce(&reducers);
+                            // }
+
+                            writer.write_byte_record(&record)?;
+
+                            if let Some(ref mut writer) = tee_writer {
+                                writer.write_byte_record(&record)?;
+                            }
+
+                            count += 1;
+                        }
+
+                        if self.limit > 0 && count >= self.limit {
+                            break;
+                        }
                     }
-
-                    writer.write_byte_record(&record)?;
-
-                    if let Some(ref mut writer) = tee_writer {
-                        writer.write_byte_record(&record)?;
-                    }
-
-                    count += 1;
-                }
-
-                if self.limit > 0 && count >= self.limit {
-                    break;
                 }
             }
         }

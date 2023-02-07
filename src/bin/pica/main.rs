@@ -115,6 +115,10 @@ fn main() {
             eprintln!("Parse Path Error: {err}");
             process::exit(1);
         }
+        Err(CliError::ParseMatcher(err)) => {
+            eprintln!("Parse Matcher Error: {err}");
+            process::exit(1);
+        }
         Err(CliError::Pica(err)) => {
             eprintln!("Pica Error: {err}");
             process::exit(1);

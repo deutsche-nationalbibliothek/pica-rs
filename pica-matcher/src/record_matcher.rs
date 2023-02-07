@@ -1,4 +1,5 @@
 use std::fmt::{self, Display};
+use std::ops::{BitAnd, BitOr, Not};
 use std::str::FromStr;
 
 use nom::combinator::all_consuming;
@@ -7,14 +8,15 @@ use pica_record::Record;
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 
+use crate::common::BooleanOp;
 use crate::field_matcher::parse_field_matcher;
 use crate::{FieldMatcher, MatcherOptions, ParseMatcherError};
 
 /// A Matcher that works on PICA+ [Records](pica_record::Record).
 #[derive(Debug, PartialEq, Eq)]
 pub struct RecordMatcher {
-    field_matcher: FieldMatcher,
-    matcher_str: String,
+    pub(crate) field_matcher: FieldMatcher,
+    pub(crate) matcher_str: String,
 }
 
 impl RecordMatcher {
@@ -70,6 +72,53 @@ impl FromStr for RecordMatcher {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::new(s)
+    }
+}
+
+impl BitAnd for RecordMatcher {
+    type Output = Self;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        let matcher_str =
+            format!("({}) && ({})", self.matcher_str, rhs.matcher_str);
+
+        RecordMatcher {
+            field_matcher: FieldMatcher::Composite {
+                lhs: Box::new(self.field_matcher),
+                op: BooleanOp::And,
+                rhs: Box::new(rhs.field_matcher),
+            },
+            matcher_str,
+        }
+    }
+}
+
+impl BitOr for RecordMatcher {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        let matcher_str =
+            format!("({}) || ({})", self.matcher_str, rhs.matcher_str);
+
+        RecordMatcher {
+            field_matcher: FieldMatcher::Composite {
+                lhs: Box::new(self.field_matcher),
+                op: BooleanOp::Or,
+                rhs: Box::new(rhs.field_matcher),
+            },
+            matcher_str,
+        }
+    }
+}
+
+impl Not for RecordMatcher {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        RecordMatcher {
+            field_matcher: FieldMatcher::Not(Box::new(
+                self.field_matcher,
+            )),
+            matcher_str: format!("!({})", self.matcher_str),
+        }
     }
 }
 
