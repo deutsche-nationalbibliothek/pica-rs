@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter -s \"029[A@].a =^ 'Städtische'\""
+status = "success"
+stdout = ""
+stderr = ""

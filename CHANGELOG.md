@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * #572 Rephrase misleading documentation (`invalid`)
 * #590 Stabilize `slice` command
+* #592 Transliteration of matcher expressions
 
 ## 0.14.1
 

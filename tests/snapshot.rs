@@ -13,6 +13,8 @@ fn snapshots() {
         .case("tests/snapshot/frequency/*.trycmd")
         .case("tests/snapshot/invalid/*.toml")
         .case("tests/snapshot/invalid/*.trycmd")
+        .case("tests/snapshot/select/*.toml")
+        .case("tests/snapshot/select/*.trycmd")
         .case("tests/snapshot/slice/*.toml")
         .case("tests/snapshot/slice/*.trycmd");
 }

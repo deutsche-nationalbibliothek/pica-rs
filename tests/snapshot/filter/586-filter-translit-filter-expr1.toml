@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "-c Pica.toml filter -s \"029[A@].a =^ 'Städtische'\""
+status = "success"
+stderr = ""

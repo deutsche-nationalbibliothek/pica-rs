@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
-use crate::translit::translit_maybe;
+use crate::translit::{translit_maybe, translit_maybe2};
 use crate::util::CliResult;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -114,8 +114,16 @@ impl Frequency {
             config.global
         );
 
+        let path = if let Some(ref global) = config.global {
+            Path::from_str(&translit_maybe2(
+                &self.path,
+                global.translit,
+            ))?
+        } else {
+            Path::from_str(&self.path)?
+        };
+
         let mut ftable: HashMap<BString, u64> = HashMap::new();
-        let path = Path::from_str(&self.path)?;
         let options = MatcherOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case);
