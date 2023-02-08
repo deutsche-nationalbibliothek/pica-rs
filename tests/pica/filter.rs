@@ -137,7 +137,7 @@ fn pica_filter_equal_operator() -> TestResult {
     let assert = cmd
         .arg("filter")
         .arg("--skip-invalid")
-        .arg("003@a0 == '121169502'")
+        .arg("003@.[a0] == '121169502'")
         .arg("tests/data/dump.dat.gz")
         .assert();
 
