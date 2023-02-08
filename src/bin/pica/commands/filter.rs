@@ -3,7 +3,9 @@ use std::fs::read_to_string;
 use std::path::PathBuf;
 
 use clap::{value_parser, Parser};
-use pica_matcher::{MatcherOptions, RecordMatcher};
+use pica_matcher::{
+    MatcherOptions, OccurrenceMatcher, RecordMatcher, TagMatcher,
+};
 use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
@@ -129,30 +131,30 @@ impl Filter {
             None => None,
         };
 
-        // let items = self
-        //     .reduce
-        //     .split(',')
-        //     .map(str::trim)
-        //     .filter(|s| !s.is_empty());
+        let items = self
+            .reduce
+            .split(',')
+            .map(str::trim)
+            .filter(|s| !s.is_empty());
 
-        // let mut reducers = vec![];
-        // for item in items {
-        //     let (tag, occ) = if let Some(pos) = item.rfind('/') {
-        //         (&item[0..pos], &item[pos..])
-        //     } else {
-        //         (item, "/*")
-        //     };
+        let mut reducers = vec![];
+        for item in items {
+            let (tag, occ) = if let Some(pos) = item.rfind('/') {
+                (&item[0..pos], &item[pos..])
+            } else {
+                (item, "/*")
+            };
 
-        //     let tag = TagMatcher::new(tag).map_err(|_| {
-        //         CliError::Other("invalid reduce value".to_string())
-        //     })?;
+            let tag = TagMatcher::new(tag).map_err(|_| {
+                CliError::Other("invalid reduce value".to_string())
+            })?;
 
-        //     let occ = OccurrenceMatcher::new(occ).map_err(|_| {
-        //         CliError::Other("invalid reduce value".to_string())
-        //     })?;
+            let occ = OccurrenceMatcher::new(occ).map_err(|_| {
+                CliError::Other("invalid reduce value".to_string())
+            })?;
 
-        //     reducers.push((tag, occ));
-        // }
+            reducers.push((tag, occ));
+        }
 
         let filter_str = if let Some(filename) = self.expr_file {
             read_to_string(filename).unwrap()
@@ -223,7 +225,7 @@ impl Filter {
                             return Err(e.into());
                         }
                     }
-                    Ok(record) => {
+                    Ok(mut record) => {
                         if !allow_list.is_empty() {
                             if let Some(idn) = record.idn() {
                                 if !allow_list.contains(*idn) {
@@ -250,9 +252,18 @@ impl Filter {
                         }
 
                         if is_match {
-                            // if !reducers.is_empty() {
-                            //     record.reduce(&reducers);
-                            // }
+                            if !reducers.is_empty() {
+                                record.retain(|field| {
+                                    for (t, o) in reducers.iter() {
+                                        if t.is_match(field.tag())
+                                            && *o == field.occurrence()
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    false
+                                });
+                            }
 
                             writer.write_byte_record(&record)?;
 
