@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "filter \"012A.a != 'abc'\""
+status = "success"
+stdin = "012A \u001fadef\u001e\n"
+stdout = "012A \u001fadef\u001e\n"
+stderr = ""
