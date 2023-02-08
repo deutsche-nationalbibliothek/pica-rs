@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"007[KN]{ (v == 'zg' && !a?) || a == 'swd' && v != 'zg' || #v > 1 || !a? || 0 == '4001156-2' }\""
+status = "success"
+stderr = ""

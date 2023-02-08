@@ -766,7 +766,6 @@ fn parse_and_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
                 ws(parse_singleton_matcher),
                 SubfieldMatcher::Singleton,
             ),
-            // ws(parse_subfield_list_matcher_cardinality),
             ws(parse_not_matcher),
         )),
         many1(preceded(
@@ -777,7 +776,6 @@ fn parse_and_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
                     ws(parse_singleton_matcher),
                     SubfieldMatcher::Singleton,
                 ),
-                // ws(parse_subfield_list_matcher_cardinality),
                 ws(parse_not_matcher),
             )),
         )),

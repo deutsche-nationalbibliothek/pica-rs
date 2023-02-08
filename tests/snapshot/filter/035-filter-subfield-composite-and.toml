@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"041P{(!a? || a == 'Algebra') && #u >= 1 && !(x? || y?) && v =^ 'MACS'}\""
+status = "success"
+stderr = ""
