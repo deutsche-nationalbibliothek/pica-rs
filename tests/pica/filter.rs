@@ -1235,12 +1235,12 @@ fn pica_filter_invert_match() -> TestResult {
 }
 
 #[test]
-fn pica_filter_reduce() -> TestResult {
+fn pica_filter_retain() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
         .arg("--skip-invalid")
-        .arg("--reduce")
+        .arg("--retain")
         .arg("003@, 04[78]A")
         .arg("003@.0 == '1004916019'")
         .arg("tests/data/dump.dat.gz")
@@ -1264,7 +1264,7 @@ fn pica_filter_reduce() -> TestResult {
     assert
         .failure()
         .stderr(predicate::str::starts_with(
-            "error: invalid reduce value",
+            "error: invalid retain value",
         ))
         .stdout(predicate::str::is_empty());
 
@@ -1272,7 +1272,7 @@ fn pica_filter_reduce() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
-        .arg("--reduce")
+        .arg("--retain")
         .arg("003@, 041A")
         .arg("003@?")
         .arg("tests/data/1029350469.dat.gz")
@@ -1287,7 +1287,7 @@ fn pica_filter_reduce() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
-        .arg("--reduce")
+        .arg("--retain")
         .arg("003@, 041A/*")
         .arg("003@?")
         .arg("tests/data/1029350469.dat.gz")
@@ -1302,7 +1302,7 @@ fn pica_filter_reduce() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
-        .arg("--reduce")
+        .arg("--retain")
         .arg("003@, 041A/01")
         .arg("003@?")
         .arg("tests/data/1029350469.dat.gz")
@@ -1317,7 +1317,7 @@ fn pica_filter_reduce() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
-        .arg("--reduce")
+        .arg("--retain")
         .arg("003@, 041A/01-09")
         .arg("003@?")
         .arg("tests/data/1029350469.dat.gz")
@@ -1332,7 +1332,7 @@ fn pica_filter_reduce() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("filter")
-        .arg("--reduce")
+        .arg("--retain")
         .arg("003@, 041A/01-09, 041A/20-29")
         .arg("003@?")
         .arg("tests/data/1029350469.dat.gz")

@@ -43,9 +43,9 @@ pub(crate) struct Filter {
         default_value = "75")]
     strsim_threshold: u8,
 
-    /// Reduce the record to fields which are specified in <REDUCE>
-    #[arg(long, short = 'R', default_value = "")]
-    reduce: String,
+    /// Retains only fields specified by a list of predicates.
+    #[arg(long, short = 'R')]
+    retain: Option<String>,
 
     /// Take filter expressions from <EXPR_FILE>
     #[arg(long = "file", short = 'f')]
@@ -131,13 +131,11 @@ impl Filter {
             None => None,
         };
 
-        let items = self
-            .reduce
-            .split(',')
-            .map(str::trim)
-            .filter(|s| !s.is_empty());
+        let retain = self.retain.unwrap_or_default();
+        let items =
+            retain.split(',').map(str::trim).filter(|s| !s.is_empty());
 
-        let mut reducers = vec![];
+        let mut retain_predicates = vec![];
         for item in items {
             let (tag, occ) = if let Some(pos) = item.rfind('/') {
                 (&item[0..pos], &item[pos..])
@@ -146,14 +144,14 @@ impl Filter {
             };
 
             let tag = TagMatcher::new(tag).map_err(|_| {
-                CliError::Other("invalid reduce value".to_string())
+                CliError::Other("invalid retain value".to_string())
             })?;
 
             let occ = OccurrenceMatcher::new(occ).map_err(|_| {
-                CliError::Other("invalid reduce value".to_string())
+                CliError::Other("invalid retain value".to_string())
             })?;
 
-            reducers.push((tag, occ));
+            retain_predicates.push((tag, occ));
         }
 
         let filter_str = if let Some(filename) = self.expr_file {
@@ -252,9 +250,11 @@ impl Filter {
                         }
 
                         if is_match {
-                            if !reducers.is_empty() {
+                            if !retain_predicates.is_empty() {
                                 record.retain(|field| {
-                                    for (t, o) in reducers.iter() {
+                                    for (t, o) in
+                                        retain_predicates.iter()
+                                    {
                                         if t.is_match(field.tag())
                                             && *o == field.occurrence()
                                         {
