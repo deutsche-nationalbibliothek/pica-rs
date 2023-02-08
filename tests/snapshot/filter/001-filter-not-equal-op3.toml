@@ -1,6 +1,0 @@
-bin.name = "pica"
-args = "filter \"012A.a != 'abc'\""
-status = "success"
-stdin = "012A \u001fbdef\u001e\n"
-stdout = ""
-stderr = ""

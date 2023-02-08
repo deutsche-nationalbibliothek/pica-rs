@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter -s \"041@.a =^ 'Formale'\""
+status = "success"
+stderr = ""

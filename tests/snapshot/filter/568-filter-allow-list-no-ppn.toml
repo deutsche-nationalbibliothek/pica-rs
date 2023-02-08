@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter -s -A allow.csv '002@?' dump.dat.gz no-ppn.dat"
-status = "success"
-stderr = ""
