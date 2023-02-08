@@ -31,7 +31,7 @@ const SUBFIELD_CODES: &str =
 fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
         delimited(char('['), many1(parse_subfield_code), char(']')),
-        many1(parse_subfield_code),
+        many1(parse_subfield_code), // TODO: this must be removed!
         map(parse_subfield_code, |code| vec![code]),
         value(SUBFIELD_CODES.chars().collect(), char('*')),
     ))(i)

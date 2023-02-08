@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"047A/01-05.e == 'DE-101'\""
+status = "success"
+stderr = ""

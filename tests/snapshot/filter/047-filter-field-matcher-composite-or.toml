@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"012A.x? || (012A.y == 'abc') || 012A.z? && !012A.z? || #012A > 3 || 131X.2? || 002@.0 == 'Ts1'\""
+status = "success"
+stderr = ""
