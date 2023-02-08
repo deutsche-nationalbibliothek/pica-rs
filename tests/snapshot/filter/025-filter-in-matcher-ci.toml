@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter -i \"002@.0 in ['ts1', 'tp1', 'tu1']\""
+status = "success"
+stderr = ""
