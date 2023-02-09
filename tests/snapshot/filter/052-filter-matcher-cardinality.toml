@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"#041P{ a =^ 'Alg' && 0? } < 3\""
+status = "success"
+stderr = ""
