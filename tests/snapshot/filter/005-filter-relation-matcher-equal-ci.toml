@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter -s -i \"008B.a == 'Z'\""
-status = "success"
-stderr = ""

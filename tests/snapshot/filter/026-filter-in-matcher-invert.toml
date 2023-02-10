@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter \"002@.0 not in ['Tp1', 'Tu1']\""
-status = "success"
-stderr = ""

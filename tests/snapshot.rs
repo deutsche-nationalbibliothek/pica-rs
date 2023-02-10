@@ -7,8 +7,6 @@ fn snapshots() {
         .case("tests/snapshot/completions/*.trycmd")
         .case("tests/snapshot/count/*.toml")
         .case("tests/snapshot/count/*.trycmd")
-        .case("tests/snapshot/filter/*.toml")
-        .case("tests/snapshot/filter/*.trycmd")
         .case("tests/snapshot/frequency/*.toml")
         .case("tests/snapshot/frequency/*.trycmd")
         .case("tests/snapshot/invalid/*.toml")
@@ -19,4 +17,11 @@ fn snapshots() {
         .case("tests/snapshot/slice/*.trycmd")
         .case("tests/snapshot/split/*.toml")
         .case("tests/snapshot/split/*.trycmd");
+}
+
+#[test]
+fn filter_snapshots() {
+    trycmd::TestCases::new()
+        .case("tests/snapshot/filter/*.toml")
+        .case("tests/snapshot/filter/*.trycmd");
 }

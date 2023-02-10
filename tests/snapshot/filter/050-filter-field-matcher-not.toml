@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter \"!(002@.0 == 'Tp1' || 002@.0 == 'Tu1')\""
-status = "success"
-stderr = ""

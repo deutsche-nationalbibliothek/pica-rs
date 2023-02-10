@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter -i \"002@.0 =~ '^t[psu]1$'\""
-status = "success"
-stderr = ""

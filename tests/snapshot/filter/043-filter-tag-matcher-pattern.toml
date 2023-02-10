@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter \"041[APR].a == 'Algebra'\""
-status = "success"
-stderr = ""

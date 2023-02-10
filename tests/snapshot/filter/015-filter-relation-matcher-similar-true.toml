@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter --strsim-threshold 80 \"041@.a =* 'Formael Algebra'\""
-status = "success"
-stderr = ""

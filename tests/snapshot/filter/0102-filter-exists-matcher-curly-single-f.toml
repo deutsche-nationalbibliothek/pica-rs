@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter \"037G{ p? }\""
+status = "success"
+stdout = ""
+stderr = ""

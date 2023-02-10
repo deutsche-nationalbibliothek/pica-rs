@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"041P.2 =^ 'lc'\""
+status = "success"
+stderr = ""

@@ -1,5 +1,0 @@
-bin.name = "pica"
-args = "filter -i -s \"008A.a != 'S'\""
-status = "success"
-stdout = ""
-stderr = ""

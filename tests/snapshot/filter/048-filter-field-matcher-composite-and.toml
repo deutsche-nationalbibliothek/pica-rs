@@ -1,4 +1,0 @@
-bin.name = "pica"
-args = "filter \"(002@.0 == 'Ts1') && #041P{a =^ 'Alg' && S == 'DLC'} >= 1 && 002@.0 =^ 'T' && 003@? && !012A?\""
-status = "success"
-stderr = ""
