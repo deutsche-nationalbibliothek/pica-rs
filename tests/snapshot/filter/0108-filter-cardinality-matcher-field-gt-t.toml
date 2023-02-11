@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"#008[AB]{ a in ['s', 'z'] } > 1 \""
+status = "success"
+stderr = ""

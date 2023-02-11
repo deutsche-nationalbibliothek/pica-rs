@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter --strsim-threshold 75 \"041[AP].a =* 'Algebar'\""
+status = "success"
+stdout = ""
+stderr = ""

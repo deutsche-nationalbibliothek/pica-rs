@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter \"001A.0 =~ '^[0-9]{2}-[0-9]{2}-[0-9]{2}$'\""
+status = "success"
+stdout = ""
+stderr = ""

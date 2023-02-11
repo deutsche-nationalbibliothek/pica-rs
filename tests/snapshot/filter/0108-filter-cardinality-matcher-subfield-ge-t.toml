@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"008[AB]{ #a >= 3 }\""
+status = "success"
+stderr = ""

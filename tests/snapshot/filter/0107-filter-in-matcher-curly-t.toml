@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"008B{ a in ['x', 'y', 'z'] }\""
+status = "success"
+stderr = ""

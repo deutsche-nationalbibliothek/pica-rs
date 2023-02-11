@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter \"037G{ [cd] not in ['3', '512'] }\""
+status = "success"
+stdout = ""
+stderr = ""
