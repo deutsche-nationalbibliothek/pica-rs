@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"002@.0 == 'Ts1' && #041P{ a? && (a == 'Algebra' && 2 == 'lcsh') && !z? } >= 1 && !012A? && !(003@.0 == '0123456789X')\""
+status = "success"
+stderr = ""

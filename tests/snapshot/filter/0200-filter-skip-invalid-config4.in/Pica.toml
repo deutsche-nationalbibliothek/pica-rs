@@ -1,0 +1,5 @@
+[global]
+skip-invalid = false
+
+[filter]
+skip-invalid = false
