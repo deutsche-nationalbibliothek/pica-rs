@@ -4,7 +4,8 @@ use std::path::PathBuf;
 
 use clap::{value_parser, Parser};
 use pica_matcher::{
-    MatcherOptions, OccurrenceMatcher, RecordMatcher, TagMatcher,
+    MatcherOptions, OccurrenceMatcher, ParseMatcherError,
+    RecordMatcher, TagMatcher,
 };
 use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
@@ -46,6 +47,10 @@ pub(crate) struct Filter {
     /// Retains only fields specified by a list of predicates.
     #[arg(long, short = 'R')]
     retain: Option<String>,
+
+    /// Drop fields specified by a list of predicates.
+    #[arg(long)]
+    drop: Option<String>,
 
     /// Take filter expressions from <EXPR_FILE>
     #[arg(long = "file", short = 'f')]
@@ -131,28 +136,10 @@ impl Filter {
             None => None,
         };
 
-        let retain = self.retain.unwrap_or_default();
-        let items =
-            retain.split(',').map(str::trim).filter(|s| !s.is_empty());
-
-        let mut retain_predicates = vec![];
-        for item in items {
-            let (tag, occ) = if let Some(pos) = item.rfind('/') {
-                (&item[0..pos], &item[pos..])
-            } else {
-                (item, "/*")
-            };
-
-            let tag = TagMatcher::new(tag).map_err(|_| {
-                CliError::Other("invalid retain value".to_string())
-            })?;
-
-            let occ = OccurrenceMatcher::new(occ).map_err(|_| {
-                CliError::Other("invalid retain value".to_string())
-            })?;
-
-            retain_predicates.push((tag, occ));
-        }
+        let retain_predicates =
+            parse_predicates(&self.retain.unwrap_or_default())?;
+        let drop_predicates =
+            parse_predicates(&self.drop.unwrap_or_default())?;
 
         let filter_str = if let Some(filename) = self.expr_file {
             read_to_string(filename).unwrap()
@@ -265,6 +252,20 @@ impl Filter {
                                 });
                             }
 
+                            if !drop_predicates.is_empty() {
+                                record.retain(|field| {
+                                    for (t, o) in drop_predicates.iter()
+                                    {
+                                        if t.is_match(field.tag())
+                                            && *o == field.occurrence()
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                    true
+                                });
+                            }
+
                             writer.write_byte_record(&record)?;
 
                             if let Some(ref mut writer) = tee_writer {
@@ -289,4 +290,27 @@ impl Filter {
 
         Ok(())
     }
+}
+
+fn parse_predicates(
+    s: &str,
+) -> Result<Vec<(TagMatcher, OccurrenceMatcher)>, ParseMatcherError> {
+    let items = s.split(',').map(str::trim).filter(|s| !s.is_empty());
+    let mut result = vec![];
+
+    for item in items {
+        if let Some(pos) = item.rfind('/') {
+            result.push((
+                TagMatcher::new(&item[0..pos])?,
+                OccurrenceMatcher::new(&item[pos..])?,
+            ));
+        } else {
+            result.push((
+                TagMatcher::new(&item)?,
+                OccurrenceMatcher::None,
+            ));
+        }
+    }
+
+    Ok(result)
 }

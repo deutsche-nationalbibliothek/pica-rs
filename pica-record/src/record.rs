@@ -227,10 +227,14 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
     /// ```
     #[inline]
     pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
-        for field in self.iter() {
-            field.write_to(out)?;
+        if !self.is_empty() {
+            for field in self.iter() {
+                field.write_to(out)?;
+            }
+            writeln!(out)?;
         }
-        writeln!(out)
+
+        Ok(())
     }
 }
 

@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter --drop \"..../*\" \"003@.0?\""
+status = "success"
+stdout = ""
+stderr = ""

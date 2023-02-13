@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter --drop \"003@,002@,047A/02-03,070A/*\" \"003@.0?\" -o out.dat.gz"
+status = "success"
+stderr = ""
