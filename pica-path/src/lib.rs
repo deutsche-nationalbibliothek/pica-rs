@@ -121,6 +121,7 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
+// depricated syntax
 fn parse_path_matcher_old(i: &[u8]) -> ParseResult<Path> {
     map(
         delimited(
