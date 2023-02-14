@@ -41,6 +41,13 @@ fn invalid() {
 }
 
 #[test]
+fn partition() {
+    trycmd::TestCases::new()
+        .case("tests/snapshot/partition/*.toml")
+        .case("tests/snapshot/partition/*.trycmd");
+}
+
+#[test]
 fn select() {
     trycmd::TestCases::new()
         .case("tests/snapshot/select/*.toml")

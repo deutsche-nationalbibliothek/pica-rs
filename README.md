@@ -47,7 +47,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [filter](#filter)       | stable    | filter records by query expressions                               |
 | [frequency](#frequency) | stable    | compute a frequency table of a subfield                           |
 | [invalid](#invalid)     | stable    | write input lines, which can't be decoded as normalized PICA+     |
-| [partition](#partition) | beta      | partition a list of records based on subfield values              |
+| [partition](#partition) | stable    | partition a list of records based on subfield values              |
 | [print](#print)         | beta      | print records in human readable format                            |
 | [sample](#sample)       | beta      | selects a random permutation of records                           |
 | [select](#select)       | beta      | select subfield values from records                               |
@@ -175,8 +175,8 @@ can be used to extract these invalid lines only.
 ### Partition
 
 In order to split a list of records into chunks based on a subfield
-value use the `partition` command. Note that if the subfield is
-repeatable, the record will be written to all partitions.
+value use the `partition` command. Note that if the field and/or
+subfield is repeatable, the record will be written to all partitions.
 
 ```bash
 $ pica partition -s -o outdir "002@.0" DUMP.dat.gz

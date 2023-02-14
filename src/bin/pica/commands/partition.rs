@@ -33,8 +33,8 @@ pub(crate) struct PartitionConfig {
 /// Partition a list of records by subfield value
 #[derive(Parser, Debug)]
 pub(crate) struct Partition {
-    /// Skip invalid records that can't be decoded
-    #[arg(short, long)]
+    /// Skip invalid records that can't be decoded as normalized PICA+
+    #[arg(long, short)]
     skip_invalid: bool,
 
     /// Compress output in gzip format
@@ -49,16 +49,20 @@ pub(crate) struct Partition {
     #[arg(long, short, value_name = "template")]
     template: Option<String>,
 
-    /// PICA+ path expression (e.g. "002@.0")
+    /// A path expression (e.g. "002@.0")
     path: String,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format
+    ///
+    /// If no filenames where given or a filename is "-", data is read
+    /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
 
 impl Partition {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        let path = Path::from_str(&self.path)?;
         let gzip_compression = gzip_flag!(self.gzip, config.partition);
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,
@@ -82,7 +86,6 @@ impl Partition {
 
         let mut writers: HashMap<Vec<u8>, Box<dyn ByteRecordWrite>> =
             HashMap::new();
-        let path = Path::from_str(&self.path)?;
 
         for filename in self.filenames {
             let mut reader =
@@ -108,24 +111,22 @@ impl Partition {
                                 .entry(value.as_bytes().to_vec());
                             let writer = match entry {
                                 Entry::Vacant(vacant) => {
-                                    let value = String::from_utf8(
-                                        value.to_vec(),
-                                    )
-                                    .unwrap();
+                                    let filename = filename_template
+                                        .replace(
+                                            "{}",
+                                            &value.to_str_lossy(),
+                                        );
+
+                                    let path = self
+                                        .outdir
+                                        .join(filename)
+                                        .to_str()
+                                        .unwrap()
+                                        .to_owned();
+
                                     let writer = WriterBuilder::new()
                                         .gzip(gzip_compression)
-                                        .from_path(
-                                            self.outdir
-                                                .join(
-                                                    filename_template
-                                                        .replace(
-                                                            "{}",
-                                                            &value,
-                                                        ),
-                                                )
-                                                .to_str()
-                                                .unwrap(),
-                                        )?;
+                                        .from_path(path)?;
 
                                     vacant.insert(writer)
                                 }
