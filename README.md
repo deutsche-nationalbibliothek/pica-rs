@@ -9,21 +9,27 @@
 
 ## About
 
-This repository provides a collection of tools to work with bibliographic
-records encoded in PICA+, the internal format of the OCLC Cataloging
-system. The development of this tool was motivated by the wish to have a fast
-and efficient way to transform PICA+ records to a data format, which can be
-easily processed Python's [pandas](https://git.io/v7Qt8) library.
+This repository provides a collection of tools to work with
+bibliographic records encoded in PICA+, the internal format of the OCLC
+Cataloging system. The development of this tool was motivated by the
+wish to have a fast and efficient way to transform PICA+ records to a
+data format, which can be easily processed Python's
+[pandas](https://git.io/v7Qt8) library.
 
-Most of the commands are inspired by the [xsv](https://git.io/JIoJG) toolkit.
+Most of the commands are inspired by the [xsv](https://git.io/JIoJG)
+toolkit.
 
 ## Installation
 
-Binaries for Windows, Linux and macOS as well as `RPM` and `DEB` packages are available from [GitHub](https://github.com/deutsche-nationalbibliothek/pica-rs/releases).
+Binaries for Windows, Linux and macOS as well as `RPM` and `DEB`
+packages are available from
+[GitHub](https://github.com/deutsche-nationalbibliothek/pica-rs/releases).
 
-In order to install the tools from source a [Rust](https://www.rust-lang.org/) installation is required. Just follow the [installation
-guide](https://www.rust-lang.org/learn/get-started) to get the Rust programming language with the `cargo` package manager. To build
-this project from source Rust 1.58.1 or newer is required.
+In order to install the tools from source a
+[Rust](https://www.rust-lang.org/) installation is required. Just follow
+the [installation guide](https://www.rust-lang.org/learn/get-started) to
+get the Rust programming language with the `cargo` package manager. To
+build this project from source Rust 1.58.1 or newer is required.
 
 To install the latest stable release:
 
@@ -38,7 +44,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [cat](#cat)             | stable    | concatenate records from multiple files                           |
 | completions             | stable    | generate a completions file for bash, fish or zsh                 |
 | [count](#count)         | stable    | count records, fields and subfields                               |
-| [filter](#filter)       | beta      | filter records by query expressions                               |
+| [filter](#filter)       | stable    | filter records by query expressions                               |
 | [frequency](#frequency) | stable    | compute a frequency table of a subfield                           |
 | [invalid](#invalid)     | stable    | write input lines, which can't be decoded as normalized PICA+     |
 | [partition](#partition) | beta      | partition a list of records based on subfield values              |
@@ -52,8 +58,8 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 
 ## Usage
 
-PICA+ data is read from input file(s) or standard input in normalized PICA+
-serialization. Compressed `.gz` archives are decompressed.
+PICA+ data is read from input file(s) or standard input in normalized
+PICA+ serialization. Compressed `.gz` archives are decompressed.
 
 ### Cat
 
@@ -65,7 +71,8 @@ $ pica cat -s -o DUMP12.dat DUMP1.dat DUMP2.dat.gz
 
 ### Count
 
-To count the number of records, fields and subfields use the following command:
+To count the number of records, fields and subfields use the following
+command:
 
 ```bash
 $ pica count -s dump.dat.gz
@@ -76,42 +83,40 @@ subfields 549
 
 ### Filter
 
-The key component of the tool is the ability to filter for records, which meet
-an expression as filter criterion. The basic building block of these expressions
-are *field expressions*, which consists of a *field tag* (e.g.
-`003@`), an optional *occurrence* (e.g `/03`), and a *subfield filter*.
+The key component of the tool is the ability to filter for records,
+which meet an expression as filter criterion. The basic building block
+of these expressions are *field expressions*, which consists of a *field
+tag* (e.g. `003@`), an optional *occurrence* (e.g `/03`), and a
+*subfield filter*.
 
-A simple field tag consists of level number (`0`, `1`, or `2`) followed by two
-digits and a character (`A` to `Z` and `@`). The dot (`.`) can be used as
-wildcard for any character and square brackets can be used for alternative
-characters (e.g. `04[45].` matches all fields starting with `044` or `045` but
-no occurrence).
+A simple field tag consists of level number (`0`, `1`, or `2`) followed
+by two digits and a character (`A` to `Z` and `@`). The dot (`.`) can be
+used as wildcard for any character and square brackets can be used for
+alternative characters (e.g. `04[45].` matches all fields starting with
+`044` or `045` but no occurrence).
 
-Occurrence `/00` and no occurence are equivalent, `/*` matches all occurrences
-(including zero) and `/01-10` matches any occurrences between `/01` and `/10`.
+Occurrence `/00` and no occurence are equivalent, `/*` matches all
+occurrences (including zero) and `/01-10` matches any occurrences
+between `/01` and `/10`.
 
 Simple subfield filter consists of the subfield code (single
 alpha-numerical character, ex `0`) a comparison operator (equal `==`,
 not equal `!=` not equal, starts with prefix `=^`, ends with suffix
-`=$`, regex `=~`/`!~`, `in` and `not in`) and a value enclosed in
-single quotes. These simple subfield expressions can be grouped in
-parentheses and combined with boolean connectives (ex. `(0 == 'abc' || 0 == 'def')`).
+`=$`, regex `=~`/`!~`, `in` and `not in`) and a value enclosed in single
+quotes. These simple subfield expressions can be grouped in parentheses
+and combined with boolean connectives (ex. `(0 == 'abc' || 0 == 'def')`).
 
-A special existence operator can be used to check if a given field (`012A/00?`)
-or a subfield (`002@.0?` or `002@$0?`) exists.  To test for the number of times
-a field or subfield exists in a record or field respectively, use the
-cardinality operator `#` with a comparison operator (e.g. `#010@ > 1` or
-`010@{#a == 1 && a == 'ger'}`).
+A special existence operator can be used to check if a given field
+(`012A/00?`) or a subfield (`002@.0?` or `002@$0?`) exists.  To test for
+the number of times a field or subfield exists in a record or field
+respectively, use the cardinality operator `#` with a comparison
+operator (e.g. `#010@ > 1` or `010@{#a == 1 && a == 'ger'}`).
 
 Field expressions can be combined to complex expressions by the boolean
 connectives AND (`&&`) and OR (`||`). Boolean expressions can be grouped
 with parenthesis. Precedence of AND is higher than OR, so `A || B && C` is
 equivalent to `A || (B && C)`. Expressions are evaluated lazy from left to
 right so given `A || B` if `A` is true than `B` will not be evaluated.
-
-Options `--keep` (`-k`) and `--discard` (`-d`) can be used to reduce
-records to a limited set of fields by a specified list of field- and
-occurence matcher.
 
 **Examples**
 
@@ -125,17 +130,24 @@ $ pica filter -s "010@.a not in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
+```
 
-# reduce record to a limited set of fields
+Options `--keep` (`-k`) and `--discard` (`-d`) can be used to reduce
+records to a limited set of fields by a specified list of field- and
+occurence matcher.
+
+**Examples**
+
+```bash
 $ pica filter -s "012[AB]/00?" --keep "003@,012[AB]/00" DUMP.dat
-$ pica filter -s "012[AB]/00?" --discard "2.../*" DUMP.dat
+$ pica filter -s "003@?" --discard "2.../*" DUMP.dat
 ```
 
 ### Frequency
 
-The `frequency` command computes a frequency table of a subfield. The result is
-formatted as CSV (value,count). The following example builds the frequency
-table of the field `010@.a` of a filtered set of records.
+The `frequency` command computes a frequency table of a subfield. The
+result is formatted as CSV (value,count). The following example builds
+the frequency table of the field `010@.a` of a filtered set of records.
 
 ```bash
 $ pica filter --skip-invalid "002@.0 =~ '^A.*'" DUMP.dat.gz \
@@ -148,15 +160,15 @@ eng,347171
 
 ### Invalid
 
-Most commands support option `--skip-invalid` to skip invalid input lines,
-which can't be decoded as normalized PICA+. The `invalid` command can be used
-to extract these invalid lines only.
+Most commands support option `--skip-invalid` to skip invalid input
+lines, which can't be decoded as normalized PICA+. The `invalid` command
+can be used to extract these invalid lines only.
 
 ### Partition
 
-In order to split a list of records into chunks based on a subfield value use
-the `partition` command. Note that if the subfield is repeatable, the record
-will be written to all partitions.
+In order to split a list of records into chunks based on a subfield
+value use the `partition` command. Note that if the subfield is
+repeatable, the record will be written to all partitions.
 
 ```bash
 $ pica partition -s -o outdir "002@.0" DUMP.dat.gz
@@ -170,8 +182,8 @@ outdir
 
 ### Print
 
-The `print` command is used to print records in humand-readable
-[PICA Plain](http://format.gbv.de/pica/plain) format.
+The `print` command is used to print records in humand-readable [PICA
+Plain](http://format.gbv.de/pica/plain) format.
 
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
@@ -180,13 +192,13 @@ $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
 
 ### Sample
 
-The `sample` command selects a random permutation of records of the given
-sample size. This command is particularly useful in combination with the
-`filter` command for QA purposes.
+The `sample` command selects a random permutation of records of the
+given sample size. This command is particularly useful in combination
+with the `filter` command for QA purposes.
 
-The following command filters for records, that have a field `002@` with a
-subfield `0` that is `Tp1` or `Tpz` and selects a random permutation of 100
-records.
+The following command filters for records, that have a field `002@` with
+a subfield `0` that is `Tp1` or `Tpz` and selects a random permutation
+of 100 records.
 
 ```bash
 $ pica filter -s "002@.0 =~ '^Tp[1z]'" | pica sample 100 -o samples.dat
@@ -194,13 +206,14 @@ $ pica filter -s "002@.0 =~ '^Tp[1z]'" | pica sample 100 -o samples.dat
 
 ### Select
 
-This command selects subfield values of a record and emits them in CSV format.
-A select expression consists of a non-empty list of selectors. A selector
-references a field and a list of subfields or an static value enclosed in
-single quotes. If a selector's field or any subfield is repeatable, the rows
-are "multiplied". For example, if the first selector returns one row, the
-second selector two rows and a third selecor 3 rows, the result will contain
-`1 * 2 * 3 = 6` rows. Non-existing fields or subfields results in empty columns.
+This command selects subfield values of a record and emits them in CSV
+format. A select expression consists of a non-empty list of selectors. A
+selector references a field and a list of subfields or an static value
+enclosed in single quotes. If a selector's field or any subfield is
+repeatable, the rows are "multiplied". For example, if the first
+selector returns one row, the second selector two rows and a third
+selecor 3 rows, the result will contain `1 * 2 * 3 = 6` rows.
+Non-existing fields or subfields results in empty columns.
 
 ```bash
 $ pica select -s "003@.0,012A/*{a,b,c}" DUMP.dat.gz
@@ -212,10 +225,10 @@ $ pica select -s "003@.0, 'foo', 'bar'" DUMP.dat.gz
 123456789X,foo,bar
 ```
 
-To filter for fields matching a subfield filter, the first part of a complex
-field expression can be a filter. The following select statement takes only
-`045E` fields into account, where the expression `E == 'm'` evaluates to
-`true`.
+To filter for fields matching a subfield filter, the first part of a
+complex field expression can be a filter. The following select statement
+takes only `045E` fields into account, where the expression `E == 'm'`
+evaluates to `true`.
 
 ```bash
 $ pica select -s "003@.0, 045E{ E == 'm', e}
@@ -254,11 +267,11 @@ $ pica slice --skip-invalid --start 10 --length 10 -o slice.dat DUMP.dat
 ### Split
 
 This command is used to split a list of records into chunks of a given
-size. The default filename is `{}.dat`, whereby the curly braces are replaced
-by the number of the chunk.
+size. The default filename is `{}.dat`, whereby the curly braces are
+replaced by the number of the chunk.
 
 ```
-$ pica split --skip-invalid --outdir outdir --template "CHUNK_{}.dat" 100 DUMP.dat
+$ pica split -s -o outdir --template "CHUNK_{}.dat" 100 DUMP.dat
 $ tree outdir
 outdir
 ├── CHUNK_0.dat
@@ -293,14 +306,20 @@ $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
 ]
 ```
 
-The result can be processed with other tools and programming languages. To get [PICA JSON](http://format.gbv.de/pica/json) format you can pipe the result to this [jq](https://stedolan.github.io/jq/) command:
+The result can be processed with other tools and programming languages.
+To get [PICA JSON](http://format.gbv.de/pica/json) format you can pipe
+the result to this [jq](https://stedolan.github.io/jq/) command:
 
-    jq -c '.[]|.fields|map([.tag,.occurrence]+(.subfields|map(.tag,.value)))'
+```bash
+jq -c '.[]|.fields|map([.tag,.occurrence]+(.subfields|map(.tag,.value)))'
+```
 
 ### XML
 
-The `xml` command converts records into the [PICA XML](https://format.gbv.de/pica/xml) format.
-More information can be found in the [GBV Wiki](https://verbundwiki.gbv.de/display/VZG/PICA+XML+Version+1.0).
+The `xml` command converts records into the [PICA
+XML](https://format.gbv.de/pica/xml) format. More information can be
+found in the [GBV
+Wiki](https://verbundwiki.gbv.de/display/VZG/PICA+XML+Version+1.0).
 
 ```
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica xml
