@@ -1,5 +1,5 @@
 bin.name = "pica"
-args = "filter --retain \"012A/*\" \"003@.0?\""
+args = "filter -f filter.txt \"003@?\""
 status = "success"
 stdout = ""
 stderr = ""

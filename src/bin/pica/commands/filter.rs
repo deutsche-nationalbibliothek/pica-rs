@@ -44,13 +44,13 @@ pub(crate) struct Filter {
         default_value = "75")]
     strsim_threshold: u8,
 
-    /// Retains only fields specified by a list of predicates.
-    #[arg(long, short = 'R')]
-    retain: Option<String>,
+    /// Keep only fields specified by a list of predicates.
+    #[arg(long, short)]
+    keep: Option<String>,
 
-    /// Drop fields specified by a list of predicates.
-    #[arg(long)]
-    drop: Option<String>,
+    /// Discard fields specified by a list of predicates.
+    #[arg(long, short)]
+    discard: Option<String>,
 
     /// Take filter expressions from <EXPR_FILE>
     #[arg(long = "file", short = 'f')]
@@ -136,10 +136,10 @@ impl Filter {
             None => None,
         };
 
-        let retain_predicates =
-            parse_predicates(&self.retain.unwrap_or_default())?;
-        let drop_predicates =
-            parse_predicates(&self.drop.unwrap_or_default())?;
+        let discard_predicates =
+            parse_predicates(&self.discard.unwrap_or_default())?;
+        let keep_predicates =
+            parse_predicates(&self.keep.unwrap_or_default())?;
 
         let filter_str = if let Some(filename) = self.expr_file {
             read_to_string(filename).unwrap()
@@ -237,10 +237,9 @@ impl Filter {
                         }
 
                         if is_match {
-                            if !retain_predicates.is_empty() {
+                            if !keep_predicates.is_empty() {
                                 record.retain(|field| {
-                                    for (t, o) in
-                                        retain_predicates.iter()
+                                    for (t, o) in keep_predicates.iter()
                                     {
                                         if t.is_match(field.tag())
                                             && *o == field.occurrence()
@@ -252,9 +251,10 @@ impl Filter {
                                 });
                             }
 
-                            if !drop_predicates.is_empty() {
+                            if !discard_predicates.is_empty() {
                                 record.retain(|field| {
-                                    for (t, o) in drop_predicates.iter()
+                                    for (t, o) in
+                                        discard_predicates.iter()
                                     {
                                         if t.is_match(field.tag())
                                             && *o == field.occurrence()
@@ -267,7 +267,6 @@ impl Filter {
                             }
 
                             writer.write_byte_record(&record)?;
-
                             if let Some(ref mut writer) = tee_writer {
                                 writer.write_byte_record(&record)?;
                             }
