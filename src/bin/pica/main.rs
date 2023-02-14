@@ -43,10 +43,7 @@ enum Commands {
 
     /// Generate shell completions (e.g. Bash, ZSH)
     Completions(Completions),
-
     Count(Count),
-
-    /// Filter records by whether the given query matches
     Filter(Filter),
     Frequency(Frequency),
     Invalid(Invalid),

@@ -22,9 +22,10 @@ pub(crate) struct FilterConfig {
     pub(crate) gzip: Option<bool>,
 }
 
+/// Filter records by whether the given filter expression matches
 #[derive(Parser, Debug)]
 pub(crate) struct Filter {
-    /// Skip invalid records that can't be decoded
+    /// Skip invalid records that can't be decoded as normalized PICA+
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -52,37 +53,58 @@ pub(crate) struct Filter {
     discard: Option<String>,
 
     /// Take filter expressions from <EXPR_FILE>
+    ///
+    /// Note: Using a expression file still requires a filter; e.g
+    /// `003@.0?`.
     #[arg(long = "file", short = 'f')]
     expr_file: Option<PathBuf>,
 
     /// Ignore records which are *not* explicitly listed in one of the
-    /// given allow-lists. An allow-list must be an CSV, whereby the
-    /// first column contains the IDN (003@.0).
+    /// given allow-lists.
+    ///
+    /// An allow-list must be an CSV, whereby the first column contains
+    /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
+    /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
+    /// file is automatically interpreted as Apachae Arrow;
+    /// otherwise the file is read as CSV.
     #[arg(long, short = 'A')]
     allow_list: Vec<PathBuf>,
 
     /// Ignore records which are explicitly listed in one of the
-    /// given deny-lists. An deny-list must be an CSV, whereby the
-    /// first column contains the IDN (003@.0).
+    /// given deny-lists.
+    ///
+    /// An allow-list must be an CSV, whereby the first column contains
+    /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
+    /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
+    /// file is automatically interpreted as Apachae Arrow;
+    /// otherwise the file is read as CSV.
     #[arg(long, short = 'D')]
     deny_list: Vec<PathBuf>,
 
     /// Limit the result to first <n> records
+    ///
+    /// Note: A limit value `0` means no limit.
     #[arg(long, short, value_name = "n", default_value = "0")]
     limit: usize,
 
     /// Connects the filter with additional expressions using the
     /// logical AND-operator (conjunction)
+    ///
+    /// This option can't be combined with `--or` or `--not`.
     #[arg(long, conflicts_with_all = ["or", "not"])]
     and: Vec<String>,
 
     /// Connects the filter with additional expressions using the
     /// logical OR-operator (disjunction)
+    ///
+    /// This option can't be combined with `--and` or `--not`.
     #[arg(long, conflicts_with_all = ["and", "not"])]
     or: Vec<String>,
 
     /// Connects the filter with additional expressions using the
     /// logical NOT-operator (negation)
+    ///
+    /// This option can't be combined with `--and` or `--or`.
     #[arg(long, conflicts_with_all = ["and", "or"])]
     not: Vec<String>,
 
@@ -90,7 +112,9 @@ pub(crate) struct Filter {
     #[arg(long, short)]
     gzip: bool,
 
-    /// Append to the given file, do not overwrite.
+    /// Append to the given file, do not overwrite
+    ///
+    /// Warning: This option can't be used when writing to a gzip file.
     #[arg(long, conflicts_with = "gzip")]
     append: bool,
 
@@ -105,7 +129,10 @@ pub(crate) struct Filter {
     /// A filter expression used for searching
     filter: String,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format
+    ///
+    /// If no filenames where given or a filename is "-", data is read
+    /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
