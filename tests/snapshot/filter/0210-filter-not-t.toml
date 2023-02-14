@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter -s \"002@.0 =^ 'Ts'\" --not \"002@.0 == 'Tsz'\""
+status = "success"
+stderr = ""

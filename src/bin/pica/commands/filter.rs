@@ -113,7 +113,6 @@ pub(crate) struct Filter {
 
 impl Filter {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        // let limit = self.limit.unwrap_or_default();
         let gzip_compression = gzip_flag!(self.gzip, config.filter);
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,

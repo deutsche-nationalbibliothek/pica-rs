@@ -1,0 +1,4 @@
+bin.name = "pica"
+binary = true
+args = "-c Pica.toml filter -s \"002@.0 =^ 'Ts'\""
+status = "success"

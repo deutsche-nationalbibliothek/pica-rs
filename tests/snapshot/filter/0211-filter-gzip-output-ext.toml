@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter -s \"002@.0 =^ 'Ts'\" -o out.dat.gz"
+status = "success"
+stderr = ""
