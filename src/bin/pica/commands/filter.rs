@@ -304,7 +304,7 @@ fn parse_predicates(
             ));
         } else {
             result.push((
-                TagMatcher::new(&item)?,
+                TagMatcher::new(item)?,
                 OccurrenceMatcher::None,
             ));
         }
