@@ -426,8 +426,8 @@ fn pica_partition_skip_invalid() -> TestResult {
         .arg("tests/data/invalid.dat")
         .assert();
 
-    assert.failure().code(1).stderr(predicate::eq(
-        "Pica Error: Invalid record on line 1.\n",
+    assert.failure().code(1).stderr(predicate::str::starts_with(
+        "Parse Pica Error: invalid record",
     ));
 
     let tempdir = Builder::new().tempdir().unwrap();
@@ -796,7 +796,9 @@ fn pica_partition_invalid_path() -> TestResult {
     assert
         .failure()
         .code(1)
-        .stderr("Pica Error: Invalid path expression\n")
+        .stderr(predicate::str::starts_with(
+            "Parse Path Error: invalid path expression",
+        ))
         .stdout(predicate::str::is_empty());
 
     Ok(())
