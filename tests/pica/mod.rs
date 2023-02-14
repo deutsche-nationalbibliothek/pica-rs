@@ -3,7 +3,6 @@ use predicates::prelude::*;
 
 use crate::TestResult;
 
-mod filter;
 mod json;
 mod partition;
 mod print;
