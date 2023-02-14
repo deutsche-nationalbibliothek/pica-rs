@@ -150,11 +150,19 @@ result is formatted as CSV (value,count). The following example builds
 the frequency table of the field `010@.a` of a filtered set of records.
 
 ```bash
-$ pica filter --skip-invalid "002@.0 =~ '^A.*'" DUMP.dat.gz \
-    | pica frequency "010@.a"
-
+$ pica filter -s "002@.0 =~ '^A.*'" DUMP.dat.gz | pica frequency "010@.a"
 ger,2888445
 eng,347171
+...
+```
+
+An optional filter can be used if only a subset of fields should be
+taken into account:
+
+```bash
+$ pica pica frequency "044H{ 9 | b == 'GND' && H == 'aepgnd' && 9? }"
+0123456789,123
+...
 ...
 ```
 

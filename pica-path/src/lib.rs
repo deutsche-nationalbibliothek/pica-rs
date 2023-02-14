@@ -121,7 +121,7 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
-fn parse_path_matcher(i: &[u8]) -> ParseResult<Path> {
+fn parse_path_matcher_old(i: &[u8]) -> ParseResult<Path> {
     map(
         delimited(
             multispace0,
@@ -154,8 +154,45 @@ fn parse_path_matcher(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
+fn parse_path_matcher_new(i: &[u8]) -> ParseResult<Path> {
+    map(
+        delimited(
+            multispace0,
+            tuple((
+                parse_tag_matcher,
+                parse_occurrence_matcher,
+                delimited(
+                    ws(char('{')),
+                    pair(
+                        separated_list1(
+                            ws(char(',')),
+                            parse_subfield_code,
+                        ),
+                        opt(preceded(
+                            ws(char('|')),
+                            parse_subfield_matcher,
+                        )),
+                    ),
+                    ws(char('}')),
+                ),
+            )),
+            multispace0,
+        ),
+        |(t, o, (c, m))| Path {
+            tag_matcher: t,
+            occurrence_matcher: o,
+            subfield_matcher: m,
+            codes: c,
+        },
+    )(i)
+}
+
 fn parse_path(i: &[u8]) -> ParseResult<Path> {
-    alt((parse_path_matcher, parse_path_simple))(i)
+    alt((
+        parse_path_matcher_new,
+        parse_path_matcher_old,
+        parse_path_simple,
+    ))(i)
 }
 
 pub trait PathExt<T: AsRef<[u8]>> {
@@ -271,7 +308,27 @@ mod tests {
         );
 
         assert_finished_and_eq!(
+            parse_path(b"012A/*{b | a?}"),
+            Path {
+                tag_matcher: TagMatcher::new("012A")?,
+                occurrence_matcher: OccurrenceMatcher::new("/*")?,
+                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
+                codes: vec!['b']
+            }
+        );
+
+        assert_finished_and_eq!(
             parse_path(b"012A/*{a?, b, c}"),
+            Path {
+                tag_matcher: TagMatcher::new("012A")?,
+                occurrence_matcher: OccurrenceMatcher::new("/*")?,
+                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
+                codes: vec!['b', 'c']
+            }
+        );
+
+        assert_finished_and_eq!(
+            parse_path(b"012A/*{b, c | a?}"),
             Path {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,

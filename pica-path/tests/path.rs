@@ -40,6 +40,14 @@ fn test_path_matcher() -> anyhow::Result<()> {
         vec![&b"040743357".as_bstr()]
     );
 
+    let record = ByteRecord::from_bytes(ada_lovelace())?;
+    let path = Path::new("065R{ 9 | 4 == 'ortg' }");
+
+    assert_eq!(
+        record.path(&path, &Default::default()),
+        vec![&b"040743357".as_bstr()]
+    );
+
     Ok(())
 }
 
