@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter -s -D deny.csv \"002@.0 =^ 'Ts'\" dump.dat.gz"
+status = "success"
+stderr = ""

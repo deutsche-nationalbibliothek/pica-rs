@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter \"(008B.a == 'x' && 002@.0 == 'Tp1')\""
+status = "success"
+stdout = ""
+stderr = ""

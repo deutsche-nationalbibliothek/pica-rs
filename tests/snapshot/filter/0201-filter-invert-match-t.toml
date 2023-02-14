@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter --invert-match \"002@.0 == 'Tp1'\""
+status = "success"
+stderr = ""

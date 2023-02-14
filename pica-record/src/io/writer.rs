@@ -62,7 +62,15 @@ impl WriterBuilder {
         match path {
             Some(path) => self.from_path(path),
             None => {
-                Ok(Box::new(PlainWriter::new(Box::new(io::stdout()))))
+                if self.gzip {
+                    Ok(Box::new(GzipWriter::new(
+                        Box::new(io::stdout()),
+                    )))
+                } else {
+                    Ok(Box::new(PlainWriter::new(Box::new(
+                        io::stdout(),
+                    ))))
+                }
             }
         }
     }

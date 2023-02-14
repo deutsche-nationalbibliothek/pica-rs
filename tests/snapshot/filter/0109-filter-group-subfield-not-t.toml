@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"008B{ (!(a == 'x')) }\""
+status = "success"
+stderr = ""

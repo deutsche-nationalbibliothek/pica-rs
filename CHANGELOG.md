@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #592 Transliteration of matcher expressions
 * #564 Add `--seed` option to `sample` command
 * #594 Stabilize `split` command
+* #595 Stabilize `filter` command
 
 ## 0.14.1
 

@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter \"002@{ 0 == 'Tp1' || 0 == 'Tu1' || 0 == 'Tg1' }\""
+status = "success"
+stdout = ""
+stderr = ""

@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter -s \"002@.0 =^ 'Tp'\" --or \"002@.0 == 'Tu1'\" --or \"003@.0 == '040011562'\" "
+status = "success"
+stdout = ""
+stderr = ""

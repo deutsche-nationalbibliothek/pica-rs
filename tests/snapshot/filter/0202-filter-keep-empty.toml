@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "filter --keep \"012A/*\" \"003@.0?\""
+status = "success"
+stdout = ""
+stderr = ""

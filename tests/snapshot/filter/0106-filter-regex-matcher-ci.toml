@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter --ignore-case \"041A.a =~ 'algebra'\""
+status = "success"
+stderr = ""

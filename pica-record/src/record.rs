@@ -1,6 +1,6 @@
 use std::fmt::Display;
 use std::io::{self, Write};
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::slice::Iter;
 use std::str::Utf8Error;
 
@@ -13,7 +13,7 @@ use nom::Finish;
 
 use crate::field::{parse_field, RawField};
 use crate::parser::{ParseResult, LF};
-use crate::{Field, ParsePicaError};
+use crate::{Field, FieldRef, ParsePicaError};
 
 /// A PICA+ record.
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -80,6 +80,33 @@ impl<T: AsRef<[u8]>> Record<T> {
     /// ```
     pub fn iter(&self) -> Iter<Field<T>> {
         self.0.iter()
+    }
+
+    /// Retains only the fields specified by the predicate.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{RecordRef, TagRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut record = RecordRef::new(vec![
+    ///         ("003@", None, vec![('0', "123456789X")]),
+    ///         ("002@", None, vec![('0', "Oaf")]),
+    ///     ]);
+    ///
+    ///     record.retain(|field| field.tag() == &TagRef::new("003@"));
+    ///     assert_eq!(record.iter().len(), 1);
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn retain<F>(&mut self, f: F)
+    where
+        F: FnMut(&Field<T>) -> bool,
+    {
+        self.0.retain(f);
     }
 }
 
@@ -200,10 +227,14 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Record<T> {
     /// ```
     #[inline]
     pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
-        for field in self.iter() {
-            field.write_to(out)?;
+        if !self.is_empty() {
+            for field in self.iter() {
+                field.write_to(out)?;
+            }
+            writeln!(out)?;
         }
-        writeln!(out)
+
+        Ok(())
     }
 }
 
@@ -265,6 +296,33 @@ impl<'a> ByteRecord<'a> {
             None => self.record.write_to(out),
         }
     }
+
+    /// Retains only the fields specified by the predicate.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{ByteRecord, TagRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut record = ByteRecord::from_bytes(
+    ///         b"003@ \x1f0a\x1e002@ \x1f0Olfo\x1e\n",
+    ///     )?;
+    ///
+    ///     record.retain(|field| field.tag() == &TagRef::new("003@"));
+    ///     assert_eq!(record.iter().len(), 1);
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn retain<F>(&mut self, f: F)
+    where
+        F: FnMut(&FieldRef) -> bool,
+    {
+        self.record.retain(f);
+        self.raw_data = None;
+    }
 }
 
 impl<'a> Deref for ByteRecord<'a> {
@@ -273,6 +331,12 @@ impl<'a> Deref for ByteRecord<'a> {
     #[inline]
     fn deref(&self) -> &Self::Target {
         &self.record
+    }
+}
+
+impl<'a> DerefMut for ByteRecord<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.record
     }
 }
 

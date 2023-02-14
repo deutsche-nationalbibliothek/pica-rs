@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter -f filter.txt \"003@?\""
+status = "success"
+stderr = ""

@@ -31,7 +31,6 @@ const SUBFIELD_CODES: &str =
 fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
     alt((
         delimited(char('['), many1(parse_subfield_code), char(']')),
-        many1(parse_subfield_code),
         map(parse_subfield_code, |code| vec![code]),
         value(SUBFIELD_CODES.chars().collect(), char('*')),
     ))(i)
@@ -64,10 +63,10 @@ pub struct ExistsMatcher {
 ///
 /// ```txt
 /// exists-matcher ::= subfield-codes ws* '?'
-/// subfield-codes ::= subfield-code-list1 | subfield-code-list2 |
-///                    subfield-code-wildcard | subfield-code |
+/// subfield-codes ::= subfield-code-list1
+///                  | subfield-code-wildcard
+///                  | subfield-code
 /// subfield-code-list1 ::= '[' subfield-code+ ']'
-/// subfield-code-list2 ::= subfield-code+
 /// subfield-code-wildcard ::= '*'
 /// subfield-code ::= [A-Z] | [a-z] | [0-9]
 /// ```
@@ -766,7 +765,6 @@ fn parse_and_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
                 ws(parse_singleton_matcher),
                 SubfieldMatcher::Singleton,
             ),
-            // ws(parse_subfield_list_matcher_cardinality),
             ws(parse_not_matcher),
         )),
         many1(preceded(
@@ -777,7 +775,6 @@ fn parse_and_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
                     ws(parse_singleton_matcher),
                     SubfieldMatcher::Singleton,
                 ),
-                // ws(parse_subfield_list_matcher_cardinality),
                 ws(parse_not_matcher),
             )),
         )),
@@ -854,10 +851,6 @@ mod tests {
             vec!['1', '2']
         );
         assert_finished_and_eq!(
-            parse_subfield_codes(b"012"),
-            vec!['0', '1', '2']
-        );
-        assert_finished_and_eq!(
             parse_subfield_codes(b"*"),
             SUBFIELD_CODES.chars().collect::<Vec<char>>()
         );
@@ -873,14 +866,6 @@ mod tests {
             RelationMatcher {
                 codes: vec!['0'],
                 op: RelationalOp::Eq,
-                value: "abc".into()
-            }
-        );
-        assert_finished_and_eq!(
-            parse_relation_matcher(b"01 != 'abc'"),
-            RelationMatcher {
-                codes: vec!['0', '1'],
-                op: RelationalOp::Ne,
                 value: "abc".into()
             }
         );

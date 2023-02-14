@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "-c Pica.toml filter \"041@.a == 'Höhere Algebra'\""
+status = "success"
+stderr = ""

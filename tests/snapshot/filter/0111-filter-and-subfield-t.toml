@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"041P{ a? && (a == 'Algebra' && 2 == 'lcsh') && !z? }\""
+status = "success"
+stderr = ""

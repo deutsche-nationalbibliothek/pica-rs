@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter \"003@.0?\" -o out.dat math.dat.gz algebra.dat"
+status = "success"
+stderr = ""

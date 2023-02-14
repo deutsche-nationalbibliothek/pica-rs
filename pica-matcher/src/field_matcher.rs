@@ -114,7 +114,7 @@ fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
             alt((
                 map(
                     pair(
-                        opt(alt((char('.'), ws(char('$'))))),
+                        alt((char('.'), ws(char('$')))),
                         parse_subfield_singleton_matcher,
                     ),
                     |(_, matcher)| matcher,

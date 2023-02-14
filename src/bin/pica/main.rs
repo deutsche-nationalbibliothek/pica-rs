@@ -43,10 +43,7 @@ enum Commands {
 
     /// Generate shell completions (e.g. Bash, ZSH)
     Completions(Completions),
-
     Count(Count),
-
-    /// Filter records by whether the given query matches
     Filter(Filter),
     Frequency(Frequency),
     Invalid(Invalid),
@@ -113,6 +110,10 @@ fn main() {
         }
         Err(CliError::ParsePath(err)) => {
             eprintln!("Parse Path Error: {err}");
+            process::exit(1);
+        }
+        Err(CliError::ParseMatcher(err)) => {
+            eprintln!("Parse Matcher Error: {err}");
             process::exit(1);
         }
         Err(CliError::Pica(err)) => {
