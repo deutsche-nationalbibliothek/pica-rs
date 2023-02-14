@@ -7,7 +7,6 @@ use pica_matcher::{
     MatcherOptions, OccurrenceMatcher, ParseMatcherError,
     RecordMatcher, TagMatcher,
 };
-use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
@@ -91,8 +90,8 @@ pub(crate) struct Filter {
     #[arg(long, short)]
     gzip: bool,
 
-    /// Append to the given file, do not overwrite
-    #[arg(long)]
+    /// Append to the given file, do not overwrite.
+    #[arg(long, conflicts_with = "gzip")]
     append: bool,
 
     /// Write simultaneously to the file <filename> and stdout
@@ -210,22 +209,16 @@ impl Filter {
                         }
                     }
                     Ok(mut record) => {
-                        if !allow_list.is_empty() {
-                            if let Some(idn) = record.idn() {
-                                if !allow_list.contains(*idn) {
-                                    continue;
-                                }
-                            } else {
-                                continue;
-                            }
+                        if !allow_list.is_empty()
+                            && !allow_list.check(&record)
+                        {
+                            continue;
                         }
 
-                        if !deny_list.is_empty() {
-                            if let Some(idn) = record.idn() {
-                                if deny_list.contains(*idn) {
-                                    continue;
-                                }
-                            }
+                        if !deny_list.is_empty()
+                            && deny_list.check(&record)
+                        {
+                            continue;
                         }
 
                         let mut is_match =

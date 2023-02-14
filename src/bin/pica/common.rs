@@ -10,6 +10,8 @@ use arrow2::error::Result;
 use arrow2::io::ipc::read::{read_file_metadata, FileReader};
 use bstr::BString;
 use csv::ReaderBuilder;
+use pica_path::PathExt;
+use pica_record::ByteRecord;
 
 use crate::util::{CliError, CliResult};
 
@@ -104,5 +106,15 @@ impl FilterList {
         }
 
         Ok(Self(ids))
+    }
+
+    pub fn check(&self, record: &ByteRecord) -> bool {
+        if let Some(idn) = record.idn() {
+            if self.contains(*idn) {
+                return true;
+            }
+        }
+
+        false
     }
 }
