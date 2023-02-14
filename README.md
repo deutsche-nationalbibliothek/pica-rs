@@ -109,7 +109,9 @@ with parenthesis. Precedence of AND is higher than OR, so `A || B && C` is
 equivalent to `A || (B && C)`. Expressions are evaluated lazy from left to
 right so given `A || B` if `A` is true than `B` will not be evaluated.
 
-Option `--reduce` can be used to reduce records to a limited set of fields.
+Options `--keep` (`-k`) and `--discard` (`-d`) can be used to reduce
+records to a limited set of fields by a specified list of field- and
+occurence matcher.
 
 **Examples**
 
@@ -123,7 +125,10 @@ $ pica filter -s "010@.a not in ['ger', 'eng']" DUMP.dat
 $ pica filter -s "003@{0 == '123456789X'}" DUMP.dat
 $ pica filter -s "003@.0 == '123456789X'" DUMP.dat
 $ pica filter -s "002@.0 =^ 'Oa'" DUMP.dat
-$ pica filter -s "012[AB]/00?" --reduce "003@,012[AB]/00" DUMP.dat
+
+# reduce record to a limited set of fields
+$ pica filter -s "012[AB]/00?" --keep "003@,012[AB]/00" DUMP.dat
+$ pica filter -s "012[AB]/00?" --discard "2.../*" DUMP.dat
 ```
 
 ### Frequency
