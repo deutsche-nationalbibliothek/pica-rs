@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "partition \"002@.0\""
+status = "failed"
+stdout = ""
