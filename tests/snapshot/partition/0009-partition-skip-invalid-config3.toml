@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "-c Pica.toml partition \"002@.0\" dump.dat.gz"
+status = "success"
+stdout = ""
+stderr = ""

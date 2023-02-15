@@ -2,21 +2,20 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::create_dir;
-use std::io::{self, Read};
 use std::path::PathBuf;
 use std::str::FromStr;
 
 use bstr::ByteSlice;
 use clap::Parser;
-use pica::{self, PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica_path::{Path, PathExt};
+use pica_record::io::{
+    ByteRecordWrite, ReaderBuilder, RecordsIterator, WriterBuilder,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag, template_opt};
-
-// use crate::config::Config;
-// use crate::util::{CliArgs, CliResult, Command};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -31,17 +30,31 @@ pub(crate) struct PartitionConfig {
     pub(crate) template: Option<String>,
 }
 
+/// Partition records by subfield values
+///
+/// The files are written to the <outdir> directory with filenames
+/// based on the values of the subfield, which is referenced by the
+/// <PATH> expression.
+///
+/// If a record doesn't have the field/subfield, the record won't be
+/// writte to a partition. A record with multiple values will be written
+/// to each partition; thus the partitions may not be disjoint. In order
+/// to prevent duplicate records in a partition , all duplicate values
+/// of a record will be removed.
 #[derive(Parser, Debug)]
 pub(crate) struct Partition {
-    /// Skip invalid records that can't be decoded
-    #[arg(short, long)]
+    /// Skip invalid records that can't be decoded as normalized PICA+
+    #[arg(long, short)]
     skip_invalid: bool,
 
-    /// Compress output in gzip format
+    /// Compress each partition in gzip format
     #[arg(long, short)]
     gzip: bool,
 
-    /// Write partitions into <outdir> (default value ".")
+    /// Write partitions into <outdir>
+    ///
+    /// If the directory doesn't exists, it will be created
+    /// automatically.
     #[arg(long, short, value_name = "outdir", default_value = ".")]
     outdir: PathBuf,
 
@@ -49,16 +62,20 @@ pub(crate) struct Partition {
     #[arg(long, short, value_name = "template")]
     template: Option<String>,
 
-    /// PICA+ path expression (e.g. "002@.0")
+    /// A path expression (e.g. "002@.0")
     path: String,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format
+    ///
+    /// If no filenames where given or a filename is "-", data is read
+    /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
 
 impl Partition {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        let path = Path::from_str(&self.path)?;
         let gzip_compression = gzip_flag!(self.gzip, config.partition);
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,
@@ -80,55 +97,60 @@ impl Partition {
             create_dir(&self.outdir)?;
         }
 
-        let mut writers: HashMap<Vec<u8>, Box<dyn PicaWriter>> =
+        let mut writers: HashMap<Vec<u8>, Box<dyn ByteRecordWrite>> =
             HashMap::new();
-        let path = pica::Path::from_str(&self.path)?;
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.byte_records() {
-                let record = result?;
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        let mut values =
+                            record.path(&path, &Default::default());
+                        values.sort_unstable();
+                        values.dedup();
 
-                let mut values = record.path(&path);
-                values.sort_unstable();
-                values.dedup();
+                        for value in values {
+                            let mut entry = writers
+                                .entry(value.as_bytes().to_vec());
+                            let writer = match entry {
+                                Entry::Vacant(vacant) => {
+                                    let filename = filename_template
+                                        .replace(
+                                            "{}",
+                                            &value.to_str_lossy(),
+                                        );
 
-                for value in values {
-                    let mut entry =
-                        writers.entry(value.as_bytes().to_vec());
-                    let writer = match entry {
-                        Entry::Vacant(vacant) => {
-                            let value =
-                                String::from_utf8(value.to_vec())
-                                    .unwrap();
-                            let writer = WriterBuilder::new()
-                                .gzip(gzip_compression)
-                                .from_path(
-                                    self.outdir
-                                        .join(
-                                            filename_template
-                                                .replace("{}", &value),
-                                        )
+                                    let path = self
+                                        .outdir
+                                        .join(filename)
                                         .to_str()
-                                        .unwrap(),
-                                )?;
+                                        .unwrap()
+                                        .to_owned();
 
-                            vacant.insert(writer)
-                        }
-                        Entry::Occupied(ref mut occupied) => {
-                            occupied.get_mut()
-                        }
-                    };
+                                    let writer = WriterBuilder::new()
+                                        .gzip(gzip_compression)
+                                        .from_path(path)?;
 
-                    writer.write_byte_record(&record)?;
+                                    vacant.insert(writer)
+                                }
+                                Entry::Occupied(ref mut occupied) => {
+                                    occupied.get_mut()
+                                }
+                            };
+
+                            writer.write_byte_record(&record)?;
+                        }
+                    }
                 }
             }
         }

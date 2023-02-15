@@ -50,8 +50,6 @@ enum Commands {
 
     /// Serialize records to JSON
     Json(Json),
-
-    /// Partition a list of records by subfield value
     Partition(Partition),
 
     /// Print records in human readable format
