@@ -30,18 +30,31 @@ pub(crate) struct PartitionConfig {
     pub(crate) template: Option<String>,
 }
 
-/// Partition a list of records by subfield value
+/// Partition records by subfield values
+///
+/// The files are written to the <outdir> directory with filenames
+/// based on the values of the subfield, which is referenced by the
+/// <PATH> expression.
+///
+/// If a record doesn't have the field/subfield, the record won't be
+/// writte to a partition. A record with multiple values will be written
+/// to each partition; thus the partitions may not be disjoint. In order
+/// to prevent duplicate records in a partition , all duplicate values
+/// of a record will be removed.
 #[derive(Parser, Debug)]
 pub(crate) struct Partition {
     /// Skip invalid records that can't be decoded as normalized PICA+
     #[arg(long, short)]
     skip_invalid: bool,
 
-    /// Compress output in gzip format
+    /// Compress each partition in gzip format
     #[arg(long, short)]
     gzip: bool,
 
-    /// Write partitions into <outdir> (default value ".")
+    /// Write partitions into <outdir>
+    ///
+    /// If the directory doesn't exists, it will be created
+    /// automatically.
     #[arg(long, short, value_name = "outdir", default_value = ".")]
     outdir: PathBuf,
 
