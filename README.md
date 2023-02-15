@@ -174,9 +174,12 @@ can be used to extract these invalid lines only.
 
 ### Partition
 
-In order to split a list of records into chunks based on a subfield
-value use the `partition` command. Note that if the field and/or
-subfield is repeatable, the record will be written to all partitions.
+In order to split a list of records into chunks based on subfield
+values, use the `partition` command. Note that if the field and/or
+subfield is repeatable, the record will be written to all partitions
+(duplicate values will be removed), thus the resulting partitions may
+not be disjoint. Records that don't have the field/subfield, won't be
+written to a partition. 
 
 ```bash
 $ pica partition -s -o outdir "002@.0" DUMP.dat.gz
@@ -185,6 +188,21 @@ outdir
 ├── Aa.dat
 ├── Aal.dat
 ├── Aan.dat
+├── ...
+```
+
+The filename of each partition is based on the subfield value by
+default. In order to change the filename, use the `--template` (`-t`)
+option. Any occurence of the placeholder `{}` will be replaced by the
+value:
+
+```bash
+$ pica partition -s --template "BBG_{}.dat" -o outdir "002@.0" DUMP.dat.gz
+$ tree outdir/
+outdir
+├── BBG_Aa.dat
+├── BBG_Aal.dat
+├── BBG_Aan.dat
 ├── ...
 ```
 
