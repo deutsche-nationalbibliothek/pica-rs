@@ -1,20 +1,15 @@
+use std::ops::Deref;
 use std::str::FromStr;
 
-use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
-use nom::combinator::{all_consuming, map, opt};
-use nom::error::ParseError;
-use nom::multi::{many1, separated_list1};
-use nom::sequence::{delimited, pair, preceded, tuple};
-use nom::{Finish, IResult};
-use pica_matcher::parser::{
-    parse_occurrence_matcher, parse_tag_matcher,
-};
-use pica_matcher::subfield_matcher::parse_subfield_matcher;
-use pica_matcher::{
-    MatcherOptions, OccurrenceMatcher, SubfieldMatcher, TagMatcher,
-};
-use pica_record::parser::{parse_subfield_code, ParseResult};
+use nom::combinator::{all_consuming, map};
+use nom::multi::separated_list1;
+use nom::sequence::delimited;
+use nom::Finish;
+use pica_matcher::subfield_matcher::Matcher;
+use pica_path::{parse_path, Path};
+use pica_record::parser::ParseResult;
+use pica_record::Record;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -22,147 +17,7 @@ use thiserror::Error;
 pub struct ParseSelectorError(String);
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Selector {
-    tag_matcher: TagMatcher,
-    occurrence_matcher: OccurrenceMatcher,
-    subfield_matcher: Option<SubfieldMatcher>,
-    codes: Vec<char>,
-}
-
-impl Selector {
-    /// Create a new selector from a string slice.
-    ///
-    /// # Panics
-    ///
-    /// This methods panics on invalid selector expressions.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_select::Selector;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let _selector = Selector::new("003@.0");
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn new(data: &str) -> Self {
-        Self::from_str(data).expect("valid selector expression.")
-    }
-}
-
-impl FromStr for Selector {
-    type Err = ParseSelectorError;
-
-    /// Create a new selector from a string slice.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_select::Selector;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let _selector = "012A/*.[abc]"
-    ///         .parse::<Selector>()
-    ///         .expect("valid path expression");
-    ///     Ok(())
-    /// }
-    /// ```
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        all_consuming(parse_selector)(s.as_bytes())
-            .finish()
-            .map_err(|_| ParseSelectorError(s.into()))
-            .map(|(_, selector)| selector)
-    }
-}
-
-fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
-    preceded(
-        char('.'),
-        alt((
-            map(parse_subfield_code, |code| vec![code]),
-            delimited(char('['), many1(parse_subfield_code), char(']')),
-        )),
-    )(i)
-}
-
-fn parse_selector_simple(i: &[u8]) -> ParseResult<Selector> {
-    map(
-        delimited(
-            multispace0,
-            tuple((
-                parse_tag_matcher,
-                parse_occurrence_matcher,
-                parse_subfield_codes,
-            )),
-            multispace0,
-        ),
-        |(t, o, c)| Selector {
-            tag_matcher: t,
-            occurrence_matcher: o,
-            subfield_matcher: None,
-            codes: c,
-        },
-    )(i)
-}
-
-/// Strip whitespaces from the beginning and end.
-fn ws<'a, F: 'a, O, E: ParseError<&'a [u8]>>(
-    inner: F,
-) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
-where
-    F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
-{
-    delimited(multispace0, inner, multispace0)
-}
-
-fn parse_selector_predicate_inner(
-    i: &[u8],
-) -> ParseResult<(Vec<char>, Option<SubfieldMatcher>)> {
-    delimited(
-        ws(char('{')),
-        pair(
-            alt((
-                separated_list1(ws(char(',')), parse_subfield_code),
-                delimited(
-                    ws(char('(')),
-                    separated_list1(ws(char(',')), parse_subfield_code),
-                    ws(char(')')),
-                ),
-            )),
-            opt(preceded(ws(char('|')), parse_subfield_matcher)),
-        ),
-        ws(char('}')),
-    )(i)
-}
-fn parse_selector_predicate(i: &[u8]) -> ParseResult<Selector> {
-    map(
-        delimited(
-            multispace0,
-            tuple((
-                parse_tag_matcher,
-                parse_occurrence_matcher,
-                parse_selector_predicate_inner,
-            )),
-            multispace0,
-        ),
-        |(t, o, (c, m))| Selector {
-            tag_matcher: t,
-            occurrence_matcher: o,
-            subfield_matcher: m,
-            codes: c,
-        },
-    )(i)
-}
-
-fn parse_selector(i: &[u8]) -> ParseResult<Selector> {
-    alt((parse_selector_simple, parse_selector_predicate))(i)
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Query(Vec<Selector>);
+pub struct Query(Vec<Path>);
 
 #[derive(Debug, Error)]
 #[error("invalid query, got `{0}`")]
@@ -189,6 +44,14 @@ impl Query {
     /// ```
     pub fn new(data: &str) -> Self {
         Self::from_str(data).expect("valid query expression.")
+    }
+}
+
+impl Deref for Query {
+    type Target = Vec<Path>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -219,15 +82,93 @@ impl FromStr for Query {
 }
 
 fn parse_query(i: &[u8]) -> ParseResult<Query> {
-    map(separated_list1(ws(char(',')), parse_selector), |s| Query(s))(i)
+    map(
+        separated_list1(
+            delimited(multispace0, char(','), multispace0),
+            parse_path,
+        ),
+        |s| Query(s),
+    )(i)
 }
 
-pub trait SelectExt<T: AsRef<[u8]>> {
-    fn select(
-        &self,
-        query: &Query,
-        options: &MatcherOptions,
-    ) -> Vec<&T>;
+#[derive(Debug, PartialEq, Eq)]
+pub struct Outcome<T>(Vec<Vec<T>>);
+
+impl<T> From<Vec<T>> for Outcome<T> {
+    fn from(value: Vec<T>) -> Self {
+        Self(value.into_iter().map(|value| vec![value]).collect())
+    }
+}
+
+pub trait QueryExt<T> {
+    fn query(&self, query: &Query) -> Outcome<T>;
+}
+
+impl<T: AsRef<[u8]> + std::fmt::Debug> QueryExt<T> for Record<T> {
+    /// TODO
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::str::FromStr;
+    ///
+    /// use pica_record::RecordRef;
+    /// use pica_select::{Query, QueryExt};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let query =
+    ///         Query::from_str("003@.0, 012A{ (a,b) | a == 'abc' }")?;
+    ///     let record = RecordRef::from_bytes(
+    ///         b"003@ \x1f01234\x1e012A \x1faabc\x1e\n",
+    ///     )?;
+    ///
+    ///     record.query(&query);
+    ///     Ok(())
+    /// }
+    /// ```
+    fn query(&self, query: &Query) -> Outcome<T> {
+        let options = Default::default();
+
+        for path in query.iter() {
+            eprintln!("===> path = {:?}", path);
+
+            let _result = self
+                .iter()
+                .filter(|field| {
+                    path.tag_matcher().is_match(field.tag())
+                        && *path.occurrence_matcher()
+                            == field.occurrence()
+                })
+                .filter(|field| {
+                    if let Some(m) = path.subfield_matcher() {
+                        m.is_match(field.subfields(), &options)
+                    } else {
+                        true
+                    }
+                })
+                .map(|field| {
+                    path.codes()
+                        .iter()
+                        .map(|code| {
+                            field
+                                .subfields()
+                                .iter()
+                                .filter(|subfield| {
+                                    subfield.code() == *code
+                                })
+                                .map(|subfield| subfield.value())
+                                .collect::<Vec<_>>()
+                        })
+                        .map(|values| Outcome::from(values))
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>();
+            eprintln!("result = {:?}", _result);
+        }
+
+        todo!()
+    }
 }
 
 #[cfg(test)]
@@ -237,98 +178,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_selector() -> anyhow::Result<()> {
+    fn test_parse_query() -> anyhow::Result<()> {
         assert_finished_and_eq!(
-            parse_selector(b"012A/*.a"),
-            Selector {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                subfield_matcher: None,
-                codes: vec!['a']
-            }
+            parse_query(b"003@.0,012A/*.a"),
+            Query(vec![Path::new("003@.0"), Path::new("012A/*.a")])
         );
 
         assert_finished_and_eq!(
-            parse_selector(b"012A/*{b, c | a?}"),
-            Selector {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec!['b', 'c']
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_selector(b"012A/*{ b, c }"),
-            Selector {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                subfield_matcher: None,
-                codes: vec!['b', 'c']
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_selector(b"012A/*{ (b, c) | a?}"),
-            Selector {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec!['b', 'c']
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_selector(b"012A/*{ (b, c) }"),
-            Selector {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                subfield_matcher: None,
-                codes: vec!['b', 'c']
-            }
+            parse_query(b"003@.0, 012A/*{b, c | a?}"),
+            Query(vec![
+                Path::new("003@.0"),
+                Path::new("012A/*{b,c |a?}"),
+            ])
         );
 
         Ok(())
     }
 
     #[test]
-    fn test_parse_query() -> anyhow::Result<()> {
-        assert_finished_and_eq!(
-            parse_query(b"003@.0, 012A/*.a"),
-            Query(vec![
-                Selector {
-                    tag_matcher: TagMatcher::new("003@")?,
-                    occurrence_matcher: OccurrenceMatcher::None,
-                    subfield_matcher: None,
-                    codes: vec!['0']
-                },
-                Selector {
-                    tag_matcher: TagMatcher::new("012A")?,
-                    occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                    subfield_matcher: None,
-                    codes: vec!['a']
-                },
-            ])
+    fn test_outcome_from_vec() -> anyhow::Result<()> {
+        eprintln!(
+            "data = {:?}",
+            Outcome::from(vec![vec!["abc", "def"]])
         );
 
-        assert_finished_and_eq!(
-            parse_query(b"003@.0, 012A/*{b, c | a?}"),
-            Query(vec![
-                Selector {
-                    tag_matcher: TagMatcher::new("003@")?,
-                    occurrence_matcher: OccurrenceMatcher::None,
-                    subfield_matcher: None,
-                    codes: vec!['0']
-                },
-                Selector {
-                    tag_matcher: TagMatcher::new("012A")?,
-                    occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                    subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                    codes: vec!['b', 'c']
-                }
-            ])
-        );
-
+        assert!(false);
         Ok(())
     }
 }
