@@ -34,7 +34,7 @@ build this project from source Rust 1.58.1 or newer is required.
 To install the latest stable release:
 
 ```bash
-$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.14.1 pica
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.15.0 pica
 ```
 
 ## Commands
@@ -179,7 +179,7 @@ values, use the `partition` command. Note that if the field and/or
 subfield is repeatable, the record will be written to all partitions
 (duplicate values will be removed), thus the resulting partitions may
 not be disjoint. Records that don't have the field/subfield, won't be
-written to a partition. 
+written to a partition.
 
 ```bash
 $ pica partition -s -o outdir "002@.0" DUMP.dat.gz

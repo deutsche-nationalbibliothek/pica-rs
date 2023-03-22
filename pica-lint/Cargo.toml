@@ -19,5 +19,5 @@ sophia = "0.7"
 toml = "0.7"
 
 pica-matcher = { version = "0.1", path = "../pica-matcher", features = ["serde"] }
-pica-path = { version = "0.1", path = "../pica-path", features = ["serde"] }
+pica-path = { version = "0.2", path = "../pica-path", features = ["serde"] }
 pica-record = { version = "0.1", path = "../pica-record" }

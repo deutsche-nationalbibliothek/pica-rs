@@ -1,6 +1,6 @@
 [package]
 name = "pica"
-version = "0.14.1"
+version = "0.15.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "MIT OR Unlicense"
@@ -13,7 +13,7 @@ bstr = "1.0"
 clap = { version = "4.0", features = ["cargo", "derive", "wrap_help"] }
 clap_complete = "4.0"
 csv = "1.1"
-directories = "4.0"
+directories = "5.0"
 flate2 = "1.0"
 nom = "7.1"
 rand = "0.8"
@@ -27,12 +27,12 @@ unicode-normalization = "0.1"
 xml-rs = "0.8"
 
 pica-matcher = { version = "0.1", path = "pica-matcher" }
-pica-path = { version = "0.1", path = "pica-path" }
+pica-path = { version = "0.2", path = "pica-path" }
 pica-record = { version = "0.1", path = "pica-record" }
 
 [dev-dependencies]
 assert_cmd = "2.0"
-predicates = "2.1"
+predicates = "3.0"
 quickcheck = "1.0"
 quickcheck_macros = "1.0"
 tempfile = "3.2"
