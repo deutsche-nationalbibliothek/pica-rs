@@ -7,12 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* #572 Rephrase misleading documentation (`invalid`)
-* #590 Stabilize `slice` command
-* #592 Transliteration of matcher expressions
+## 0.15.0
+
+### Added
+
 * #564 Add `--seed` option to `sample` command
+* #592 Transliteration of matcher expressions
+
+### Changed
+
+* #590 Stabilize `slice` command
 * #594 Stabilize `split` command
 * #595 Stabilize `filter` command
+* #598 Stabilize `partition` command
+* #601 Deprecate `--reduce` option
 
 ## 0.14.1
 

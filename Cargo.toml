@@ -1,6 +1,6 @@
 [package]
 name = "pica"
-version = "0.14.1"
+version = "0.15.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "MIT OR Unlicense"
@@ -27,7 +27,7 @@ unicode-normalization = "0.1"
 xml-rs = "0.8"
 
 pica-matcher = { version = "0.1", path = "pica-matcher" }
-pica-path = { version = "0.1", path = "pica-path" }
+pica-path = { version = "0.2", path = "pica-path" }
 pica-record = { version = "0.1", path = "pica-record" }
 
 [dev-dependencies]
