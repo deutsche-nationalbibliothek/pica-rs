@@ -79,9 +79,9 @@ jobs:
           mkdir "$staging"
           cp README.md LICENSE UNLICENSE "$staging/"
           cp "target/release/pica" "$staging/"
-          ./target/release/pica completions bash > "$stating/pica.bash"
-          ./target/release/pica completions zsh > "$stating/pica.zsh"
-          ./target/release/pica completions fish > "$stating/pica.fish"
+          ./target/release/pica completions bash > "$staging/pica.bash"
+          ./target/release/pica completions fish > "$staging/pica.fish"
+          ./target/release/pica completions zsh > "$staging/pica.zsh"
           # cp "target/release/pica-lint" "$staging/"
           tar cfvz "$staging.tar.gz" "$staging/"
           echo "filename=$staging.tar.gz" >> $GITHUB_OUTPUT
