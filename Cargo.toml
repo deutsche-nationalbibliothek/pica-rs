@@ -7,7 +7,7 @@ license = "MIT OR Unlicense"
 default-run = "pica"
 
 [dependencies]
-arrow2 = { version = "0.16", features = ["io_ipc", "io_ipc_compression"] }
+arrow2 = { version = "0.17", features = ["io_ipc", "io_ipc_compression"] }
 atty = "0.2"
 bstr = "1.0"
 clap = { version = "4.0", features = ["cargo", "derive", "wrap_help"] }
