@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* #605 Fix false positives of `=~` and `!~` operator
+* #605 Fix false positives of `!~` operator
 
 ## [0.15.0] - 2023-03-23
 
