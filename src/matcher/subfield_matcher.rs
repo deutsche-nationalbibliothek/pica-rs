@@ -195,19 +195,21 @@ impl SubfieldMatcher {
             }
             Self::Comparison(_, _, _) => unreachable!(),
             Self::Regex(codes, regex, invert) => {
-                let re = RegexBuilder::new(regex)
-                    .case_insensitive(flags.ignore_case)
-                    .build()
-                    .unwrap();
+                if codes.contains(&subfield.code()) {
+                    let re = RegexBuilder::new(regex)
+                        .case_insensitive(flags.ignore_case)
+                        .build()
+                        .unwrap();
 
-                let mut result = codes.contains(&subfield.code())
-                    && re.is_match(subfield.value());
+                    let mut result = re.is_match(subfield.value());
+                    if *invert {
+                        result = !result;
+                    }
 
-                if *invert {
-                    result = !result;
+                    result
+                } else {
+                    false
                 }
-
-                result
             }
             Self::In(codes, values, invert) => {
                 if !codes.contains(&subfield.code()) {
