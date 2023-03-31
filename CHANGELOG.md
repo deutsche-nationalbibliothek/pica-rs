@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1] - 2023-03-31
+
+### Fixed
+
+* #605 Fix false positives of `!~` operator
+
 ## [0.15.0] - 2023-03-23
 
 ### Added
