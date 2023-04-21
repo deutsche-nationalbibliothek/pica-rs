@@ -7,10 +7,12 @@ use pica_record::io::{
 use serde::{Deserialize, Serialize};
 
 use self::plain::PlainWriter;
+use self::xml::XmlWriter;
 use crate::util::CliError;
 use crate::{skip_invalid_flag, CliResult, Config};
 
 mod plain;
+mod xml;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -23,6 +25,7 @@ pub(crate) struct ConvertConfig {
 enum Format {
     Plus,
     Plain,
+    Xml,
 }
 
 /// Convert PICA+ into other formats.
@@ -75,6 +78,9 @@ impl Convert {
             match (self.from, self.to) {
                 (_, Format::Plain) => {
                     Box::new(PlainWriter::new(self.output)?)
+                }
+                (_, Format::Xml) => {
+                    Box::new(XmlWriter::new(self.output)?)
                 }
                 (from, to) => {
                     return Err(CliError::Other(format!(

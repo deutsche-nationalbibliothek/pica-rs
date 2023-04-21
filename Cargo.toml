@@ -16,6 +16,7 @@ csv = "1.1"
 directories = "5.0"
 flate2 = "1.0"
 nom = "7.1"
+quick-xml = "0.28"
 rand = "0.8"
 regex = "1.5"
 serde = { version = "1.0", features = ["derive"] }
