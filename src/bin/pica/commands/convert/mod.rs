@@ -1,3 +1,4 @@
+mod binary;
 mod json;
 mod plain;
 mod xml;
@@ -10,6 +11,7 @@ use pica_record::io::{
 };
 use serde::{Deserialize, Serialize};
 
+use self::binary::BinaryWriter;
 use self::json::JsonWriter;
 use self::plain::PlainWriter;
 use self::xml::XmlWriter;
@@ -25,6 +27,7 @@ pub(crate) struct ConvertConfig {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 enum Format {
+    Binary,
     Json,
     Plain,
     Plus,
@@ -79,6 +82,9 @@ impl Convert {
 
         let mut writer: Box<dyn ByteRecordWrite> =
             match (self.from, self.to) {
+                (_, Format::Binary) => {
+                    Box::new(BinaryWriter::new(self.output)?)
+                }
                 (_, Format::Json) => {
                     Box::new(JsonWriter::new(self.output)?)
                 }
