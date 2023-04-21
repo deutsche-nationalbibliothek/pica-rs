@@ -34,15 +34,17 @@ impl ByteRecordWrite for PlainWriter {
                 occurrence.write_to(&mut self.writer)?;
             }
 
-            self.writer.write(&[b' '])?;
+            self.writer.write_all(&[b' '])?;
 
             for subfield in field.subfields() {
-                self.writer.write(&[b'$', subfield.code() as u8])?;
                 self.writer
-                    .write(&subfield.value().replace(b"$", b"$$"))?;
+                    .write_all(&[b'$', subfield.code() as u8])?;
+                self.writer.write_all(
+                    &subfield.value().replace(b"$", b"$$"),
+                )?;
             }
 
-            self.writer.write(&[b'\n'])?;
+            self.writer.write_all(&[b'\n'])?;
         }
 
         Ok(())
