@@ -18,7 +18,7 @@ impl XmlWriter {
     pub(crate) fn new(output: Option<OsString>) -> io::Result<Self> {
         let inner: BufWriter<Box<dyn Write>> =
             if let Some(filename) = output {
-                BufWriter::new(Box::new(File::open(filename)?))
+                BufWriter::new(Box::new(File::create(filename)?))
             } else {
                 BufWriter::new(Box::new(stdout()))
             };

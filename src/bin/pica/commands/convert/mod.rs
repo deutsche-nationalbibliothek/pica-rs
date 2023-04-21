@@ -1,3 +1,7 @@
+mod json;
+mod plain;
+mod xml;
+
 use std::ffi::OsString;
 
 use clap::{Parser, ValueEnum};
@@ -6,13 +10,11 @@ use pica_record::io::{
 };
 use serde::{Deserialize, Serialize};
 
+use self::json::JsonWriter;
 use self::plain::PlainWriter;
 use self::xml::XmlWriter;
 use crate::util::CliError;
 use crate::{skip_invalid_flag, CliResult, Config};
-
-mod plain;
-mod xml;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -23,8 +25,9 @@ pub(crate) struct ConvertConfig {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 enum Format {
-    Plus,
+    Json,
     Plain,
+    Plus,
     Xml,
 }
 
@@ -76,6 +79,9 @@ impl Convert {
 
         let mut writer: Box<dyn ByteRecordWrite> =
             match (self.from, self.to) {
+                (_, Format::Json) => {
+                    Box::new(JsonWriter::new(self.output)?)
+                }
                 (_, Format::Plain) => {
                     Box::new(PlainWriter::new(self.output)?)
                 }
