@@ -1,4 +1,5 @@
 mod binary;
+mod import;
 mod json;
 mod plain;
 mod xml;
@@ -12,6 +13,7 @@ use pica_record::io::{
 use serde::{Deserialize, Serialize};
 
 use self::binary::BinaryWriter;
+use self::import::ImportWriter;
 use self::json::JsonWriter;
 use self::plain::PlainWriter;
 use self::xml::XmlWriter;
@@ -28,6 +30,7 @@ pub(crate) struct ConvertConfig {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 enum Format {
     Binary,
+    Import,
     Json,
     Plain,
     Plus,
@@ -84,6 +87,9 @@ impl Convert {
             match (self.from, self.to) {
                 (_, Format::Binary) => {
                     Box::new(BinaryWriter::new(self.output)?)
+                }
+                (_, Format::Import) => {
+                    Box::new(ImportWriter::new(self.output)?)
                 }
                 (_, Format::Json) => {
                     Box::new(JsonWriter::new(self.output)?)
