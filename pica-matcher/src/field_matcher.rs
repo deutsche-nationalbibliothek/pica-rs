@@ -220,6 +220,14 @@ fn parse_singleton_matcher(i: &[u8]) -> ParseResult<SingletonMatcher> {
     ))(i)
 }
 
+/// Parse a singleton matcher expression (curly bracket notation).
+#[inline]
+fn parse_singleton_matcher_bracket(
+    i: &[u8],
+) -> ParseResult<SingletonMatcher> {
+    map(parse_subfields_matcher_bracket, SingletonMatcher::Subfields)(i)
+}
+
 impl SingletonMatcher {
     /// Create a new singleton matcher from a string slice.
     ///
@@ -482,6 +490,14 @@ fn parse_field_matcher_singleton(
     map(parse_singleton_matcher, FieldMatcher::Singleton)(i)
 }
 
+/// Parse field matcher expression (curly bracket notation).
+#[inline]
+fn parse_field_matcher_singleton_bracket(
+    i: &[u8],
+) -> ParseResult<FieldMatcher> {
+    map(parse_singleton_matcher_bracket, FieldMatcher::Singleton)(i)
+}
+
 /// Parse field matcher exists expression.
 #[inline]
 fn parse_field_matcher_exists(i: &[u8]) -> ParseResult<FieldMatcher> {
@@ -550,6 +566,7 @@ fn parse_field_matcher_not(i: &[u8]) -> ParseResult<FieldMatcher> {
             ws(char('!')),
             cut(alt((
                 parse_field_matcher_group,
+                parse_field_matcher_singleton_bracket,
                 parse_field_matcher_exists,
                 parse_field_matcher_not,
             ))),
