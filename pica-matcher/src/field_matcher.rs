@@ -105,28 +105,18 @@ pub struct SubfieldsMatcher {
     subfield_matcher: SubfieldMatcher,
 }
 
-/// Parse a exists matcher expression.
-fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+/// Parse a subfields matcher expression.
+fn parse_subfields_matcher_dot(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
     map(
         tuple((
             parse_tag_matcher,
             parse_occurrence_matcher,
-            alt((
-                map(
-                    pair(
-                        alt((char('.'), ws(char('$')))),
-                        parse_subfield_singleton_matcher,
-                    ),
-                    |(_, matcher)| matcher,
-                ),
-                preceded(
-                    ws(char('{')),
-                    cut(terminated(
-                        parse_subfield_matcher,
-                        ws(char('}')),
-                    )),
-                ),
-            )),
+            preceded(
+                alt((char('.'), ws(char('$')))),
+                parse_subfield_singleton_matcher,
+            ),
         )),
         |(t, o, s)| SubfieldsMatcher {
             tag_matcher: t,
@@ -134,6 +124,32 @@ fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
             subfield_matcher: s,
         },
     )(i)
+}
+
+fn parse_subfields_matcher_bracket(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
+    map(
+        tuple((
+            parse_tag_matcher,
+            parse_occurrence_matcher,
+            preceded(
+                ws(char('{')),
+                cut(terminated(parse_subfield_matcher, ws(char('}')))),
+            ),
+        )),
+        |(t, o, s)| SubfieldsMatcher {
+            tag_matcher: t,
+            occurrence_matcher: o,
+            subfield_matcher: s,
+        },
+    )(i)
+}
+
+fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+    alt((parse_subfields_matcher_dot, parse_subfields_matcher_bracket))(
+        i,
+    )
 }
 
 impl SubfieldsMatcher {
