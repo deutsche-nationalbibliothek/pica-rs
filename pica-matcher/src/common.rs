@@ -83,30 +83,10 @@ pub(crate) fn parse_relational_op_usize(
     ))(i)
 }
 
-/// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
-fn parse_escaped_char(i: &[u8]) -> ParseResult<char> {
-    preceded(
-        char('\\'),
-        alt((
-            // parse_unicode,
-            value('\n', char('n')),
-            value('\r', char('r')),
-            value('\t', char('t')),
-            value('\u{08}', char('b')),
-            value('\u{0C}', char('f')),
-            value('\\', char('\\')),
-            value('/', char('/')),
-            value('"', char('"')),
-        )),
-    )(i)
-}
-
-/// Parse a non-empty block of text that doesn't include \ or ".
-fn parse_literal(i: &[u8]) -> ParseResult<&str> {
-    map_res(
-        verify(is_not("\'\\"), |s: &[u8]| !s.is_empty()),
-        std::str::from_utf8,
-    )(i)
+#[derive(Debug, Copy, Clone)]
+enum Quotes {
+    Single,
+    Double,
 }
 
 #[derive(Debug, Clone)]
@@ -116,23 +96,75 @@ enum StringFragment<'a> {
     EscapedWs,
 }
 
-/// Combine parse_literal, parse_escaped_char into a StringFragment.
-fn parse_fragment(i: &[u8]) -> ParseResult<StringFragment> {
-    alt((
-        map(parse_literal, StringFragment::Literal),
-        map(parse_escaped_char, StringFragment::EscapedChar),
-        value(
-            StringFragment::EscapedWs,
-            preceded(char('\\'), multispace1),
-        ),
-    ))(i)
+/// Parse a non-empty block of text that doesn't include \ or ".
+fn parse_literal(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<&str> {
+    move |i: &[u8]| {
+        let arr = match quotes {
+            Quotes::Single => "\'\\",
+            Quotes::Double => "\"\\",
+        };
+
+        map_res(
+            verify(is_not(arr), |s: &[u8]| !s.is_empty()),
+            std::str::from_utf8,
+        )(i)
+    }
 }
 
-pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
-    delimited(
-        char('\''),
+/// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
+fn parse_escaped_char(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<char> {
+    move |i: &[u8]| {
+        let val = match quotes {
+            Quotes::Single => '"',
+            Quotes::Double => '\'',
+        };
+
+        preceded(
+            char('\\'),
+            alt((
+                // parse_unicode,
+                value('\n', char('n')),
+                value('\r', char('r')),
+                value('\t', char('t')),
+                value('\u{08}', char('b')),
+                value('\u{0C}', char('f')),
+                value('\\', char('\\')),
+                value('/', char('/')),
+                value(val, char(val)),
+            )),
+        )(i)
+    }
+}
+
+/// Combine parse_literal, parse_escaped_char into a StringFragment.
+fn parse_fragment(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<StringFragment> {
+    move |i: &[u8]| {
+        alt((
+            map(parse_literal(quotes), StringFragment::Literal),
+            map(
+                parse_escaped_char(quotes),
+                StringFragment::EscapedChar,
+            ),
+            value(
+                StringFragment::EscapedWs,
+                preceded(char('\\'), multispace1),
+            ),
+        ))(i)
+    }
+}
+
+fn parse_string_inner(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<String> {
+    move |i: &[u8]| {
         fold_many0(
-            parse_fragment,
+            parse_fragment(quotes),
             String::new,
             |mut string, fragment| {
                 match fragment {
@@ -142,9 +174,26 @@ pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
                 }
                 string
             },
-        ),
+        )(i)
+    }
+}
+
+fn parse_string_single_quoted(i: &[u8]) -> ParseResult<String> {
+    delimited(
+        char('\''),
+        parse_string_inner(Quotes::Single),
         char('\''),
     )(i)
+}
+
+fn parse_string_double_quoted(i: &[u8]) -> ParseResult<String> {
+    delimited(char('"'), parse_string_inner(Quotes::Double), char('"'))(
+        i,
+    )
+}
+
+pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
+    alt((parse_string_single_quoted, parse_string_double_quoted))(i)
 }
 
 #[cfg(test)]
@@ -209,5 +258,13 @@ mod tests {
     fn test_parse_string() {
         assert_done_and_eq!(parse_string(b"'abc'"), "abc".to_string());
         assert_done_and_eq!(parse_string(b"'\tc'"), "\tc".to_string());
+        assert_done_and_eq!(
+            parse_string(b"\"abc\""),
+            "abc".to_string()
+        );
+        assert_done_and_eq!(
+            parse_string(b"\"\tc\""),
+            "\tc".to_string()
+        );
     }
 }
