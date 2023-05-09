@@ -1,10 +1,8 @@
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{self, stdin, stdout, BufReader, BufWriter, Read, Write};
+use std::io::{self, stdout, BufWriter, Write};
 
-use pica_record::io::{
-    ByteRecordWrite, ReadPicaError, RecordsIterator,
-};
+use pica_record::io::ByteRecordWrite;
 use pica_record::ByteRecord;
 
 pub(crate) struct BinaryWriter {
@@ -21,31 +19,6 @@ impl BinaryWriter {
             };
 
         Ok(Self { writer })
-    }
-}
-
-pub(crate) struct BinaryReader {
-    inner: BufReader<Box<dyn Read>>,
-}
-
-impl BinaryReader {
-    pub(crate) fn new(input: Option<OsString>) -> io::Result<Self> {
-        let inner: BufReader<Box<dyn Read>> =
-            if let Some(filename) = input {
-                BufReader::new(Box::new(File::open(filename)?))
-            } else {
-                BufReader::new(Box::new(stdin()))
-            };
-
-        Ok(Self { inner })
-    }
-}
-
-impl RecordsIterator for BinaryReader {
-    type Item<'a> = Result<ByteRecord<'a>, ReadPicaError> where Self: 'a;
-
-    fn next(&mut self) -> Option<Self::Item<'_>> {
-        todo!()
     }
 }
 
