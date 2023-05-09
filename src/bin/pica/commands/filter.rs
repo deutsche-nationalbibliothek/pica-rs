@@ -48,18 +48,6 @@ pub(crate) struct Filter {
     #[arg(long, short)]
     keep: Option<String>,
 
-    /// Reduce the record to fields which are specified in <REDUCE>
-    ///
-    /// Warning: This option is depricated, please use `--keep` or `-k`
-    /// instead.
-    #[arg(
-        long,
-        short = 'R',
-        default_value = "",
-        conflicts_with = "keep"
-    )]
-    reduce: String,
-
     /// Discard fields specified by a list of predicates.
     #[arg(long, short)]
     discard: Option<String>,
@@ -175,16 +163,8 @@ impl Filter {
 
         let discard_predicates =
             parse_predicates(&self.discard.unwrap_or_default())?;
-        let keep_predicates = if self.reduce.is_empty() {
-            parse_predicates(&self.keep.unwrap_or_default())?
-        } else {
-            eprintln!(
-                "WARNING: Option `--reduce` (`-R`) is depricated. \
-                      Use option `--keep` (`-k`) instead."
-            );
-
-            parse_predicates(&self.reduce)?
-        };
+        let keep_predicates =
+            parse_predicates(&self.keep.unwrap_or_default())?;
 
         let filter_str = if let Some(filename) = self.expr_file {
             read_to_string(filename).unwrap()
