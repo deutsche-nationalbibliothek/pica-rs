@@ -105,28 +105,18 @@ pub struct SubfieldsMatcher {
     subfield_matcher: SubfieldMatcher,
 }
 
-/// Parse a exists matcher expression.
-fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+/// Parse a subfields matcher expression.
+fn parse_subfields_matcher_dot(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
     map(
         tuple((
             parse_tag_matcher,
             parse_occurrence_matcher,
-            alt((
-                map(
-                    pair(
-                        alt((char('.'), ws(char('$')))),
-                        parse_subfield_singleton_matcher,
-                    ),
-                    |(_, matcher)| matcher,
-                ),
-                preceded(
-                    ws(char('{')),
-                    cut(terminated(
-                        parse_subfield_matcher,
-                        ws(char('}')),
-                    )),
-                ),
-            )),
+            preceded(
+                alt((char('.'), ws(char('$')))),
+                parse_subfield_singleton_matcher,
+            ),
         )),
         |(t, o, s)| SubfieldsMatcher {
             tag_matcher: t,
@@ -134,6 +124,32 @@ fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
             subfield_matcher: s,
         },
     )(i)
+}
+
+fn parse_subfields_matcher_bracket(
+    i: &[u8],
+) -> ParseResult<SubfieldsMatcher> {
+    map(
+        tuple((
+            parse_tag_matcher,
+            parse_occurrence_matcher,
+            preceded(
+                ws(char('{')),
+                cut(terminated(parse_subfield_matcher, ws(char('}')))),
+            ),
+        )),
+        |(t, o, s)| SubfieldsMatcher {
+            tag_matcher: t,
+            occurrence_matcher: o,
+            subfield_matcher: s,
+        },
+    )(i)
+}
+
+fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
+    alt((parse_subfields_matcher_dot, parse_subfields_matcher_bracket))(
+        i,
+    )
 }
 
 impl SubfieldsMatcher {
@@ -202,6 +218,14 @@ fn parse_singleton_matcher(i: &[u8]) -> ParseResult<SingletonMatcher> {
         map(parse_exists_matcher, SingletonMatcher::Exists),
         map(parse_subfields_matcher, SingletonMatcher::Subfields),
     ))(i)
+}
+
+/// Parse a singleton matcher expression (curly bracket notation).
+#[inline]
+fn parse_singleton_matcher_bracket(
+    i: &[u8],
+) -> ParseResult<SingletonMatcher> {
+    map(parse_subfields_matcher_bracket, SingletonMatcher::Subfields)(i)
 }
 
 impl SingletonMatcher {
@@ -466,6 +490,14 @@ fn parse_field_matcher_singleton(
     map(parse_singleton_matcher, FieldMatcher::Singleton)(i)
 }
 
+/// Parse field matcher expression (curly bracket notation).
+#[inline]
+fn parse_field_matcher_singleton_bracket(
+    i: &[u8],
+) -> ParseResult<FieldMatcher> {
+    map(parse_singleton_matcher_bracket, FieldMatcher::Singleton)(i)
+}
+
 /// Parse field matcher exists expression.
 #[inline]
 fn parse_field_matcher_exists(i: &[u8]) -> ParseResult<FieldMatcher> {
@@ -534,6 +566,7 @@ fn parse_field_matcher_not(i: &[u8]) -> ParseResult<FieldMatcher> {
             ws(char('!')),
             cut(alt((
                 parse_field_matcher_group,
+                parse_field_matcher_singleton_bracket,
                 parse_field_matcher_exists,
                 parse_field_matcher_not,
             ))),
