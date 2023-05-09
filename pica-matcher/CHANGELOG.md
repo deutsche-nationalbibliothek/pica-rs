@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * #611 Allow negation of a field matcher in curly bracket notation
+* #612 Support of double quoted string literals
 
 ## v0.1.0
 
