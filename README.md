@@ -39,22 +39,22 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 
 ## Commands
 
-| Command                 | Stability | Desciption                                                        |
-|-------------------------|-----------|-------------------------------------------------------------------|
-| [cat](#cat)             | stable    | concatenate records from multiple files                           |
-| completions             | stable    | generate a completions file for bash, fish or zsh                 |
-| [count](#count)         | stable    | count records, fields and subfields                               |
-| [filter](#filter)       | stable    | filter records by query expressions                               |
-| [frequency](#frequency) | stable    | compute a frequency table of a subfield                           |
-| [invalid](#invalid)     | stable    | write input lines, which can't be decoded as normalized PICA+     |
-| [partition](#partition) | stable    | partition a list of records based on subfield values              |
-| [print](#print)         | beta      | print records in human readable format                            |
-| [sample](#sample)       | beta      | selects a random permutation of records                           |
-| [select](#select)       | beta      | select subfield values from records                               |
-| [slice](#slice)         | stable    | return records withing a range (half-open interval)               |
-| [split](#split)         | stable    | split a list of records into chunks                               |
-| [json](#json)           | beta      | serialize records in JSON                                         |
-| [xml](#xml)             | unstable  | serialize records into [PICA XML](https://format.gbv.de/pica/xml) |
+| Command                 | Stability  | Desciption                                                        |
+|-------------------------|------------|-------------------------------------------------------------------|
+| [cat](#cat)             | stable     | concatenate records from multiple files                           |
+| completions             | stable     | generate a completions file for bash, fish or zsh                 |
+| [count](#count)         | stable     | count records, fields and subfields                               |
+| [filter](#filter)       | stable     | filter records by query expressions                               |
+| [frequency](#frequency) | stable     | compute a frequency table of a subfield                           |
+| [invalid](#invalid)     | stable     | write input lines, which can't be decoded as normalized PICA+     |
+| [partition](#partition) | stable     | partition a list of records based on subfield values              |
+| [print](#print)         | beta       | print records in human readable format                            |
+| [sample](#sample)       | beta       | selects a random permutation of records                           |
+| [select](#select)       | beta       | select subfield values from records                               |
+| [slice](#slice)         | stable     | return records withing a range (half-open interval)               |
+| [split](#split)         | stable     | split a list of records into chunks                               |
+| [json](#json)           | depricated | serialize records in JSON                                         |
+| [xml](#xml)             | depricated | serialize records into [PICA XML](https://format.gbv.de/pica/xml) |
 
 ## Usage
 

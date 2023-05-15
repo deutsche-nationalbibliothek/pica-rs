@@ -42,6 +42,11 @@ pub(crate) struct Json {
 
 impl Json {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        eprintln!(
+            "WARNING: The `json` command will be removed in version 0.17, \
+                please use the `convert` command instead."
+        );
+
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,
             config.json,
