@@ -43,6 +43,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 |-------------------------|------------|-------------------------------------------------------------------|
 | [cat](#cat)             | stable     | concatenate records from multiple files                           |
 | completions             | stable     | generate a completions file for bash, fish or zsh                 |
+| [convert](#convert)     | unstable   | convert PICA+ into other formats (Plain, JSON, XML, etc.)         |
 | [count](#count)         | stable     | count records, fields and subfields                               |
 | [filter](#filter)       | stable     | filter records by query expressions                               |
 | [frequency](#frequency) | stable     | compute a frequency table of a subfield                           |
@@ -67,6 +68,28 @@ Multiple pica dumps can be concatenated to a single stream of records:
 
 ```bash
 $ pica cat -s -o DUMP12.dat DUMP1.dat DUMP2.dat.gz
+```
+
+### Convert
+
+The `convert` command can be used to convert PICA+ to the following
+formats:
+
+* Binary PICA (`binary`)
+* PICA Import format (`import`)
+* PICA JSON (`json`)
+* Humand-readable PICA+ (`plain`)
+* PICA+ (`plus`)
+* PICA-XML (`xml`)
+
+Examples:
+
+```bash
+$ pica convert --from plus --to binary DUMP.dat.gz -o dump.bin
+$ pica convert --from plus --to json DUMP.dat.gz -o dump.json
+$ pica convert --from plus --to plain DUMP.dat.gz -o dump.plain
+$ pica convert --from plus --to plus DUMP.dat.gz -o dump.dat
+$ pica convert --from plus --to xml DUMP.dat.gz -o dump.xml
 ```
 
 ### Count
