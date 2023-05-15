@@ -2,14 +2,13 @@ mod binary;
 mod import;
 mod json;
 mod plain;
-mod plus;
 mod xml;
 
 use std::ffi::OsString;
 
 use clap::{Parser, ValueEnum};
 use pica_record::io::{
-    ByteRecordWrite, ReaderBuilder, RecordsIterator,
+    ByteRecordWrite, ReaderBuilder, RecordsIterator, WriterBuilder,
 };
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +16,6 @@ use self::binary::BinaryWriter;
 use self::import::ImportWriter;
 use self::json::JsonWriter;
 use self::plain::PlainWriter;
-use self::plus::PlusWriter;
 use self::xml::XmlWriter;
 use crate::util::CliError;
 use crate::{skip_invalid_flag, CliResult, Config};
@@ -93,7 +91,9 @@ impl Convert {
         }
 
         let mut writer: Box<dyn ByteRecordWrite> = match self.to {
-            Format::Plus => PlusWriter::new(self.output)?,
+            Format::Plus => {
+                WriterBuilder::new().from_path_or_stdout(self.output)?
+            }
             Format::Binary => Box::new(BinaryWriter::new(self.output)?),
             Format::Import => Box::new(ImportWriter::new(self.output)?),
             Format::Json => Box::new(JsonWriter::new(self.output)?),
