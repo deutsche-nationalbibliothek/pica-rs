@@ -1,5 +1,6 @@
 mod cat;
 mod completions;
+mod convert;
 mod count;
 mod filter;
 mod frequency;
@@ -15,6 +16,7 @@ mod xml;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
+pub(crate) use convert::{Convert, ConvertConfig};
 pub(crate) use count::{Count, CountConfig};
 pub(crate) use filter::{Filter, FilterConfig};
 pub(crate) use frequency::{Frequency, FrequencyConfig};

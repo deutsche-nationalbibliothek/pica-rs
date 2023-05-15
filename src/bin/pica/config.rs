@@ -32,6 +32,7 @@ pub(crate) struct Config {
     pub(crate) path: Option<PathBuf>,
     pub(crate) global: Option<GlobalConfig>,
     pub(crate) cat: Option<CatConfig>,
+    pub(crate) convert: Option<ConvertConfig>,
     pub(crate) count: Option<CountConfig>,
     pub(crate) filter: Option<FilterConfig>,
     pub(crate) frequency: Option<FrequencyConfig>,

@@ -46,6 +46,11 @@ pub(crate) struct Xml {
 
 impl Xml {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        eprintln!(
+            "WARNING: The `xml` command will be removed in version 0.17, \
+                please use the `convert` command instead."
+        );
+
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,
             config.xml,

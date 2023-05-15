@@ -168,6 +168,12 @@ impl<'a> From<OccurrenceRef<'a>> for OccurrenceMut {
     }
 }
 
+impl<'a> ToString for OccurrenceRef<'a> {
+    fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
 impl<'a> OccurrenceRef<'a> {
     /// Converts the immutable occurrence into its mutable counterpart
     /// by consuming the source.

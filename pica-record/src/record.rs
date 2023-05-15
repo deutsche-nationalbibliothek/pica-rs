@@ -33,6 +33,7 @@ pub struct ByteRecord<'a> {
 }
 
 /// A PICA+ record, that guarantees valid UTF-8 data.
+#[derive(Debug)]
 pub struct StringRecord<'a>(ByteRecord<'a>);
 
 impl<T: AsRef<[u8]>> Record<T> {

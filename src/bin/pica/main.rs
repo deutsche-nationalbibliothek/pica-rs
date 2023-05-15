@@ -17,7 +17,7 @@ use std::{io, process};
 
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
-    Cat, Completions, Count, Filter, Frequency, Invalid, Json,
+    Cat, Completions, Convert, Count, Filter, Frequency, Invalid, Json,
     Partition, Print, Sample, Select, Slice, Split, Xml,
 };
 use config::Config;
@@ -43,6 +43,7 @@ enum Commands {
 
     /// Generate shell completions (e.g. Bash, ZSH)
     Completions(Completions),
+    Convert(Convert),
     Count(Count),
     Filter(Filter),
     Frequency(Frequency),
@@ -73,8 +74,9 @@ fn run() -> CliResult<()> {
 
     match args.command {
         Commands::Cat(cmd) => cmd.run(&config),
-        Commands::Count(cmd) => cmd.run(&config),
         Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
+        Commands::Convert(cmd) => cmd.run(&config),
+        Commands::Count(cmd) => cmd.run(&config),
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),
         Commands::Invalid(cmd) => cmd.run(&config),

@@ -7,6 +7,8 @@ use tempfile::Builder;
 
 use crate::common::{CommandExt, TestContext, TestResult};
 
+const DEPRICATION_WARNING: &str = "WARNING: The `json` command will be removed in version 0.17, please use the `convert` command instead.";
+
 #[test]
 fn pica_json_single_record() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
@@ -43,7 +45,8 @@ fn pica_json_multiple_records() -> TestResult {
         predicate::path::eq_file(Path::new("tests/data/tworecs.json"));
     assert
         .success()
-        .stderr(predicate::str::is_empty())
+        .stderr(predicate::str::starts_with(DEPRICATION_WARNING))
+        // .stderr(predicate::str::is_empty())
         .stdout(expected);
 
     let data = read_to_string("tests/data/1004916019.dat").unwrap();
@@ -59,7 +62,7 @@ fn pica_json_multiple_records() -> TestResult {
         predicate::path::eq_file(Path::new("tests/data/tworecs.json"));
     assert
         .success()
-        .stderr(predicate::str::is_empty())
+        .stderr(predicate::str::starts_with(DEPRICATION_WARNING))
         .stdout(expected);
 
     Ok(())
@@ -74,9 +77,10 @@ fn pica_json_stdin() -> TestResult {
     let expected = predicate::path::eq_file(Path::new(
         "tests/data/1004916019.json",
     ));
+
     assert
         .success()
-        .stderr(predicate::str::is_empty())
+        .stderr(predicate::str::starts_with(DEPRICATION_WARNING))
         .stdout(expected);
 
     let data = read_to_string("tests/data/1004916019.dat").unwrap();
@@ -86,9 +90,10 @@ fn pica_json_stdin() -> TestResult {
     let expected = predicate::path::eq_file(Path::new(
         "tests/data/1004916019.json",
     ));
+
     assert
         .success()
-        .stderr(predicate::str::is_empty())
+        .stderr(predicate::str::starts_with(DEPRICATION_WARNING))
         .stdout(expected);
 
     Ok(())
@@ -163,9 +168,13 @@ fn pica_json_skip_invalid() -> TestResult {
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd.arg("json").arg("tests/data/dump.dat.gz").assert();
-    assert.failure().code(1).stderr(predicate::eq(
-        "Pica Error: Invalid record on line 2.\n",
-    ));
+    assert
+        .failure()
+        .code(1)
+        .stderr(predicate::str::starts_with(DEPRICATION_WARNING))
+        .stderr(predicate::str::contains(
+            "Pica Error: Invalid record on line 2.\n",
+        ));
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
