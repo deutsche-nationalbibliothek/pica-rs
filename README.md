@@ -82,6 +82,9 @@ formats:
 * PICA+ (`plus`)
 * PICA-XML (`xml`)
 
+> :warning: At the moment only PICA+ is supported as input format.
+> Reading from other formats will be added later.
+
 Examples:
 
 ```bash
