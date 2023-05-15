@@ -2,6 +2,7 @@ mod binary;
 mod import;
 mod json;
 mod plain;
+mod plus;
 mod xml;
 
 use std::ffi::OsString;
@@ -16,6 +17,7 @@ use self::binary::BinaryWriter;
 use self::import::ImportWriter;
 use self::json::JsonWriter;
 use self::plain::PlainWriter;
+use self::plus::PlusWriter;
 use self::xml::XmlWriter;
 use crate::util::CliError;
 use crate::{skip_invalid_flag, CliResult, Config};
@@ -83,30 +85,21 @@ impl Convert {
             config.global
         );
 
-        let mut writer: Box<dyn ByteRecordWrite> =
-            match (self.from, self.to) {
-                (_, Format::Binary) => {
-                    Box::new(BinaryWriter::new(self.output)?)
-                }
-                (_, Format::Import) => {
-                    Box::new(ImportWriter::new(self.output)?)
-                }
-                (_, Format::Json) => {
-                    Box::new(JsonWriter::new(self.output)?)
-                }
-                (_, Format::Plain) => {
-                    Box::new(PlainWriter::new(self.output)?)
-                }
-                (_, Format::Xml) => {
-                    Box::new(XmlWriter::new(self.output)?)
-                }
-                (from, to) => {
-                    return Err(CliError::Other(format!(
-                        "convert from {:?} to {:?} is not supported",
-                        from, to,
-                    )));
-                }
-            };
+        if self.from != Format::Plus {
+            return Err(CliError::Other(format!(
+                "convert from {:?} is not supported",
+                self.from
+            )));
+        }
+
+        let mut writer: Box<dyn ByteRecordWrite> = match self.to {
+            Format::Plus => PlusWriter::new(self.output)?,
+            Format::Binary => Box::new(BinaryWriter::new(self.output)?),
+            Format::Import => Box::new(ImportWriter::new(self.output)?),
+            Format::Json => Box::new(JsonWriter::new(self.output)?),
+            Format::Plain => Box::new(PlainWriter::new(self.output)?),
+            Format::Xml => Box::new(XmlWriter::new(self.output)?),
+        };
 
         for filename in self.filenames {
             let mut reader =
