@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * #610 Add `convert` command
 
+### Removed
+
+* #613 Remove `--reduce` option
+
 ## [0.15.1] - 2023-03-31
 
 ### Fixed
