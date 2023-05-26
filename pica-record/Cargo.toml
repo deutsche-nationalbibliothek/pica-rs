@@ -7,14 +7,14 @@ include = ["src/**/*"]
 edition = "2021"
 
 [dependencies]
-bstr = "1.0"
+bstr = "1.5"
 flate2 = "1.0"
 nom = "7.1"
 thiserror = "1.0"
 
 [dev-dependencies]
 anyhow = "1.0"
-criterion = { version = "0.4", features = ["html_reports"] }
+criterion = { version = "0.5", features = ["html_reports"] }
 nom-test-helpers = "6.1"
 
 [[bench]]

@@ -6,7 +6,7 @@ authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "MIT OR Unlicense"
 
 [dependencies]
-bstr = "1.1"
+bstr = "1.5"
 nom = "7.1"
 thiserror = "1.0"
 serde = { version = "1.0", optional = true }
