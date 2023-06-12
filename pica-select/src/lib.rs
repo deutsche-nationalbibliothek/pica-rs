@@ -1,4 +1,5 @@
-use std::ops::Deref;
+use std::fmt::Debug;
+use std::ops::{Add, Deref, Mul};
 use std::str::FromStr;
 
 use nom::character::complete::{char, multispace0};
@@ -6,10 +7,10 @@ use nom::combinator::{all_consuming, map};
 use nom::multi::separated_list1;
 use nom::sequence::delimited;
 use nom::Finish;
-use pica_matcher::subfield_matcher::Matcher;
+// use pica_matcher::subfield_matcher::Matcher;
 use pica_path::{parse_path, Path};
 use pica_record::parser::ParseResult;
-use pica_record::Record;
+// use pica_record::Record;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -87,89 +88,150 @@ fn parse_query(i: &[u8]) -> ParseResult<Query> {
             delimited(multispace0, char(','), multispace0),
             parse_path,
         ),
-        |s| Query(s),
+        Query,
     )(i)
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Outcome<T>(Vec<Vec<T>>);
+pub struct Outcome<T: AsRef<[u8]>>(Vec<Vec<T>>);
 
-impl<T> From<Vec<T>> for Outcome<T> {
-    fn from(value: Vec<T>) -> Self {
-        Self(value.into_iter().map(|value| vec![value]).collect())
+impl<T: AsRef<[u8]>> Deref for Outcome<T> {
+    type Target = Vec<Vec<T>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-pub trait QueryExt<T> {
-    fn query(&self, query: &Query) -> Outcome<T>;
+impl<T: AsRef<[u8]> + Clone> Default for Outcome<T> {
+    fn default() -> Self {
+        Self(vec![])
+    }
 }
 
-impl<T: AsRef<[u8]> + std::fmt::Debug> QueryExt<T> for Record<T> {
-    /// TODO
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use std::str::FromStr;
-    ///
-    /// use pica_record::RecordRef;
-    /// use pica_select::{Query, QueryExt};
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let query =
-    ///         Query::from_str("003@.0, 012A{ (a,b) | a == 'abc' }")?;
-    ///     let record = RecordRef::from_bytes(
-    ///         b"003@ \x1f01234\x1e012A \x1faabc\x1e\n",
-    ///     )?;
-    ///
-    ///     record.query(&query);
-    ///     Ok(())
-    /// }
-    /// ```
-    fn query(&self, query: &Query) -> Outcome<T> {
-        let options = Default::default();
+impl<T: AsRef<[u8]>> From<Vec<T>> for Outcome<T> {
+    fn from(values: Vec<T>) -> Self {
+        Self(values.into_iter().map(|v| vec![v]).collect())
+    }
+}
 
-        for path in query.iter() {
-            eprintln!("===> path = {:?}", path);
+impl<T: AsRef<[u8]>> Add for Outcome<T> {
+    type Output = Outcome<T>;
 
-            let _result = self
-                .iter()
-                .filter(|field| {
-                    path.tag_matcher().is_match(field.tag())
-                        && *path.occurrence_matcher()
-                            == field.occurrence()
-                })
-                .filter(|field| {
-                    if let Some(m) = path.subfield_matcher() {
-                        m.is_match(field.subfields(), &options)
-                    } else {
-                        true
-                    }
-                })
-                .map(|field| {
-                    path.codes()
-                        .iter()
-                        .map(|code| {
-                            field
-                                .subfields()
-                                .iter()
-                                .filter(|subfield| {
-                                    subfield.code() == *code
-                                })
-                                .map(|subfield| subfield.value())
-                                .collect::<Vec<_>>()
-                        })
-                        .map(|values| Outcome::from(values))
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>();
-            eprintln!("result = {:?}", _result);
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut result = self.0;
+        result.extend(rhs.0.into_iter());
+        Self(result)
+    }
+}
+
+impl<T: AsRef<[u8]> + Clone> Mul for Outcome<T> {
+    type Output = Outcome<T>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        if self.is_empty() {
+            return rhs;
         }
 
-        todo!()
+        if rhs.is_empty() {
+            return self;
+        }
+
+        let mut rows: Vec<Vec<T>> = vec![];
+        let xs = self.0;
+        let ys = rhs.0;
+
+        for x in xs.into_iter() {
+            for y in ys.clone().into_iter() {
+                let mut row = x.clone();
+                row.extend(y.clone());
+                rows.push(row);
+            }
+        }
+
+        Self(rows)
     }
 }
+
+//#[derive(Debug, PartialEq, Eq)]
+// pub struct Outcome<T>(Vec<Vec<T>>);
+
+// impl<T> From<Vec<T>> for Outcome<T> {
+//    fn from(value: Vec<T>) -> Self {
+//        Self(value.into_iter().map(|value| vec![value]).collect())
+//    }
+//}
+
+// pub trait QueryExt<T> {
+//    fn query(&self, query: &Query) -> Outcome<T>;
+//}
+
+// impl<T: AsRef<[u8]> + std::fmt::Debug> QueryExt<T> for Record<T> {
+//    /// TODO
+//    ///
+//    /// # Example
+//    ///
+//    /// ```rust
+//    /// use std::str::FromStr;
+//    ///
+//    /// use pica_record::RecordRef;
+//    /// use pica_select::{Query, QueryExt};
+//    ///
+//    /// # fn main() { example().unwrap(); }
+//    /// fn example() -> anyhow::Result<()> {
+//    ///     let query =
+//    ///         Query::from_str("003@.0, 012A{ (a,b) | a == 'abc'
+// }")?;    ///     let record = RecordRef::from_bytes(
+//    ///         b"003@ \x1f01234\x1e012A \x1faabc\x1e\n",
+//    ///     )?;
+//    ///
+//    ///     record.query(&query);
+//    ///     Ok(())
+//    /// }
+//    /// ```
+//    fn query(&self, query: &Query) -> Outcome<T> {
+//        let options = Default::default();
+
+//        for path in query.iter() {
+//            eprintln!("===> path = {:?}", path);
+
+//            let _result = self
+//                .iter()
+//                .filter(|field| {
+//                    path.tag_matcher().is_match(field.tag())
+//                        && *path.occurrence_matcher()
+//                            == field.occurrence()
+//                })
+//                .filter(|field| {
+//                    if let Some(m) = path.subfield_matcher() {
+//                        m.is_match(field.subfields(), &options)
+//                    } else {
+//                        true
+//                    }
+//                })
+//                .map(|field| {
+//                    path.codes()
+//                        .iter()
+//                        .map(|code| {
+//                            field
+//                                .subfields()
+//                                .iter()
+//                                .filter(|subfield| {
+//                                    subfield.code() == *code
+//                                })
+//                                .map(|subfield| subfield.value())
+//                                .collect::<Vec<_>>()
+//                        })
+//                        .map(|values| Outcome::from(values))
+//                        .collect::<Vec<_>>()
+//                })
+//                .collect::<Vec<_>>();
+//            eprintln!("result = {:?}", _result);
+//        }
+
+//        todo!()
+//    }
+//}
 
 #[cfg(test)]
 mod tests {
@@ -197,12 +259,71 @@ mod tests {
 
     #[test]
     fn test_outcome_from_vec() -> anyhow::Result<()> {
-        eprintln!(
-            "data = {:?}",
-            Outcome::from(vec![vec!["abc", "def"]])
+        assert_eq!(
+            Outcome::from(vec!["abc", "def"]),
+            Outcome(vec![vec!["abc"], vec!["def"]])
         );
 
-        assert!(false);
+        Ok(())
+    }
+
+    #[test]
+    fn test_outcome_add() -> anyhow::Result<()> {
+        let lhs = Outcome::from(vec!["abc", "def"]);
+        let rhs = Outcome::from(vec!["123", "456"]);
+
+        assert_eq!(
+            lhs + rhs,
+            Outcome::from(vec!["abc", "def", "123", "456"])
+        );
+
+        let lhs = Outcome(vec![vec!["abc", "def"]]);
+        let rhs = Outcome(vec![vec!["123", "456"]]);
+
+        assert_eq!(
+            lhs + rhs,
+            Outcome(vec![vec!["abc", "def"], vec!["123", "456"]])
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_outcome_mul() -> anyhow::Result<()> {
+        let lhs = Outcome::from(vec!["abc", "def"]);
+        let rhs = Outcome::from(vec!["123", "456"]);
+
+        assert_eq!(
+            lhs * rhs,
+            Outcome(vec![
+                vec!["abc", "123"],
+                vec!["abc", "456"],
+                vec!["def", "123"],
+                vec!["def", "456"],
+            ])
+        );
+
+        let lhs = Outcome(vec![vec!["abc", "def"]]);
+        let rhs = Outcome::from(vec!["123", "456"]);
+
+        assert_eq!(
+            lhs * rhs,
+            Outcome(vec![
+                vec!["abc", "def", "123"],
+                vec!["abc", "def", "456"],
+            ])
+        );
+
+        assert_eq!(
+            Outcome::default() * Outcome::from(vec!["123", "456"]),
+            Outcome::from(vec!["123", "456"])
+        );
+
+        assert_eq!(
+            Outcome::from(vec!["123", "456"]) * Outcome::default(),
+            Outcome::from(vec!["123", "456"])
+        );
+
         Ok(())
     }
 }
