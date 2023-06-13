@@ -158,7 +158,7 @@ impl Select {
                             }
                         }
 
-                        let outcome = record.query(&query);
+                        let outcome = record.query(&query, &options);
                         for row in outcome.iter() {
                             if self.no_empty_columns
                                 && row
