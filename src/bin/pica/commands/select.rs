@@ -3,17 +3,19 @@ use std::collections::BTreeSet;
 use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
+use std::str::FromStr;
 
 use clap::Parser;
-use pica::matcher::{MatcherFlags, RecordMatcher};
-use pica::{Outcome, Reader, ReaderBuilder, Selectors};
+use pica_matcher::{MatcherOptions, RecordMatcher};
+use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_select::{Query, QueryExt};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::translit::{translit_maybe, translit_maybe2};
-use crate::util::{CliError, CliResult};
+use crate::util::CliResult;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -69,8 +71,8 @@ pub(crate) struct Select {
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
-    /// Comma-separated list of selectors
-    selectors: String,
+    /// Query (comma-separated list of path expressions)
+    query: String,
 
     /// Read one or more files in normalized PICA+ format.
     #[arg(default_value = "-", hide_default_value = true)]
@@ -103,101 +105,96 @@ impl Select {
         );
 
         let mut seen = BTreeSet::new();
+        let options = MatcherOptions::default();
+
+        let matcher = if let Some(matcher_str) = self.filter {
+            if let Some(ref global) = config.global {
+                Some(RecordMatcher::new(&translit_maybe2(
+                    &matcher_str,
+                    global.translit,
+                ))?)
+            } else {
+                Some(RecordMatcher::new(&matcher_str)?)
+            }
+        } else {
+            None
+        };
+
+        let query = if let Some(ref global) = config.global {
+            Query::from_str(&translit_maybe2(
+                &self.query,
+                global.translit,
+            ))?
+        } else {
+            Query::from_str(&self.query)?
+        };
+
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer(self.output, self.append)?);
-
-        let selectors = if let Some(ref global) = config.global {
-            translit_maybe2(&self.selectors, global.translit)
-        } else {
-            self.selectors.to_string()
-        };
-
-        let selectors = match Selectors::decode(&selectors) {
-            Ok(val) => val,
-            _ => {
-                return Err(CliError::Other(format!(
-                    "invalid select list: {}",
-                    self.selectors
-                )))
-            }
-        };
 
         if let Some(header) = self.header {
             writer.write_record(header.split(',').map(|s| s.trim()))?;
         }
 
-        let flags = MatcherFlags::default();
-        let filter = match self.filter {
-            Some(filter_str) => match RecordMatcher::new(&filter_str) {
-                Ok(f) => f,
-                _ => {
-                    return Err(CliError::Other(format!(
-                        "invalid filter: \"{filter_str}\""
-                    )))
-                }
-            },
-            None => RecordMatcher::True,
-        };
-
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.records() {
-                let record = result?;
-
-                if !filter.is_match(&record, &flags) {
-                    continue;
-                }
-
-                let outcome = selectors
-                    .iter()
-                    .map(|selector| {
-                        record.select(selector, self.ignore_case)
-                    })
-                    .fold(Outcome::default(), |acc, x| acc * x);
-
-                for row in outcome.iter() {
-                    if self.no_empty_columns
-                        && row.iter().any(|column| column.is_empty())
-                    {
-                        continue;
-                    }
-
-                    if self.unique {
-                        let mut hasher = DefaultHasher::new();
-                        row.hash(&mut hasher);
-                        let hash = hasher.finish();
-
-                        if seen.contains(&hash) {
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
                             continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        if let Some(ref matcher) = matcher {
+                            if !matcher.is_match(&record, &options) {
+                                continue;
+                            }
                         }
 
-                        seen.insert(hash);
-                    }
+                        let outcome = record.query(&query);
+                        for row in outcome.iter() {
+                            if self.no_empty_columns
+                                && row
+                                    .iter()
+                                    .any(|column| column.is_empty())
+                            {
+                                continue;
+                            }
 
-                    if !row.iter().all(|col| col.is_empty()) {
-                        if self.translit.is_some() {
-                            writer.write_record(
-                                row.iter()
-                                    .map(ToString::to_string)
-                                    .map(|s| {
-                                        translit_maybe(
-                                            &s,
-                                            self.translit.as_deref(),
-                                        )
-                                    }),
-                            )?;
-                        } else {
-                            writer.write_record(row)?;
-                        };
+                            if self.unique {
+                                let mut hasher = DefaultHasher::new();
+                                row.hash(&mut hasher);
+                                let hash = hasher.finish();
+
+                                if seen.contains(&hash) {
+                                    continue;
+                                }
+
+                                seen.insert(hash);
+                            }
+
+                            if !row.iter().all(|col| col.is_empty()) {
+                                if self.translit.is_some() {
+                                    writer.write_record(
+                                        row.iter().map(|s| {
+                                            translit_maybe(
+                                                &s,
+                                                self.translit
+                                                    .as_deref(),
+                                            )
+                                        }),
+                                    )?;
+                                } else {
+                                    writer.write_record(row)?;
+                                };
+                            }
+                        }
                     }
                 }
             }

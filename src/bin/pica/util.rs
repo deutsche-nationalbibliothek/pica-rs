@@ -12,6 +12,7 @@ pub(crate) enum CliError {
     ParsePica(pica_record::ParsePicaError),
     ParsePath(pica_path::ParsePathError),
     ParseMatcher(pica_matcher::ParseMatcherError),
+    ParseQuery(pica_select::ParseQueryError),
     Other(String),
 }
 
@@ -25,6 +26,7 @@ impl fmt::Display for CliError {
             CliError::ParsePica(ref e) => e.fmt(f),
             CliError::ParsePath(ref e) => e.fmt(f),
             CliError::ParseMatcher(ref e) => e.fmt(f),
+            CliError::ParseQuery(ref e) => e.fmt(f),
             CliError::Other(ref s) => f.write_str(s),
         }
     }
@@ -74,5 +76,11 @@ impl From<pica_path::ParsePathError> for CliError {
 impl From<pica_matcher::ParseMatcherError> for CliError {
     fn from(err: pica_matcher::ParseMatcherError) -> Self {
         CliError::ParseMatcher(err)
+    }
+}
+
+impl From<pica_select::ParseQueryError> for CliError {
+    fn from(err: pica_select::ParseQueryError) -> Self {
+        CliError::ParseQuery(err)
     }
 }
