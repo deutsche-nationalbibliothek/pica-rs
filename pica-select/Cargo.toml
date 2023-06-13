@@ -1,0 +1,19 @@
+[package]
+name = "pica-select"
+version = "0.1.0"
+authors = ["Nico Wagner <n.wagner@dnb.de>"]
+edition = "2021"
+license = "MIT OR Unlicense"
+
+[dependencies]
+thiserror = "1.0"
+nom = "7.1"
+
+pica-matcher = { version = "0.1", path = "../pica-matcher" }
+pica-path = { version = "0.2", path = "../pica-path" }
+pica-record = { version = "0.1", path = "../pica-record" }
+
+[dev-dependencies]
+bstr = "1.5"
+nom-test-helpers = "6.1"
+anyhow = "1.0"

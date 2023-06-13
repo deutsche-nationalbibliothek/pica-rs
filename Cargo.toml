@@ -66,5 +66,6 @@ members = [
     "pica-lint",
     "pica-matcher",
     "pica-path",
-    "pica-record"
+    "pica-record",
+    "pica-select"
 ]
