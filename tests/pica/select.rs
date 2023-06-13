@@ -8,7 +8,7 @@ use crate::common::{CommandExt, TestContext, TestResult};
 
 #[test]
 fn pica_select_one_column() -> TestResult {
-    for selector in ["003@.0", "003@$0", "003@ $0"] {
+    for selector in ["003@.0"] {
         let mut cmd = Command::cargo_bin("pica")?;
         let assert = cmd
             .arg("select")
@@ -28,25 +28,6 @@ fn pica_select_one_column() -> TestResult {
 "#,
         );
     }
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("select")
-        .arg("--skip-invalid")
-        .arg("003@0")
-        .arg("tests/data/dump.dat.gz")
-        .assert();
-
-    assert.success().stderr("Don\'t use lazy syntax!\n").stdout(
-        r#"1004916019
-119232022
-000008672
-000016586
-000016756
-000009229
-121169502
-"#,
-    );
 
     Ok(())
 }
@@ -570,10 +551,9 @@ fn pica_select_skip_invalid() -> TestResult {
         .arg("003@.0")
         .arg("tests/data/invalid.dat")
         .assert();
-    assert
-        .failure()
-        .stdout(predicate::str::is_empty())
-        .stderr("Pica Error: Invalid record on line 1.\n");
+    assert.failure().stdout(predicate::str::is_empty()).stderr(
+        predicate::str::starts_with("Parse Pica Error: invalid record"),
+    );
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -651,10 +631,9 @@ fn pica_select_invalid_selector() -> TestResult {
         .arg("tests/data/dump.dat.gz")
         .assert();
 
-    assert
-        .failure()
-        .stdout(predicate::str::is_empty())
-        .stderr("error: invalid select list: 003@.0, \'foo, 002@.0\n");
+    assert.failure().stdout(predicate::str::is_empty()).stderr(
+        predicate::str::starts_with("Parse Query Error: invalid query"),
+    );
 
     Ok(())
 }

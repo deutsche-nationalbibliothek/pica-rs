@@ -105,7 +105,8 @@ impl Select {
         );
 
         let mut seen = BTreeSet::new();
-        let options = MatcherOptions::default();
+        let options =
+            MatcherOptions::default().case_ignore(self.ignore_case);
 
         let matcher = if let Some(matcher_str) = self.filter {
             if let Some(ref global) = config.global {
