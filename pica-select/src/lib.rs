@@ -3,10 +3,12 @@ use std::iter::repeat;
 use std::ops::{Add, Deref, Mul};
 use std::str::FromStr;
 
-use nom::character::complete::{char, multispace0};
-use nom::combinator::{all_consuming, map};
-use nom::multi::separated_list1;
-use nom::sequence::delimited;
+use nom::branch::alt;
+use nom::bytes::complete::is_not;
+use nom::character::complete::{char, multispace0, multispace1};
+use nom::combinator::{all_consuming, map, map_res, value, verify};
+use nom::multi::{fold_many0, separated_list1};
+use nom::sequence::{delimited, preceded};
 use nom::Finish;
 use pica_matcher::subfield_matcher::Matcher;
 use pica_path::{parse_path, Path};
@@ -19,7 +21,25 @@ use thiserror::Error;
 pub struct ParseSelectorError(String);
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Query(Vec<Path>);
+pub enum QueryFragment {
+    Path(Path),
+    Const(String),
+}
+
+impl From<Path> for QueryFragment {
+    fn from(value: Path) -> Self {
+        Self::Path(value)
+    }
+}
+
+impl From<String> for QueryFragment {
+    fn from(value: String) -> Self {
+        Self::Const(value)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Query(Vec<QueryFragment>);
 
 #[derive(Debug, Error)]
 #[error("invalid query, got `{0}`")]
@@ -50,7 +70,7 @@ impl Query {
 }
 
 impl Deref for Query {
-    type Target = Vec<Path>;
+    type Target = Vec<QueryFragment>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -83,11 +103,131 @@ impl FromStr for Query {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+enum Quotes {
+    Single,
+    Double,
+}
+
+#[derive(Debug, Clone)]
+enum StringFragment<'a> {
+    Literal(&'a str),
+    EscapedChar(char),
+    EscapedWs,
+}
+
+/// Parse a non-empty block of text that doesn't include \ or ".
+fn parse_literal(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<&str> {
+    move |i: &[u8]| {
+        let arr = match quotes {
+            Quotes::Single => "\'\\",
+            Quotes::Double => "\"\\",
+        };
+
+        map_res(
+            verify(is_not(arr), |s: &[u8]| !s.is_empty()),
+            std::str::from_utf8,
+        )(i)
+    }
+}
+
+/// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
+fn parse_escaped_char(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<char> {
+    move |i: &[u8]| {
+        let val = match quotes {
+            Quotes::Single => '"',
+            Quotes::Double => '\'',
+        };
+
+        preceded(
+            char('\\'),
+            alt((
+                // parse_unicode,
+                value('\n', char('n')),
+                value('\r', char('r')),
+                value('\t', char('t')),
+                value('\u{08}', char('b')),
+                value('\u{0C}', char('f')),
+                value('\\', char('\\')),
+                value('/', char('/')),
+                value(val, char(val)),
+            )),
+        )(i)
+    }
+}
+
+/// Combine parse_literal, parse_escaped_char into a StringFragment.
+fn parse_fragment(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<StringFragment> {
+    move |i: &[u8]| {
+        alt((
+            map(parse_literal(quotes), StringFragment::Literal),
+            map(
+                parse_escaped_char(quotes),
+                StringFragment::EscapedChar,
+            ),
+            value(
+                StringFragment::EscapedWs,
+                preceded(char('\\'), multispace1),
+            ),
+        ))(i)
+    }
+}
+
+fn parse_string_inner(
+    quotes: Quotes,
+) -> impl Fn(&[u8]) -> ParseResult<String> {
+    move |i: &[u8]| {
+        fold_many0(
+            parse_fragment(quotes),
+            String::new,
+            |mut string, fragment| {
+                match fragment {
+                    StringFragment::Literal(s) => string.push_str(s),
+                    StringFragment::EscapedChar(c) => string.push(c),
+                    StringFragment::EscapedWs => {}
+                }
+                string
+            },
+        )(i)
+    }
+}
+
+fn parse_string_single_quoted(i: &[u8]) -> ParseResult<String> {
+    delimited(
+        char('\''),
+        parse_string_inner(Quotes::Single),
+        char('\''),
+    )(i)
+}
+
+fn parse_string_double_quoted(i: &[u8]) -> ParseResult<String> {
+    delimited(char('"'), parse_string_inner(Quotes::Double), char('"'))(
+        i,
+    )
+}
+
+pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
+    alt((parse_string_single_quoted, parse_string_double_quoted))(i)
+}
+
+fn parse_query_fragment(i: &[u8]) -> ParseResult<QueryFragment> {
+    alt((
+        map(parse_path, QueryFragment::Path),
+        map(parse_string, QueryFragment::Const),
+    ))(i)
+}
+
 fn parse_query(i: &[u8]) -> ParseResult<Query> {
     map(
         separated_list1(
             delimited(multispace0, char(','), multispace0),
-            parse_path,
+            parse_query_fragment,
         ),
         Query,
     )(i)
@@ -201,48 +341,61 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
         let options = Default::default();
         let mut outcomes = vec![];
 
-        for path in query.iter() {
-            let mut outcome = self
-                .iter()
-                .filter(|field| {
-                    path.tag_matcher().is_match(field.tag())
-                        && *path.occurrence_matcher()
-                            == field.occurrence()
-                })
-                .filter(|field| {
-                    if let Some(m) = path.subfield_matcher() {
-                        m.is_match(field.subfields(), &options)
-                    } else {
-                        true
-                    }
-                })
-                .map(|field| {
-                    path.codes()
+        for fragment in query.iter() {
+            let outcome = match fragment {
+                QueryFragment::Const(value) => {
+                    Outcome(vec![vec![value.to_owned()]])
+                }
+                QueryFragment::Path(path) => {
+                    let mut outcome = self
                         .iter()
-                        .map(|code| {
-                            field
-                                .subfields()
-                                .iter()
-                                .filter(|subfield| {
-                                    subfield.code() == *code
-                                })
-                                .map(|subfield| subfield.value())
-                                .collect::<Vec<_>>()
+                        .filter(|field| {
+                            path.tag_matcher().is_match(field.tag())
+                                && *path.occurrence_matcher()
+                                    == field.occurrence()
                         })
-                        .map(|values| {
-                            if !values.is_empty() {
-                                Outcome::from(values)
+                        .filter(|field| {
+                            if let Some(m) = path.subfield_matcher() {
+                                m.is_match(field.subfields(), &options)
                             } else {
-                                Outcome::one()
+                                true
                             }
                         })
-                        .fold(Outcome::default(), |acc, e| acc * e)
-                })
-                .fold(Outcome::default(), |acc, e| acc + e);
+                        .map(|field| {
+                            path.codes()
+                                .iter()
+                                .map(|code| {
+                                    field
+                                        .subfields()
+                                        .iter()
+                                        .filter(|subfield| {
+                                            subfield.code() == *code
+                                        })
+                                        .map(|subfield| {
+                                            subfield.value()
+                                        })
+                                        .collect::<Vec<_>>()
+                                })
+                                .map(|values| {
+                                    if !values.is_empty() {
+                                        Outcome::from(values)
+                                    } else {
+                                        Outcome::one()
+                                    }
+                                })
+                                .fold(Outcome::default(), |acc, e| {
+                                    acc * e
+                                })
+                        })
+                        .fold(Outcome::default(), |acc, e| acc + e);
 
-            if outcome.is_empty() {
-                outcome = Outcome::ones(path.codes().len());
-            }
+                    if outcome.is_empty() {
+                        outcome = Outcome::ones(path.codes().len());
+                    }
+
+                    outcome
+                }
+            };
 
             outcomes.push(outcome);
         }
@@ -271,14 +424,17 @@ mod tests {
     fn test_parse_query() -> anyhow::Result<()> {
         assert_finished_and_eq!(
             parse_query(b"003@.0,012A/*.a"),
-            Query(vec![Path::new("003@.0"), Path::new("012A/*.a")])
+            Query(vec![
+                Path::new("003@.0").into(),
+                Path::new("012A/*.a").into(),
+            ])
         );
 
         assert_finished_and_eq!(
             parse_query(b"003@.0, 012A/*{b, c | a?}"),
             Query(vec![
-                Path::new("003@.0"),
-                Path::new("012A/*{b,c |a?}"),
+                Path::new("003@.0").into(),
+                Path::new("012A/*{b,c |a?}").into(),
             ])
         );
 
@@ -461,6 +617,25 @@ mod tests {
             record
                 .query(&Query::from_str("003@.0, 012A{ (a,b) | x? }")?),
             Outcome(vec![vec![s!("9"), s!("3"), s!("4")],])
+        );
+
+        let record =
+            RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
+        assert_eq!(
+            record.query(&Query::from_str("012A.a, 'foo'")?),
+            Outcome(vec![vec![s!("1"), s!("foo")]])
+        );
+
+        let record = RecordRef::new(vec![
+            ("003@", None, vec![('0', "9")]),
+            ("012A", None, vec![('a', "1"), ('a', "2")]),
+            ("012A", None, vec![('a', "3"), ('b', "4"), ('x', "5")]),
+        ]);
+        assert_eq!(
+            record.query(&Query::from_str(
+                "003@.0, \"bar\", 012A{ (a,b) | x? }"
+            )?),
+            Outcome(vec![vec![s!("9"), s!("bar"), s!("3"), s!("4")],])
         );
 
         Ok(())
