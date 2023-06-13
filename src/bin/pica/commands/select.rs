@@ -185,7 +185,7 @@ impl Select {
                                     writer.write_record(
                                         row.iter().map(|s| {
                                             translit_maybe(
-                                                &s,
+                                                s,
                                                 self.translit
                                                     .as_deref(),
                                             )
