@@ -361,7 +361,7 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
                         })
                         .filter(|field| {
                             if let Some(m) = path.subfield_matcher() {
-                                m.is_match(field.subfields(), &options)
+                                m.is_match(field.subfields(), options)
                             } else {
                                 true
                             }
