@@ -11,6 +11,7 @@ use nom::multi::{fold_many0, separated_list1};
 use nom::sequence::{delimited, preceded};
 use nom::Finish;
 use pica_matcher::subfield_matcher::Matcher;
+use pica_matcher::MatcherOptions;
 use pica_path::{parse_path, Path};
 use pica_record::parser::ParseResult;
 use pica_record::Record;
@@ -303,7 +304,8 @@ impl Mul for Outcome {
 }
 
 pub trait QueryExt {
-    fn query(&self, query: &Query) -> Outcome;
+    fn query(&self, query: &Query, options: &MatcherOptions)
+        -> Outcome;
 }
 
 impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
@@ -326,7 +328,7 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
     ///     )?;
     ///
     ///     assert_eq!(
-    ///         record.query(&query).into_inner(),
+    ///         record.query(&query, &Default::default()).into_inner(),
     ///         vec![vec![
     ///             "1234".to_string(),
     ///             "abc".to_string(),
@@ -337,8 +339,11 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
     ///     Ok(())
     /// }
     /// ```
-    fn query(&self, query: &Query) -> Outcome {
-        let options = Default::default();
+    fn query(
+        &self,
+        query: &Query,
+        options: &MatcherOptions,
+    ) -> Outcome {
         let mut outcomes = vec![];
 
         for fragment in query.iter() {
@@ -516,10 +521,12 @@ mod tests {
 
     #[test]
     fn test_query() -> anyhow::Result<()> {
+        let options = MatcherOptions::default();
+
         let record =
             RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a")?),
+            record.query(&Query::from_str("012A.a")?, &options),
             Outcome::from(vec![s!("1")])
         );
 
@@ -529,7 +536,7 @@ mod tests {
             vec![('a', "1"), ('a', "2")],
         )]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a")?),
+            record.query(&Query::from_str("012A.a")?, &options),
             Outcome::from(vec![s!("1"), s!("2")])
         );
 
@@ -538,7 +545,7 @@ mod tests {
             ("012A", None, vec![('a', "2")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a")?),
+            record.query(&Query::from_str("012A.a")?, &options),
             Outcome::from(vec![s!("1"), s!("2")])
         );
 
@@ -547,7 +554,7 @@ mod tests {
             ("012A", None, vec![('a', "1")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A.a")?),
+            record.query(&Query::from_str("003@.0, 012A.a")?, &options),
             Outcome(vec![vec![s!("9"), s!("1")]])
         );
 
@@ -557,7 +564,7 @@ mod tests {
             ("012A", None, vec![('a', "2")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A.a")?),
+            record.query(&Query::from_str("003@.0, 012A.a")?, &options),
             Outcome(vec![
                 vec![s!("9"), s!("1")],
                 vec![s!("9"), s!("2")],
@@ -569,7 +576,10 @@ mod tests {
             ("012A", None, vec![('a', "1"), ('b', "2")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A{ (a, b) }")?),
+            record.query(
+                &Query::from_str("003@.0, 012A{ (a, b) }")?,
+                &options
+            ),
             Outcome(vec![vec![s!("9"), s!("1"), s!("2")]])
         );
 
@@ -578,7 +588,10 @@ mod tests {
             ("012A", None, vec![('a', "1")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A{ (a, b) }")?),
+            record.query(
+                &Query::from_str("003@.0, 012A{ (a, b) }")?,
+                &options
+            ),
             Outcome(vec![vec![s!("9"), s!("1"), s!("")]])
         );
 
@@ -587,7 +600,10 @@ mod tests {
             ("012A", None, vec![('a', "1"), ('a', "2")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A{ (a, b) }")?),
+            record.query(
+                &Query::from_str("003@.0, 012A{ (a, b) }")?,
+                &options
+            ),
             Outcome(vec![
                 vec![s!("9"), s!("1"), s!("")],
                 vec![s!("9"), s!("2"), s!("")],
@@ -600,7 +616,10 @@ mod tests {
             ("012A", None, vec![('a', "3"), ('b', "4")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A{ (a, b) }")?),
+            record.query(
+                &Query::from_str("003@.0, 012A{ (a, b) }")?,
+                &options
+            ),
             Outcome(vec![
                 vec![s!("9"), s!("1"), s!("")],
                 vec![s!("9"), s!("2"), s!("")],
@@ -614,15 +633,17 @@ mod tests {
             ("012A", None, vec![('a', "3"), ('b', "4"), ('x', "5")]),
         ]);
         assert_eq!(
-            record
-                .query(&Query::from_str("003@.0, 012A{ (a,b) | x? }")?),
+            record.query(
+                &Query::from_str("003@.0, 012A{ (a,b) | x? }")?,
+                &options
+            ),
             Outcome(vec![vec![s!("9"), s!("3"), s!("4")],])
         );
 
         let record =
             RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a, 'foo'")?),
+            record.query(&Query::from_str("012A.a, 'foo'")?, &options),
             Outcome(vec![vec![s!("1"), s!("foo")]])
         );
 
@@ -632,9 +653,12 @@ mod tests {
             ("012A", None, vec![('a', "3"), ('b', "4"), ('x', "5")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str(
-                "003@.0, \"bar\", 012A{ (a,b) | x? }"
-            )?),
+            record.query(
+                &Query::from_str(
+                    "003@.0, \"bar\", 012A{ (a,b) | x? }"
+                )?,
+                &options
+            ),
             Outcome(vec![vec![s!("9"), s!("bar"), s!("3"), s!("4")],])
         );
 
