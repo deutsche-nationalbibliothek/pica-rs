@@ -283,7 +283,7 @@ takes only `045E` fields into account, where the expression `E == 'm'`
 evaluates to `true`.
 
 ```bash
-$ pica select -s "003@.0, 045E{ E == 'm', e}
+$ pica select -s "003@.0, 045E{ (e, E) | E == 'm' }
 ...
 ```
 
