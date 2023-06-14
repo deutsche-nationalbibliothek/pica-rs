@@ -4,6 +4,7 @@ use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use clap::Parser;
@@ -12,6 +13,7 @@ use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt};
 use serde::{Deserialize, Serialize};
 
+use crate::common::FilterList;
 use crate::config::Config;
 use crate::skip_invalid_flag;
 use crate::translit::{translit_maybe, translit_maybe2};
@@ -87,6 +89,28 @@ pub(crate) struct Select {
     /// This option can't be combined with `--and` or `--or`.
     #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
     not: Vec<String>,
+
+    /// Ignore records which are *not* explicitly listed in one of the
+    /// given allow-lists.
+    ///
+    /// An allow-list must be an CSV, whereby the first column contains
+    /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
+    /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
+    /// file is automatically interpreted as Apachae Arrow;
+    /// otherwise the file is read as CSV.
+    #[arg(long, short = 'A')]
+    allow_list: Vec<PathBuf>,
+
+    /// Ignore records which are explicitly listed in one of the
+    /// given deny-lists.
+    ///
+    /// An allow-list must be an CSV, whereby the first column contains
+    /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
+    /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
+    /// file is automatically interpreted as Apachae Arrow;
+    /// otherwise the file is read as CSV.
+    #[arg(long, short = 'D')]
+    deny_list: Vec<PathBuf>,
 
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
@@ -171,6 +195,18 @@ impl Select {
             None
         };
 
+        let allow_list = if !self.allow_list.is_empty() {
+            FilterList::new(self.allow_list)?
+        } else {
+            FilterList::default()
+        };
+
+        let deny_list = if !self.deny_list.is_empty() {
+            FilterList::new(self.deny_list)?
+        } else {
+            FilterList::default()
+        };
+
         let query = if let Some(ref global) = config.global {
             Query::from_str(&translit_maybe2(
                 &self.query,
@@ -202,6 +238,18 @@ impl Select {
                         }
                     }
                     Ok(record) => {
+                        if !allow_list.is_empty()
+                            && !allow_list.check(&record)
+                        {
+                            continue;
+                        }
+
+                        if !deny_list.is_empty()
+                            && deny_list.check(&record)
+                        {
+                            continue;
+                        }
+
                         if let Some(ref matcher) = matcher {
                             if !matcher.is_match(&record, &options) {
                                 continue;
