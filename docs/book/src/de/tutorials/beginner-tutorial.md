@@ -151,7 +151,7 @@ Um z. B. Unterfeld `9` aller Okkurrenzen von Feld `041A` zu filtern, müsste der
 
 Werte können über folgende Vergleichsoperatoren gesucht werden.
 
-- gleich `==` 
+- gleich `==`
 - ungleich `!=`
 - beginnt mit Prefix `=^`
 - endet mit Suffix `=$`
@@ -255,7 +255,7 @@ pica select "002@.0, 003@.0, 021A{a,h}" testdaten.dat -o test-select.csv
 In die Selektionsausdrücke können auch Filterausdrücke eingebaut werden. Dazu muss die erste Position der Liste in den geschweiften Klammern mit einem Filterausdruck belegt werden.
 
 ```bash
-pica select "003@.0, 028A{4 == 'aut',9,d,a}" testdaten.dat -o test-select.csv
+pica select "003@.0, 028A{(9,d,a) | 4 == 'aut'}" testdaten.dat -o test-select.csv
 ```
 
 In diesem Beispiel werden die Angaben zu den beteiligten Personen aus Feld 028A nur übernommen, wenn Unterfeld 4 den Wert `aut` enthält, die Person also Autor\*in ist und nicht etwa Herausgeber\*in.
@@ -267,14 +267,14 @@ Wenn Felder wiederholbar sind (z. B. bei Schlagworten), wird pro Wiederholung ei
 Es können auch Spaltennamen für die CSV-Ausgabe angegeben werden mit der Option -H. Wichtig: die Anzahl Spaltennamen muss der Anzahl der selektierten Unterfelder entsprechen.
 
 ```bash
-pica select -H "idn, autor-idn, autor-vorname, autor-nachname" "003@.0, 028A{4 == 'aut',9,d,a}" testdaten.dat -o test-select.csv
+pica select -H "idn, autor-idn, autor-vorname, autor-nachname" "003@.0, 028A{(9,d,a) | 4 == 'aut'}" testdaten.dat -o test-select.csv
 ```
 
 ## Warum zwei Filtermöglichkeiten?
 
 Die doppelte Filtermöglichkeit einmal mit dem Filter-Tool und einmal im select-Tool verwirrt auf den ersten Blick etwas. `filter` prüft eine oder mehrere Felder oder Unterfelder auf Bedingungen und gibt den gesamten Datensatz aus, wenn die Bedingung wahr ist. `select` prüft ebenfalls auf Bedingungen und selektiert dann die benötigten Teildaten.
 
-Man könnte auch sagen: `filter` arbeitet auf Datensatzebene und `select` auf Feldebene. 
+Man könnte auch sagen: `filter` arbeitet auf Datensatzebene und `select` auf Feldebene.
 
 ## Arbeit mit großen Datenabzügen
 
