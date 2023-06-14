@@ -71,7 +71,8 @@ pub(crate) struct Select {
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
-    /// Query (comma-separated list of path expressions)
+    /// Query (comma-separated list of path expressions or string
+    /// literals)
     query: String,
 
     /// Read one or more files in normalized PICA+ format.
