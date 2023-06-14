@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select -s \"041A.a\" -A allow.csv dump.dat.gz"
+status = "success"
+stdout = "Algebra\n"
+stderr = ""

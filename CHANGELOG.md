@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * #622 Support boolean connectives in `select` command
+* #624 Support allow- and deny-lists in `select` command 
 
 ## [0.16.0] - 2023-05-26
 

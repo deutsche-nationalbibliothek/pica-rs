@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select -s \"003@.0\" dump.dat.gz -D deny.csv -o out.csv"
+status = "success"
+stderr = ""
+stdout = ""
