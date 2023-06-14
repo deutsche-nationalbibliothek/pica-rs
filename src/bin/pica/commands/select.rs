@@ -67,6 +67,27 @@ pub(crate) struct Select {
     #[arg(long = "where")]
     filter: Option<String>,
 
+    /// Connects the where clause with additional expressions using the
+    /// logical AND-operator (conjunction)
+    ///
+    /// This option can't be combined with `--or` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    and: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical OR-operator (disjunction)
+    ///
+    /// This option can't be combined with `--and` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
+    or: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical NOT-operator (negation)
+    ///
+    /// This option can't be combined with `--and` or `--or`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    not: Vec<String>,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -106,18 +127,46 @@ impl Select {
         );
 
         let mut seen = BTreeSet::new();
+        let translit = if let Some(ref global) = config.global {
+            global.translit
+        } else {
+            None
+        };
+
         let options =
             MatcherOptions::default().case_ignore(self.ignore_case);
 
         let matcher = if let Some(matcher_str) = self.filter {
-            if let Some(ref global) = config.global {
-                Some(RecordMatcher::new(&translit_maybe2(
-                    &matcher_str,
-                    global.translit,
-                ))?)
-            } else {
-                Some(RecordMatcher::new(&matcher_str)?)
+            let mut matcher = RecordMatcher::new(&translit_maybe2(
+                &matcher_str,
+                translit,
+            ))?;
+
+            for matcher_str in self.and.iter() {
+                matcher = matcher
+                    & RecordMatcher::new(&translit_maybe2(
+                        matcher_str,
+                        translit,
+                    ))?;
             }
+
+            for matcher_str in self.or.iter() {
+                matcher = matcher
+                    | RecordMatcher::new(&translit_maybe2(
+                        matcher_str,
+                        translit,
+                    ))?;
+            }
+
+            for matcher_str in self.not.iter() {
+                matcher = matcher
+                    & !RecordMatcher::new(&translit_maybe2(
+                        matcher_str,
+                        translit,
+                    ))?;
+            }
+
+            Some(matcher)
         } else {
             None
         };
