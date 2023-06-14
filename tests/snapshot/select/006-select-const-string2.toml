@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "select \"012A.a, 'abc'\""
+status = "success"
+stdin = "012A \u001fa123\u001fa456\u001e\n"
+stdout = "123,abc\n456,abc\n"
+stderr = ""

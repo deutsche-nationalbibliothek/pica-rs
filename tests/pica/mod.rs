@@ -6,7 +6,6 @@ use crate::TestResult;
 mod json;
 mod print;
 mod sample;
-mod select;
 mod xml;
 
 #[test]

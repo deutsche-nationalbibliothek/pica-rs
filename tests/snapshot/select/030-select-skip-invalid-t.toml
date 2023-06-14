@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "select -s \"003@.0\""
+status = "success"
+stdin = "lsdkfjnsdlkf"
+stdout = ""
+stderr = ""

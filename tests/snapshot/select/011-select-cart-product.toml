@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select -s \"003@.0,041[A@].a\" -o out.csv"
+status = "success"
+stderr = ""
+stdout = ""
