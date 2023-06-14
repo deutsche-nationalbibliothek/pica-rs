@@ -8,9 +8,8 @@ use bstr::BString;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 use crate::error::Result;
-use crate::matcher::{MatcherFlags, OccurrenceMatcher, TagMatcher};
+use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_fields, ParsePicaError};
-use crate::select::{Outcome, Selector};
 use crate::{Field, Path};
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
@@ -270,81 +269,6 @@ impl ByteRecord {
             })
             .map(|subfield| subfield.value())
             .collect()
-    }
-
-    pub fn select(
-        &self,
-        selector: &Selector,
-        ignore_case: bool,
-    ) -> Outcome {
-        match selector {
-            Selector::Value(value) => {
-                Outcome::from_values(vec![BString::from(
-                    value.as_bytes(),
-                )])
-            }
-            Selector::Field(selector) => {
-                let result = self
-                    .iter()
-                    .filter(|field| selector.tag.is_match(field.tag()))
-                    .filter(|field| {
-                        selector.occurrence.is_match(field.occurrence())
-                    })
-                    .filter(|field| {
-                        if let Some(filter) = &selector.filter {
-                            filter.is_match(
-                                field,
-                                &MatcherFlags {
-                                    ignore_case,
-                                    strsim_threshold: 0.0,
-                                },
-                            )
-                        } else {
-                            true
-                        }
-                    })
-                    .map(|field| &field.subfields)
-                    .map(|subfields| {
-                        selector
-                            .subfields
-                            .iter()
-                            .map(|code| {
-                                subfields
-                                    .iter()
-                                    .filter(|subfield| {
-                                        subfield.code == *code
-                                    })
-                                    .map(|subfield| {
-                                        vec![subfield
-                                            .value()
-                                            .to_owned()]
-                                    })
-                                    .collect::<Vec<Vec<BString>>>()
-                            })
-                            .map(|x| {
-                                if x.is_empty() {
-                                    Outcome::one()
-                                } else {
-                                    Outcome(x)
-                                }
-                            })
-                            .fold(Outcome::default(), |acc, x| acc * x)
-                    })
-                    .fold(Outcome::default(), |acc, x| acc + x);
-
-                if result.is_empty() {
-                    let mut values: Vec<BString> =
-                        Vec::with_capacity(selector.subfields.len());
-                    for _ in 0..selector.subfields.len() {
-                        values.push(BString::from(""));
-                    }
-
-                    Outcome::from_values(values)
-                } else {
-                    result
-                }
-            }
-        }
     }
 
     /// Reduce the record to the given fields.
