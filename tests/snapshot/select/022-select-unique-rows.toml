@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select --unique \"003@.0, 041[AP].a\""
+status = "success"
+stdout = "040011569,Algebra\n040011569,Algèbre\n"
+stderr = ""

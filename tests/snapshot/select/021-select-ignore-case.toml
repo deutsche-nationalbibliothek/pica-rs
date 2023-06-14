@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select --ignore-case \"003@.0, 041A{a | a == 'algebra'}\""
+status = "success"
+stdout = "040011569,Algebra\n"
+stderr = ""

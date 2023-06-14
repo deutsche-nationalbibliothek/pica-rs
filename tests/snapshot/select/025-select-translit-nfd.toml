@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select --translit nfd \"041P.a\""
+status = "success"
+stdout = "Algebra\nAlg\u0065\u0300bre\n"
+stderr = ""

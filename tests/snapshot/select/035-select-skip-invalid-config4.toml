@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "-c Pica.toml select -s \"003@.0\""
+status = "success"
+stderr = ""
+stdout = ""

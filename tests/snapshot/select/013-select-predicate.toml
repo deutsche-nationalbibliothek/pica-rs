@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select \"003@.0, 041P{a | 2 == 'ram'}\""
+status = "success"
+stdout = "040011569,Algèbre\n"
+stderr = ""

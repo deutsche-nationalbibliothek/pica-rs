@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select -s --header \"idn, bbg\" \"003@.0,002@.0\" dump.dat.gz -o out.csv"
+status = "success"
+stderr = ""
+stdout = ""

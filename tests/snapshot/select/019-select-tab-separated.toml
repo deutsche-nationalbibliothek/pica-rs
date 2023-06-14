@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select -s --tsv -H \"idn,bbg\" \"003@.0,002@.0\" dump.dat.gz -o out.tsv"
+status = "success"
+stderr = ""
+stdout = ""
