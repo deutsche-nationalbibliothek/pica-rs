@@ -1,5 +1,6 @@
 use std::fmt::Display;
-use std::io::{self, Write};
+use std::hash::{Hash, Hasher};
+use std::io::{self, Cursor, Write};
 use std::ops::{Deref, DerefMut};
 use std::slice::Iter;
 use std::str::Utf8Error;
@@ -341,6 +342,33 @@ impl<'a> DerefMut for ByteRecord<'a> {
     }
 }
 
+impl<'a> From<RecordRef<'a>> for ByteRecord<'a> {
+    fn from(record: RecordRef<'a>) -> Self {
+        ByteRecord {
+            raw_data: None,
+            record,
+        }
+    }
+}
+
+impl<'a> Hash for ByteRecord<'a> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self.raw_data {
+            Some(data) => {
+                eprintln!("hash1");
+                data.hash(state)
+            }
+            None => {
+                eprintln!("hash2");
+                let mut writer = Cursor::new(Vec::<u8>::new());
+                let _ = self.write_to(&mut writer);
+                let data = writer.into_inner();
+                data.hash(state)
+            }
+        };
+    }
+}
+
 impl<'a> StringRecord<'a> {
     /// Creates an PICA+ record from a byte slice.
     ///
@@ -389,6 +417,8 @@ impl<'a> TryFrom<ByteRecord<'a>> for StringRecord<'a> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::hash_map::DefaultHasher;
+
     use nom_test_helpers::prelude::*;
 
     use super::*;
@@ -400,6 +430,26 @@ mod tests {
 
         assert!(record.validate().is_ok());
         assert!(!record.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_byte_record_hash() -> anyhow::Result<()> {
+        let record =
+            ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e\n")?;
+        let mut hasher = DefaultHasher::new();
+        record.hash(&mut hasher);
+        assert_eq!(hasher.finish(), 3101329223602639123);
+
+        let record = ByteRecord::from(RecordRef::new(vec![(
+            "003@",
+            None,
+            vec![('0', "123456789X")],
+        )]));
+        let mut hasher = DefaultHasher::new();
+        record.hash(&mut hasher);
+        assert_eq!(hasher.finish(), 3101329223602639123);
 
         Ok(())
     }
