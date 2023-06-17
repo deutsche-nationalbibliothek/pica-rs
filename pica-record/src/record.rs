@@ -11,6 +11,7 @@ use nom::combinator::all_consuming;
 use nom::multi::many1;
 use nom::sequence::terminated;
 use nom::Finish;
+use sha2::{Digest, Sha256};
 
 use crate::field::{parse_field, RawField};
 use crate::parser::{ParseResult, LF};
@@ -325,6 +326,23 @@ impl<'a> ByteRecord<'a> {
         self.record.retain(f);
         self.raw_data = None;
     }
+
+    pub fn sha256(&self) -> Vec<u8> {
+        let mut hasher = Sha256::new();
+
+        match self.raw_data {
+            Some(data) => hasher.update(data),
+            None => {
+                let mut writer = Cursor::new(Vec::<u8>::new());
+                let _ = self.write_to(&mut writer);
+                let data = writer.into_inner();
+                hasher.update(data);
+            }
+        };
+
+        let result = hasher.finalize();
+        result.to_vec()
+    }
 }
 
 impl<'a> Deref for ByteRecord<'a> {
@@ -354,12 +372,8 @@ impl<'a> From<RecordRef<'a>> for ByteRecord<'a> {
 impl<'a> Hash for ByteRecord<'a> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self.raw_data {
-            Some(data) => {
-                eprintln!("hash1");
-                data.hash(state)
-            }
+            Some(data) => data.hash(state),
             None => {
-                eprintln!("hash2");
                 let mut writer = Cursor::new(Vec::<u8>::new());
                 let _ = self.write_to(&mut writer);
                 let data = writer.into_inner();
@@ -450,6 +464,24 @@ mod tests {
         let mut hasher = DefaultHasher::new();
         record.hash(&mut hasher);
         assert_eq!(hasher.finish(), 3101329223602639123);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_byte_record_sha256() -> anyhow::Result<()> {
+        let record =
+            ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e\n")?;
+
+        assert_eq!(record.sha256(), b"K\x1f8\xbe\xf4m\xa5\xd0\x8b@{u7\x8bi\x96\x96\xc5\x91\xf6 \xddM\xd3\x8dy\xad[\x96;=\xb6");
+
+        let record = ByteRecord::from(RecordRef::new(vec![(
+            "003@",
+            None,
+            vec![('0', "123456789X")],
+        )]));
+
+        assert_eq!(record.sha256(), b"K\x1f8\xbe\xf4m\xa5\xd0\x8b@{u7\x8bi\x96\x96\xc5\x91\xf6 \xddM\xd3\x8dy\xad[\x96;=\xb6");
 
         Ok(())
     }

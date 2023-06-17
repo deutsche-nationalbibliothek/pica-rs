@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * #625 Implement `Hash` for `ByteRecord`
+* #626 Implement `sha256` for `ByteRecord`
 
 ## v0.1.0
 
