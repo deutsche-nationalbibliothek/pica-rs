@@ -327,18 +327,14 @@ impl<'a> ByteRecord<'a> {
         self.raw_data = None;
     }
 
+    /// Returns the SHA-256 hash of the record.
     pub fn sha256(&self) -> Vec<u8> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
         let mut hasher = Sha256::new();
 
-        match self.raw_data {
-            Some(data) => hasher.update(data),
-            None => {
-                let mut writer = Cursor::new(Vec::<u8>::new());
-                let _ = self.write_to(&mut writer);
-                let data = writer.into_inner();
-                hasher.update(data);
-            }
-        };
+        let _ = self.write_to(&mut writer);
+        let data = writer.into_inner();
+        hasher.update(data);
 
         let result = hasher.finalize();
         result.to_vec()
