@@ -47,6 +47,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [count](#count)         | stable     | count records, fields and subfields                               |
 | [filter](#filter)       | stable     | filter records by query expressions                               |
 | [frequency](#frequency) | stable     | compute a frequency table of a subfield                           |
+| [hash](#hash)           | unstable   | compute SHA-256 checksums of records                              |
 | [invalid](#invalid)     | stable     | write input lines, which can't be decoded as normalized PICA+     |
 | [partition](#partition) | stable     | partition a list of records based on subfield values              |
 | [print](#print)         | beta       | print records in human readable format                            |
@@ -190,6 +191,20 @@ $ pica pica frequency "044H{ 9 | b == 'GND' && H == 'aepgnd' && 9? }"
 0123456789,123
 ...
 ...
+```
+
+### Hash
+
+The `hash` command computes SHA-256 checksums of records and writes the
+IDN and hash values as CSV/TSV. The checksums can be used to track
+new and changed records. The checkums is computed over the complete
+PICA+ record including a newline separator.
+
+```bash
+$ pica hash tests/snapshot/data/algebra.dat tests/snapshot/data/math.dat.gz
+idn,sha256
+040011569,ca9add6db02315df1aeee941b8aced2f63968499594dcb0d88ba54df0181d428
+040379442,7635e838185237014c6575009c184ecac2ac106420f543b148e0794723a71bab
 ```
 
 ### Invalid
