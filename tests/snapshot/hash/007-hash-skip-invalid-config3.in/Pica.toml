@@ -1,0 +1,5 @@
+[global]
+skip-invalid = false
+
+[hash]
+skip-invalid = true

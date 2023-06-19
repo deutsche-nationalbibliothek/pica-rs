@@ -67,3 +67,10 @@ fn split() {
         .case("tests/snapshot/split/*.toml")
         .case("tests/snapshot/split/*.trycmd");
 }
+
+#[test]
+fn hash() {
+    trycmd::TestCases::new()
+        .case("tests/snapshot/hash/*.toml")
+        .case("tests/snapshot/hash/*.trycmd");
+}

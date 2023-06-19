@@ -88,7 +88,7 @@ impl Hash {
                             let hash = record
                                 .sha256()
                                 .iter()
-                                .map(|b| format!("{:x}", b))
+                                .map(|b| format!("{:02x}", b))
                                 .collect::<String>();
 
                             writer.write_record(&[

@@ -203,8 +203,8 @@ PICA+ record including a newline separator.
 ```bash
 $ pica hash tests/snapshot/data/algebra.dat tests/snapshot/data/math.dat.gz
 idn,sha256
-040011569,ca9add6db02315df1aeee941b8aced2f63968499594dcbd88ba54df181d428
-040379442,7635e83818523714c657509c184ecac2ac106420f543b148e0794723a71bab
+040011569,ca9add6db02315df1aeee941b8aced2f63968499594dcb0d88ba54df0181d428
+040379442,7635e838185237014c6575009c184ecac2ac106420f543b148e0794723a71bab
 ```
 
 ### Invalid

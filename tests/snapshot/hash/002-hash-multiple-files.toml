@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "hash algebra.dat math.dat.gz -o hashes.csv"
+status = "success"
+stdout = ""
+stderr = ""
