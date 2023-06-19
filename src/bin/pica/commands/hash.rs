@@ -3,7 +3,6 @@ use std::fs::File;
 use std::io::{self, Write};
 
 use clap::Parser;
-use csv;
 use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
