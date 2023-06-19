@@ -17,8 +17,8 @@ use std::{io, process};
 
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
-    Cat, Completions, Convert, Count, Filter, Frequency, Invalid, Json,
-    Partition, Print, Sample, Select, Slice, Split, Xml,
+    Cat, Completions, Convert, Count, Filter, Frequency, Hash, Invalid,
+    Json, Partition, Print, Sample, Select, Slice, Split, Xml,
 };
 use config::Config;
 use util::{CliError, CliResult};
@@ -47,6 +47,7 @@ enum Commands {
     Count(Count),
     Filter(Filter),
     Frequency(Frequency),
+    Hash(Hash),
     Invalid(Invalid),
 
     /// Serialize records to JSON
@@ -79,6 +80,7 @@ fn run() -> CliResult<()> {
         Commands::Count(cmd) => cmd.run(&config),
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),
+        Commands::Hash(cmd) => cmd.run(&config),
         Commands::Invalid(cmd) => cmd.run(&config),
         Commands::Json(cmd) => cmd.run(&config),
         Commands::Partition(cmd) => cmd.run(&config),

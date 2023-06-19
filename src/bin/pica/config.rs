@@ -36,6 +36,7 @@ pub(crate) struct Config {
     pub(crate) count: Option<CountConfig>,
     pub(crate) filter: Option<FilterConfig>,
     pub(crate) frequency: Option<FrequencyConfig>,
+    pub(crate) hash: Option<HashConfig>,
     pub(crate) json: Option<JsonConfig>,
     pub(crate) partition: Option<PartitionConfig>,
     pub(crate) print: Option<PrintConfig>,
