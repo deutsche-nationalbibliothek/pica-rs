@@ -13,7 +13,7 @@ use pica_record::parser::ParseResult;
 use pica_record::Field;
 
 use crate::common::{
-    parse_relational_op_usize, ws, BooleanOp, RelationalOp,
+    comment, parse_relational_op_usize, ws, BooleanOp, RelationalOp,
 };
 use crate::occurrence_matcher::{
     parse_occurrence_matcher, OccurrenceMatcher,
@@ -579,21 +579,21 @@ fn parse_field_matcher_not(i: &[u8]) -> ParseResult<FieldMatcher> {
 fn parse_field_matcher_and(i: &[u8]) -> ParseResult<FieldMatcher> {
     let (i, (first, remainder)) = tuple((
         alt((
-            ws(parse_field_matcher_group),
-            ws(parse_field_matcher_cardinality),
-            ws(parse_field_matcher_singleton),
-            ws(parse_field_matcher_not),
-            ws(parse_field_matcher_exists),
+            comment(ws(parse_field_matcher_group)),
+            comment(ws(parse_field_matcher_cardinality)),
+            comment(ws(parse_field_matcher_singleton)),
+            comment(ws(parse_field_matcher_not)),
+            comment(ws(parse_field_matcher_exists)),
         )),
         many1(preceded(
-            ws(tag("&&")),
-            alt((
-                ws(parse_field_matcher_group),
-                ws(parse_field_matcher_cardinality),
-                ws(parse_field_matcher_singleton),
-                ws(parse_field_matcher_not),
-                ws(parse_field_matcher_exists),
-            )),
+            comment(ws(tag("&&"))),
+            cut(alt((
+                comment(ws(parse_field_matcher_group)),
+                comment(ws(parse_field_matcher_cardinality)),
+                comment(ws(parse_field_matcher_singleton)),
+                comment(ws(parse_field_matcher_not)),
+                comment(ws(parse_field_matcher_exists)),
+            ))),
         )),
     ))(i)?;
 
@@ -606,20 +606,20 @@ fn parse_field_matcher_and(i: &[u8]) -> ParseResult<FieldMatcher> {
 fn parse_field_matcher_or(i: &[u8]) -> ParseResult<FieldMatcher> {
     let (i, (first, remainder)) = tuple((
         alt((
-            ws(parse_field_matcher_group),
-            ws(parse_field_matcher_and),
-            ws(parse_field_matcher_cardinality),
-            ws(parse_field_matcher_singleton),
-            ws(parse_field_matcher_exists),
+            comment(ws(parse_field_matcher_group)),
+            comment(ws(parse_field_matcher_and)),
+            comment(ws(parse_field_matcher_cardinality)),
+            comment(ws(parse_field_matcher_singleton)),
+            comment(ws(parse_field_matcher_exists)),
         )),
         many1(preceded(
-            ws(tag("||")),
+            comment(ws(tag("||"))),
             cut(alt((
-                ws(parse_field_matcher_group),
-                ws(parse_field_matcher_and),
-                ws(parse_field_matcher_cardinality),
-                ws(parse_field_matcher_singleton),
-                ws(parse_field_matcher_exists),
+                comment(ws(parse_field_matcher_group)),
+                comment(ws(parse_field_matcher_and)),
+                comment(ws(parse_field_matcher_cardinality)),
+                comment(ws(parse_field_matcher_singleton)),
+                comment(ws(parse_field_matcher_exists)),
             ))),
         )),
     ))(i)?;

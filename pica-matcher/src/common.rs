@@ -3,10 +3,10 @@ use std::fmt::{self, Display};
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, multispace0, multispace1};
-use nom::combinator::{map, map_res, value, verify};
+use nom::combinator::{map, map_res, opt, value, verify};
 use nom::multi::fold_many0;
-use nom::sequence::{delimited, preceded};
-use nom::IResult;
+use nom::sequence::{delimited, pair, preceded};
+use nom::{IResult, Parser};
 use pica_record::parser::ParseResult;
 
 /// Boolean Operators.
@@ -24,6 +24,19 @@ where
     F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
 {
     delimited(multispace0, inner, multispace0)
+}
+
+pub(crate) fn comment<'a, O, E: nom::error::ParseError<&'a [u8]>, F>(
+    mut inner: F,
+) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
+where
+    F: Parser<&'a [u8], O, E>,
+{
+    move |i: &'a [u8]| {
+        let (i, o) = inner.parse(i)?;
+        let (i, _) = opt(pair(tag("//"), is_not("\n\r")))(i)?;
+        Ok((i, o))
+    }
 }
 
 /// Relational Operator

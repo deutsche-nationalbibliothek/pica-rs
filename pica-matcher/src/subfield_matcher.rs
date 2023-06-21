@@ -19,8 +19,8 @@ use regex::Regex;
 use strsim::normalized_levenshtein;
 
 use crate::common::{
-    parse_relational_op_str, parse_relational_op_usize, parse_string,
-    ws, BooleanOp, RelationalOp,
+    comment, parse_relational_op_str, parse_relational_op_usize,
+    parse_string, ws, BooleanOp, RelationalOp,
 };
 use crate::{MatcherOptions, ParseMatcherError};
 
@@ -735,18 +735,18 @@ fn parse_group_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
 fn parse_or_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     let (i, (first, remainder)) = tuple((
         alt((
-            ws(parse_group_matcher),
-            ws(parse_and_matcher),
-            ws(parse_subfield_singleton_matcher),
-            ws(parse_not_matcher),
+            comment(ws(parse_group_matcher)),
+            comment(ws(parse_and_matcher)),
+            comment(ws(parse_subfield_singleton_matcher)),
+            comment(ws(parse_not_matcher)),
         )),
         many1(preceded(
-            ws(tag("||")),
+            comment(ws(tag("||"))),
             cut(alt((
-                ws(parse_group_matcher),
-                ws(parse_and_matcher),
-                ws(parse_subfield_singleton_matcher),
-                ws(parse_not_matcher),
+                comment(ws(parse_group_matcher)),
+                comment(ws(parse_and_matcher)),
+                comment(ws(parse_subfield_singleton_matcher)),
+                comment(ws(parse_not_matcher)),
             ))),
         )),
     ))(i)?;
@@ -760,22 +760,22 @@ fn parse_or_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
 fn parse_and_matcher(i: &[u8]) -> ParseResult<SubfieldMatcher> {
     let (i, (first, remainder)) = tuple((
         alt((
-            ws(parse_group_matcher),
-            map(
+            comment(ws(parse_group_matcher)),
+            comment(map(
                 ws(parse_singleton_matcher),
                 SubfieldMatcher::Singleton,
-            ),
-            ws(parse_not_matcher),
+            )),
+            comment(ws(parse_not_matcher)),
         )),
         many1(preceded(
-            ws(tag("&&")),
+            comment(ws(tag("&&"))),
             alt((
-                ws(parse_group_matcher),
-                map(
+                comment(ws(parse_group_matcher)),
+                comment(map(
                     ws(parse_singleton_matcher),
                     SubfieldMatcher::Singleton,
-                ),
-                ws(parse_not_matcher),
+                )),
+                comment(ws(parse_not_matcher)),
             )),
         )),
     ))(i)?;
