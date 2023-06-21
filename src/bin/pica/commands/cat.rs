@@ -1,8 +1,11 @@
+use std::collections::BTreeSet;
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
+use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
+use pica_record::ByteRecord;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -19,12 +22,42 @@ pub(crate) struct CatConfig {
     pub(crate) gzip: Option<bool>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Default, ValueEnum)]
+enum Strategy {
+    #[default]
+    Idn,
+    Hash,
+}
+
 /// Concatenate records from multiple files
 #[derive(Parser, Debug)]
 pub(crate) struct Cat {
     /// Skip invalid records that can't be decoded.
     #[arg(short, long)]
     skip_invalid: bool,
+
+    /// Skip duplicate records
+    #[arg(long, short)]
+    unique: bool,
+
+    /// Use the given strategy to determine duplicate records.
+    ///
+    /// The `idn` strategy (default) is used to distinguish records by
+    /// IDN (first value of field `003@.0`) and `hash` compares
+    /// the SHA-256 checksums over all fields of a record.
+    ///
+    /// Note: If a record doesn't contain a IDN value and the `idn`
+    /// strategy  is selected, the record is ignored and won't be
+    /// written to <OUTPUT>.
+    #[arg(
+        long,
+        requires = "unique",
+        default_value = "idn",
+        value_name = "strategy",
+        hide_possible_values = true,
+        hide_default_value = true
+    )]
+    unique_strategy: Strategy,
 
     /// Append to the given file, do not overwrite
     #[arg(long)]
@@ -58,6 +91,21 @@ impl Cat {
             config.global
         );
 
+        let mut seen = BTreeSet::new();
+        let key = |record: &ByteRecord| -> String {
+            match self.unique_strategy {
+                Strategy::Idn => record
+                    .idn()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+                Strategy::Hash => record
+                    .sha256()
+                    .iter()
+                    .map(|b| format!("{:02x}", b))
+                    .collect::<String>(),
+            }
+        };
+
         let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .append(self.append)
@@ -87,6 +135,16 @@ impl Cat {
                         }
                     }
                     Ok(record) => {
+                        if self.unique {
+                            let k = key(&record);
+
+                            if k.is_empty() || seen.contains(&k) {
+                                continue;
+                            }
+
+                            seen.insert(k);
+                        }
+
                         writer.write_byte_record(&record)?;
                         if let Some(ref mut writer) = tee_writer {
                             writer.write_byte_record(&record)?;
