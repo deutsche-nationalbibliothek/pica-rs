@@ -45,18 +45,18 @@ eng,347171
 
 Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten mit
 einbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand
-eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der 
+eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der
 Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation,
 können nur die Felder ausgewählt werden, die einem bestimmten Kriterium
 entsprechen.
 
 Im folgenden Beispiel werden von einem Datensatz nur die `044H` Felder in
 die Ergenisbereichnung mit einbezogen, die ein Unterfeld `b` besitzen, das
-gleich `'GND'` ist, sowie ein Unterfeld `H`, das mit der Zeichenkette 
+gleich `'GND'` ist, sowie ein Unterfeld `H`, das mit der Zeichenkette
 `'ema'` beginnt. Felder, die nicht dem Filter entsprechen werden ignoriert.
 
 ```bash
-$ pica frequency "044H{b == 'GND' && H =^ 'ema', 9}" DUMP.dat
+$ pica frequency "044H{ 9 | b == 'GND' && H =^ 'ema' }" DUMP.dat
 gnd_id,count
 040118827,29359
 040305503,4118
