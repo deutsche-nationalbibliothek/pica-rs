@@ -1,6 +1,6 @@
 use std::path::Path;
-use std::{env, fs};
 use std::sync::OnceLock;
+use std::{env, fs};
 
 use pica_matcher::RecordMatcher;
 use pica_record::RecordMut;
