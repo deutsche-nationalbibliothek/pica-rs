@@ -1,5 +1,5 @@
 use std::ffi::OsString;
-use std::io::{self, Read, Write};
+use std::io::{self, stdout, IsTerminal, Read, Write};
 use std::str::FromStr;
 
 use clap::Parser;
@@ -82,7 +82,7 @@ pub(crate) struct Print {
 
     /// Transliterate output into the selected normalform <NF>
     #[arg(long,
-          value_name = "NF", 
+          value_name = "NF",
           value_parser = ["nfd", "nfkd", "nfc", "nfkc"]
     )]
     translit: Option<String>,
@@ -156,7 +156,7 @@ impl Print {
                 "always" => ColorChoice::Always,
                 "ansi" => ColorChoice::AlwaysAnsi,
                 "auto" => {
-                    if atty::is(atty::Stream::Stdout) {
+                    if stdout().is_terminal() {
                         ColorChoice::Auto
                     } else {
                         ColorChoice::Never
