@@ -1,5 +1,6 @@
+use std::sync::OnceLock;
+
 use bstr::ByteSlice;
-use once_cell::sync::OnceCell;
 use pica_path::{Path, PathExt};
 use pica_record::ByteRecord;
 
@@ -7,7 +8,7 @@ fn ada_lovelace() -> &'static [u8] {
     use std::path::Path;
     use std::{env, fs};
 
-    static DATA: OnceCell<Vec<u8>> = OnceCell::new();
+    static DATA: OnceLock<Vec<u8>> = OnceLock::new();
     DATA.get_or_init(|| {
         let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
         let path = Path::new(&manifest_dir)
