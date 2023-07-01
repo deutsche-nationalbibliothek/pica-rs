@@ -222,7 +222,7 @@ impl Filter {
             .strsim_threshold(self.strsim_threshold as f64 / 100.0)
             .case_ignore(self.ignore_case);
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -294,7 +294,7 @@ impl Filter {
                         }
 
                         if self.limit > 0 && count >= self.limit {
-                            break;
+                            break 'outer;
                         }
                     }
                 }
