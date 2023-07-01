@@ -1,4 +1,4 @@
 bin.name = "pica"
-args = "filter -s -l 2 \"002@.0 =^ 'Ts'\" dump.dat.gz -o out.dat.gz"
+args = "filter -s -l 2 \"002@.0 =^ 'Ts'\" dump.dat.gz dump.dat.gz -o out.dat.gz"
 status = "success"
 stderr = ""
