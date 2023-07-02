@@ -19,7 +19,6 @@ use crate::util::{CliError, CliResult};
 #[serde(deny_unknown_fields)]
 pub(crate) struct PrintConfig {
     pub(crate) skip_invalid: Option<bool>,
-    pub(crate) add_spaces: Option<bool>,
     pub(crate) field_color: Option<PrintColorSpec>,
     pub(crate) occurrence_color: Option<PrintColorSpec>,
     pub(crate) code_color: Option<PrintColorSpec>,
@@ -94,10 +93,6 @@ pub(crate) struct Print {
     )]
     color: String,
 
-    /// Add single space before and after subfield code
-    #[arg(long)]
-    add_spaces: bool,
-
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -114,14 +109,6 @@ impl Print {
             config.print,
             config.global
         );
-
-        let add_spaces = if self.add_spaces {
-            true
-        } else if let Some(ref config) = config.print {
-            config.add_spaces.unwrap_or_default()
-        } else {
-            false
-        };
 
         if let Some(filename) = self.output {
             let mut writer: Box<dyn PicaWriter> =
@@ -219,23 +206,11 @@ impl Print {
                             write!(stdout, "/{occurrence}")?;
                         }
 
-                        if !add_spaces {
-                            write!(stdout, " ")?;
-                        }
-
                         // SUBFIELDS
                         for subfield in field.iter() {
                             stdout.set_color(&code_color)?;
 
-                            if add_spaces {
-                                write!(
-                                    stdout,
-                                    " ${} ",
-                                    subfield.code()
-                                )?;
-                            } else {
-                                write!(stdout, "${}", subfield.code())?;
-                            }
+                            write!(stdout, " ${} ", subfield.code())?;
 
                             let mut value: String =
                                 subfield.value().to_string();
