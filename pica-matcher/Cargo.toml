@@ -20,7 +20,6 @@ pica-record = { version = "0.1", path = "../pica-record" }
 anyhow = "1.0"
 criterion = { version = "0.5", features = ["html_reports"] }
 nom-test-helpers = "6.1"
-once_cell = "1.17"
 
 [features]
 serde = ["dep:serde"]
