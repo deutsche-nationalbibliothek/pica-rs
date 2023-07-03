@@ -54,8 +54,6 @@ enum Commands {
     Json(Json),
     Partition(Partition),
     Print(Print),
-
-    /// Selects a random permutation of records
     Sample(Sample),
 
     /// Select subfield values from records

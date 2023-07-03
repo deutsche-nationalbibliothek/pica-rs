@@ -18,6 +18,7 @@ pub(crate) struct SampleConfig {
     pub(crate) gzip: Option<bool>,
 }
 
+/// Selects a random permutation of records
 #[derive(Parser, Debug)]
 pub(crate) struct Sample {
     /// Skip invalid records that can't be decoded
