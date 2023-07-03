@@ -18,7 +18,8 @@ pub(crate) struct SampleConfig {
     pub(crate) gzip: Option<bool>,
 }
 
-/// Selects a random permutation of records
+/// Selects a random permutation of records of the given sample size
+/// using reservoir sampling.
 #[derive(Parser, Debug)]
 pub(crate) struct Sample {
     /// Skip invalid records that can't be decoded
