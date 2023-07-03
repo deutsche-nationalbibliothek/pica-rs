@@ -107,7 +107,7 @@ impl Sample {
         }
 
         for data in &reservoir {
-            let record = ByteRecord::from_bytes(&data).unwrap();
+            let record = ByteRecord::from_bytes(data).unwrap();
             writer.write_byte_record(&record)?;
         }
 
