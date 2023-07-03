@@ -71,6 +71,7 @@ impl TryFrom<&PrintColorSpec> for ColorSpec {
     }
 }
 
+/// Print records in human readable format
 #[derive(Parser, Debug)]
 pub(crate) struct Print {
     /// Skip invalid records that can't be decoded
