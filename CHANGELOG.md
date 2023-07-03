@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 * #639 Remove `xml` command
+* #640 Remove `json` command
 
 ## [0.17.0] - 2023-06-30
 
