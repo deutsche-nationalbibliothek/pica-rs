@@ -22,7 +22,7 @@ pub(crate) struct SampleConfig {
 /// using reservoir sampling.
 #[derive(Parser, Debug)]
 pub(crate) struct Sample {
-    /// Skip invalid records that can't be decoded
+    /// Skip invalid records that can't be decoded as normalized PICA+
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -34,14 +34,18 @@ pub(crate) struct Sample {
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
-    /// RNG seed
+    /// Initialize the RNG with a seed value to get deterministic
+    /// random records.
     #[arg(long, value_name = "number")]
     seed: Option<u64>,
 
+    /// Number of random records
     #[arg(value_parser = value_parser!(u16).range(1..))]
     sample_size: u16,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format. If no
+    /// filenames where given or a filename is "-", data is read from
+    /// standard input (stdin)
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
