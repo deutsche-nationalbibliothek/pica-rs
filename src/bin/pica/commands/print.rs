@@ -1,12 +1,14 @@
 use std::ffi::OsString;
-use std::io::{self, stdout, IsTerminal, Read, Write};
+use std::fs::File;
+use std::io::{stdout, IsTerminal, Write};
 use std::str::FromStr;
 
+use bstr::ByteSlice;
 use clap::Parser;
-use pica::{PicaWriter, Reader, ReaderBuilder, WriterBuilder};
+use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 use termcolor::{
-    Color, ColorChoice, ColorSpec, StandardStream, WriteColor,
+    Color, ColorChoice, ColorSpec, NoColor, StandardStream, WriteColor,
 };
 
 use crate::config::Config;
@@ -19,8 +21,7 @@ use crate::util::{CliError, CliResult};
 #[serde(deny_unknown_fields)]
 pub(crate) struct PrintConfig {
     pub(crate) skip_invalid: Option<bool>,
-    pub(crate) add_spaces: Option<bool>,
-    pub(crate) field_color: Option<PrintColorSpec>,
+    pub(crate) tag_color: Option<PrintColorSpec>,
     pub(crate) occurrence_color: Option<PrintColorSpec>,
     pub(crate) code_color: Option<PrintColorSpec>,
     pub(crate) value_color: Option<PrintColorSpec>,
@@ -94,10 +95,6 @@ pub(crate) struct Print {
     )]
     color: String,
 
-    /// Add single space before and after subfield code
-    #[arg(long)]
-    add_spaces: bool,
-
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -115,149 +112,109 @@ impl Print {
             config.global
         );
 
-        let add_spaces = if self.add_spaces {
-            true
-        } else if let Some(ref config) = config.print {
-            config.add_spaces.unwrap_or_default()
-        } else {
-            false
+        let choice = match self.color.as_ref() {
+            "always" => ColorChoice::Always,
+            "ansi" => ColorChoice::AlwaysAnsi,
+            "auto" => {
+                if self.output.is_none() && stdout().is_terminal() {
+                    ColorChoice::Auto
+                } else {
+                    ColorChoice::Never
+                }
+            }
+            _ => ColorChoice::Never,
         };
 
-        if let Some(filename) = self.output {
-            let mut writer: Box<dyn PicaWriter> =
-                WriterBuilder::new().from_path(filename)?;
+        let mut tag_color = ColorSpec::new();
+        tag_color.set_bold(true);
 
-            for filename in self.filenames {
-                let builder = ReaderBuilder::new()
-                    .skip_invalid(skip_invalid)
-                    .limit(self.limit);
+        let mut occurrence_color = ColorSpec::new();
+        occurrence_color.set_bold(true);
 
-                let mut reader: Reader<Box<dyn Read>> =
-                    match filename.to_str() {
-                        Some("-") => {
-                            builder.from_reader(Box::new(io::stdin()))
-                        }
-                        _ => builder.from_path(filename)?,
-                    };
+        let mut code_color = ColorSpec::new();
+        code_color.set_bold(true);
 
-                for result in reader.records() {
-                    let value = translit_maybe(
-                        &format!("{}\n\n", result?),
-                        self.translit.as_deref(),
-                    );
+        let mut value_color = ColorSpec::new();
 
-                    writer.write_all(value.as_bytes())?;
-                }
+        if let Some(config) = &config.print {
+            if let Some(spec) = &config.tag_color {
+                tag_color = ColorSpec::try_from(spec)?;
             }
-
-            writer.flush()?;
-        } else {
-            let color_choice = match self.color.as_ref() {
-                "always" => ColorChoice::Always,
-                "ansi" => ColorChoice::AlwaysAnsi,
-                "auto" => {
-                    if stdout().is_terminal() {
-                        ColorChoice::Auto
-                    } else {
-                        ColorChoice::Never
-                    }
-                }
-                _ => ColorChoice::Never,
-            };
-
-            let mut stdout = StandardStream::stdout(color_choice);
-            let mut field_color = ColorSpec::new();
-            field_color.set_bold(true);
-
-            let mut occurrence_color = ColorSpec::new();
-            occurrence_color.set_bold(true);
-
-            let mut code_color = ColorSpec::new();
-            code_color.set_bold(true);
-
-            let mut value_color = ColorSpec::new();
-
-            if let Some(config) = &config.print {
-                if let Some(spec) = &config.field_color {
-                    field_color = ColorSpec::try_from(spec)?;
-                }
-                if let Some(spec) = &config.occurrence_color {
-                    occurrence_color = ColorSpec::try_from(spec)?;
-                }
-                if let Some(spec) = &config.code_color {
-                    code_color = ColorSpec::try_from(spec)?;
-                }
-                if let Some(spec) = &config.value_color {
-                    value_color = ColorSpec::try_from(spec)?;
-                }
+            if let Some(spec) = &config.occurrence_color {
+                occurrence_color = ColorSpec::try_from(spec)?;
             }
-
-            for filename in self.filenames {
-                let builder = ReaderBuilder::new()
-                    .skip_invalid(skip_invalid)
-                    .limit(self.limit);
-
-                let mut reader: Reader<Box<dyn Read>> =
-                    match filename.to_str() {
-                        Some("-") => {
-                            builder.from_reader(Box::new(io::stdin()))
-                        }
-                        _ => builder.from_path(filename)?,
-                    };
-
-                for result in reader.records() {
-                    let record = result?;
-
-                    for field in record.iter() {
-                        // TAG
-                        stdout.set_color(&field_color)?;
-                        write!(stdout, "{}", field.tag())?;
-
-                        // OCCURRENCE
-                        if let Some(occurrence) = field.occurrence() {
-                            stdout.set_color(&occurrence_color)?;
-                            write!(stdout, "/{occurrence}")?;
-                        }
-
-                        if !add_spaces {
-                            write!(stdout, " ")?;
-                        }
-
-                        // SUBFIELDS
-                        for subfield in field.iter() {
-                            stdout.set_color(&code_color)?;
-
-                            if add_spaces {
-                                write!(
-                                    stdout,
-                                    " ${} ",
-                                    subfield.code()
-                                )?;
-                            } else {
-                                write!(stdout, "${}", subfield.code())?;
-                            }
-
-                            let mut value: String =
-                                subfield.value().to_string();
-                            value = translit_maybe(
-                                &value.replace('$', "$$"),
-                                self.translit.as_deref(),
-                            );
-
-                            stdout.set_color(&value_color)?;
-                            write!(stdout, "{value}")?;
-                        }
-
-                        writeln!(stdout)?;
-                    }
-                    writeln!(stdout)?;
-                }
+            if let Some(spec) = &config.code_color {
+                code_color = ColorSpec::try_from(spec)?;
             }
-
-            stdout.reset()?;
-            stdout.flush()?;
+            if let Some(spec) = &config.value_color {
+                value_color = ColorSpec::try_from(spec)?;
+            }
         }
 
+        let mut writer: Box<dyn WriteColor> = match self.output {
+            Some(filename) => {
+                Box::new(NoColor::new(File::create(filename)?))
+            }
+            None => Box::new(StandardStream::stdout(choice)),
+        };
+
+        let mut count = 0;
+
+        'outer: for filename in self.filenames {
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
+
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        for field in record.iter() {
+                            writer.set_color(&tag_color)?;
+                            write!(writer, "{}", field.tag())?;
+
+                            if let Some(occurrence) = field.occurrence()
+                            {
+                                writer.set_color(&occurrence_color)?;
+                                occurrence.write_to(&mut writer)?;
+                            }
+
+                            for subfield in field.subfields() {
+                                let code = subfield.code();
+                                writer.set_color(&code_color)?;
+                                write!(writer, " ${code}")?;
+
+                                let value =
+                                    subfield.value().to_str_lossy();
+                                let value = translit_maybe(
+                                    &value,
+                                    self.translit.as_deref(),
+                                );
+
+                                writer.set_color(&value_color)?;
+                                write!(writer, " {value}")?;
+                            }
+
+                            writeln!(writer)?;
+                        }
+
+                        writeln!(writer)?;
+                        count += 1;
+
+                        if self.limit > 0 && count >= self.limit {
+                            break 'outer;
+                        }
+                    }
+                }
+            }
+        }
+
+        writer.flush()?;
         Ok(())
     }
 }
