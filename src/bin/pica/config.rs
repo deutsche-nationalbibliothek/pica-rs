@@ -44,7 +44,6 @@ pub(crate) struct Config {
     pub(crate) select: Option<SelectConfig>,
     pub(crate) slice: Option<SliceConfig>,
     pub(crate) split: Option<SplitConfig>,
-    pub(crate) xml: Option<XmlConfig>,
 }
 
 impl Config {

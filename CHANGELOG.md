@@ -11,12 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * #637 Stabilize `print` command
 
+### Removed
+
+* #639 Remove `xml` command
+
 ## [0.17.0] - 2023-06-30
 
 ### Added
 
 * #622 Support boolean connectives in `select` command
-* #624 Support allow- and deny-lists in `select` command 
+* #624 Support allow- and deny-lists in `select` command
 * #627 Add `hash` command
 
 ## [0.16.0] - 2023-05-26

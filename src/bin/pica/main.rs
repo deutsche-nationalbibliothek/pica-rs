@@ -18,7 +18,7 @@ use std::{io, process};
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
     Cat, Completions, Convert, Count, Filter, Frequency, Hash, Invalid,
-    Json, Partition, Print, Sample, Select, Slice, Split, Xml,
+    Json, Partition, Print, Sample, Select, Slice, Split,
 };
 use config::Config;
 use util::{CliError, CliResult};
@@ -62,9 +62,6 @@ enum Commands {
     Select(Select),
     Slice(Slice),
     Split(Split),
-
-    /// Serialize records to PICA XML
-    Xml(Xml),
 }
 
 fn run() -> CliResult<()> {
@@ -87,7 +84,6 @@ fn run() -> CliResult<()> {
         Commands::Select(cmd) => cmd.run(&config),
         Commands::Slice(cmd) => cmd.run(&config),
         Commands::Split(cmd) => cmd.run(&config),
-        Commands::Xml(cmd) => cmd.run(&config),
     }
 }
 
@@ -130,10 +126,6 @@ fn main() {
         }
         Err(CliError::Csv(err)) => {
             eprintln!("CSV Error: {err}");
-            process::exit(1);
-        }
-        Err(CliError::Xml(err)) => {
-            eprintln!("XML Error: {err}");
             process::exit(1);
         }
         Err(CliError::Other(err)) => {
