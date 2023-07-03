@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "print"
+status = "success"
+stdin = "003@ \u001f0123456789X\u001e\n"
+stdout = "003@ $0 123456789X\n\n"
+stderr = ""

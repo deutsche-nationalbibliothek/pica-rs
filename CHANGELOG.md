@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* #637 Stabilize `print` command
+
 ### Removed
 
-* #638 Remove `xml` command
+* #639 Remove `xml` command
 
 ## [0.17.0] - 2023-06-30
 

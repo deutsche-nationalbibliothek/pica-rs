@@ -50,7 +50,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [hash](#hash)           | unstable   | compute SHA-256 checksums of records                              |
 | [invalid](#invalid)     | stable     | write input lines, which can't be decoded as normalized PICA+     |
 | [partition](#partition) | stable     | partition a list of records based on subfield values              |
-| [print](#print)         | beta       | print records in human readable format                            |
+| [print](#print)         | stable     | print records in human readable format                            |
 | [sample](#sample)       | beta       | selects a random permutation of records                           |
 | [select](#select)       | beta       | select subfield values from records                               |
 | [slice](#slice)         | stable     | return records withing a range (half-open interval)               |
@@ -248,12 +248,12 @@ outdir
 
 ### Print
 
-The `print` command is used to print records in humand-readable [PICA
-Plain](http://format.gbv.de/pica/plain) format.
+The `print` command is used to print records in humand-readable format.
+Multiple records are separated by newline.
 
 ```bash
 $ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica print
-003@ $0123456789$ab
+003@ $0 123456789 $a b
 ```
 
 ### Sample

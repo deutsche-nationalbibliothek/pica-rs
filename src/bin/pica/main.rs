@@ -53,8 +53,6 @@ enum Commands {
     /// Serialize records to JSON
     Json(Json),
     Partition(Partition),
-
-    /// Print records in human readable format
     Print(Print),
 
     /// Selects a random permutation of records
