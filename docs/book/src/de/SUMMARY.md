@@ -19,7 +19,6 @@
     - [slice]()
     - [split]()
     - [json]()
-    - [xml]()
 
 # Tutorials
 
