@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "print -s --color=never --limit 2 dump.dat.gz dump.dat.gz"
+status = "success"
+stdin = ""
+stderr = ""

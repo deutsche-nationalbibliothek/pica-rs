@@ -74,3 +74,10 @@ fn hash() {
         .case("tests/snapshot/hash/*.toml")
         .case("tests/snapshot/hash/*.trycmd");
 }
+
+#[test]
+fn print() {
+    trycmd::TestCases::new()
+        .case("tests/snapshot/print/*.toml")
+        .case("tests/snapshot/print/*.trycmd");
+}

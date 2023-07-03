@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "-c Pica.toml print --color=never -l1 dump.dat.gz -o out.txt"
+status = "success"
+stdin = ""
+stdout = ""
+stderr = ""
