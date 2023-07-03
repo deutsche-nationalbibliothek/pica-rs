@@ -270,7 +270,7 @@ impl Add for Outcome {
 
     fn add(self, rhs: Self) -> Self::Output {
         let mut result = self.0;
-        result.extend(rhs.0.into_iter());
+        result.extend(rhs.0);
         Self(result)
     }
 }
