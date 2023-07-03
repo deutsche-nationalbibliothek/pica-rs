@@ -55,7 +55,6 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [select](#select)       | beta       | select subfield values from records                               |
 | [slice](#slice)         | stable     | return records withing a range (half-open interval)               |
 | [split](#split)         | stable     | split a list of records into chunks                               |
-| [json](#json)           | depricated | serialize records in JSON                                         |
 
 ## Usage
 
@@ -343,41 +342,6 @@ outdir
 ├── CHUNK_0.dat
 ├── CHUNK_10.dat
 ├── ...
-```
-
-### JSON
-
-This command serializes the internal representation of record to JSON:
-
-```bash
-$ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica json | jq .
-[
-  {
-    "fields": [
-      {
-        "name": "003@",
-        "subfields": [
-          {
-            "name": "0",
-            "value": "123456789"
-          },
-          {
-            "name": "a",
-            "value": "b"
-          }
-        ]
-      }
-    ]
-  }
-]
-```
-
-The result can be processed with other tools and programming languages.
-To get [PICA JSON](http://format.gbv.de/pica/json) format you can pipe
-the result to this [jq](https://stedolan.github.io/jq/) command:
-
-```bash
-jq -c '.[]|.fields|map([.tag,.occurrence]+(.subfields|map(.tag,.value)))'
 ```
 
 ## Related Projects
