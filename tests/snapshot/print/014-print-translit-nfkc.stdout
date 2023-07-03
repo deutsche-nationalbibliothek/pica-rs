@@ -1,0 +1,122 @@
+001@ $0 -
+001A $0 1250:01-07-88
+001B $0 1210:24-07-21 $t 11:49:50.000
+001D $0 9999:17-01-09
+001U $0 utf8
+001X $0 0
+002@ $0 Tg1
+003@ $0 040181189
+003U $a http://d-nb.info/gnd/4018118-2 $z http://d-nb.info/gnd/2028282-5 $z http://d-nb.info/gnd/1072891670 $z http://d-nb.info/gnd/1085178153 $z http://d-nb.info/gnd/1092221298
+004B $a gik
+006Y $S geonames $0 2925533
+007K $a gnd $0 4018118-2
+007N $a gnd $0 1092221298
+007N $a gnd $0 1085178153
+007N $a gnd $0 1072891670
+007N $a gnd $0 2028282-5
+007N $a gkd $0 16276815-1
+007N $a gkd $0 2028282-5 $v zg
+007N $a swd $0 4018118-2 $v zg
+008A $a d $a f $a g $a h $a s
+008B $a w $a o $a v $a z
+010E $b ger $e rda
+029@ $a Frankfurt am Main $b Stadtverordnetenversammlung $4 spio
+029@ $a Frankfurt am Main $b Presse- und Informationsamt $4 spio
+029@ $a Frankfurt am Main $b Presseamt $4 spio
+029@ $a Frankfurt am Main $b Pressestelle $4 spio
+029@ $a Pressestelle $g Frankfurt am Main $4 spio
+029@ $a Städtische Pressestelle $g Frankfurt am Main $4 spio
+029@ $a Frankfurt am Main $b Stadtverwaltung $4 spio
+029@ $a Stadtverwaltung $g Frankfurt am Main $4 spio
+029@ $a Frankfurt am Main $b Rat der Stadt $4 spio
+029@ $a Rat der Stadt $g Frankfurt am Main $4 spio
+029@ $a Frankfurt am Main $b Stadtverordnetenvorsteher $4 spio
+029@ $a Stadtverordnetenvorsteher $g Frankfurt am Main $4 spio
+029@ $a Frankfurt am Main $b Parlament $4 spio
+029@ $a Frankfurt am Main $b Arbeitsgruppe Strukturplanung $4 spio
+029@ $a Frankfurt am Main $b Öffentlichkeitsreferat $4 spio
+029@ $a Stadtverordnetenversammlung $g Frankfurt am Main $4 spio
+029@ $a Frankfurt am Main $b AG Öffentlichkeitsarbeit $4 spio
+029@ $a Frankfurt am Main $b Hauptamt $4 spio
+029@ $a Hauptamt $g Frankfurt am Main $4 spio
+029@ $a Frankfurt am Main $b Stadtparlament $4 spio
+029@ $a Frankfurt am Main $b Bürgermeister $4 spio
+029@ $a Stadtparlament $g Frankfurt am Main $4 spio
+029@ $a AG Öffentlichkeitsarbeit $g Frankfurt am Main $4 spio
+029@ $a Frankfurt am Main $b Stadtkanzlei $4 spio
+029@ $a Stadtkanzlei $g Frankfurt am Main $4 spio
+037G $c T2--434164 $d 4 $t 2007-01-01
+037H $A agx $d E 008 41 03 $e E 008 41 03 $f N 050 06 55 $g N 050 06 55 $u https://sws.geonames.org/2925533 $2 geonames
+037H $A dgx $d E008.684166 $e E008.684166 $f N050.115277 $g N050.115277 $u https://sws.geonames.org/2925533 $2 geonames
+042B $a XA-DE-HE
+047A/03 $e DE-101
+047A/03 $r DE-101
+047C $S swd $i g $a Frankfurt am Main $0 4018118-2
+047C $S gkd $i a $a Frankfurt <Main> $0 2028282-5
+050C $a MMi
+050C $a off(DE-101)*Eckkoordinaten zum 1.6.2017 wieder durch Mittelpunktkoo. ersetzt. Alte, irrtümliche, Werte: E 008 28 22 - E 008 48 01 / N 050 13 38 - N 050 00 55 //sws.geonames.org/2925533 ; Dezimal: E008.472778 - E008.800278 / N050.227222 - N050.015278 //sws.geonames.org/2925533
+050C $a Buchbesitz: HAAB Weimar
+050E $a Provenienzmerkmal $b Stempel
+050E $a Orts-Mü. 28
+050E $a B 2006 2.
+050E $a Geo-Du.
+050E $a M
+050E $a GeoNames
+050E $a LCAuth/GND
+050E $a Homepage $b Stand: 11.10.2019 $u https://www.frankfurt.de/
+050G $b Stadt (vor 1200) im Regierungsbezirk Darmstadt, röm. Kastelle u. Zivilsiedlung, merowing. Siedlung u. Pfalz 794 urkundl. erwähnt
+065@ $a Stadt Frankfurt am Main
+065@ $a Freie Stadt Frankfurt
+065@ $a Frankfurt $g Main $4 ngkd
+065@ $a Frankfurt (Main)
+065@ $a Groß-Frankfurt $g Main
+065@ $a Franckfurt $g Mayn
+065@ $a Franckfurth $g Mayn
+065@ $a Franconovurd $v 794
+065@ $a Frankfort $g Main
+065@ $a Francfort $g Main
+065@ $a Phrankphurtē $g Main
+065@ $a Franqfûrt $g Main
+065@ $a Frankfurt-na-Majne
+065@ $a Francofort $g Main
+065@ $a Francoforte $g Meno
+065@ $a Francofurti ad Moenum $v Vorlage
+065@ $a Francofurti $g Moenum
+065@ $a Francofurti $g Moenum
+065@ $a Francofurtum ad Moenum $v Orbis latinus
+065@ $a Francofurtum $g Moenum
+065@ $a Francofurtum $g Moenum
+065@ $a Helenopolis $v Orbis latinus
+065@ $a Frankfurt a. M.
+065@ $a Frankfurt a.M.
+065@ $a Francfort-sur-le-Main
+065@ $a Frankfurt am Mayn
+065@ $a Francofurtum ad Mogum
+065@ $a Franckenfurt am Meyn
+065@ $a Frankfort on the Main
+065@ $a Frankfurt-na-Maǐni
+065@ $a Frankfurt-na-Maǐne
+065@ $a Francoforte sul Meno
+065@ $a Franckfurt am Mayn
+065@ $a Frankfurt $g Main
+065@ $a Francofordia ad Moenum
+065@ $a Franconovada
+065@ $a Franckfort am Meyn
+065@ $a Franckfurt am Meyn
+065@ $a Mæno Franckofurtensis
+065@ $a Maeno Franckofurtensis
+065@ $a Traiectum ad Moenum
+065@ $a Trajectum ad Moenum
+065@ $a Francfurt am Mayn
+065@ $a Moenofrancofurtano
+065@ $a Frankfurtas prie Maino $v lit
+065@ $a Frankfurt nad Menem $v pol
+065@ $a Frankfurt nad Mohanom $v slo
+065@ $a Frankfurt nad Mohanem $v cze
+065@ $a PRNQPWRṬ D-MYYN
+065A $a Frankfurt am Main
+065P $T 01 $U Hebr $a פרנקפורט דמיין
+065P $T 01 $U Jpan $a フランクフルト $g マイン
+065P $T 01 $U Hebr $L yid $a פרנקפורט דמיין
+070A/03 $0 (DE-588)4018118-2
+

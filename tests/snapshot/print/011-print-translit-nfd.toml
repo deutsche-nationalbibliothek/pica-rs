@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "print --color=never --translit nfd"
+status = "success"
+stderr = ""

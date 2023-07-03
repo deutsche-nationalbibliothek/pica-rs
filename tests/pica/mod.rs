@@ -4,7 +4,6 @@ use predicates::prelude::*;
 use crate::TestResult;
 
 mod json;
-mod print;
 mod sample;
 mod xml;
 

@@ -1,0 +1,5 @@
+[global]
+skip-invalid = false
+
+[print]
+skip-invalid = true

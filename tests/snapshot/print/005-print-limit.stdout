@@ -1,0 +1,99 @@
+001A $0 1250:01-07-88
+001B $0 1250:24-04-19 $t 15:55:35.000
+001D $0 9999:17-01-09
+001U $0 utf8
+001X $0 0
+002@ $0 Ts1
+003@ $0 040011569
+003U $a http://d-nb.info/gnd/4001156-2
+004B $a saz
+007K $a gnd $0 4001156-2
+007N $a swd $0 4001156-2 $v zg
+008A $a s
+008B $a w $a z $a o
+037G $c 512 $d 3 $t 2007-01-01
+041@ $a Axiomatische Algebra
+041@ $a Formale Algebra
+041@ $a Höhere Algebra
+041A $a Algebra
+041P $a Algebra $u http://lccn.loc.gov/sh85003425 $S DLC $0 sh 85003425 $2 lcsh $v MACS-Mapping. Bitte keine Änderungen vornehmen.
+041P $a Algèbre $u http://data.bnf.fr/11930858 $S FrPBN $0 FRBNF119308582 $2 ram $v MACS-Mapping. Bitte keine Änderungen vornehmen.
+041R $9 040379442 $7 Tsz $V saz $A gnd $0 4037944-9 $a Mathematik $4 obal
+042A $a 28
+047A/03 $e DE-101
+047A/03 $r DE-101
+047C $S swd $i s $a Algebra $0 4001156-2
+050E $a M, Au=DB
+050H $a ohne Unterscheidung für die Disziplin der Mathematik und die Algebraische Struktur
+070A/02 $S MACS $0 0000478
+
+001A $0 1250:01-07-88
+001B $0 1140:06-02-20 $t 08:16:26.000
+001D $0 9999:06-04-08
+001U $0 utf8
+001X $0 0
+002@ $0 Tp1
+003@ $0 118515551
+003U $a http://d-nb.info/gnd/118515551 $z http://d-nb.info/gnd/185847277
+004B $a piz
+007K $a gnd $0 118515551
+007N $a gnd $0 185847277
+007N $a pnd $0 185847277 $v zg
+007N $a pnd $0 118515551 $v zg
+007N $a pnd $0 131290991
+007N $a pnd $0 127231935
+007N $a swd $0 4008313-5 $v zg
+008A $a s $a f $a z $a d
+008B $a v $a w $a k $a e $a m $a o
+010E $b ger
+028@ $d Herman $a Broch
+028@ $d Herman $a Broh
+028@ $d Cherman $a Mproch
+028@ $d German $a Broch
+028@ $d Herman $a Broxi
+028@ $T 01 $U Kore $d 헤르만 $a 브로흐 $5 DE-576
+028@ $T 01 $U Hebr $d הרמן $a ברוך $5 DE-576
+028@ $T 01 $U Jpan $P ヘルマン・ブロッホ $5 DE-576
+028A $d Hermann $a Broch
+028P $d Hermann $a Broch $S DLC $0 n 79065821 $2 naf $v 1886-1951
+028R $9 116525703 $7 Tp1 $V piz $A gnd $0 116525703 $E 1910 $G 1994 $d Hermann F. $a Broch de Rothermann $4 bezf $v Sohn
+028R $9 116816902 $7 Tp1 $V piz $A gnd $0 116816902 $E 1884 $G 1949 $d Alice $a Schmutzer $4 bezf $v Cousine
+028R $9 123001145 $7 Tp1 $V piz $A gnd $0 123001145 $E 1881 $G 1976 $d Georg $a Merkel $4 beza $v Freund
+028R $9 12987468X $7 Tp1 $V piz $A gnd $0 12987468X $E 1906 $G 1977 $d Ruth $a Norden $4 beza
+028R $9 1156961211 $7 Tp3 $V pip $A gnd $0 1156961211 $d K. L. $a Hib $4 pseu
+032T $a m
+041R $9 040457907 $7 Ts1 $V saz $A gnd $0 4045790-4 $a Philosoph $4 berc
+041R $9 040287815 $7 Ts1 $V saz $A gnd $0 4028781-6 $a Journalist $4 beru
+041R $9 040533093 $7 Tsz $V saz $A gnd $0 4053309-8 $a Schriftsteller $4 beru
+041R $9 199106460 $7 Ts7 $A gnd $0 7773640-0 $a Textilingenieur $4 beru
+042A $a 12.2p $a 4.7p
+042B $a XA-AT $a XD-US
+042C $a ger
+046G $a Broch, Hermann: James Joyce und die Gegenwart. - 1936
+047A/03 $e DE-101
+047A/03 $r DE-101
+047C $S pnd $i a $a Broch, Hermann $0 118515551
+047C $S pnd $i a $a Broch, Hermann $0 185847277
+050C $a OENAK
+050E $a Archiv der American Guild for German Cultural Freedom, New York im Deutschen Exilarchiv 1933 - 1945
+050E $a B 1986
+050E $a LCAuth
+050E $a NDB
+050E $a Kosch Lit.
+050E $a M
+050E $a Biogr. H Emigr.
+050E $a Wikipedia $u http://de.wikipedia.org/wiki/Hermann%5FBroch
+050E $a M; B 1986; LoC-NA; NDB; Kosch Lit.; Biogr. H Emigr
+050G $b Kulturphilosoph, ursprünglich Textilingenieur, emigrierte 1938 in die USA; Vater des Hermann Friedrich Broch
+050G $b emigrierte 1938 in die USA
+050G $b Schriftsteller, Österreich, USA
+060R $a 01.11.1886 $b 30.05.1951 $4 datx
+060R $a 1886 $b 1951 $4 datl
+065R $9 040660095 $7 Tgz $V gik $A gnd $0 4066009-6 $a Wien $4 ortg
+065R $9 041178548 $7 Tg1 $V gik $A gnd $0 4117854-3 $a New Haven, Conn. $4 orts
+065R $9 041178548 $7 Tg1 $V gik $A gnd $0 4117854-3 $a New Haven, Conn. $4 ortw
+065R $9 040787044 $7 Tgz $V gik $A gnd $0 4078704-7 $a USA $4 ortx $Z 1938
+070A/03 $0 (DE-588)118515551
+070A/03 $S IDS $0 110070566
+070A/03 $S IDS $0 120055561
+
