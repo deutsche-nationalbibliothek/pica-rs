@@ -18,7 +18,6 @@
     - [select]()
     - [slice]()
     - [split]()
-    - [json]()
 
 # Tutorials
 
