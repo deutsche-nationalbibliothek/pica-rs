@@ -6,7 +6,6 @@ use crate::TestResult;
 mod json;
 mod print;
 mod sample;
-mod xml;
 
 #[test]
 fn pica_io_error() -> TestResult {

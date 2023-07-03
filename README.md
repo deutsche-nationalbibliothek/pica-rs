@@ -56,7 +56,6 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [slice](#slice)         | stable     | return records withing a range (half-open interval)               |
 | [split](#split)         | stable     | split a list of records into chunks                               |
 | [json](#json)           | depricated | serialize records in JSON                                         |
-| [xml](#xml)             | depricated | serialize records into [PICA XML](https://format.gbv.de/pica/xml) |
 
 ## Usage
 
@@ -379,25 +378,6 @@ the result to this [jq](https://stedolan.github.io/jq/) command:
 
 ```bash
 jq -c '.[]|.fields|map([.tag,.occurrence]+(.subfields|map(.tag,.value)))'
-```
-
-### XML
-
-The `xml` command converts records into the [PICA
-XML](https://format.gbv.de/pica/xml) format. More information can be
-found in the [GBV
-Wiki](https://verbundwiki.gbv.de/display/VZG/PICA+XML+Version+1.0).
-
-```
-$ echo -e "003@ \x1f0123456789\x1fab\x1e" | pica xml
-<?xml version="1.0" encoding="utf-8"?>
-<collection xmlns="info:srw/schema/5/picaXML-v1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="info:srw/schema/5/picaXML-v1.0">
-  <record>
-    <datafield tag="003@">
-      <subfield code="0">123456789</subfield>
-    </datafield>
-  </record>
-</collection>
 ```
 
 ## Related Projects

@@ -13,7 +13,6 @@ mod sample;
 mod select;
 mod slice;
 mod split;
-mod xml;
 
 pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
@@ -30,5 +29,3 @@ pub(crate) use sample::{Sample, SampleConfig};
 pub(crate) use select::{Select, SelectConfig};
 pub(crate) use slice::{Slice, SliceConfig};
 pub(crate) use split::{Split, SplitConfig};
-
-pub(crate) use self::xml::{Xml, XmlConfig};
