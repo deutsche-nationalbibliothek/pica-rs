@@ -339,6 +339,10 @@ impl<'a> ByteRecord<'a> {
         let result = hasher.finalize();
         result.to_vec()
     }
+
+    pub fn into_inner(self) -> RecordRef<'a> {
+        self.record
+    }
 }
 
 impl<'a> Deref for ByteRecord<'a> {

@@ -1,10 +1,8 @@
 use std::ffi::OsString;
-use std::io::{self, Read};
 
 use clap::{value_parser, Parser};
-use pica::{
-    ByteRecord, PicaWriter, Reader, ReaderBuilder, WriterBuilder,
-};
+use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
+use pica_record::ByteRecord;
 use rand::rngs::StdRng;
 use rand::{thread_rng, Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
@@ -55,49 +53,56 @@ impl Sample {
             config.global
         );
 
-        let mut writer: Box<dyn PicaWriter> = WriterBuilder::new()
+        let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .from_path_or_stdout(self.output)?;
-
-        let sample_size = self.sample_size as usize;
-        let mut reservoir: Vec<ByteRecord> =
-            Vec::with_capacity(sample_size);
 
         let mut rng: StdRng = match self.seed {
             None => StdRng::from_rng(thread_rng()).unwrap(),
             Some(seed) => StdRng::seed_from_u64(seed),
         };
 
+        let sample_size = self.sample_size as usize;
+        let mut reservoir: Vec<Vec<u8>> =
+            Vec::with_capacity(sample_size);
+
         let mut i = 0;
 
         for filename in self.filenames {
-            let builder =
-                ReaderBuilder::new().skip_invalid(skip_invalid);
-            let mut reader: Reader<Box<dyn Read>> = match filename
-                .to_str()
-            {
-                Some("-") => builder.from_reader(Box::new(io::stdin())),
-                _ => builder.from_path(filename)?,
-            };
+            let mut reader =
+                ReaderBuilder::new().from_path(filename)?;
 
-            for result in reader.byte_records() {
-                let record = result?;
+            while let Some(result) = reader.next() {
+                match result {
+                    Err(e) => {
+                        if e.is_invalid_record() && skip_invalid {
+                            continue;
+                        } else {
+                            return Err(e.into());
+                        }
+                    }
+                    Ok(record) => {
+                        let mut data = Vec::<u8>::new();
+                        record.write_to(&mut data)?;
 
-                if i < sample_size {
-                    reservoir.push(record);
-                } else {
-                    let j = rng.gen_range(0..i);
-                    if j < sample_size {
-                        reservoir[j] = record;
+                        if i < sample_size {
+                            reservoir.push(data);
+                        } else {
+                            let j = rng.gen_range(0..i);
+                            if j < sample_size {
+                                reservoir[j] = data;
+                            }
+                        }
+
+                        i += 1;
                     }
                 }
-
-                i += 1;
             }
         }
 
-        for record in &reservoir {
-            writer.write_byte_record(record)?;
+        for data in &reservoir {
+            let record = ByteRecord::from_bytes(&data).unwrap();
+            writer.write_byte_record(&record)?;
         }
 
         writer.finish()?;

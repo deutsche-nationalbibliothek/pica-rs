@@ -320,8 +320,8 @@ fn pica_sample_skip_invalid() -> TestResult {
         .failure()
         .code(1)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::eq(
-            "Pica Error: Invalid record on line 2.\n",
+        .stderr(predicate::str::starts_with(
+            "Parse Pica Error: invalid record",
         ));
 
     let mut cmd = Command::cargo_bin("pica")?;
