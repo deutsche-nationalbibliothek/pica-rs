@@ -81,3 +81,10 @@ fn print() {
         .case("tests/snapshot/print/*.toml")
         .case("tests/snapshot/print/*.trycmd");
 }
+
+#[test]
+fn sample() {
+    trycmd::TestCases::new()
+        .case("tests/snapshot/sample/*.toml")
+        .case("tests/snapshot/sample/*.trycmd");
+}
