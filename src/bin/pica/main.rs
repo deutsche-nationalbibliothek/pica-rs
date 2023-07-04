@@ -51,8 +51,6 @@ enum Commands {
     Invalid(Invalid),
     Partition(Partition),
     Print(Print),
-
-    /// Selects a random permutation of records
     Sample(Sample),
 
     /// Select subfield values from records

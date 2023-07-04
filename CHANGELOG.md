@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * #637 Stabilize `print` command
+* #641 Stabilize `sample` command
 
 ### Removed
 

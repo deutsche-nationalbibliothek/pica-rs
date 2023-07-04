@@ -51,7 +51,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --t
 | [invalid](#invalid)     | stable     | write input lines, which can't be decoded as normalized PICA+     |
 | [partition](#partition) | stable     | partition a list of records based on subfield values              |
 | [print](#print)         | stable     | print records in human readable format                            |
-| [sample](#sample)       | beta       | selects a random permutation of records                           |
+| [sample](#sample)       | stable     | selects a random permutation of records                           |
 | [select](#select)       | beta       | select subfield values from records                               |
 | [slice](#slice)         | stable     | return records withing a range (half-open interval)               |
 | [split](#split)         | stable     | split a list of records into chunks                               |
