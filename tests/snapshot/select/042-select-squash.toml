@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "select -s \"003@.0,010@.a\" --squash"
+status = "success"
+stdin = "003@ \u001f0123456789X\u001e010@ \u001fager\u001faeng\u001e010@ \u001famul\u001e\n"
+stdout = "123456789X,ger|eng\n123456789X,mul\n"
+stderr = ""
