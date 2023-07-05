@@ -31,11 +31,16 @@ pub(crate) struct Select {
     #[arg(short, long)]
     skip_invalid: bool,
 
-    /// Squash subfield values.
+    /// Whether to squash all values of a repeated subfield into a
+    /// single value or not. The separator can be specified by the
+    /// `--separator` option.
     #[arg(long)]
     squash: bool,
 
-    #[arg(long, default_value = "|")]
+    /// Sets the separator used for squashing of repeated subfield
+    /// values into a single value. Note that it's possible to use the
+    /// empty string as a separator.
+    #[arg(long, default_value = "|", requires = "squash")]
     separator: String,
 
     /// Disallow empty columns
