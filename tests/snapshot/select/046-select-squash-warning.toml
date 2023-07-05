@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "select -s \"003@.0,010@.a\" --squash --separator 'X'"
+status = "success"
+stderr = "WARNING: A subfield value contains squash separator 'X'.\n"
+stdin = "003@ \u001f0123456789X\u001e010@ \u001faaXb\u001faeng\u001e010@ \u001famul\u001e\n"
+stdout = "123456789X,aXbXeng\n123456789X,mul\n"

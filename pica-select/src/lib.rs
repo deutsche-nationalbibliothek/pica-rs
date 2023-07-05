@@ -247,12 +247,21 @@ impl Outcome {
     }
 
     pub fn squash(self, sep: &str) -> Self {
-        Self(vec![vec![self
-            .0
-            .into_iter()
-            .flatten()
-            .collect::<Vec<String>>()
-            .join(sep)]])
+        let flattened =
+            self.0.into_iter().flatten().collect::<Vec<String>>();
+
+        if flattened.len() > 1
+            && !sep.is_empty()
+            && flattened.iter().any(|item| item.contains(sep))
+        {
+            eprintln!(
+                "WARNING: A subfield value contains \
+                      squash separator '{}'.",
+                sep
+            );
+        }
+
+        Self(vec![vec![flattened.join(sep)]])
     }
 
     pub fn into_inner(self) -> Vec<Vec<String>> {
