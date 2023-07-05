@@ -10,7 +10,7 @@ use std::str::FromStr;
 use clap::Parser;
 use pica_matcher::{MatcherOptions, RecordMatcher};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
-use pica_select::{Query, QueryExt};
+use pica_select::{Query, QueryExt, QueryOptions};
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
@@ -30,6 +30,13 @@ pub(crate) struct Select {
     /// Skip invalid records that can't be decoded
     #[arg(short, long)]
     skip_invalid: bool,
+
+    /// Squash subfield values.
+    #[arg(long)]
+    squash: bool,
+
+    #[arg(long, default_value = "|")]
+    separator: String,
 
     /// Disallow empty columns
     #[arg(long)]
@@ -157,8 +164,10 @@ impl Select {
             None
         };
 
-        let options =
-            MatcherOptions::default().case_ignore(self.ignore_case);
+        let options = QueryOptions::default()
+            .case_ignore(self.ignore_case)
+            .separator(self.separator)
+            .squash(self.squash);
 
         let matcher = if let Some(matcher_str) = self.filter {
             let mut matcher = RecordMatcher::new(&translit_maybe2(
@@ -251,7 +260,10 @@ impl Select {
                         }
 
                         if let Some(ref matcher) = matcher {
-                            if !matcher.is_match(&record, &options) {
+                            if !matcher.is_match(
+                                &record,
+                                &MatcherOptions::from(&options),
+                            ) {
                                 continue;
                             }
                         }
