@@ -37,10 +37,13 @@ pub(crate) struct Select {
     #[arg(long)]
     squash: bool,
 
+    #[arg(long)]
+    merge: bool,
+
     /// Sets the separator used for squashing of repeated subfield
     /// values into a single value. Note that it's possible to use the
     /// empty string as a separator.
-    #[arg(long, default_value = "|", requires = "squash")]
+    #[arg(long, default_value = "|")]
     separator: String,
 
     /// Disallow empty columns
@@ -172,7 +175,8 @@ impl Select {
         let options = QueryOptions::default()
             .case_ignore(self.ignore_case)
             .separator(self.separator)
-            .squash(self.squash);
+            .squash(self.squash)
+            .merge(self.merge);
 
         let matcher = if let Some(matcher_str) = self.filter {
             let mut matcher = RecordMatcher::new(&translit_maybe2(

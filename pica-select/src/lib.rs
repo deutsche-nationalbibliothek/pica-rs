@@ -264,6 +264,23 @@ impl Outcome {
         Self(vec![vec![flattened.join(sep)]])
     }
 
+    pub fn merge(self, sep: &str) -> Self {
+        let result = self.0.clone().into_iter().reduce(|acc, e| {
+            let mut result = Vec::new();
+
+            for i in 0..acc.len() {
+                let mut value = String::from(&acc[i]);
+                value.push_str(sep);
+                value.push_str(&e[i]);
+                result.push(value)
+            }
+
+            result
+        });
+
+        Self(vec![result.unwrap()])
+    }
+
     pub fn into_inner(self) -> Vec<Vec<String>> {
         self.0
     }
@@ -328,6 +345,7 @@ pub struct QueryOptions {
     pub strsim_threshold: f64,
     pub separator: String,
     pub squash: bool,
+    pub merge: bool,
 }
 
 impl Default for QueryOptions {
@@ -337,6 +355,7 @@ impl Default for QueryOptions {
             strsim_threshold: 0.8,
             separator: "|".into(),
             squash: false,
+            merge: false,
         }
     }
 }
@@ -365,7 +384,13 @@ impl QueryOptions {
         self
     }
 
-    /// Set the squash separator.
+    /// Whether to merge repeated fields or not.
+    pub fn merge(mut self, yes: bool) -> Self {
+        self.merge = yes;
+        self
+    }
+
+    /// Set the squash or merge separator.
     pub fn separator<S: Into<String>>(mut self, sep: S) -> Self {
         self.separator = sep.into();
         self
@@ -490,6 +515,13 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
 
         outcomes
             .into_iter()
+            .map(|outcome| {
+                if options.merge {
+                    outcome.merge(&options.separator)
+                } else {
+                    outcome
+                }
+            })
             .reduce(|acc, e| acc * e)
             .unwrap_or_default()
     }
