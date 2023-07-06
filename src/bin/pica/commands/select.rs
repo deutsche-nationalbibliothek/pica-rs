@@ -10,7 +10,7 @@ use std::str::FromStr;
 use clap::Parser;
 use pica_matcher::{MatcherOptions, RecordMatcher};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
-use pica_select::{Query, QueryExt};
+use pica_select::{Query, QueryExt, QueryOptions};
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
@@ -30,6 +30,21 @@ pub(crate) struct Select {
     /// Skip invalid records that can't be decoded
     #[arg(short, long)]
     skip_invalid: bool,
+
+    /// Whether to squash all values of a repeated subfield into a
+    /// single value or not. The separator can be specified by the
+    /// `--separator` option.
+    #[arg(long)]
+    squash: bool,
+
+    #[arg(long)]
+    merge: bool,
+
+    /// Sets the separator used for squashing of repeated subfield
+    /// values into a single value. Note that it's possible to use the
+    /// empty string as a separator.
+    #[arg(long, default_value = "|")]
+    separator: String,
 
     /// Disallow empty columns
     #[arg(long)]
@@ -157,8 +172,11 @@ impl Select {
             None
         };
 
-        let options =
-            MatcherOptions::default().case_ignore(self.ignore_case);
+        let options = QueryOptions::default()
+            .case_ignore(self.ignore_case)
+            .separator(self.separator)
+            .squash(self.squash)
+            .merge(self.merge);
 
         let matcher = if let Some(matcher_str) = self.filter {
             let mut matcher = RecordMatcher::new(&translit_maybe2(
@@ -251,7 +269,10 @@ impl Select {
                         }
 
                         if let Some(ref matcher) = matcher {
-                            if !matcher.is_match(&record, &options) {
+                            if !matcher.is_match(
+                                &record,
+                                &MatcherOptions::from(&options),
+                            ) {
                                 continue;
                             }
                         }

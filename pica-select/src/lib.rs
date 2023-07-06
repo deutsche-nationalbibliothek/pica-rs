@@ -246,6 +246,41 @@ impl Outcome {
         Self(vec![repeat("".to_string()).take(n).collect()])
     }
 
+    pub fn squash(self, sep: &str) -> Self {
+        let flattened =
+            self.0.into_iter().flatten().collect::<Vec<String>>();
+
+        if flattened.len() > 1
+            && !sep.is_empty()
+            && flattened.iter().any(|item| item.contains(sep))
+        {
+            eprintln!(
+                "WARNING: A subfield value contains \
+                      squash separator '{}'.",
+                sep
+            );
+        }
+
+        Self(vec![vec![flattened.join(sep)]])
+    }
+
+    pub fn merge(self, sep: &str) -> Self {
+        let result = self.0.clone().into_iter().reduce(|acc, e| {
+            let mut result = Vec::new();
+
+            for i in 0..acc.len() {
+                let mut value = String::from(&acc[i]);
+                value.push_str(sep);
+                value.push_str(&e[i]);
+                result.push(value)
+            }
+
+            result
+        });
+
+        Self(vec![result.unwrap()])
+    }
+
     pub fn into_inner(self) -> Vec<Vec<String>> {
         self.0
     }
@@ -303,9 +338,75 @@ impl Mul for Outcome {
     }
 }
 
+/// Options and flags which can be used to configure a matcher.
+#[derive(Debug)]
+pub struct QueryOptions {
+    pub case_ignore: bool,
+    pub strsim_threshold: f64,
+    pub separator: String,
+    pub squash: bool,
+    pub merge: bool,
+}
+
+impl Default for QueryOptions {
+    fn default() -> Self {
+        Self {
+            case_ignore: false,
+            strsim_threshold: 0.8,
+            separator: "|".into(),
+            squash: false,
+            merge: false,
+        }
+    }
+}
+
+impl QueryOptions {
+    /// Create new matcher flags.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Whether to ignore case when comparing strings or not.
+    pub fn case_ignore(mut self, yes: bool) -> Self {
+        self.case_ignore = yes;
+        self
+    }
+
+    /// Set the similarity threshold for the similar operator (`=*`).
+    pub fn strsim_threshold(mut self, threshold: f64) -> Self {
+        self.strsim_threshold = threshold;
+        self
+    }
+
+    /// Whether to squash subfield values or not.
+    pub fn squash(mut self, yes: bool) -> Self {
+        self.squash = yes;
+        self
+    }
+
+    /// Whether to merge repeated fields or not.
+    pub fn merge(mut self, yes: bool) -> Self {
+        self.merge = yes;
+        self
+    }
+
+    /// Set the squash or merge separator.
+    pub fn separator<S: Into<String>>(mut self, sep: S) -> Self {
+        self.separator = sep.into();
+        self
+    }
+}
+
+impl From<&QueryOptions> for MatcherOptions {
+    fn from(options: &QueryOptions) -> Self {
+        Self::new()
+            .strsim_threshold(options.strsim_threshold)
+            .case_ignore(options.case_ignore)
+    }
+}
+
 pub trait QueryExt {
-    fn query(&self, query: &Query, options: &MatcherOptions)
-        -> Outcome;
+    fn query(&self, query: &Query, options: &QueryOptions) -> Outcome;
 }
 
 impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
@@ -339,11 +440,7 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
     ///     Ok(())
     /// }
     /// ```
-    fn query(
-        &self,
-        query: &Query,
-        options: &MatcherOptions,
-    ) -> Outcome {
+    fn query(&self, query: &Query, options: &QueryOptions) -> Outcome {
         let mut outcomes = vec![];
 
         for fragment in query.iter() {
@@ -361,7 +458,10 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
                         })
                         .filter(|field| {
                             if let Some(m) = path.subfield_matcher() {
-                                m.is_match(field.subfields(), options)
+                                m.is_match(
+                                    field.subfields(),
+                                    &options.into(),
+                                )
                             } else {
                                 true
                             }
@@ -388,6 +488,14 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
                                         Outcome::one()
                                     }
                                 })
+                                .map(|outcome| {
+                                    if options.squash {
+                                        outcome
+                                            .squash(&options.separator)
+                                    } else {
+                                        outcome
+                                    }
+                                })
                                 .fold(Outcome::default(), |acc, e| {
                                     acc * e
                                 })
@@ -407,6 +515,13 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
 
         outcomes
             .into_iter()
+            .map(|outcome| {
+                if options.merge {
+                    outcome.merge(&options.separator)
+                } else {
+                    outcome
+                }
+            })
             .reduce(|acc, e| acc * e)
             .unwrap_or_default()
     }
@@ -521,7 +636,7 @@ mod tests {
 
     #[test]
     fn test_query() -> anyhow::Result<()> {
-        let options = MatcherOptions::default();
+        let options = QueryOptions::default();
 
         let record =
             RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
