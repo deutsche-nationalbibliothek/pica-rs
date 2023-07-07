@@ -1,5 +1,5 @@
 [package]
-name = "pica"
+name = "pica-toolkit"
 version = "0.17.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
