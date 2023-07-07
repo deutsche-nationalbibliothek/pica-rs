@@ -1,11 +1,7 @@
-use std::ffi::OsStr;
 use std::fs::OpenOptions;
 use std::io::{self, BufWriter, Write};
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
-
-use flate2::write::GzEncoder;
-use flate2::Compression;
 
 use crate::error::Result;
 use crate::ByteRecord;
@@ -102,11 +98,7 @@ impl WriterBuilder {
             .append(self.append)
             .open(path)?;
 
-        if self.gzip || path.extension() == Some(OsStr::new("gz")) {
-            Ok(Box::new(GzipWriter::new(file)))
-        } else {
-            Ok(Box::new(PlainWriter::new(self, file)))
-        }
+        Ok(Box::new(PlainWriter::new(self, file)))
     }
 
     /// Builds a new `Writer` with the current configuration, that
@@ -142,11 +134,7 @@ impl WriterBuilder {
         &self,
         writer: W,
     ) -> Box<dyn PicaWriter> {
-        if self.gzip {
-            Box::new(GzipWriter::new(writer))
-        } else {
-            Box::new(PlainWriter::new(self, writer))
-        }
+        Box::new(PlainWriter::new(self, writer))
     }
 
     /// Builds a new `Writer` with the current configuration, that
@@ -329,50 +317,6 @@ impl<W: Write> PicaWriter for PlainWriter<W> {
     /// error is returned.
     fn finish(&mut self) -> Result<()> {
         self.inner.flush()?;
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub struct GzipWriter<W: Write> {
-    inner: GzEncoder<W>,
-}
-
-impl<W: Write> GzipWriter<W> {
-    pub fn new(inner: W) -> GzipWriter<W> {
-        Self {
-            inner: GzEncoder::new(inner, Compression::default()),
-        }
-    }
-}
-
-impl<W: Write> Write for GzipWriter<W> {
-    #[inline]
-    fn write(
-        &mut self,
-        buf: &[u8],
-    ) -> std::result::Result<usize, std::io::Error> {
-        self.inner.write(buf)
-    }
-
-    fn flush(&mut self) -> std::result::Result<(), std::io::Error> {
-        self.inner.flush()
-    }
-}
-
-impl<W: Write> PicaWriter for GzipWriter<W> {
-    fn write_byte_record(&mut self, record: &ByteRecord) -> Result<()> {
-        if let Some(raw_data) = &record.raw_data {
-            self.inner.write_all(raw_data)?;
-        } else {
-            record.write(self)?;
-        }
-
-        Ok(())
-    }
-
-    fn finish(&mut self) -> Result<()> {
-        self.inner.try_finish()?;
         Ok(())
     }
 }
