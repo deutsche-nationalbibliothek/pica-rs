@@ -1,2 +1,1 @@
-mod path;
 mod snapshot;

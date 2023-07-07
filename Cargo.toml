@@ -46,11 +46,6 @@ name = "pica"
 path = "src/bin/pica/main.rs"
 name = "pica"
 
-[[example]]
-name = "parser"
-path = "examples/parser.rs"
-test = false
-
 [profile.release]
 codegen-units = 1
 panic = "abort"
