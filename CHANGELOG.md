@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #641 Stabilize `sample` command
 * #642 Add `--squash` and `--merge` option
 
+### Changed
+
+* #643 Print more helpful error message on `ParsePicaError` 
+
 ### Removed
 
 * #639 Remove `xml` command

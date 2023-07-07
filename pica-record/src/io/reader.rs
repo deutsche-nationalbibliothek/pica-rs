@@ -34,7 +34,7 @@ impl ReaderBuilder {
     ///     let data =
     ///         Cursor::new(b"003@ \x1f0abc\x1e\n003@ \x1f0def\x1e\n");
     ///     let mut reader =
-    ///         ReaderBuilder::new().limit(1).from_reader(data);
+    ///         ReaderBuilder::new().limit(1).from_reader(data, None);
     ///
     ///     let mut count = 0;
     ///     while let Some(result) = reader.next() {
@@ -60,7 +60,7 @@ impl ReaderBuilder {
     /// fn example() -> anyhow::Result<()> {
     ///     let data =
     ///         Cursor::new(b"003@ \x1f0abc\x1e\n003@ \x1f0def\x1e\n");
-    ///     let mut reader = ReaderBuilder::new().from_reader(data);
+    ///     let mut reader = ReaderBuilder::new().from_reader(data, None);
     ///
     ///     let mut count = 0;
     ///     while let Some(result) = reader.next() {
@@ -72,8 +72,12 @@ impl ReaderBuilder {
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_reader<R: Read>(&self, reader: R) -> Reader<R> {
-        Reader::new(self, reader)
+    pub fn from_reader<R: Read>(
+        &self,
+        reader: R,
+        source: Option<String>,
+    ) -> Reader<R> {
+        Reader::new(self, reader, source)
     }
 
     pub fn from_path<P: AsRef<Path>>(
@@ -81,6 +85,7 @@ impl ReaderBuilder {
         path: P,
     ) -> io::Result<Reader<Box<dyn Read>>> {
         let path = path.as_ref();
+        let source = path.to_string_lossy().to_string();
 
         let reader: Box<dyn Read> = match path
             .extension()
@@ -96,22 +101,28 @@ impl ReaderBuilder {
             }
         };
 
-        Ok(self.from_reader(reader))
+        Ok(self.from_reader(reader, Some(source)))
     }
 }
 
 pub struct Reader<R: Read> {
     inner: BufReader<R>,
+    source: Option<String>,
     limit: usize,
     count: usize,
     buf: Vec<u8>,
 }
 
 impl<R: Read> Reader<R> {
-    pub fn new(builder: &ReaderBuilder, reader: R) -> Self {
+    pub fn new(
+        builder: &ReaderBuilder,
+        reader: R,
+        source: Option<String>,
+    ) -> Self {
         Self {
             inner: BufReader::new(reader),
             limit: builder.limit,
+            source,
             buf: vec![],
             count: 0,
         }
@@ -145,7 +156,23 @@ impl<R: Read> RecordsIterator for Reader<R> {
             Ok(_) => {
                 let result = ByteRecord::from_bytes(&self.buf);
                 match result {
-                    Err(e) => Some(Err(ReadPicaError::from(e))),
+                    Err(err) => {
+                        let msg = match &self.source {
+                            Some(source) => {
+                                if source == "-" {
+                                    format!("invalid record in line {} (stdin)", self.count)
+                                } else {
+                                    format!("invalid record in line {} ({})", self.count, source)
+                                }
+                            }
+                            None => format!(
+                                "invalid record on line {}",
+                                self.count
+                            ),
+                        };
+
+                        Some(Err(ReadPicaError::Parse { msg, err }))
+                    }
                     Ok(record) => {
                         self.count += 1;
                         Some(Ok(record))
