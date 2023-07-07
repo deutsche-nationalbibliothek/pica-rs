@@ -89,11 +89,6 @@ fn main() {
         {
             process::exit(0); // no-coverage
         }
-        Err(CliError::Pica(pica::Error::Io(ref err)))
-            if err.kind() == io::ErrorKind::BrokenPipe =>
-        {
-            process::exit(0); // no-coverage
-        }
         Err(CliError::ParsePica(err)) => {
             eprintln!("Parse Pica Error: {err}");
             process::exit(1);
@@ -108,10 +103,6 @@ fn main() {
         }
         Err(CliError::ParseQuery(err)) => {
             eprintln!("Parse Query Error: {err}");
-            process::exit(1);
-        }
-        Err(CliError::Pica(err)) => {
-            eprintln!("Pica Error: {err}");
             process::exit(1);
         }
         Err(CliError::Io(err)) => {

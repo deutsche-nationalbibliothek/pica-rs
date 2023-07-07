@@ -7,7 +7,6 @@ pub(crate) type CliResult<T> = Result<T, CliError>;
 pub(crate) enum CliError {
     Io(io::Error),
     Csv(csv::Error),
-    Pica(pica::Error),
     ParsePica(String),
     ParsePath(pica_path::ParsePathError),
     ParseMatcher(pica_matcher::ParseMatcherError),
@@ -20,19 +19,12 @@ impl fmt::Display for CliError {
         match *self {
             CliError::Csv(ref e) => e.fmt(f),
             CliError::Io(ref e) => e.fmt(f),
-            CliError::Pica(ref e) => e.fmt(f),
             CliError::ParsePica(ref e) => e.fmt(f),
             CliError::ParsePath(ref e) => e.fmt(f),
             CliError::ParseMatcher(ref e) => e.fmt(f),
             CliError::ParseQuery(ref e) => e.fmt(f),
             CliError::Other(ref s) => f.write_str(s),
         }
-    }
-}
-
-impl From<pica::Error> for CliError {
-    fn from(err: pica::Error) -> CliError {
-        CliError::Pica(err)
     }
 }
 
