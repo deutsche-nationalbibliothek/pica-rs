@@ -34,9 +34,10 @@ impl Invalid {
 
             while let Some(result) = reader.next() {
                 match result {
-                    Err(ReadPicaError::Parse(
-                        ParsePicaError::InvalidRecord(data),
-                    )) => {
+                    Err(ReadPicaError::Parse {
+                        msg: _,
+                        err: ParsePicaError::InvalidRecord(data),
+                    }) => {
                         writer.write_all(&data)?;
                     }
                     Err(e) => return Err(e.into()),

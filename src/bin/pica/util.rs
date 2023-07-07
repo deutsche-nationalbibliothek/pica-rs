@@ -8,7 +8,7 @@ pub(crate) enum CliError {
     Io(io::Error),
     Csv(csv::Error),
     Pica(pica::Error),
-    ParsePica(pica_record::ParsePicaError),
+    ParsePica(String),
     ParsePath(pica_path::ParsePathError),
     ParseMatcher(pica_matcher::ParseMatcherError),
     ParseQuery(pica_select::ParseQueryError),
@@ -52,9 +52,10 @@ impl From<pica_record::io::ReadPicaError> for CliError {
     fn from(err: pica_record::io::ReadPicaError) -> Self {
         match err {
             pica_record::io::ReadPicaError::Io(e) => CliError::Io(e),
-            pica_record::io::ReadPicaError::Parse(e) => {
-                CliError::ParsePica(e)
-            }
+            pica_record::io::ReadPicaError::Parse {
+                msg: m,
+                err: _,
+            } => CliError::ParsePica(m),
         }
     }
 }

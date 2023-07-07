@@ -23,8 +23,8 @@ pub use writer::{
 /// [BufReader](std::io::BufReader).
 #[derive(Error, Debug)]
 pub enum ReadPicaError {
-    #[error("parse error")]
-    Parse(#[from] ParsePicaError),
+    #[error("parse error: {msg:?}")]
+    Parse { msg: String, err: ParsePicaError },
 
     #[error("io error")]
     Io(#[from] io::Error),
@@ -34,7 +34,13 @@ impl ReadPicaError {
     /// Returns true, if the underlying error was caused by parsing an
     /// invalid record.
     pub fn is_invalid_record(&self) -> bool {
-        matches!(self, Self::Parse(ParsePicaError::InvalidRecord(_)))
+        matches!(
+            self,
+            Self::Parse {
+                msg: _,
+                err: ParsePicaError::InvalidRecord(_)
+            }
+        )
     }
 }
 
