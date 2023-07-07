@@ -29,15 +29,17 @@ where
 /// Relational Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum RelationalOp {
-    Eq,         // equal, "=="
-    Ne,         // not equal, "!="
-    Gt,         // greater than, ">"
-    Ge,         // greater than or equal, ">="
-    Lt,         // less than, "<"
-    Le,         // less than or equal, "<="
-    StartsWith, // starts with, "=^"
-    EndsWith,   // ends with, "=$"
-    Similar,    // similar, "=*"
+    Eq,            // equal, "=="
+    Ne,            // not equal, "!="
+    Gt,            // greater than, ">"
+    Ge,            // greater than or equal, ">="
+    Lt,            // less than, "<"
+    Le,            // less than or equal, "<="
+    StartsWith,    // starts with, "=^"
+    StartsNotWith, // starts not with, "!^"
+    EndsWith,      // ends with, "=$"
+    EndsNotWith,   // ends not with, "!$"
+    Similar,       // similar, "=*"
 }
 
 impl Display for RelationalOp {
@@ -50,7 +52,9 @@ impl Display for RelationalOp {
             RelationalOp::Lt => write!(f, "<"),
             RelationalOp::Le => write!(f, "<="),
             RelationalOp::StartsWith => write!(f, "=^"),
+            RelationalOp::StartsNotWith => write!(f, "!^"),
             RelationalOp::EndsWith => write!(f, "=$"),
+            RelationalOp::EndsNotWith => write!(f, "!$"),
             RelationalOp::Similar => write!(f, "=*"),
         }
     }
@@ -64,7 +68,9 @@ pub(crate) fn parse_relational_op_str(
         value(RelationalOp::Eq, tag("==")),
         value(RelationalOp::Ne, tag("!=")),
         value(RelationalOp::StartsWith, tag("=^")),
+        value(RelationalOp::StartsNotWith, tag("!^")),
         value(RelationalOp::EndsWith, tag("=$")),
+        value(RelationalOp::EndsNotWith, tag("!$")),
         value(RelationalOp::Similar, tag("=*")),
     ))(i)
 }
@@ -217,8 +223,16 @@ mod tests {
             RelationalOp::StartsWith
         );
         assert_finished_and_eq!(
+            parse_relational_op_str(b"!^"),
+            RelationalOp::StartsNotWith
+        );
+        assert_finished_and_eq!(
             parse_relational_op_str(b"=$"),
             RelationalOp::EndsWith
+        );
+        assert_finished_and_eq!(
+            parse_relational_op_str(b"!$"),
+            RelationalOp::EndsNotWith
         );
         assert_finished_and_eq!(
             parse_relational_op_str(b"=*"),
