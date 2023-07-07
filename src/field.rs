@@ -324,33 +324,6 @@ impl Field {
     }
 
     /// Write the field into the given writer.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica::{Field, Occurrence, Subfield, Tag, WriterBuilder};
-    /// use std::error::Error;
-    /// use tempfile::Builder;
-    /// # use std::fs::read_to_string;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let mut tempfile = Builder::new().tempfile()?;
-    ///     # let path = tempfile.path().to_owned();
-    ///
-    ///     let subfield = Subfield::new('0', "123456789X")?;
-    ///     let occurrence = Occurrence::new("001")?;
-    ///     let field = Field::new(Tag::new("012A")?, Some(occurrence), vec![subfield]);
-    ///
-    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
-    ///     field.write(&mut writer)?;
-    ///     writer.finish()?;
-    ///
-    ///     # let result = read_to_string(path)?;
-    ///     # assert_eq!(result, String::from("012A/001 \x1f0123456789X\x1e"));
-    ///     Ok(())
-    /// }
-    /// ```
     pub fn write(
         &self,
         writer: &mut dyn Write,

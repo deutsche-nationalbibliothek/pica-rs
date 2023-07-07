@@ -127,43 +127,6 @@ impl ByteRecord {
     }
 
     /// Write the field into the given writer.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica::{ByteRecord, Field, Occurrence, Subfield, Tag, WriterBuilder};
-    /// use std::error::Error;
-    /// use tempfile::Builder;
-    /// # use std::fs::read_to_string;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let mut tempfile = Builder::new().tempfile()?;
-    ///     # let path = tempfile.path().to_owned();
-    ///
-    ///     let record = ByteRecord::new(vec![
-    ///         Field::new(
-    ///             Tag::new("012A")?,
-    ///             Some(Occurrence::new("001")?),
-    ///             vec![Subfield::new('0', "123456789X")?],
-    ///         ),
-    ///         Field::new(
-    ///             Tag::new("012A")?,
-    ///             Some(Occurrence::new("002")?),
-    ///             vec![Subfield::new('0', "123456789X")?],
-    ///         ),
-    ///     ]);
-    ///
-    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
-    ///     record.write(&mut writer)?;
-    ///     writer.finish()?;
-    ///
-    ///     # let result = read_to_string(path)?;
-    ///     # assert_eq!(result, String::from(
-    ///     #     "012A/001 \x1f0123456789X\x1e012A/002 \x1f0123456789X\x1e\n"));
-    ///     Ok(())
-    /// }
-    /// ```
     pub fn write(
         &self,
         writer: &mut dyn Write,

@@ -164,30 +164,6 @@ impl Subfield {
     }
 
     /// Write the subfield into the given writer.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica::{PicaWriter, Subfield, WriterBuilder};
-    /// use std::error::Error;
-    /// use tempfile::Builder;
-    /// # use std::fs::read_to_string;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> Result<(), Box<dyn Error>> {
-    ///     let mut tempfile = Builder::new().tempfile()?;
-    ///     # let path = tempfile.path().to_owned();
-    ///
-    ///     let subfield = Subfield::new('0', "123456789X")?;
-    ///     let mut writer = WriterBuilder::new().from_writer(tempfile);
-    ///     subfield.write(&mut writer)?;
-    ///     writer.finish()?;
-    ///
-    ///     # let result = read_to_string(path)?;
-    ///     # assert_eq!(result, String::from("\x1f0123456789X"));
-    ///     Ok(())
-    /// }
-    /// ```
     pub fn write(
         &self,
         writer: &mut dyn std::io::Write,

@@ -13,7 +13,6 @@ pub use self::reader::{Reader, ReaderBuilder};
 pub use self::record::{ByteRecord, StringRecord};
 pub use self::subfield::Subfield;
 pub use self::tag::{Level, Tag};
-pub use self::writer::{PicaWriter, PlainWriter};
 
 mod common;
 mod error;
@@ -28,4 +27,3 @@ mod subfield;
 mod tag;
 #[cfg(test)]
 mod test;
-mod writer;
