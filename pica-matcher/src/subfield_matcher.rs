@@ -211,12 +211,19 @@ impl RelationMatcher {
         &self,
         value: &[u8],
         options: &MatcherOptions,
+        invert: bool,
     ) -> bool {
-        if options.case_ignore {
+        let mut result = if options.case_ignore {
             value.to_lowercase().starts_with(&self.value.to_lowercase())
         } else {
             value.starts_with(&self.value)
+        };
+
+        if invert {
+            result = !result
         }
+
+        result
     }
 
     /// Returns `true` if the given values is a suffix of the matcher's
@@ -226,12 +233,19 @@ impl RelationMatcher {
         &self,
         value: &[u8],
         options: &MatcherOptions,
+        invert: bool,
     ) -> bool {
-        if options.case_ignore {
+        let mut result = if options.case_ignore {
             value.to_lowercase().ends_with(&self.value.to_lowercase())
         } else {
             value.ends_with(&self.value)
+        };
+
+        if invert {
+            result = !result;
         }
+
+        result
     }
 
     /// Returns `true` if the given value is similar to the matcher's
@@ -279,10 +293,16 @@ impl Matcher for RelationMatcher {
                     RelationalOp::Eq => self.compare(value, options),
                     RelationalOp::Ne => !self.compare(value, options),
                     RelationalOp::StartsWith => {
-                        self.starts_with(value, options)
+                        self.starts_with(value, options, false)
+                    }
+                    RelationalOp::StartsNotWith => {
+                        self.starts_with(value, options, true)
                     }
                     RelationalOp::EndsWith => {
-                        self.ends_with(value, options)
+                        self.ends_with(value, options, false)
+                    }
+                    RelationalOp::EndsNotWith => {
+                        self.ends_with(value, options, true)
                     }
                     RelationalOp::Similar => {
                         self.is_similar(value, options)
@@ -878,11 +898,27 @@ mod tests {
             }
         );
         assert_finished_and_eq!(
+            parse_relation_matcher(b"0 !^ 'T'"),
+            RelationMatcher {
+                codes: vec!['0'],
+                op: RelationalOp::StartsNotWith,
+                value: "T".into()
+            }
+        );
+        assert_finished_and_eq!(
             parse_relation_matcher(b"0 =$ 'abc'"),
             RelationMatcher {
                 codes: vec!['0'],
                 op: RelationalOp::EndsWith,
                 value: "abc".into()
+            }
+        );
+        assert_finished_and_eq!(
+            parse_relation_matcher(b"0 !$ 'z'"),
+            RelationMatcher {
+                codes: vec!['0'],
+                op: RelationalOp::EndsNotWith,
+                value: "z".into()
             }
         );
         assert_finished_and_eq!(
