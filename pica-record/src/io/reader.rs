@@ -34,7 +34,7 @@ impl ReaderBuilder {
     ///     let data =
     ///         Cursor::new(b"003@ \x1f0abc\x1e\n003@ \x1f0def\x1e\n");
     ///     let mut reader =
-    ///         ReaderBuilder::new().limit(1).from_reader(data);
+    ///         ReaderBuilder::new().limit(1).from_reader(data, None);
     ///
     ///     let mut count = 0;
     ///     while let Some(result) = reader.next() {
@@ -60,7 +60,7 @@ impl ReaderBuilder {
     /// fn example() -> anyhow::Result<()> {
     ///     let data =
     ///         Cursor::new(b"003@ \x1f0abc\x1e\n003@ \x1f0def\x1e\n");
-    ///     let mut reader = ReaderBuilder::new().from_reader(data);
+    ///     let mut reader = ReaderBuilder::new().from_reader(data, None);
     ///
     ///     let mut count = 0;
     ///     while let Some(result) = reader.next() {

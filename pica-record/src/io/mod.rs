@@ -44,6 +44,15 @@ impl ReadPicaError {
     }
 }
 
+impl From<ParsePicaError> for ReadPicaError {
+    fn from(err: ParsePicaError) -> Self {
+        Self::Parse {
+            msg: "invalid record".into(),
+            err,
+        }
+    }
+}
+
 /// An extension of [BufRead](`std::io::BufRead`) which provides a
 /// convenience API for reading [ByteRecord](`crate::ByteRecord`)s.
 pub trait BufReadExt: io::BufRead {
