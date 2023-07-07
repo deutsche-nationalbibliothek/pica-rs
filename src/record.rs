@@ -10,7 +10,7 @@ use serde::ser::{Serialize, SerializeStruct, Serializer};
 use crate::error::Result;
 use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_fields, ParsePicaError};
-use crate::{Field, Path};
+use crate::Field;
 
 /// A PICA+ record, that may contian invalid UTF-8 data.
 #[derive(Debug, PartialEq, Eq)]
@@ -211,27 +211,6 @@ impl ByteRecord {
         } else {
             None
         }
-    }
-
-    /// Returns all subfield values of a given path.
-    pub fn path(&self, path: &Path) -> Vec<&BString> {
-        self.fields
-            .iter()
-            .filter(|field| {
-                path.tag.is_match(field.tag())
-                    && path.occurrence.is_match(field.occurrence())
-                    && path
-                        .codes
-                        .iter()
-                        .any(|x| field.contains_code(*x))
-            })
-            .flat_map(|field| {
-                path.codes.iter().flat_map(move |code| {
-                    field.get(*code).unwrap_or_default()
-                })
-            })
-            .map(|subfield| subfield.value())
-            .collect()
     }
 
     /// Reduce the record to the given fields.

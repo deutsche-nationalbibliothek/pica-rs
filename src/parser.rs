@@ -1,16 +1,12 @@
 use std::fmt;
 
-use nom::branch::alt;
-use nom::character::complete::{char, multispace0};
-use nom::combinator::{all_consuming, map, opt};
+use nom::character::complete::char;
+use nom::combinator::{all_consuming, opt};
 use nom::multi::many1;
-use nom::sequence::{delimited, preceded, terminated, tuple};
+use nom::sequence::terminated;
 
 use crate::common::ParseResult;
 use crate::field::{parse_field, Field};
-use crate::matcher::{parse_occurrence_matcher, parse_tag_matcher};
-use crate::subfield::parse_subfield_code;
-use crate::Path;
 
 const NL: char = '\x0A';
 
@@ -39,42 +35,14 @@ impl fmt::Display for ParsePathError {
     }
 }
 
-/// Parses multiple subfield codes.
-pub(crate) fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
-    alt((
-        map(parse_subfield_code, |x| vec![x]),
-        delimited(char('['), many1(parse_subfield_code), char(']')),
-    ))(i)
-}
-
 /// Parses a record.
 pub(crate) fn parse_fields(i: &[u8]) -> ParseResult<Vec<Field>> {
     all_consuming(terminated(many1(parse_field), opt(char(NL))))(i)
 }
 
-pub(crate) fn parse_path(i: &[u8]) -> ParseResult<Path> {
-    map(
-        all_consuming(delimited(
-            multispace0,
-            tuple((
-                parse_tag_matcher,
-                parse_occurrence_matcher,
-                preceded(char('.'), parse_subfield_codes),
-            )),
-            multispace0,
-        )),
-        |(tag, occurrence, codes)| Path {
-            tag,
-            occurrence,
-            codes,
-        },
-    )(i)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::matcher::OccurrenceMatcher;
     use crate::test::TestResult;
     use crate::{Occurrence, Subfield, Tag};
 
@@ -102,36 +70,6 @@ mod tests {
                     vec![Subfield::new('a', "456").unwrap()]
                 )
             ]
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_path() -> TestResult {
-        assert_eq!(
-            parse_path(b"003@.0")?.1,
-            Path::new("003@", OccurrenceMatcher::None, vec!['0'])
-                .unwrap()
-        );
-        assert_eq!(
-            parse_path(b"012A/01.0")?.1,
-            Path::new(
-                "012A",
-                OccurrenceMatcher::Some(Occurrence::new("01")?),
-                vec!['0']
-            )
-            .unwrap()
-        );
-        assert_eq!(
-            parse_path(b"012A/*.[ab]")?.1,
-            Path::new("012A", OccurrenceMatcher::Any, vec!['a', 'b'])
-                .unwrap()
-        );
-        assert_eq!(
-            parse_path(b"012A/*.0")?.1,
-            Path::new("012A", OccurrenceMatcher::Any, vec!['0'])
-                .unwrap()
         );
 
         Ok(())
