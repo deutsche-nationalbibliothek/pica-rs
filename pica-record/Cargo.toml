@@ -1,17 +1,18 @@
 [package]
 name = "pica-record"
-version = "0.1.0"
-license = "MIT OR Unlicense"
-authors = ["Nico Wagner <n.wagner@dnb.de>"]
-include = ["src/**/*"]
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+keywords.workspace = true
+edition.workspace = true
 
 [dependencies]
-bstr = "1.5"
-flate2 = "1.0"
-nom = "7.1"
-sha2 = "0.10"
-thiserror = "1.0"
+bstr = { workspace = true }
+flate2 = { workspace = true }
+nom = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 anyhow = "1.0"

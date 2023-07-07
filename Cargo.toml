@@ -1,46 +1,46 @@
-[package]
-name = "pica-toolkit"
+[workspace]
+resolver = "2"
+default-members = ["pica-toolkit"]
+
+members = [
+    "pica-lint",
+    "pica-matcher",
+    "pica-path",
+    "pica-record",
+    "pica-select",
+    "pica-toolkit"
+]
+
+[workspace.package]
 version = "0.17.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
-edition = "2021"
 license = "MIT OR Unlicense"
-default-run = "pica"
+readme = "./README.md"
+keywords = ["PICA+", "code4lib"]
+edition = "2021"
 
-[dependencies]
-arrow2 = { version = "0.17", features = ["io_ipc", "io_ipc_compression"] }
-bstr = "1.5"
-clap = { version = "4.3", features = ["cargo", "derive", "wrap_help"] }
+[workspace.dependencies]
+pica-matcher = { version = "0.17", path = "./pica-matcher" }
+pica-path = { version = "0.17", path = "./pica-path" }
+pica-record = { version = "0.17", path = "./pica-record" }
+pica-select = { version = "0.17", path = "./pica-select" }
+
+anyhow = "1.0"
+arrow2 = "0.17"
+bstr = "1.6"
+chrono = { version = "0.4", default-features = false }
+clap = "4.3"
 clap_complete = "4.3"
 csv = "1.2"
-directories = "5.0"
 flate2 = "1.0"
 nom = "7.1"
-quick-xml = "0.29"
 rand = "0.8"
-regex = "1.8"
-serde = { version = "1.0", features = ["derive"] }
+regex = "1.9"
+serde = "1.0"
 serde_json = "1.0"
-strsim = "0.10"
-termcolor = "1.2"
+sha2 = "0.10"
+thiserror = "1.0"
 toml = "0.7"
-unicode-normalization = "0.1"
-
-pica-matcher = { version = "0.1", path = "pica-matcher" }
-pica-path = { version = "0.2", path = "pica-path" }
-pica-record = { version = "0.1", path = "pica-record" }
-pica-select = { version = "0.1", path = "pica-select" }
-
-[dev-dependencies]
-assert_cmd = "2.0"
-predicates = "3.0"
-quickcheck = "1.0"
-quickcheck_macros = "1.0"
-tempfile = "3.2"
-trycmd = "0.14"
-
-[[bin]]
-path = "src/main.rs"
-name = "pica"
 
 [profile.release]
 codegen-units = 1
@@ -50,12 +50,3 @@ lto = true
 [profile.dev]
 debug = 0
 
-[workspace]
-
-members = [
-    "pica-lint",
-    "pica-matcher",
-    "pica-path",
-    "pica-record",
-    "pica-select"
-]

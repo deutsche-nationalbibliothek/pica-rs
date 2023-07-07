@@ -1,23 +1,25 @@
 [package]
 name = "pica-lint"
 version = "0.1.0"
-edition = "2021"
-authors = ["Nico Wagner <n.wagner@dnb.de>"]
-license = "MIT OR Unlicense"
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+keywords.workspace = true
+edition.workspace = true
 
 [dependencies]
-anyhow = "1.0"
-bstr = "1.5"
-clap = { version = "4.3", features = ["cargo", "derive", "wrap_help"] }
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
-csv = "1.2"
-flate2 = "1.0"
-indicatif = "0.17"
-once_cell = "1.17"
-serde = { version = "1.0", features = ["derive"] }
-sophia = "0.7"
-toml = "0.7"
+anyhow = { workspace = true }
+bstr = { workspace = true }
+chrono = { workspace = true, features = ["clock"] }
+clap = { workspace = true, features = ["cargo", "derive", "wrap_help"] }
+csv = { workspace = true }
+flate2 = { workspace = true }
+indicatif = { version = "0.17" }
+once_cell = { version = "1.17" }
+pica-matcher = { workspace = true, features = ["serde"] }
+pica-path = { workspace = true, features = ["serde"] }
+pica-record = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+sophia = { version = "0.7" }
+toml = { workspace = true }
 
-pica-matcher = { version = "0.1", path = "../pica-matcher", features = ["serde"] }
-pica-path = { version = "0.2", path = "../pica-path", features = ["serde"] }
-pica-record = { version = "0.1", path = "../pica-record" }
