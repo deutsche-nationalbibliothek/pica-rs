@@ -1,20 +1,20 @@
 [package]
 name = "pica-matcher"
-version = "0.1.0"
-license = "MIT OR Unlicense"
-authors = ["Nico Wagner <n.wagner@dnb.de>"]
-include = ["src/**/*"]
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+keywords.workspace = true
+edition.workspace = true
 
 [dependencies]
-bstr = "1.5"
-nom = "7.1"
-regex = "1.8"
+bstr = { workspace = true }
+nom = { workspace = true }
+pica-record = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true, optional = true }
 strsim = "0.10"
-thiserror = "1.0"
-serde = { version = "1.0", optional = true }
-
-pica-record = { version = "0.1", path = "../pica-record" }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 anyhow = "1.0"

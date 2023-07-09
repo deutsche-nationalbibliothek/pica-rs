@@ -1,19 +1,20 @@
 [package]
 name = "pica-select"
-version = "0.1.0"
-authors = ["Nico Wagner <n.wagner@dnb.de>"]
-edition = "2021"
-license = "MIT OR Unlicense"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+keywords.workspace = true
+edition.workspace = true
 
 [dependencies]
-thiserror = "1.0"
-nom = "7.1"
-
-pica-matcher = { version = "0.1", path = "../pica-matcher" }
-pica-path = { version = "0.2", path = "../pica-path" }
-pica-record = { version = "0.1", path = "../pica-record" }
+nom = { workspace = true }
+pica-matcher = { workspace = true }
+pica-path = { workspace = true }
+pica-record = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
-bstr = "1.5"
+bstr = { workspace = true }
 nom-test-helpers = "6.1"
-anyhow = "1.0"
+anyhow = { workspace = true }

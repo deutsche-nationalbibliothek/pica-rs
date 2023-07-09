@@ -1,0 +1,43 @@
+[package]
+name = "pica-toolkit"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+keywords.workspace = true
+edition.workspace = true
+
+[dependencies]
+arrow2 = { workspace = true, features = ["io_ipc", "io_ipc_compression"] }
+bstr = { workspace = true }
+clap = { workspace = true, features = ["cargo", "derive", "wrap_help"] }
+clap_complete = { workspace = true }
+csv = { workspace = true }
+directories = { version = "5.0" }
+flate2 = { workspace = true }
+nom = { workspace = true }
+pica-matcher = { workspace = true }
+pica-path = { workspace = true }
+pica-record = { workspace = true }
+pica-select = { workspace = true }
+quick-xml = { version = "0.29" }
+rand = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+strsim = { version = "0.10" }
+termcolor = { version = "1.2" }
+toml = { workspace = true }
+unicode-normalization = { version = "0.1" }
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.0"
+quickcheck = "1.0"
+quickcheck_macros = "1.0"
+tempfile = "3.2"
+trycmd = "0.14"
+
+[[bin]]
+path = "src/main.rs"
+name = "pica"
