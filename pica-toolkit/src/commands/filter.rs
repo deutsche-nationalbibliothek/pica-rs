@@ -52,10 +52,10 @@ pub(crate) struct Filter {
     #[arg(long, short)]
     discard: Option<String>,
 
-    /// Take filter expressions from <EXPR_FILE>
+    /// Take a filter expression from <EXPR_FILE>
     ///
-    /// Note: Using a expression file still requires a filter; e.g
-    /// `003@.0?`.
+    /// Note: Do not provide an additional filter expression as an CLI
+    /// argument!
     #[arg(long = "file", short = 'f')]
     expr_file: Option<PathBuf>,
 
@@ -127,6 +127,7 @@ pub(crate) struct Filter {
     output: Option<OsString>,
 
     /// A filter expression used for searching
+    #[arg(default_value = "", hide_default_value = true)]
     filter: String,
 
     /// Read one or more files in normalized PICA+ format
@@ -166,7 +167,20 @@ impl Filter {
         let keep_predicates =
             parse_predicates(&self.keep.unwrap_or_default())?;
 
+        let mut filenames = self.filenames;
         let filter_str = if let Some(filename) = self.expr_file {
+            // This "hack" is necessary, because it's not possible to
+            // distinguish between filter and filenames. If a expression
+            // file is given, it makes no sense to provide
+            // an filter expression as CLI argument.
+            if !self.filter.is_empty() {
+                if filenames != ["-"] {
+                    filenames.insert(0, self.filter.into());
+                } else {
+                    filenames = vec![self.filter.into()];
+                }
+            }
+
             read_to_string(filename).unwrap()
         } else {
             self.filter
@@ -222,7 +236,7 @@ impl Filter {
             .strsim_threshold(self.strsim_threshold as f64 / 100.0)
             .case_ignore(self.ignore_case);
 
-        'outer: for filename in self.filenames {
+        'outer: for filename in filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
