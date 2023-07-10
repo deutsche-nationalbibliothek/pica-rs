@@ -205,7 +205,7 @@ impl RelationMatcher {
     }
 
     /// Returns `true` if the given values is a prefix of the matcher's
-    /// value, otherwise `false`. If the `case_ignore` flag ist set,
+    /// value, otherwise `false`. If the `case_ignore` flag is set,
     /// both strings will be converted to lowercase first.
     fn starts_with(
         &self,
@@ -227,7 +227,7 @@ impl RelationMatcher {
     }
 
     /// Returns `true` if the given values is a suffix of the matcher's
-    /// value, otherwise `false`. If the `case_ignore` flag ist set,
+    /// value, otherwise `false`. If the `case_ignore` flag is set,
     /// both strings will be converted to lowercase first.
     fn ends_with(
         &self,
