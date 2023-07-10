@@ -97,7 +97,7 @@ impl ExistsMatcher {
     }
 }
 
-/// A field matcher that checks for fields statifies subfield criterion.
+/// A field matcher that checks for fields satisfies subfield criterion.
 #[derive(Debug, PartialEq, Eq)]
 pub struct SubfieldsMatcher {
     tag_matcher: TagMatcher,
