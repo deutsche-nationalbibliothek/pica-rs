@@ -1,4 +1,4 @@
 bin.name = "pica"
-args = "filter -f filter.txt \"003@?\""
+args = "filter -F filter.txt \"003@?\""
 status = "success"
 stderr = ""

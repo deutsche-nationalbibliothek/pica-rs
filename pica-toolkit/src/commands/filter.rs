@@ -56,7 +56,7 @@ pub(crate) struct Filter {
     ///
     /// Note: Using a expression file still requires a filter; e.g
     /// `003@.0?`.
-    #[arg(long = "file", short = 'f')]
+    #[arg(long = "file", short = 'F')]
     expr_file: Option<PathBuf>,
 
     /// Ignore records which are *not* explicitly listed in one of the
