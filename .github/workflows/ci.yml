@@ -327,6 +327,21 @@ jobs:
           command: check
           arguments: --workspace
 
+  miri:
+    name: miri
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@miri
+    - run: cargo miri test --workspace --lib --verbose
+      env:
+        MIRIFLAGS: -Zmiri-strict-provenance
+    - run: cargo miri test --workspace --doc --verbose
+      env:
+        MIRIFLAGS: -Zmiri-strict-provenance
 
   book:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
@@ -365,8 +380,10 @@ jobs:
       - check
       - clippy
       - cross
+      - deny
       - fmt
       - fuzz
+      - miri
       - test
       - udeps
       - upgrades
