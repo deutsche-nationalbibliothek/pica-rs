@@ -18,7 +18,7 @@ pub use record_matcher::RecordMatcher;
 pub use subfield_matcher::SubfieldMatcher;
 pub use tag_matcher::TagMatcher;
 
-/// Parsers recognizing matcher for PICA+ primitves.
+/// Parsers recognizing matcher for PICA+ primitives.
 pub mod parser {
     pub use super::field_matcher::parse_field_matcher;
     pub use super::occurrence_matcher::parse_occurrence_matcher;

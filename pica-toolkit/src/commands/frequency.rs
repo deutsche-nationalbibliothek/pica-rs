@@ -29,19 +29,19 @@ pub(crate) struct FrequencyConfig {
 /// the given path expression. By default, the resulting frequency table
 /// is sorted in descending order by default (the most frequent value is
 /// printed first). If the count of two or more subfield values is
-/// euqal, these lines are given in lexicographical order.
+/// equal, these lines are given in lexicographical order.
 ///
 /// The set of fields, which are included in the result of a record, can
-/// be resricted by an optional subfield filter. A subfield filter
+/// be restricted by an optional subfield filter. A subfield filter
 /// requires the {}-notation and is expected at the first position (e.g.
-/// "044H/*{b == 'GND && 9?, 9}").
+/// "044H/*{b == 'GND' && 9?, 9}").
 #[derive(Parser, Debug)]
 pub(crate) struct Frequency {
     /// Skip invalid records that can't be decoded as normalized PICA+.
     #[arg(long, short)]
     skip_invalid: bool,
 
-    /// When this flag is set, comparision operations will be search
+    /// When this flag is set, comparison operations will be search
     /// case insensitive
     #[arg(long, short)]
     ignore_case: bool,
@@ -83,7 +83,7 @@ pub(crate) struct Frequency {
     #[arg(long, short)]
     tsv: bool,
 
-    /// Transliterate output into the selected normalform <NF>
+    /// Transliterate output into the selected normal form <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
     #[arg(long,
           value_name = "NF",
@@ -100,7 +100,7 @@ pub(crate) struct Frequency {
     path: String,
 
     /// Read one or more files in normalized PICA+ format. With no
-    /// files, or when a filename is '-', read from stanard input
+    /// files, or when a filename is '-', read from standard input
     /// (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,

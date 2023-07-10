@@ -82,7 +82,7 @@ pub(crate) struct Print {
     #[arg(long, short, value_name = "n", default_value = "0")]
     limit: usize,
 
-    /// Transliterate output into the selected normalform <NF>
+    /// Transliterate output into the selected normal form <NF>
     #[arg(long,
           value_name = "NF",
           value_parser = ["nfd", "nfkd", "nfc", "nfkc"]

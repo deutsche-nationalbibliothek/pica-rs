@@ -33,7 +33,7 @@ pub(crate) struct Filter {
     #[arg(long, short = 'v')]
     invert_match: bool,
 
-    /// When this flag is provided, comparision operations will be
+    /// When this flag is provided, comparison operations will be
     /// search case insensitive
     #[arg(long, short)]
     ignore_case: bool,
@@ -65,7 +65,7 @@ pub(crate) struct Filter {
     /// An allow-list must be an CSV, whereby the first column contains
     /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
     /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
-    /// file is automatically interpreted as Apachae Arrow;
+    /// file is automatically interpreted as Apache Arrow;
     /// otherwise the file is read as CSV.
     #[arg(long, short = 'A')]
     allow_list: Vec<PathBuf>,
@@ -76,7 +76,7 @@ pub(crate) struct Filter {
     /// An allow-list must be an CSV, whereby the first column contains
     /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
     /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
-    /// file is automatically interpreted as Apachae Arrow;
+    /// file is automatically interpreted as Apache Arrow;
     /// otherwise the file is read as CSV.
     #[arg(long, short = 'D')]
     deny_list: Vec<PathBuf>,

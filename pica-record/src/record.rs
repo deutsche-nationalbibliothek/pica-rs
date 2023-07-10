@@ -27,7 +27,7 @@ pub type RecordRef<'a> = Record<&'a BStr>;
 /// A mutable PICA+ tag.
 pub type RecordMut = Record<BString>;
 
-/// A PICA+ record, that may contian invalid UTF-8 data.
+/// A PICA+ record, that may contain invalid UTF-8 data.
 #[derive(Debug)]
 pub struct ByteRecord<'a> {
     raw_data: Option<&'a [u8]>,

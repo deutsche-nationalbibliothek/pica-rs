@@ -8,7 +8,7 @@ use flate2::Compression;
 
 use crate::ByteRecord;
 
-/// A tait that permits writing [ByteRecord]s.
+/// A trait that permits writing [ByteRecord]s.
 pub trait ByteRecordWrite {
     /// Writes a [ByteRecord] into this writer.
     fn write_byte_record(&mut self, record: &ByteRecord) -> Result<()>;
