@@ -380,8 +380,10 @@ jobs:
       - check
       - clippy
       - cross
+      - deny
       - fmt
       - fuzz
+      - miri
       - test
       - udeps
       - upgrades
