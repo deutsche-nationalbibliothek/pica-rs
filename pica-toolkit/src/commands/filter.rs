@@ -56,7 +56,7 @@ pub(crate) struct Filter {
     ///
     /// Note: Do not provide an additional filter expression as an CLI
     /// argument!
-    #[arg(long = "file", short = 'f')]
+    #[arg(long = "file", short = 'F')]
     expr_file: Option<PathBuf>,
 
     /// Ignore records which are *not* explicitly listed in one of the

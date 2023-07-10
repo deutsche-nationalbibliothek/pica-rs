@@ -1,5 +1,5 @@
 bin.name = "pica"
-args = "filter -f filter.txt"
+args = "filter -F filter.txt"
 status = "success"
 stdout = ""
 stderr = ""

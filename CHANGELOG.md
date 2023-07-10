@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * #643 Print more helpful error message on `ParsePicaError` 
 * #653 Don't require filter argument when an expression file is given
+* #654 Change `expr_file` short option from `-f` to `-F`
 
 ### Removed
 
