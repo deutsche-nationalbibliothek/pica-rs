@@ -5,6 +5,7 @@
 mod error;
 mod field;
 pub mod io;
+mod level;
 mod occurrence;
 mod record;
 mod subfield;
@@ -12,6 +13,7 @@ mod tag;
 
 pub use error::ParsePicaError;
 pub use field::{Field, FieldMut, FieldRef};
+pub use level::Level;
 pub use occurrence::{Occurrence, OccurrenceMut, OccurrenceRef};
 pub use record::{
     ByteRecord, Record, RecordMut, RecordRef, StringRecord,
