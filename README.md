@@ -29,12 +29,13 @@ In order to install the tools from source a
 [Rust](https://www.rust-lang.org/) installation is required. Just follow
 the [installation guide](https://www.rust-lang.org/learn/get-started) to
 get the Rust programming language with the `cargo` package manager. To
-build this project from source Rust 1.58.1 or newer is required.
+build this project from source Rust `1.70.0` or newer is required.
 
 To install the latest stable release:
 
 ```bash
-$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs --tag v0.17.0 pica
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
+    --tag v0.17.0 pica
 ```
 
 ## Commands

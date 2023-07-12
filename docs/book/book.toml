@@ -1,7 +1,15 @@
 [book]
 authors = ["Nico Wagner"]
-src = "src/de"
+language = "de"
+multilingual = false
 title = "pica-rs"
+src = "src"
 
-[output.html]
-additional-css = ["custom.css"]
+[build]
+create-missing = false
+
+[rust]
+edition = "2021"
+
+[output.html.search]
+limit-results = 15
