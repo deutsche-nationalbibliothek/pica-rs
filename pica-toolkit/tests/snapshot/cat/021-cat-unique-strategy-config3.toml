@@ -1,0 +1,6 @@
+bin.name = "pica"
+args = "-c Pica.toml cat --unique --unique-strategy idn"
+status = "success"
+stderr = ""
+stdin = "003@ \u001f0123456789X\u001e012A \u001fa1\u001e\n003@ \u001f0123456789X\u001e012A \u001fa2\u001e\n"
+stdout = "003@ \u001f0123456789X\u001e012A \u001fa1\u001e\n"

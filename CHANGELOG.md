@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #641 Stabilize `sample` command
 * #642 Add `--squash` and `--merge` option
 * #644 Add `!^` and `!$` operator
+* #658 Add unique-strategy config option (`cat` command)
 
 ### Changed
 
