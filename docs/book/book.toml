@@ -13,8 +13,3 @@ edition = "2021"
 
 [output.html.search]
 limit-results = 15
-
-[preprocessor.keeper]
-command = "mdbook-keeper"
-manifest_dir = "docs/book/deps"
-externs = ["pica_record"]
