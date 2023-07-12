@@ -23,12 +23,12 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
 
 ## Optionen
 
-* `-s`, `--skip-invalid` — überspringt Zeile aus der Eingabe, die nicht
+* `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die nicht
   dekodiert werden konnten.
 * `-u`, `--unique` — es werden keine Duplikate in die Ausgabe
   geschrieben. Die Strategie zur Erkennung von Duplikaten wird mittels
   der Option `--unique-strategy` festgelegt.
-* `--unique-strategy <strategy>` — festlegen, ein Duplikat erkannt
+* `--unique-strategy <strategy>` — festlegen, dass ein Duplikat erkannt
   werden soll. Standardmäßig ist der Wert `idn` gesetzt und es werden
   Duplikate durch Vergleichen der PPN/IDN (erster Wert im Feld `003@.0`)
   eines Datensatzes erkannt. Alternativ kann über die Strategie `hash`
@@ -52,7 +52,7 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
 
 ### Überspringen ungültiger Datensätze
 
-Der eingangs verwendete Befehl geht davon aus, dass die zwei Partition
+Der Eingangs verwendete Befehl geht davon aus, dass die zwei Partition
 ausschließlich gültige Datensätze enthalten. Gültig in diesem
 Zusammenhang bedeutet, dass es sich um valide Datensätze im Format PICA+
 handelt und nicht ob ein Datensatz einem bestimmten Regelwerk
