@@ -53,7 +53,7 @@ Die Optionen zum Ignorieren invalider Datensätze sowie das Komprimieren
 der Ausgabe lassen sich in der `Pica.toml` konfigurieren:
 
 ```toml
-[pica]
+[cat]
 skip-invalid = true
 gzip = false
 ```
