@@ -28,8 +28,8 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
 * `-u`, `--unique` — es werden keine Duplikate in die Ausgabe
   geschrieben. Die Strategie zur Erkennung von Duplikaten wird mittels
   der Option `--unique-strategy` festgelegt.
-* `--unique-strategy <strategy>` — festlegen, dass ein Duplikat erkannt
-  werden soll. Standardmäßig ist der Wert `idn` gesetzt und es werden
+* `--unique-strategy <strategy>` — festlegen, wie Duplikate erkannt
+  werden sollen. Standardmäßig ist der Wert `idn` gesetzt und es werden
   Duplikate durch Vergleichen der PPN/IDN (erster Wert im Feld `003@.0`)
   eines Datensatzes erkannt. Alternativ kann über die Strategie `hash`
   gewählt werden. Der Vergleich erfolgt dann über die SHA-256 Prüfsumme
@@ -45,7 +45,21 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
   `stdout` geschrieben. Endet der Dateiname mit dem Suffix `.gz`, wird
   die Ausgabe automatisch im gzip-Format komprimiert.
 
+## Konfiguration
 
+<!-- TODO: Link zum allgemeinen Kapitel über die Konfigurationsdatei -->
+
+Die Optionen zum Ignorieren invalider Datensätze sowie das Komprimieren
+der Ausgabe lassen sich in der `Pica.toml` konfigurieren:
+
+```toml
+[pica]
+skip-invalid = true
+gzip = false
+```
+
+Die Werte der Kommandozeilen-Optionen haben Vorrang vor den Werten aus
+der Konfiguration.
 
 ## Beispiele
 
