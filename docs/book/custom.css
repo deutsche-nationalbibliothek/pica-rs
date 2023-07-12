@@ -1,0 +1,19 @@
+body {
+  font-family: arial, sans-serif;
+}
+
+main h1, h2 {
+  border-bottom: 1px solid #d8dee4;
+}
+
+main h1 {
+  text-transform: uppercase;
+}
+
+main h2, h3 {
+  margin-top: 1em;
+}
+
+.content ul li {
+  padding: 5px 0px;
+}

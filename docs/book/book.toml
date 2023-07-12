@@ -11,5 +11,8 @@ create-missing = false
 [rust]
 edition = "2021"
 
+[output.html]
+additional-css = ["custom.css"]
+
 [output.html.search]
 limit-results = 15
