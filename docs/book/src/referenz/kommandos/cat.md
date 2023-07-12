@@ -55,6 +55,7 @@ der Ausgabe lassen sich in der `Pica.toml` konfigurieren:
 ```toml
 [cat]
 skip-invalid = true
+unique-strategy = "hash"
 gzip = false
 ```
 
