@@ -18,14 +18,28 @@ pub(crate) struct CatConfig {
     /// Skip invalid records that can't be decoded.
     pub(crate) skip_invalid: Option<bool>,
 
+    /// Strategy to determine duplicate records.
+    pub(crate) unique_strategy: Option<Strategy>,
+
     /// Compress output in gzip format
     pub(crate) gzip: Option<bool>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Default, ValueEnum)]
-enum Strategy {
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    Default,
+    ValueEnum,
+    Deserialize,
+    Serialize,
+)]
+pub(crate) enum Strategy {
     #[default]
+    #[serde(rename = "idn")]
     Idn,
+    #[serde(rename = "hash")]
     Hash,
 }
 
@@ -52,12 +66,10 @@ pub(crate) struct Cat {
     #[arg(
         long,
         requires = "unique",
-        default_value = "idn",
         value_name = "strategy",
-        hide_possible_values = true,
-        hide_default_value = true
+        hide_possible_values = true
     )]
-    unique_strategy: Strategy,
+    unique_strategy: Option<Strategy>,
 
     /// Append to the given file, do not overwrite
     #[arg(long)]
@@ -91,9 +103,18 @@ impl Cat {
             config.global
         );
 
+        let unique_strategy =
+            if let Some(strategy) = self.unique_strategy {
+                strategy
+            } else if let Some(ref config) = config.cat {
+                config.unique_strategy.clone().unwrap_or_default()
+            } else {
+                Strategy::default()
+            };
+
         let mut seen = BTreeSet::new();
         let key = |record: &ByteRecord| -> String {
-            match self.unique_strategy {
+            match unique_strategy {
                 Strategy::Idn => record
                     .idn()
                     .map(ToString::to_string)
