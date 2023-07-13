@@ -30,18 +30,18 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
   der Option `--unique-strategy` festgelegt.
 * `--unique-strategy <strategy>` — festlegen, wie Duplikate erkannt
   werden sollen. Standardmäßig ist der Wert `idn` gesetzt und es werden
-  Duplikate durch Vergleichen der PPN/IDN (erster Wert im Feld `003@.0`)
-  eines Datensatzes erkannt. Alternativ kann über die Strategie `hash`
-  gewählt werden. Der Vergleich erfolgt dann über die SHA-256 Prüfsumme
-  des Datensatzes.
+  Duplikate durch Vergleichen der PPN/IDN (Feld `003@.0`) eines
+  Datensatzes erkannt. Alternativ kann über die Strategie `hash` gewählt
+  werden. Der Vergleich erfolgt dann über die SHA-256 Prüfsumme des
+  Datensatzes.
 * `--append` — Wenn die Ausgabedatei bereits existiert, wird die
-  Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt wird eine
+  Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
   bestehende Datei standardmäßig überschrieben.
-* `--tee <filename>` — abzweigen der Ausgabe in eine zusätzlich Datei.
+* `--tee <filename>` — abzweigen der Ausgabe in eine zusätzliche Datei.
 * `-g`, `--gzip` — komprimieren der Ausgabe im
   [gzip](https://de.wikipedia.org/wiki/Gzip)-Format.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
-  werden soll. Standardmäßig wird Ausgabe in die Standardausgabe
+  werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben. Endet der Dateiname mit dem Suffix `.gz`, wird
   die Ausgabe automatisch im gzip-Format komprimiert.
 
@@ -67,7 +67,7 @@ der Konfiguration.
 
 ### Überspringen ungültiger Datensätze
 
-Der Eingangs verwendete Befehl geht davon aus, dass die zwei Partition
+Der eingangs verwendete Befehl geht davon aus, dass die zwei Partitionen
 ausschließlich gültige Datensätze enthalten. Gültig in diesem
 Zusammenhang bedeutet, dass es sich um valide Datensätze im Format PICA+
 handelt und nicht ob ein Datensatz einem bestimmten Regelwerk
@@ -139,21 +139,19 @@ Abzeigung in eine Leitung einbaut.
 
 Im folgenden Beispiel werden alle `Tp*.dat` zusammengefügt und in eine
 Datei `Tp.dat` geschrieben. Gleichzeitig werden alle Datensätze mit dem
-[_filter_]-Kommando danach gefiltert, ob die Satzart im Feld `002@.0`
-gleich dem Wert `Tp2`[^2] ist. Das Ergebnis wird in eine zweite Datei
-`Tp2.dat` geschrieben.
+[_filter_]-Kommando nach der Satzart `Tp2` im Feld `002@.0` gefiltert.
 
 ```bash
 $ pica cat partitions/Tp*.dat --tee gnd_person.dat | \
-      pica filter "002@.0 =^ 'Tp2'" -o Tp.dat
+      pica filter "002@.0 =^ 'Tp2'" -o Tp2.dat
 ```
 
 ### Komprimierte Ein- und Ausgabe
 
-Das vorhergende Beispiel zeigt auch, dass das `cat`-Kommando sowohl
-unkompromierte als auch komprimierte Dateien verarbeiten kann. Endet
-eine Datei mit dem Suffix `.gz` wird die Datei automatisch dekompromiert
-(als Eingabedatei) bzw. komprimiert (als Ausgabedatei).
+Das vorhergehende Beispiel zeigt auch, dass das `cat`-Kommando sowohl
+unkomprimierte als auch komprimierte Dateien verarbeiten kann. Endet
+eine Datei mit dem Suffix `.gz`, wird die Datei automatisch
+dekompromiert (als Eingabedatei) bzw. komprimiert (als Ausgabedatei).
 
 Mittels der Option `-g`/`--gzip` erfolgt eine Komprimierung der Ausgabe
 unabhängig von der Dateiendung:
