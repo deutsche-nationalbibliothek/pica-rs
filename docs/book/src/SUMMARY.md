@@ -6,3 +6,5 @@
     - [Installation](./anleitungen/installation.md)
 
 - [Referenz](./referenz/index.md)
+    - [Kommandos](./referenz/kommandos/index.md)
+        - [cat](./referenz/kommandos/cat.md)
