@@ -11,8 +11,8 @@ bibliografischen Metadaten, die in PICA+, dem internen Format des
 ermittelt und aufbereitet werden. Zudem kann das Toolkit als
 Brückentechnologie fungieren, um Metadaten für populäre Frameworks wie
 [_Pandas_] oder [_Polars_] (Python), in Programmiersprachen wie [_R_]
-oder für Excel nutzbar zu machen. Darüber ist auch eine Nutzung für die
-Automatisierung von Workflows möglich.
+oder für Excel nutzbar zu machen. Darüber hinaus eignet sich das Toolkit
+besonders für die Automatisierung von Metadaten-Workflows.
 
 ## Verwandte Projekte
 
