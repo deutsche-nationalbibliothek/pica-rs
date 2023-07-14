@@ -5,3 +5,13 @@
 [![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
+
+Das Toolkit _pica-rs_ stellt verschiedene
+[Kommandos](./referenz/kommandos/index.md) zur Verarbetung von
+bibliographischen Datensätzen bereit, die in PICA+, dem internen Format
+des OCLC Katalogsystems, kodiert sind.
+
+## Verwandte Projekte
+
+- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) — Catmandu modules for working with PICA+ data
+- [Metafacture](https://github.com/metafacture) — Tool suite for metadata processing
