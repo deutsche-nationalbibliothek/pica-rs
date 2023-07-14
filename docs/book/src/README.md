@@ -12,7 +12,7 @@ ermittelt und aufbereitet werden. Zudem kann das Toolkit als
 Brückentechnologie fungieren, um Metadaten für populäre Frameworks wie
 [_Pandas_] oder [_Polars_] (Python), in Programmiersprachen wie [_R_]
 oder für Excel nutzbar zu machen. Darüber hinaus eignet sich das Toolkit
-besonders für die Automatisierung von Metadaten-Workflows.
+für die Automatisierung von Metadaten-Workflows.
 
 ## Verwandte Projekte
 
