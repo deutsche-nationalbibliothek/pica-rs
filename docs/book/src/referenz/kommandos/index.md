@@ -2,4 +2,4 @@
 
 ## Übersicht
 
-* [cat](./cat.md) — Zusammenfügen (konkatenieren) von Datensätzen
+* [cat](./cat.md) — Zusammenfügen (Konkatenieren) von Datensätzen
