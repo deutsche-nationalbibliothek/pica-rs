@@ -1,7 +1,5 @@
 # Kommandos
 
-Das Programm `pica` (bzw. `pica.exe`) stellt über verschiedene Kommandos
-Funktionen zur Verarbeitung von bibliographischen Datensätzen, die in
-PICA+ kodiert sind, zur Verfügung.
+## Übersicht
 
-* [cat](./cat.md) — Zusammenfügen (konkatenieren) von Datensätzen
+* [cat](./cat.md) — Zusammenfügen (Konkatenieren) von Datensätzen

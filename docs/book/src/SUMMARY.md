@@ -1,10 +1,13 @@
 # Summary
 
-- [Tutorials](./tutorials/index.md)
+[Einführung](./README.md)
 
-- [Anleitungen](./anleitungen/index.md)
-    - [Installation](./anleitungen/installation.md)
+<!-- # Tutorials -->
 
-- [Referenz](./referenz/index.md)
-    - [Kommandos](./referenz/kommandos/index.md)
-        - [cat](./referenz/kommandos/cat.md)
+# Anleitungen
+
+- [Installation](./anleitungen/installation.md)
+
+# Referenz
+- [Kommandos](./referenz/kommandos/index.md)
+    - [cat](./referenz/kommandos/cat.md)
