@@ -5,7 +5,7 @@
 Das `completions`-Kommando erzeugt Dateien, die Anweisungen enthalten,
 welche Argumente und Optionen des Toolkits für eine
 [Shell](https://de.wikipedia.org/wiki/Shell_(Betriebssystem)) zur
-Autovervollständigung verfügbar sind.
+Befehlszeilenergänzung verfügbar sind.
 
 ## Beschreibung
 
