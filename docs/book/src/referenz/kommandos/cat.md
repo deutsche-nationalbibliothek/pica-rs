@@ -153,7 +153,7 @@ $ pica cat partitions/Tp*.dat --tee gnd_person.dat | \
 Das vorhergehende Beispiel zeigt auch, dass das `cat`-Kommando sowohl
 unkomprimierte als auch komprimierte Dateien verarbeiten kann. Endet
 eine Datei mit dem Suffix `.gz`, wird die Datei automatisch
-dekompromiert (als Eingabedatei) bzw. komprimiert (als Ausgabedatei).
+dekomprimiert (als Eingabedatei) bzw. komprimiert (als Ausgabedatei).
 
 Mittels der Option `-g`/`--gzip` erfolgt eine Komprimierung der Ausgabe
 unabhängig von der Dateiendung:
