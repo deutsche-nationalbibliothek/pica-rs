@@ -139,7 +139,7 @@ $ records,fields,subfields
 ```
 
 Soll auch das aktuelle Datum vor die Zeile geschrieben werden, könnten
-die Befehle wie folgt aussehen:
+bspw. folgende Unix-Kommandos genutzt werden:
 
 ```bash
 # Schreiben der Kopfzeile
@@ -158,21 +158,3 @@ $ date,records,fields,subfields
 2022-02-22,7,247,549
 2022-02-23,9,347,1022
 ```
-
-## Alternative
-
-Da Datensätze zeilenweise gespeichert/ausgegeben werden, kann auch das
-Unix-Kommand [_wc_] verwendet werden, um die Anzahl der Datensätze zu
-bestimmen. Es muss aber vorher sichergestellt sein, dass nur gültige
-Datensätze in der Datei (oder der Standardeingabe) sind. Die folgenden
-Kommandos sind äquivalent:
-
-```bash
-$ pica count -s --records dump.dat
-7
-
-$ pica cat -s dump.dat | wc -l
-7
-```
-
-[_wc_]: https://man7.org/linux/man-pages/man1/wc.1.html
