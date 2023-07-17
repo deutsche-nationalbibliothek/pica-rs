@@ -6,7 +6,7 @@
 
 Das Toolkit _pica-rs_ ermöglicht eine effiziente Verarbeitung von
 bibliografischen Metadaten, die in PICA+, dem internen Format des
-[_OCLC_]-Katalogsystems, kodiert sind. Mit Hilfe verschiedener
+[_OCLC_]-Katalogsystems, kodiert sind. Mithilfe verschiedener
 [_Kommandos_] können aus den Metadaten elementare statistische Größen
 ermittelt und aufbereitet werden. Zudem kann das Toolkit als
 Brückentechnologie fungieren, um Metadaten für populäre Frameworks wie
