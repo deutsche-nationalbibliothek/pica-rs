@@ -31,14 +31,14 @@ Ts1,1
 
 * `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
   nicht dekodiert werden konnten.
-* `-i`, `--ignore-case` — Groß- und Kleinschreibung wird bei Vergelichen
+* `-i`, `--ignore-case` — Groß- und Kleinschreibung wird bei Vergleichen
   ignoriert.
-* `--strsim-threshold <value>` — festlegen des Schwellenwerts beim
+* `--strsim-threshold <value>` — Festlegen des Schwellenwerts beim
   Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
 * `--reverse` — Ergebnisse werden in aufsteigender Reihenfolge
   ausgegeben.
-* `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die ersten _n_
-  Treffer.
+* `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten _n_
+  Unterfeldwerte.
 * `--threshold` `<t>` — Zeilen mit einer Häufigkeit ≤ _t_ ignorieren.
 * `-H`, `--header` `<header>` — Kopfzeile, die den Ergebnissen
   vorangestellt wird.
@@ -70,7 +70,7 @@ der Konfiguration.
 ### Hinzufügen einer Kopfzeile
 
 Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen
-ist es häufig sinnvoll eine Kopfzeile hinzuzufügen. Dies erfolgt mit der
+ist es häufig sinnvoll, eine Kopfzeile hinzuzufügen. Dies erfolgt mit der
 Option `--header` bzw. `-H`. Die Namen der Spalten werden komma-separiert
 angegeben. Eine Angabe von mehr als zwei Spalten ist nicht erlaubt.
 
@@ -91,7 +91,7 @@ Ts1,1
 Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten mit
 einbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand
 eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der
-Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation,
+Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation
 können nur die Felder ausgewählt werden, die einem bestimmten Kriterium
 entsprechen.
 
@@ -111,9 +111,10 @@ $ pica frequency -s "041R{ 9 | 4 in ['berc', 'beru'] }" DUMP.dat.gz
 
 ### Eingrenzen der Treffermenge
 
-Soll die Ergebnismenge auf die ersten _n_ Häufigkeiten eingeschränkt
-werden, wird dies mit der Option `--limit` bzw. `-l` erreicht. Das
-nachfolgende Beispeil ermittelt die 3 häufigsten Werte im Feld `041R.4`
+Soll die Ergebnismenge auf die häufigsten _n_ Unterfeldwerte
+eingeschränkt werden, wird dies mit der Option `--limit` bzw. `-l`
+erreicht. Das nachfolgende Beispeil ermittelt die 3 häufigsten Werte im
+Feld `041R.4`.
 
 ```console
 $ pica frequency -s --limit 3 "041R.4" DUMP.dat.gz
@@ -140,7 +141,7 @@ obal,5
 ### Änderung der Sortierreihenfolge (Limit)
 
 Standardmäßig wird die Häufigkeitsverteilung absteigend ausgegeben,
-d.h. der häufigste Wert steht in der Ausgabe oben[^fn1]. Soll das
+d.h., der häufigste Wert steht in der Ausgabe oben[^fn1]. Soll das
 Verhalten so geändert werden, dass die Ausgabe aufsteigend sortiert wird,
 kann dies mit der Option `--reverse` bzw. `-r` erfolgen. Das folgende
 Kommando sucht nach den vier Satzarten, die am wenigsten vorkommen:
@@ -157,7 +158,7 @@ Ts1,1
 ### Ausgabe im TSV-Format
 
 Die Ausgabe lässt sich mittels der Option `--tsv` (bzw. `-t`) in das
-TSV- Format ändern.
+TSV-Format ändern.
 
 ```bash
 $ pica frequency -s -l3 --tsv tests/data/dump.dat.gz
