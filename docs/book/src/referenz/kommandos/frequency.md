@@ -1,30 +1,41 @@
 # frequency
 
+![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
+
 Mithilfe des Kommandos `frequency` lässt sich die Häufigkeitsverteilung
-aller Wertausprägungen eines Unterfelds bestimmen.
+aller Werte eines Unterfelds bestimmen.
 
 ## Beschreibung
 
 Das Kommando `frequency` wird dazu genutzt, um die Häufigkeiten der
-Wertausprägungen eines Unterfelds zu bestimmen. Ist das zu untersuchende
-Feld bzw. Unterfeld wiederholbar, dann gehen alle Wertausprägungen eines
-Datensatzes in die Häufigkeitsverteilung ein. Aus der Ergebnisdatei lässt
-sich dann durch geeignete Tools eine grafische Darstellung (Histogramm)
-oder die relative Häufigkeitsverteilung berechnen. Die Ausgabe erfolgt
+Werte eines Unterfelds zu bestimmen. Ist das zu untersuchende Feld bzw.
+Unterfeld wiederholbar, dann gehen alle Wertausprägungen eines
+Datensatzes in die Häufigkeitsverteilung ein. Die Ausgabe erfolgt
 standardmäßig im CSV-Format.
 
 Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds
-`010@.a` (Sprache des Textes) ermittelt. Sowohl das Feld `010@` als auch
-das Unterfeld `a` sind wiederholbar und somit werden Datensätze, die sowohl
-einen Sprachencode `ger` als auch `eng` erhalten haben, für jeden Wert
-gezählt.
+`002@.0` (Satzart) ermittelt:
 
-```bash
-$ pica frequency "010@.a" FILE.dat
-ger,2888445
-eng,347171
-...
+```console
+$ pica frequency -s "002@.0" DUMP.dat.gz
+Tu1,6
+Tsz,2
+Tg1,1
+Tp1,1
+Tpz,1
+Ts1,1
+
 ```
+
+## Optionen
+
+TBA
+
+## Konfiguration
+
+TBA
+
+## Beispiele
 
 ### Hinzufügen einer Kopfzeile
 
