@@ -23,7 +23,42 @@ subfields: 332
 
 ## Optionen
 
-TBA
+* `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
+  nicht dekodiert werden konnten.
+* `--append` — Wenn die Ausgabedatei bereits existiert, wird die
+  Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
+  bestehende Datei standardmäßig überschrieben.
+* `--records` — gibt nur die Anzahl der vorhandenen Datensätze aus.
+  Dieses Flag ist nicht mit den Optionen `--fields`, `--subfields`,
+  `--csv`, `--tsv` und `--no-header` kombinierbar.
+* `--fields` — gibt nur die Anzahl der vorhandenen Felder aus.
+  Dieses Flag ist nicht mit den Optionen `--records`, `--subfields`,
+  `--csv`, `--tsv` und `--no-header` kombinierbar.
+* `--subfields` — gibt nur die Anzahl der vorhandenen Unterfelder aus.
+  Dieses Flag ist nicht mit den Optionen `--records`, `--fields`,
+  `--csv`, `--tsv` und `--no-header` kombinierbar.
+* `--csv` — die Ausgabe erfolgt im CSV-Format.
+* `--tsv` — die Ausgabe erfolgt im TSV-Format.
+* `--no-header` — es wird keine Kopfzeile bei der CSV- bzw- TSV-Ausgabe
+  geschrieben.
+* `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
+  werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
+  `stdout` geschrieben.
+
+## Konfiguration
+
+<!-- TODO: Link zum allgemeinen Kapitel über die Konfigurationsdatei -->
+
+Die Option zum Ignorieren invalider Datensätze lässt sich in der
+`Pica.toml` konfigurieren:
+
+```toml
+[count]
+skip-invalid = true
+```
+
+Die Werte der Kommandozeilen-Optionen haben Vorrang vor den Werten aus
+der Konfiguration.
 
 ## Beispiele
 
