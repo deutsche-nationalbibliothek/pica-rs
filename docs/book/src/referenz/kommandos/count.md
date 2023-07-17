@@ -39,8 +39,7 @@ subfields: 332
   `--csv`, `--tsv` und `--no-header` kombinierbar.
 * `--csv` — die Ausgabe erfolgt im CSV-Format.
 * `--tsv` — die Ausgabe erfolgt im TSV-Format.
-* `--no-header` — es wird keine Kopfzeile bei der CSV- bzw- TSV-Ausgabe
-  geschrieben.
+* `--no-header` — es wird keine Kopfzeile in die Ausgabe geschrieben.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben.
