@@ -2,7 +2,7 @@
 
 ![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
 
-Das `cat` Kommando liest Datensätze direkt von der Standardeingabe
+Das `cat`-Kommando liest Datensätze direkt von der Standardeingabe
 (`stdin`) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe
 kann entweder in eine Datei oder in die Standardausgabe (`stdout`)
 geschrieben werden.
