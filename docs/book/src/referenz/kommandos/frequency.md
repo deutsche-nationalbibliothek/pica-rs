@@ -29,11 +29,41 @@ Ts1,1
 
 ## Optionen
 
-TBA
+* `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
+  nicht dekodiert werden konnten.
+* `-i`, `--ignore-case` — Groß- und Kleinschreibung wird bei Vergelichen
+  ignoriert.
+* `--strsim-threshold <value>` — festlegen des Schwellenwerts beim
+  Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
+* `--reverse` — Ergebnisse werden in aufsteigender Reihenfolge
+  ausgegeben.
+* `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die ersten _n_
+  Treffer.
+* `--threshold` `<t>` — Zeilen mit einer Häufigkeit ≤ _t_ ignorieren.
+* `-H`, `--header` `<header>` — Kopfzeile, die den Ergebnissen
+  vorangestellt wird.
+* `-t`, `--tsv` — Ausgabe erfolgt im TSV-Format.
+* `--translit` `<nf>` — Ausgabe wird in die angegebene Normalform
+  transliteriert. Mögliche Werte: `nfd`, `nfkd`, `nfc` und `nfkc`.
+* `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
+  werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
+  `stdout` geschrieben.
 
 ## Konfiguration
 
-TBA
+<!-- TODO: Link zum allgemeinen Kapitel über die Konfigurationsdatei -->
+
+Die Option zum Ignorieren invalider Datensätze lässt sich in der
+`Pica.toml` konfigurieren:
+
+```toml
+[frequency]
+skip-invalid = true
+```
+
+Die Werte der Kommandozeilen-Optionen haben Vorrang vor den Werten aus
+der Konfiguration.
+
 
 ## Beispiele
 
@@ -42,14 +72,18 @@ TBA
 Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen
 ist es häufig sinnvoll eine Kopfzeile hinzuzufügen. Dies erfolgt mit der
 Option `--header` bzw. `-H`. Die Namen der Spalten werden komma-separiert
-angegeben. Die Angabe von mehr als zwei Spalten ist nicht erlaubt.
+angegeben. Eine Angabe von mehr als zwei Spalten ist nicht erlaubt.
 
-```bash
-$ pica frequency --header "sprache,anzahl" "010@.a" A.dat
-sprache,anzahl
-ger,2888445
-eng,347171
-...
+```console
+$ pica frequency -s --header "satzart,anzahl" "002@.0" DUMP.dat.gz
+satzart,anzahl
+Tu1,6
+Tsz,2
+Tg1,1
+Tp1,1
+Tpz,1
+Ts1,1
+
 ```
 
 ### Eingrenzung auf bestimmte Felder
@@ -61,42 +95,32 @@ Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation,
 können nur die Felder ausgewählt werden, die einem bestimmten Kriterium
 entsprechen.
 
-Im folgenden Beispiel werden von einem Datensatz nur die `044H` Felder in
-die Ergenisbereichnung mit einbezogen, die ein Unterfeld `b` besitzen, das
-gleich `'GND'` ist, sowie ein Unterfeld `H`, das mit der Zeichenkette
-`'ema'` beginnt. Felder, die nicht dem Filter entsprechen werden ignoriert.
+Das folgende Beispiel bezieht nur die Felder `041R` in die Auswertung
+mit ein, bei denen ein Unterfeld `4` existiert, das entweder `berc` oder
+`beru` ist; Felder die diesem Kriterium nicht entsprechen, werden
+ignoriert.
 
-```bash
-$ pica frequency "044H{ 9 | b == 'GND' && H =^ 'ema' }" DUMP.dat
-gnd_id,count
-040118827,29359
-040305503,4118
-041132920,2861
-04061963X,2420
-040288595,1964
+```console
+$ pica frequency -s "041R{ 9 | 4 in ['berc', 'beru'] }" DUMP.dat.gz
+040533093,2
+040250989,1
+040252434,1
+040290506,1
 ...
 ```
 
-Mit der Option `--ignore-case` (bzw. `-i`) wird bei Vergleichen von Werten
-die Groß-/Klein-Schreibung ignoriert. Die Option `--strsim-threshold` legt
-den Schwellenwert des `=*`-Operators fest, mit dem auf die Ähnlichkeit von
-Zeichenketten geprüft werden kann.
+### Eingrenzen der Treffermenge
 
+Soll die Ergebnismenge auf die ersten _n_ Häufigkeiten eingeschränkt
+werden, wird dies mit der Option `--limit` bzw. `-l` erreicht. Das
+nachfolgende Beispeil ermittelt die 3 häufigsten Werte im Feld `041R.4`
 
-### Eingrenzen der Treffermenge (Limit)
+```console
+$ pica frequency -s --limit 3 "041R.4" DUMP.dat.gz
+beru,12
+obal,5
+vbal,4
 
-Soll die Treffermenge auf die _n_-häufigsten Werte eingeschränkt werden,
-wird dies mit der Option `--limit` bzw. `-l` erreicht. Das folgende
-Beispiel sucht nach den fünf häufigsten Sprachencodes:
-
-```bash
-$ pica frequency --limit 5 --header "sprache,anzahl" "010@.a" A.dat
-sprache,anzahl
-ger,4944293
-eng,829241
-fre,140055
-spa,61131
-ita,60113
 ```
 
 ### Eingrenzen der Treffermenge (Schwellenwert)
@@ -106,58 +130,41 @@ eingeschänkt werden. Sollen nur die Werte angezeigt werden, die häufiger
 als ein Schwellenwert _n_ vorkommen, dann kann dies mit der Option
 `--threshold` bzw. `-t` erzielt werden:
 
-```bash
-$ pica frequency --theshold 100000 -H "sprache,anzahl" "010@.a" A.dat
-sprache,anzahl
-ger,4944293
-eng,829241
-fre,140055
+```console
+$ pica frequency -s --threshold 4 "041R.4" DUMP.dat.gz
+beru,12
+obal,5
+
 ```
 
-### Änderung der Sortierreihenfolge
+### Änderung der Sortierreihenfolge (Limit)
 
 Standardmäßig wird die Häufigkeitsverteilung absteigend ausgegeben,
 d.h. der häufigste Wert steht in der Ausgabe oben[^fn1]. Soll das
 Verhalten so geändert werden, dass die Ausgabe aufsteigend sortiert wird,
 kann dies mit der Option `--reverse` bzw. `-r` erfolgen. Das folgende
-Kommando sucht nach den drei Satzarten, die am wenigsten vorkommen:
+Kommando sucht nach den vier Satzarten, die am wenigsten vorkommen:
 
-```bash
-$ pica frequency -s --limit 2 --reverse tests/data/dump.dat.gz
+```console
+$ pica frequency -s -l 4 --reverse "002@.0" DUMP.dat.gz
+Tg1,1
+Tp1,1
+Tpz,1
 Ts1,1
-Tp1,2
+
 ```
 
 ### Ausgabe im TSV-Format
 
-Die Ausgabe lässt sich mittels der Option `--tsv` (bzw. `-t`) in das TSV-
-Format ändern.
+Die Ausgabe lässt sich mittels der Option `--tsv` (bzw. `-t`) in das
+TSV- Format ändern.
 
 ```bash
-$ pica frequency -s --tsv --reverse tests/data/dump.dat.gz
-Tp1    2
-Ts1    1
+$ pica frequency -s -l3 --tsv tests/data/dump.dat.gz
+Tu1	6
+Tsz	2
 ...
 ```
-
-### Änderung der Unicode-Normalform
-
-Die Unicode-Normalform in der Ausgabe lässt sich durch die Option
-`--translit` ändern. Liegen die Daten in NFD-Normalform vor und sollen in
-die NFC-Normalform transliteriert werden, kann dies mit dem folgenden
-Kommando erfolgen:
-
-```bash
-$ pica frequency --translit nfc "002@.0" dump.dat.gz
-Ts1,1
-Tp1,2
-```
-
-Es werden die Normalformen NFC (`nfc`), NFD (`nfd`), NFKC (`nfkc`) und
-NFKD (`nfkd`) unterstützt. Wird die Option nicht verwendet, werden die
-Wertausprägungen in die Kodierung und Normalform ausgegeben, wie sie in
-der Eingabedatei vorliegt.
-
 
 [^fn1]: Alle Werte mit gleicher Häufigkeit werden immer in lexikographisch
     aufsteigender Reihenfolge sortiert. Dies erfolgt unabhängig vom
