@@ -84,7 +84,7 @@ jobs:
           target: ${{ matrix.target.triple }}
           profile: minimal
           override: true
-      - name: "prepare tests"
+      - name: "Run prepare tests"
         run: ci/prepare-tests.sh
       - uses: actions-rs/cargo@v1
         with:
