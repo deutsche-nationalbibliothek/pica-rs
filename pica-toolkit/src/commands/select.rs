@@ -34,10 +34,18 @@ pub(crate) struct Select {
     /// Whether to squash all values of a repeated subfield into a
     /// single value or not. The separator can be specified by the
     /// `--separator` option.
-    #[arg(long)]
+    ///
+    /// Note: This option cannot be used with `--merge`.
+    #[arg(long, conflicts_with = "merge")]
     squash: bool,
 
-    #[arg(long)]
+    /// Whether to merge all values of a column into a single value or
+    /// not. The separator can be specified by the `--separator`
+    /// Note: This option cannot be used with `--merge`.
+    /// option.
+    ///
+    /// Note: This option cannot be used with `--squash`.
+    #[arg(long, conflicts_with = "squash")]
     merge: bool,
 
     /// Sets the separator used for squashing of repeated subfield
