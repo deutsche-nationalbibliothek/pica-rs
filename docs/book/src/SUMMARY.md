@@ -15,3 +15,4 @@
     - [completions](./referenz/kommandos/completions.md)
     - [count](./referenz/kommandos/count.md)
     - [frequency](./referenz/kommandos/frequency.md)
+    - [invalid](./referenz/kommandos/invalid.md)
