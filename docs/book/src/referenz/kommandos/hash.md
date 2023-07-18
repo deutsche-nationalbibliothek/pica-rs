@@ -4,8 +4,7 @@
 
 Mithilfe des Kommandos `hash` lässt sich eine Tabelle erzeugen, die in
 der ersten Spalte die IDN (Feld `003@.0`) eines Datensatzes und in der
-zweiten Spalte den [_SHA-256_] Hashwert, der über den kompletten
-Datensatz (ink. Zeilenumbruch) gebildet wird, erzeugen.
+zweiten Spalte den [_SHA-256_] Hashwert enthält.
 
 ## Beschreibung
 
@@ -28,23 +27,6 @@ idn,sha256
 ...
 ```
 
-Die Berechnung des [_SHA-256_]-Hashwerts beinhaltet bewusst den
-abschließenden Zeilenumbruch, um einen gleichen Hashwert zu erzeugen,
-der entsteht, wenn der Hashwert über die gesamte Zeile aus der Eingabe
-ermittelt wird. Im folgenden Beispiel wird zuerst der erste gültige
-Datensatz in die Datei `1.dat` geschrieben. Anschließend wird der
-Hashwert einmal mit dem `hash`-Kommando und einmal mit dem Unix-Programm
-[_sha256sum_] gebildet. Beide Ergebnisse sind gleich.
-
-```console
-$ pica filter -s -l1 "003@?" DUMP.dat.gz -o 1.dat
-$ pica hash 1.dat
-idn,sha256
-118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
-
-$ sha256sum 1.dat
-762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
-```
 
 
 ## Optionen
@@ -102,6 +84,20 @@ ppn,hash
 118607626,8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee
 040993396,0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a
 ...
+```
+
+## Anmerkung
+
+Zur Berechnung des [_SHA-256_]-Hashwerts wird der abschließenden Zeilenumbruch mit einbezogen, um einen gleichen Hashwert zu erzeugen, der entsteht, wenn der Hashwert über die gesamte Zeile aus der Eingabe ermittelt wird. Im folgenden Beispiel wird zuerst der erste gültige Datensatz in die Datei `1.dat` geschrieben. Anschließend wird der Hashwert einmal mit dem `hash`-Kommando und einmal mit dem Unix-Programm [_sha256sum_] gebildet. Beide Ergebnisse sind gleich.
+
+```console
+$ pica filter -s -l1 "003@?" DUMP.dat.gz -o 1.dat
+$ pica hash 1.dat
+idn,sha256
+118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
+
+$ sha256sum 1.dat
+762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
 ```
 
 [_SHA-256_]: https://de.wikipedia.org/wiki/SHA-2
