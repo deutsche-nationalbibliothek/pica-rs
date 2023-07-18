@@ -32,5 +32,6 @@ fn cli_tests() {
 #[test]
 fn doc_tests() {
     trycmd::TestCases::new()
-        .case("../docs/book/src/referenz/kommandos/frequency.md");
+        .case("../docs/book/src/referenz/kommandos/frequency.md")
+        .case("../docs/book/src/referenz/kommandos/invalid.md");
 }

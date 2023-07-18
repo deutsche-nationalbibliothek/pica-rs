@@ -10,3 +10,4 @@
 * [count](./count.md) — Zählen von Datensätzen, Felder und Unterfeldern
 * [frequency](./frequency.md) — Ermitteln einer Häufigkeitsverteilung
   über ein oder mehrere Unterfelder
+* [invalid](./invalid.md) — Findet ungültige Zeilen in der Eingabe
