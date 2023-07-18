@@ -63,6 +63,8 @@ jobs:
         with:
           command: build
           args: --release --workspace
+      - name: "Run prepare tests"
+        run: ci/prepare-tests.sh
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -122,6 +124,8 @@ jobs:
         with:
           command: build
           args: --release --workspace
+      - name: "Run prepare tests"
+        run: ci/prepare-tests.sh
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -173,6 +177,8 @@ jobs:
         with:
           command: build
           args: --release --workspace
+      - name: "Run prepare tests"
+        run: ci/prepare-tests.sh
       - uses: actions-rs/cargo@v1
         with:
           command: test

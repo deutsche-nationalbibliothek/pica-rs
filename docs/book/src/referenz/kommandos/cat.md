@@ -25,8 +25,8 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
 
 ## Optionen
 
-* `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die nicht
-  dekodiert werden konnten.
+* `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
+  nicht dekodiert werden konnten.
 * `-u`, `--unique` — es werden keine Duplikate in die Ausgabe
   geschrieben. Die Strategie zur Erkennung von Duplikaten wird mittels
   der Option `--unique-strategy` festgelegt.

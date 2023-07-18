@@ -14,3 +14,4 @@
     - [convert](./referenz/kommandos/convert.md)
     - [completions](./referenz/kommandos/completions.md)
     - [count](./referenz/kommandos/count.md)
+    - [frequency](./referenz/kommandos/frequency.md)

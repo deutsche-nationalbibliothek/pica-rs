@@ -28,3 +28,9 @@ fn cli_tests() {
         .case("tests/snapshot/split/*.toml")
         .case("tests/snapshot/split/*.trycmd");
 }
+
+#[test]
+fn doc_tests() {
+    trycmd::TestCases::new()
+        .case("../docs/book/src/referenz/kommandos/frequency.md");
+}
