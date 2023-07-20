@@ -17,3 +17,4 @@
     - [frequency](./referenz/kommandos/frequency.md)
     - [hash](./referenz/kommandos/hash.md)
     - [invalid](./referenz/kommandos/invalid.md)
+    - [print](./referenz/kommandos/print.md)
