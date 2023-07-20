@@ -11,13 +11,12 @@ Mithilfe des `print`-Kommandos können Datensätze in einer
 menschenlesbaren Form auf dem Terminal ausgegeben oder in eine Datei
 geschrieben werden. Das Format ist an die Darstellung in der WinIBW
 angelehnt: Felder werden zeilenweise ausgegeben; zuerst wird das Feld
-(`003@`), dann - sofern vorhanden - die Okkurrenz (`/01`), und
-schließlich die Liste von Unterfeldern ausgegeben. Dem Unterfeld-Code
-wird ein Dollarzeichen vorangestellt. Die Unterfeldwerte werden genau so
-ausgegen, wie sie im Datensatz vorhanden sind; es findet kein
-[_Escaping_] von Sonderzeichen statt. Einzelne Datensätze werden durch
-eine Leerzeile voneinander
-getrennt.
+(bspw. `003@`), dann - sofern vorhanden - die Okkurrenz (bspw. `/01`),
+und schließlich die Liste von Unterfeldern ausgegeben. Dem
+Unterfeld-Code wird ein Dollarzeichen vorangestellt. Die Unterfeldwerte
+werden genau so ausgegeben, wie sie im Datensatz vorhanden sind; es
+findet kein [_Escaping_] von Sonderzeichen statt. Einzelne Datensätze
+werden durch eine Leerzeile voneinander getrennt.
 
 Der folgende Befehl gibt den ersten Datensatz aus:
 
@@ -52,8 +51,8 @@ $ pica print -s -l1 DUMP.dat.gz
   Unterschied, dass ausschließlich ANSI-Farbcodes für die Darstellung
   von Farben verwendet werden. Mit der Einstellung `auto` wird eine
   Farbausgabe angestrebt, aber nicht erzwungen. Bspw. wird bei `auto`
-  keine Farbausgabe durchgeführt, wenn der Terminal dies nicht
-  unterstütz oder die Umgebungsvariable `NO_COLOR` definiert ist.
+  keine Farbausgabe durchgeführt, wenn das Terminal dies nicht
+  unterstützt oder die Umgebungsvariable `NO_COLOR` definiert ist.
   Schließlich wird mit der Einstellung `never` die Farbausgabe
   deaktiviert.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
@@ -81,18 +80,18 @@ skip-invalid = true
 Die Werte der Kommandozeilen-Optionen haben Vorrang vor den Werten aus
 der Konfiguration.
 
-Folgende Farbeinstellung können getroffen werden:
+Folgende Farbeinstellungen können getroffen werden:
 
 * `tag-color` — Farbe des PICA-Tags (bspw. `041A`)
 * `occurrence-color` — Farbe der PICA-Okkurrenz (bspw. `/01`)
 * `code-color` — Farbe eines Unterfeld-Codes  (bspw. `$a`)
 * `value-color` — Farbe eines Unterfeld-Werts  (bspw. `Goethe`)
 
-Jede Farbeinstellung kann folgende Einstellungen vornehmen:
+Jede Farbeinstellung kann wie folgt konfiguriert werden:
 
-* `color` — Festlegen der Vordergrundfarbe. Folgende Werte sind erlaubt:
-  `black`, `blue`, `green`, `red`, `cyan`, `magenta`, `yellow`, `white`,
-  ein [_Ansi256 Farbcode_] oder ein RGB-Farbwert.
+* `color` — Festlegen der Vordergrundfarbe (`black`, `blue`, `green`,
+  `red`, `cyan`, `magenta`, `yellow`, `white`, ein [_Ansi256 Farbcode_]
+  oder ein RGB-Farbwert).
 * `bold` — Festlegen, ob der Text fett gedruckt werden soll (`true` /
   `false`).
 * `italic` — Festlegen, ob der Text kursiv gedruckt werden soll (`true`
@@ -112,7 +111,7 @@ Terminaleinstellung abhängig.
 
 ### Transliteration der Ausgabe
 
-Standardmäßig werden die Unterfeldwerte so ausgabeben wie sie im
+Standardmäßig werden die Unterfeldwerte so ausgegeben wie sie im
 Datensatz vorkommen. Mit der Option `--translit` werden die Werte in die
 angegebene [_Unicode-Normalform_] transliteriert.
 
