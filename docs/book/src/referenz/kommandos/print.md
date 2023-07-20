@@ -90,7 +90,7 @@ Folgende Farbeinstellungen können getroffen werden:
 Jede Farbeinstellung kann wie folgt konfiguriert werden:
 
 * `color` — Festlegen der Vordergrundfarbe (`black`, `blue`, `green`,
-  `red`, `cyan`, `magenta`, `yellow`, `white`, ein [_Ansi256 Farbcode_]
+  `red`, `cyan`, `magenta`, `yellow`, `white`, ein [_Ansi256-Farbcode_]
   oder ein RGB-Farbwert).
 * `bold` — Festlegen, ob der Text fett gedruckt werden soll (`true` /
   `false`).
@@ -138,6 +138,6 @@ $ pica print -s -l1 --translit nfc DUMP.dat.gz
 ```
 
 
-[_Ansi256 Farbcode_]: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797#256-colors
+[_Ansi256-Farbcode_]: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797#256-colors
 [_Escaping_]: https://de.wikipedia.org/wiki/Escape-Sequenz
 [_Unicode-Normalform_]: https://de.wikipedia.org/wiki/Normalisierung_(Unicode)
