@@ -11,11 +11,12 @@ Mithilfe des `print`-Kommandos können Datensätze in einer
 menschenlesbaren Form auf dem Terminal ausgegeben oder in eine Datei
 geschrieben werden. Das Format ist an die Darstellung in der WinIBW
 angelehnt: Felder werden zeilenweise ausgegeben; zuerst wird das Feld
-(`003@`), dann optional die Okkurrenz (`/01`), und schließlich die Liste
-von Unterfeldern ausgegeben. Dem Unterfeld-Code wird ein Dollarzeichen
-vorangestellt. Die Unterfeldwerte werden genau so ausgegen, wie sie im
-Datensatz vorhanden sind; es findet kein [_Escaping_] von Sonderzeichen
-statt. Einzelne Datensätze werden durch eine Leerzeile voneinander
+(`003@`), dann - sofern vorhanden - die Okkurrenz (`/01`), und
+schließlich die Liste von Unterfeldern ausgegeben. Dem Unterfeld-Code
+wird ein Dollarzeichen vorangestellt. Die Unterfeldwerte werden genau so
+ausgegen, wie sie im Datensatz vorhanden sind; es findet kein
+[_Escaping_] von Sonderzeichen statt. Einzelne Datensätze werden durch
+eine Leerzeile voneinander
 getrennt.
 
 Der folgende Befehl gibt den ersten Datensatz aus:
