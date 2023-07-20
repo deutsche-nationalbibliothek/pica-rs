@@ -111,7 +111,7 @@ Terminaleinstellung abhängig.
 
 ### Transliteration der Ausgabe
 
-Standardmäßig werden die Unterfeldwerte so ausgegeben wie sie im
+Standardmäßig werden die Unterfeldwerte so ausgegeben, wie sie im
 Datensatz vorkommen. Mit der Option `--translit` werden die Werte in die
 angegebene [_Unicode-Normalform_] transliteriert.
 
