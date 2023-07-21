@@ -53,7 +53,7 @@ $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
 | [partition](#partition) | stable     | partition a list of records based on subfield values              |
 | [print](#print)         | stable     | print records in human readable format                            |
 | [sample](#sample)       | stable     | selects a random permutation of records                           |
-| [select](#select)       | beta       | select subfield values from records                               |
+| [select](#select)       | stable     | select subfield values from records                               |
 | [slice](#slice)         | stable     | return records withing a range (half-open interval)               |
 | [split](#split)         | stable     | split a list of records into chunks                               |
 
