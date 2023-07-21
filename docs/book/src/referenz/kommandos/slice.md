@@ -2,17 +2,19 @@
 
 ![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
 
-Das `slice`-Kommando schneidet einen Teilbereich aus der Eingabe aus.
+Das `slice`-Kommando schneidet einen zusammenhängenden Teilbereich aus
+der Eingabe aus.
 
 
 ## Beschreibung
 
-Mittels des `slice`-Kommandos kann ein Teilbereich aus der Eingabe
-ausgeschnitten werden. Dabei wird der Teilbereich als halb-offenes
-Intervall angegeben, wobei die Positionen von 0 gezählt werden.
-Enthält bspw. die Eingabe 1.000 Zeilen, mit 990 Datensätzen und 10
-ungültigen Zeilen, dann sind die Positionen von `0` bis 999
-durchnummeriert.
+Mittels des `slice`-Kommandos kann ein zusammenhängender Teilbereich aus
+der Eingabe ausgeschnitten werden. Dabei wird der Teilbereich als
+halb-offenes Intervall angegeben, wobei die Positionen von 0 an gezählt
+werden. Beim Auftreten eines ungültigen Datensatzes wird die Position
+weitergezählt. Enthält bspw. die Eingabe 1.000 Zeilen, mit 990
+Datensätzen und 10 ungültigen Zeilen, dann sind die Positionen von `0`
+bis 999 durchnummeriert.
 
 Das folgende Beispiel extrahiert alle (gültigen) Datensätze aus den
 Positionen 2 bis 4:
@@ -70,7 +72,7 @@ der Konfiguration.
 ### Ausschneiden eines Teilbereichs fester Größe
 
 Wenn die Eingabe ausreichend Datensätze enthält, kann beginnend bei
-einer festen Position (`--start`) eine Teilbereich mit einer festen
+einer festen Position (`--start`) ein Teilbereich mit einer festen
 Länge (`--length`) ausgeschnitten werden.
 
 Im folgenden Beispiel wird beginnend beim dritten Datensatz (Position 2)

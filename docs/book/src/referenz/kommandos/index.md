@@ -10,9 +10,11 @@
 * [count](./count.md) — Zählen von Datensätzen, Felder und Unterfeldern
 * [frequency](./frequency.md) — Ermitteln einer Häufigkeitsverteilung
   über ein oder mehrere Unterfelder
-* [hash](./hash.md) — Erzeugt SHA-256 Hashwerte von Datensätzen
+* [hash](./hash.md) — Erzeugt SHA-256-Hashwerte von Datensätzen
 * [invalid](./invalid.md) — Findet ungültige Zeilen in der Eingabe
 * [print](./print.md) — Gibt Datensätze in einer menschenlesbaren Form
-* [slice](./slice.md) — Ausschneiden eines Teilbereichs aus der Eingabe
+  aus
+* [slice](./slice.md) — Ausschneiden eines zusammenhängenden
+  Teilbereichs aus der Eingabe
 * [split](./split.md) — Teilt eine Menge an Datensätzen in Dateien fester
   Größe
