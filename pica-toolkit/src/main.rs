@@ -52,8 +52,6 @@ enum Commands {
     Partition(Partition),
     Print(Print),
     Sample(Sample),
-
-    /// Select subfield values from records
     Select(Select),
     Slice(Slice),
     Split(Split),

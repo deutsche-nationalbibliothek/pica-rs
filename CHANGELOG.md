@@ -14,10 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #642 Add `--squash` and `--merge` option
 * #644 Add `!^` and `!$` operator
 * #658 Add unique-strategy config option (`cat` command)
+* #672 Stabilize `select` command
 
 ### Changed
 
-* #643 Print more helpful error message on `ParsePicaError` 
+* #643 Print more helpful error message on `ParsePicaError`
 * #653 Don't require filter argument when an expression file is given
 * #654 Change `expr_file` short option from `-f` to `-F`
 

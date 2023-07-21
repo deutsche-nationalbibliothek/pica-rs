@@ -25,9 +25,10 @@ pub(crate) struct SelectConfig {
     pub(crate) skip_invalid: Option<bool>,
 }
 
+/// Select subfield values from records
 #[derive(Parser, Debug)]
 pub(crate) struct Select {
-    /// Skip invalid records that can't be decoded
+    /// Skip invalid records that can't be decoded as normalized PICA+
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -143,7 +144,9 @@ pub(crate) struct Select {
     /// literals)
     query: String,
 
-    /// Read one or more files in normalized PICA+ format.
+    /// Read one or more files in normalized PICA+ format. If no
+    /// filenames where given or a filename is "-", data is read from
+    /// standard input (stdin)
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
 }
