@@ -2,21 +2,21 @@
 
 ![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
 
-Das `split`-Kommando teilt meine Menge an Datensätze in mehrere Dateien
+Das `split`-Kommando teilt eine Menge an Datensätze in mehrere Dateien
 mit einer maximalen Anzahl pro Datei auf.
 
 ## Beschreibung
 
 Mithilfe des `split`-Kommandos können alle Datensätze aus der Eingabe in
 mehrere Dateien aufgeteilt werden, wobei jede Datei eine maximale Anzahl
-an Datensätzen nicht überschreitet. Ein Anwendungsfall für die
-entstandenen Dateien könnte eine automatisierte [Stapelverarbeitung]
-oder eine parallele Verarbeitung auf mehreren Prozessorkernen sein.
+an Datensätzen nicht überschreitet. Ein Anwendungsfall für das Splitting
+könnte eine automatisierte [Stapelverarbeitung] oder die parallele
+Verarbeitung der entstandenen Dateien sein.
 
 Der folgende Aufruf des `split`-Kommandos teilt die zwölf Datensätze der
 Eingabe (`DUMP.dat.gz`) in drei Dateien mit maximal fünf Datensätzen pro
 Datei. Die ersten beiden Dateien (`0.dat` und `1.dat`) enthalten die
-maximale Anzahl an Datensätzen; die letzte Datei (`2.dat`) enthält die
+maximale Anzahl an Datensätzen, die letzte Datei (`2.dat`) die
 restlichen zwei Datensätze.
 
 ```console
@@ -34,12 +34,12 @@ $ tree
 
 * `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
   nicht dekodiert werden konnten.
-* `-g`, `--gzip` — komprimieren der Ausgabe im [Gzip]-Format.
+* `-g`, `--gzip` — Komprimieren der Ausgabe im [Gzip]-Format.
 * `--template` — Template für die Dateinamen. Der Platzhalter `{}` wird
   durch eine fortlaufende Nummer ersetzt.
 * `-o`, `--outdir` — Angabe, in welches Verzeichnis die Ausgabe
   geschrieben werden soll. Standardmäßig wird das aktuelle Verzeichnis
-  verwendet
+  verwendet.
 
 
 ## Konfiguration
@@ -68,8 +68,8 @@ Standardmäßig werden die erstellten Dateien beginnend bei `0`
 durchnummeriert. Der Dateiname kann individuell mit der
 `--template`-Option angepasst werden. Jedes Vorkommen der Zeichenfolge
 `{}` im Template wird durch die aktuelle Nummer ersetzt. Endet die Datei
-auf der Dateiendung `.gz` wird die Ausgabe automatisch im [Gzip]-Format
-komrpimiert.
+auf der Dateiendung `.gz`, wird die Ausgabe automatisch im [Gzip]-Format
+komprimiert.
 
 ```console
 $ pica split -s --template "CHUNK_{}.dat.gz" 10 DUMP.dat.gz
