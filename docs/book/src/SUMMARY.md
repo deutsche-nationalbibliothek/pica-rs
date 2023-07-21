@@ -18,3 +18,4 @@
     - [hash](./referenz/kommandos/hash.md)
     - [invalid](./referenz/kommandos/invalid.md)
     - [print](./referenz/kommandos/print.md)
+    - [split](./referenz/kommandos/split.md)

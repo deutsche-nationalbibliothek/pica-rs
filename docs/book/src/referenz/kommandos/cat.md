@@ -2,7 +2,7 @@
 
 ![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
 
-Das `cat` Kommando liest Datensätze direkt von der Standardeingabe
+Das `cat`-Kommando liest Datensätze direkt von der Standardeingabe
 (`stdin`) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe
 kann entweder in eine Datei oder in die Standardausgabe (`stdout`)
 geschrieben werden.
@@ -40,7 +40,7 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
   Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
   bestehende Datei standardmäßig überschrieben.
 * `--tee <filename>` — abzweigen der Ausgabe in eine zusätzliche Datei.
-* `-g`, `--gzip` — komprimieren der Ausgabe im
+* `-g`, `--gzip` — Komprimieren der Ausgabe im
   [gzip](https://de.wikipedia.org/wiki/Gzip)-Format.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
@@ -153,7 +153,7 @@ $ pica cat partitions/Tp*.dat --tee gnd_person.dat | \
 Das vorhergehende Beispiel zeigt auch, dass das `cat`-Kommando sowohl
 unkomprimierte als auch komprimierte Dateien verarbeiten kann. Endet
 eine Datei mit dem Suffix `.gz`, wird die Datei automatisch
-dekompromiert (als Eingabedatei) bzw. komprimiert (als Ausgabedatei).
+dekomprimiert (als Eingabedatei) bzw. komprimiert (als Ausgabedatei).
 
 Mittels der Option `-g`/`--gzip` erfolgt eine Komprimierung der Ausgabe
 unabhängig von der Dateiendung:
