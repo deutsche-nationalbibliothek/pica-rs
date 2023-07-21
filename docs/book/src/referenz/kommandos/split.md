@@ -2,7 +2,7 @@
 
 ![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
 
-Das `split`-Kommando teilt eine Menge an Datensätze in mehrere Dateien
+Das `split`-Kommando teilt eine Menge an Datensätzen in mehrere Dateien
 mit einer maximalen Anzahl pro Datei auf.
 
 ## Beschreibung

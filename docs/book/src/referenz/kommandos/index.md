@@ -13,5 +13,5 @@
 * [hash](./hash.md) — Erzeugt SHA-256 Hashwerte von Datensätzen
 * [invalid](./invalid.md) — Findet ungültige Zeilen in der Eingabe
 * [print](./print.md) — Gibt Datensätze in einer menschenlesbaren Form
-* [split](./split.md) — Teilt eine Menge an Datensätze in Dateien fester
+* [split](./split.md) — Teilt eine Menge an Datensätzen in Dateien fester
   Größe
