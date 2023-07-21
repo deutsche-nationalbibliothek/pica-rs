@@ -67,7 +67,7 @@ der Konfiguration.
 
 ## Beispiele
 
-### Ausschneiden eines Teilbereichs fester Größ
+### Ausschneiden eines Teilbereichs fester Größe
 
 Wenn die Eingabe ausreichend Datensätze enthält, kann beginnend bei
 einer festen Position (`--start`) eine Teilbereich mit einer festen
