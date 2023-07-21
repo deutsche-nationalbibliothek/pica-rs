@@ -18,4 +18,5 @@
     - [hash](./referenz/kommandos/hash.md)
     - [invalid](./referenz/kommandos/invalid.md)
     - [print](./referenz/kommandos/print.md)
+    - [slice](./referenz/kommandos/slice.md)
     - [split](./referenz/kommandos/split.md)
