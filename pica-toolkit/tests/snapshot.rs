@@ -36,5 +36,6 @@ fn doc_tests() {
         .case("../docs/book/src/referenz/kommandos/frequency.md")
         .case("../docs/book/src/referenz/kommandos/hash.md")
         .case("../docs/book/src/referenz/kommandos/invalid.md")
-        .case("../docs/book/src/referenz/kommandos/print.md");
+        .case("../docs/book/src/referenz/kommandos/print.md")
+        .case("../docs/book/src/referenz/kommandos/split.md");
 }
