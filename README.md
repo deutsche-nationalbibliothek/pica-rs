@@ -128,10 +128,10 @@ between `/01` and `/10`.
 Simple subfield filter consists of the subfield code (single
 alpha-numerical character, ex `0`) a comparison operator (equal `==`,
 not equal `!=` not equal, starts with prefix `=^`, starts not with
-prefix `!^`, ends with suffix `=$`, regex `=~`/`!~`, `in` and `not in`)
-and a value enclosed in single quotes. These simple subfield expressions
-can be grouped in parentheses and combined with boolean connectives (ex.
-`(0 == 'abc' || 0 == 'def')`).
+prefix `!^`, ends with suffix `=$`, regex `=~`/`!~`, contains substring
+`=?`, `in` and `not in`) and a value enclosed in single quotes. These
+simple subfield expressions can be grouped in parentheses and combined
+with boolean connectives (ex. `(0 == 'abc' || 0 == 'def')`).
 
 A special existence operator can be used to check if a given field
 (`012A/00?`) or a subfield (`002@.0?` or `002@$0?`) exists.  To test for

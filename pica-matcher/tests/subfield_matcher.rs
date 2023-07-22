@@ -278,6 +278,45 @@ fn relational_matcher_similar() -> anyhow::Result<()> {
 }
 
 #[test]
+fn relational_matcher_contains() -> anyhow::Result<()> {
+    // default options
+    let matcher = RelationMatcher::new("a =? 'aba'")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faaba")?, &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faxabax")?, &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faabba")?, &options));
+
+    // case ignore
+    let matcher = RelationMatcher::new("a =? 'AbA'")?;
+    let options = MatcherOptions::default().case_ignore(true);
+
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faaba")?, &options));
+    assert!(matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faxabax")?, &options));
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faabba")?, &options));
+
+    // multiple subfields
+    let matcher = RelationMatcher::new("a =? 'aba'")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1faXabbaX")?,
+            &SubfieldRef::from_bytes(b"\x1faYabaY")?,
+        ],
+        &options
+    ));
+
+    Ok(())
+}
+
+#[test]
 fn regex_matcher() -> anyhow::Result<()> {
     // case sensitive
     let matcher = RegexMatcher::new("0 =~ '^ab'")?;
