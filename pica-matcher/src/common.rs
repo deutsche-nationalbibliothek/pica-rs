@@ -40,6 +40,7 @@ pub(crate) enum RelationalOp {
     EndsWith,      // ends with, "=$"
     EndsNotWith,   // ends not with, "!$"
     Similar,       // similar, "=*"
+    Contains,      // contains, "=?"
 }
 
 impl Display for RelationalOp {
@@ -56,6 +57,7 @@ impl Display for RelationalOp {
             RelationalOp::EndsWith => write!(f, "=$"),
             RelationalOp::EndsNotWith => write!(f, "!$"),
             RelationalOp::Similar => write!(f, "=*"),
+            RelationalOp::Contains => write!(f, "=?"),
         }
     }
 }
@@ -72,6 +74,7 @@ pub(crate) fn parse_relational_op_str(
         value(RelationalOp::EndsWith, tag("=$")),
         value(RelationalOp::EndsNotWith, tag("!$")),
         value(RelationalOp::Similar, tag("=*")),
+        value(RelationalOp::Contains, tag("=?")),
     ))(i)
 }
 
@@ -237,6 +240,10 @@ mod tests {
         assert_finished_and_eq!(
             parse_relational_op_str(b"=*"),
             RelationalOp::Similar
+        );
+        assert_finished_and_eq!(
+            parse_relational_op_str(b"=?"),
+            RelationalOp::Contains
         );
     }
 

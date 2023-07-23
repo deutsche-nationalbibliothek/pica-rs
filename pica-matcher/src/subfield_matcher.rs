@@ -272,6 +272,20 @@ impl RelationMatcher {
 
         score > options.strsim_threshold
     }
+
+    /// Returns `true` if the given value is a substring of the value.
+    /// If the `case_ignore` flag is set, both strings will be
+    /// converted to lowercase first.
+    fn contains(&self, value: &[u8], options: &MatcherOptions) -> bool {
+        if options.case_ignore {
+            value
+                .to_lowercase()
+                .find(self.value.to_lowercase())
+                .is_some()
+        } else {
+            value.find(&self.value).is_some()
+        }
+    }
 }
 
 impl Matcher for RelationMatcher {
@@ -306,6 +320,9 @@ impl Matcher for RelationMatcher {
                     }
                     RelationalOp::Similar => {
                         self.is_similar(value, options)
+                    }
+                    RelationalOp::Contains => {
+                        self.contains(value, options)
                     }
                     _ => unreachable!(),
                 }

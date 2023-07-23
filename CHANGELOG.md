@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * #644 Add `!^` and `!$` operator
 * #658 Add unique-strategy config option (`cat` command)
 * #672 Stabilize `select` command
+* #673 Add contains relation matcher (`=?`)
 
 ### Changed
 
