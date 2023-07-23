@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* #637 Stabilize `print` command
-* #641 Stabilize `sample` command
-* #642 Add `--squash` and `--merge` option
-* #644 Add `!^` and `!$` operator
+* #674 Change `--threshold` behavior (`frequency` command)
 * #658 Add unique-strategy config option (`cat` command)
-* #672 Stabilize `select` command
 * #673 Add contains relation matcher (`=?`)
+* #644 Add `!^` and `!$` operator
+* #642 Add `--squash` and `--merge` option
+* #641 Stabilize `sample` command
+* #637 Stabilize `print` command
+* #672 Stabilize `select` command
 
 ### Changed
 

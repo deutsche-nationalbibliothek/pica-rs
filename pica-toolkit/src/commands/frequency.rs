@@ -66,10 +66,10 @@ pub(crate) struct Frequency {
     )]
     limit: usize,
 
-    /// Ignore rows with a frequency ≤ <t>.
+    /// Ignore rows with a frequency < <value>.
     #[arg(
         long,
-        value_name = "t",
+        value_name = "value",
         default_value = "0",
         hide_default_value = true
     )]
@@ -185,7 +185,7 @@ impl Frequency {
                 break;
             }
 
-            if **frequency <= self.threshold {
+            if **frequency < self.threshold {
                 break;
             }
 
