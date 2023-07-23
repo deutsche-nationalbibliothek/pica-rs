@@ -39,7 +39,7 @@ Ts1,1
   ausgegeben.
 * `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten _n_
   Unterfeldwerte.
-* `--threshold` `<t>` — Zeilen mit einer Häufigkeit ≤ _t_ ignorieren.
+* `--threshold` `<n>` — Zeilen mit einer Häufigkeit < `<n>` ignorieren.
 * `-H`, `--header` `<header>` — Kopfzeile, die den Ergebnissen
   vorangestellt wird.
 * `-t`, `--tsv` — Ausgabe erfolgt im TSV-Format.
@@ -127,14 +127,15 @@ vbal,4
 ### Eingrenzen der Treffermenge (Schwellenwert)
 
 Die Treffermenge kann auch mittels der Angabe eines Schwellenwerts
-eingeschänkt werden. Sollen nur die Werte angezeigt werden, die häufiger
-als ein Schwellenwert _n_ vorkommen, dann kann dies mit der Option
-`--threshold` bzw. `-t` erzielt werden:
+eingeschänkt werden. Sollen nur die Werte angezeigt werden, die ab einem
+Schwellenwert vorkommen, dann kann dies mit der Option
+`--threshold`/`-t` erzielt werden:
 
 ```console
 $ pica frequency -s --threshold 4 "041R.4" DUMP.dat.gz
 beru,12
 obal,5
+vbal,4
 
 ```
 
