@@ -9,14 +9,14 @@ aus der Eingabe gefiltert werden.
 ## Beschreibung
 
 Das `filter`-Kommando bildet das Herzstück des Toolkits. Es ermöglicht
-es aus einer (mitunter sehr großen) Datenmenge, bspw. dem Gesamtabzug
+es, aus einer (mitunter sehr großen) Datenmenge, bspw. dem Gesamtabzug
 des Katalogsystems, eine kleinere Menge effizient zu extrahieren, um sie
 anschließend weiterzuverarbeiten. Dies erfolgt über die Angabe eines
 Filterausdrucks, der darüber entscheidet, ob ein Datensatz in die
-Zielmenge eingeht, oder nicht.
+Zielmenge eingeht oder nicht.
 
-Das folgende Beispiel filter aus der Datei `DUMP.dat.gz` alle
-Datensätze, die ein Feld `003@` enthalten, das ein Unterfeld `0`
+Im folgenden Beispiel werden alle Datensätze aus der Datei
+`DUMP.dat.gz`, die ein Feld `003@` enthalten, das ein Unterfeld `0`
 besitzt, welches mit dem Wert `118540238` belegt ist.
 
 ```console
@@ -40,7 +40,7 @@ $ pica print goethe.dat
 
 ## Optionen
 
-* `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
+* `-s`, `--skip-invalid` — Überspringt jene Zeilen aus der Eingabe, die
   nicht dekodiert werden konnten.
 * `-v`, `--invert-match` — Gibt alle Datensätze aus, die **nicht** dem
   Filterausdruck entsprechen.
@@ -89,7 +89,7 @@ $ pica print goethe.dat
 
 <!-- TODO: Link zum allgemeinen Kapitel über die Konfigurationsdatei -->
 
-Die Optionen zum Ignorieren invalider Datensätze sowie das Komprimieren
+Die Optionen zum Ignorieren invalider Datensätze und zum Komprimieren
 der Ausgabe lassen sich in der `Pica.toml` konfigurieren:
 
 ```toml
@@ -106,14 +106,14 @@ der Konfiguration.
 
 ### Invertierte Treffermenge (_invert match_)
 
-Mitunter ist es einfacher einen Ausdruck zu formulieren, der alle
+Mitunter ist es einfacher, einen Ausdruck zu formulieren, der alle
 Datensätze umfasst, die nicht in der Treffermenge gewünscht sind. Durch
 die Option `-v`/`--invert-match` werden dann nur die Datensätze
 ausgegeben, die nicht dem Filterkriterum entsprechen.
 
 Beispielweise enthält der Abzug `DUMP.dat.gz` verschiedene
-Normdatensätze. Werden nur die Datensätze benötigt die **nicht** vom
-Satztyp Werk sind, ist es einfacher zuerst nach den Werken zu suchen,
+Normdatensätze. Werden nur die Datensätze benötigt, die **nicht** vom
+Satztyp Werk sind, ist es einfacher, zuerst nach den Werken zu suchen
 und dann durch das Flag `-v` alle Datensätze zu erhalten, die nicht dem
 Filterkriterium entsprechen.
 
@@ -144,13 +144,13 @@ $ pica print goethe.dat
 
 ### Felder eines Datensatzes reduzieren
 
-Teilweise ist die Anzahl der Felder pro Datensatz sehr groß werden,
-was zu erheblichen Laufzeiteinbußen nachfolgender Datenanalysen führen
-kann. Mittels der Optionen `-k`/`--keep` bzw. `-d`/`--discard` lassen
-sich Datensätze auf eine Teilmenge der Felder reduzieren.
+Teilweise ist die Anzahl der Felder pro Datensatz sehr groß, was zu
+erheblichen Laufzeiteinbußen nachfolgender Datenanalysen führen kann.
+Mittels der Optionen `-k`/`--keep` bzw. `-d`/`--discard` lassen sich
+Datensätze auf eine Teilmenge der Felder reduzieren.
 
-Wird für einen Datenanalyse nur die IDN/PPN (`003@`), die Satzart
-(`002@`) und die Entätenkodierung (`004B`) benötigt, können die
+Werden für eine Datenanalyse nur die IDN/PPN (`003@`), die Satzart
+(`002@`) und die Entitätenkodierung (`004B`) benötigt, können die
 Datensätze wie folgt auf die Felder reduziert werden:
 
 ```console
@@ -167,7 +167,7 @@ $ pica print out.dat
 ```
 
 Sollen bestimmte Felder entfernt werden, kann dies mit der Option
-`-d`/`--discard` erfolgen. Der folgende Aufruf entfent das Feld `004B`,
+`-d`/`--discard` erfolgen. Der folgende Aufruf entfernt das Feld `004B`,
 sofern vorhanden, aus allen Datensätzen:
 
 ```console
