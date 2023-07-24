@@ -33,6 +33,7 @@ fn cli_tests() {
 fn doc_tests() {
     trycmd::TestCases::new()
         .case("../docs/book/src/referenz/kommandos/count.md")
+        .case("../docs/book/src/referenz/kommandos/filter.md")
         .case("../docs/book/src/referenz/kommandos/frequency.md")
         .case("../docs/book/src/referenz/kommandos/hash.md")
         .case("../docs/book/src/referenz/kommandos/invalid.md")

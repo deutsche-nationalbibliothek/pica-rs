@@ -39,7 +39,7 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
 * `--append` — Wenn die Ausgabedatei bereits existiert, wird die
   Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
   bestehende Datei standardmäßig überschrieben.
-* `--tee <filename>` — abzweigen der Ausgabe in eine zusätzliche Datei.
+* `--tee <filename>` — Abzweigen der Ausgabe in eine zusätzliche Datei.
 * `-g`, `--gzip` — Komprimieren der Ausgabe im
   [gzip](https://de.wikipedia.org/wiki/Gzip)-Format.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
