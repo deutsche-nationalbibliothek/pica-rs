@@ -8,6 +8,7 @@
 * [completions](./completions.md) — Erzeugung von Shell-Skripten zur
   Autovervollständigung
 * [count](./count.md) — Zählen von Datensätzen, Felder und Unterfeldern
+* [filter](./filter.md) — Filtert Datensätze anhand eines Kriteriums
 * [frequency](./frequency.md) — Ermitteln einer Häufigkeitsverteilung
   über ein oder mehrere Unterfelder
 * [hash](./hash.md) — Erzeugt SHA-256-Hashwerte von Datensätzen
