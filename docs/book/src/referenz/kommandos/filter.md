@@ -16,8 +16,8 @@ Filterausdrucks, der darüber entscheidet, ob ein Datensatz in die
 Zielmenge eingeht oder nicht.
 
 Im folgenden Beispiel werden alle Datensätze aus der Datei
-`DUMP.dat.gz`, die ein Feld `003@` enthalten, das ein Unterfeld `0`
-besitzt, welches mit dem Wert `118540238` belegt ist.
+`DUMP.dat.gz` extrahiert, die ein Feld `003@` enthalten, das ein
+Unterfeld `0` besitzt, welches mit dem Wert `118540238` belegt ist.
 
 ```console
 $ pica filter -s '003@.0 == "118540238"' DUMP.dat.gz -o goethe.dat
