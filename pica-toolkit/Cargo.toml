@@ -20,7 +20,7 @@ pica-matcher = { workspace = true }
 pica-path = { workspace = true }
 pica-record = { workspace = true }
 pica-select = { workspace = true }
-quick-xml = { version = "0.29" }
+quick-xml = { version = "0.30" }
 rand = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
