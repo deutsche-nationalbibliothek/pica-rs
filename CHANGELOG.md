@@ -7,16 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.18.0] - 2023-07-27
+
 ### Added
 
-* #674 Change `--threshold` behavior (`frequency` command)
-* #658 Add unique-strategy config option (`cat` command)
-* #673 Add contains relation matcher (`=?`)
-* #644 Add `!^` and `!$` operator
-* #642 Add `--squash` and `--merge` option
-* #641 Stabilize `sample` command
 * #637 Stabilize `print` command
+* #641 Stabilize `sample` command
+* #642 Add `--squash` and `--merge` option
+* #644 Add `!^` and `!$` operator
+* #658 Add unique-strategy config option (`cat` command)
 * #672 Stabilize `select` command
+* #673 Add contains relation matcher (`=?`)
+* #674 Change `--threshold` behavior (`frequency` command)
 
 ### Changed
 
@@ -28,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * #639 Remove `xml` command
 * #640 Remove `json` command
+
 
 ## [0.17.0] - 2023-06-30
 

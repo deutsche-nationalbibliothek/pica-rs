@@ -11,6 +11,10 @@ env:
   RUSTUP_MAX_RETRIES: 10
   CARGO_INCREMENTAL: 0
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   version:
     name: Version
@@ -96,8 +100,8 @@ jobs:
 
   windows-releases:
     needs: version
-    name: Windows (${{ matrix.target.triple}})
-    runs-on: windows-2022
+    name: Windows (${{matrix.target.triple}})
+    runs-on: windows-latest
     strategy:
       matrix:
         target:
