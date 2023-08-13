@@ -1,6 +1,7 @@
 name: Daily
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '52 6 * * *'
 
