@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 use std::ffi::OsString;
+use std::fmt::Write;
 use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
@@ -119,11 +120,13 @@ impl Cat {
                     .idn()
                     .map(ToString::to_string)
                     .unwrap_or_default(),
-                Strategy::Hash => record
-                    .sha256()
-                    .iter()
-                    .map(|b| format!("{:02x}", b))
-                    .collect::<String>(),
+                Strategy::Hash => record.sha256().iter().fold(
+                    String::new(),
+                    |mut out, b| {
+                        let _ = write!(out, "{b:02x}");
+                        out
+                    },
+                ),
             }
         };
 

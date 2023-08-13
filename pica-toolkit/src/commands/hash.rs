@@ -1,4 +1,5 @@
 use std::ffi::OsString;
+use std::fmt::Write as _;
 use std::fs::File;
 use std::io::{self, Write};
 
@@ -85,11 +86,13 @@ impl Hash {
                     }
                     Ok(record) => {
                         if let Some(idn) = record.idn() {
-                            let hash = record
-                                .sha256()
-                                .iter()
-                                .map(|b| format!("{:02x}", b))
-                                .collect::<String>();
+                            let hash = record.sha256().iter().fold(
+                                String::new(),
+                                |mut out, b| {
+                                    let _ = write!(out, "{b:02x}");
+                                    out
+                                },
+                            );
 
                             writer.write_record(&[
                                 idn.to_string(),
