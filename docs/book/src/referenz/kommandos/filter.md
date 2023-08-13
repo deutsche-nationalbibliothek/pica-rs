@@ -50,7 +50,7 @@ $ pica print goethe.dat
   Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
 * `-k`, `--keep` — Es werden nur die Felder eines Datensatzes
   beibehalten, die in der Liste aufgeführt werden.
-* `-k`, `--keep` — Es werden die Felder eines Datensatzes verworfen,
+* `-d`, `--discard` — Es werden die Felder eines Datensatzes verworfen,
     die in der Liste aufgeführt werden.
 * `-F`, `--file` `<file>` — Es wird der Filterausdruck aus der Datei
   `<file>` eingelesen. Es darf **keine** weitere Angabe eines
