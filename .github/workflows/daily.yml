@@ -1,6 +1,7 @@
 name: Daily
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '52 6 * * *'
 
@@ -46,9 +47,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-      - uses: actions-rs/install@v0.1
-        with:
-          crate: cargo-upgrades
-          version: latest
+      - run: |
+          cargo install -f cargo-upgrades
       - run: |
           cargo upgrades
