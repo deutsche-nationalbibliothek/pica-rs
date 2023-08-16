@@ -2,4 +2,5 @@ bin.name = "pica"
 args = "select -s \"003@.0, 029@{a =^ 'Städtische', a}\""
 status = "success"
 stdout = "040181189,\n"
-stderr = ""
+stderr = "WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.\n"
+

@@ -174,8 +174,8 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
-fn parse_path_depricated(i: &[u8]) -> ParseResult<Path> {
-    map(
+fn parse_path_deprecated(i: &[u8]) -> ParseResult<Path> {
+    let (i, path) = map(
         delimited(
             multispace0,
             tuple((
@@ -204,7 +204,13 @@ fn parse_path_depricated(i: &[u8]) -> ParseResult<Path> {
             subfield_matcher: m,
             codes: c,
         },
-    )(i)
+    )(i)?;
+
+    if path.subfield_matcher.is_some() {
+        eprintln!("WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.");
+    }
+
+    Ok((i, path))
 }
 
 fn parse_path_curly(i: &[u8]) -> ParseResult<Path> {
@@ -253,7 +259,7 @@ fn parse_path_curly(i: &[u8]) -> ParseResult<Path> {
 }
 
 pub fn parse_path(i: &[u8]) -> ParseResult<Path> {
-    alt((parse_path_simple, parse_path_curly, parse_path_depricated))(i)
+    alt((parse_path_simple, parse_path_curly, parse_path_deprecated))(i)
 }
 
 pub trait PathExt<T: AsRef<[u8]>> {
