@@ -467,7 +467,8 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
                             }
                         })
                         .map(|field| {
-                            path.codes()
+                            // FIXME
+                            path.codes_flat()
                                 .iter()
                                 .map(|code| {
                                     field
