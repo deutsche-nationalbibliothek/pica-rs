@@ -5,11 +5,10 @@ use std::fs::File;
 use std::io::{self, Write};
 use std::str::FromStr;
 
-use bstr::BString;
 use clap::{value_parser, Parser};
-use pica_matcher::MatcherOptions;
-use pica_path::{Path, PathExt};
+use pica_path::Path;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_select::{Query, QueryExt, QueryOptions};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -123,8 +122,8 @@ impl Frequency {
             Path::from_str(&self.path)?
         };
 
-        let mut ftable: HashMap<BString, u64> = HashMap::new();
-        let options = MatcherOptions::new()
+        let mut ftable: HashMap<Vec<String>, u64> = HashMap::new();
+        let options = QueryOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case);
 
@@ -151,10 +150,15 @@ impl Frequency {
                         }
                     }
                     Ok(record) => {
-                        for value in record.path(&path, &options) {
-                            *ftable
-                                .entry(BString::from(value.to_vec()))
-                                .or_insert(0) += 1;
+                        let outcome = record.query(
+                            &Query::from(path.clone()),
+                            &options,
+                        );
+
+                        for key in outcome.into_iter() {
+                            if key.iter().any(|e| !e.is_empty()) {
+                                *ftable.entry(key).or_insert(0) += 1;
+                            }
                         }
                     }
                 }
@@ -165,8 +169,9 @@ impl Frequency {
             writer.write_record(header.split(',').map(|s| s.trim()))?;
         }
 
-        let mut ftable_sorted: Vec<(&BString, &u64)> =
+        let mut ftable_sorted: Vec<(&Vec<String>, &u64)> =
             ftable.iter().collect();
+
         if self.reverse {
             ftable_sorted.sort_by(|a, b| match a.1.cmp(b.1) {
                 Ordering::Equal => a.0.cmp(b.0),
@@ -179,7 +184,7 @@ impl Frequency {
             });
         }
 
-        for (i, (value, frequency)) in ftable_sorted.iter().enumerate()
+        for (i, (values, frequency)) in ftable_sorted.iter().enumerate()
         {
             if self.limit > 0 && i >= self.limit {
                 break;
@@ -189,12 +194,13 @@ impl Frequency {
                 break;
             }
 
-            let value = translit_maybe(
-                &value.to_string(),
-                self.translit.as_deref(),
-            );
+            let mut record = values
+                .iter()
+                .map(|s| translit_maybe(&s, self.translit.as_deref()))
+                .collect::<Vec<_>>();
 
-            writer.write_record(&[value, frequency.to_string()])?;
+            record.push(frequency.to_string());
+            writer.write_record(record)?;
         }
 
         writer.flush()?;
