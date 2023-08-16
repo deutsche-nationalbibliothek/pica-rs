@@ -155,7 +155,7 @@ impl Frequency {
                             &options,
                         );
 
-                        for key in outcome.into_iter() {
+                        for key in outcome.clone().into_iter() {
                             if key.iter().any(|e| !e.is_empty()) {
                                 *ftable.entry(key).or_insert(0) += 1;
                             }
