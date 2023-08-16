@@ -175,7 +175,7 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
 }
 
 fn parse_path_depricated(i: &[u8]) -> ParseResult<Path> {
-    map(
+    let (i, o) = map(
         delimited(
             multispace0,
             tuple((
@@ -204,7 +204,11 @@ fn parse_path_depricated(i: &[u8]) -> ParseResult<Path> {
             subfield_matcher: m,
             codes: c,
         },
-    )(i)
+    )(i)?;
+
+    eprintln!("WARNING: Specifying subfield matcher in the first position of an path expression is depricated. Please use the set-builder notation instead.");
+
+    Ok((i, o))
 }
 
 fn parse_path_curly(i: &[u8]) -> ParseResult<Path> {
