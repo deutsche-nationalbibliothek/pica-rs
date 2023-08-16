@@ -175,7 +175,7 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
 }
 
 fn parse_path_deprecated(i: &[u8]) -> ParseResult<Path> {
-    let (i, o) = map(
+    let (i, path) = map(
         delimited(
             multispace0,
             tuple((
@@ -206,9 +206,11 @@ fn parse_path_deprecated(i: &[u8]) -> ParseResult<Path> {
         },
     )(i)?;
 
-    eprintln!("WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.");
+    if path.subfield_matcher.is_some() {
+        eprintln!("WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.");
+    }
 
-    Ok((i, o))
+    Ok((i, path))
 }
 
 fn parse_path_curly(i: &[u8]) -> ParseResult<Path> {
