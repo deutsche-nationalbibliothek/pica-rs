@@ -196,7 +196,7 @@ impl Frequency {
 
             let mut record = values
                 .iter()
-                .map(|s| translit_maybe(&s, self.translit.as_deref()))
+                .map(|s| translit_maybe(s, self.translit.as_deref()))
                 .collect::<Vec<_>>();
 
             record.push(frequency.to_string());
