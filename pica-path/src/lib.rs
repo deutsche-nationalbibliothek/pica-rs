@@ -124,7 +124,7 @@ fn parse_subfield_code_range(i: &[u8]) -> ParseResult<Vec<char>> {
             ),
             |(min, max)| min < max,
         ),
-        |(min, max)| (min..=max).into_iter().collect(),
+        |(min, max)| (min..=max).collect(),
     )(i)
 }
 
