@@ -2,10 +2,12 @@ use std::str::FromStr;
 
 use nom::branch::alt;
 use nom::character::complete::{char, multispace0};
-use nom::combinator::{all_consuming, map, opt};
+use nom::combinator::{all_consuming, map, opt, verify};
 use nom::error::ParseError;
-use nom::multi::{many1, separated_list1};
-use nom::sequence::{delimited, pair, preceded, terminated, tuple};
+use nom::multi::{fold_many1, separated_list1};
+use nom::sequence::{
+    delimited, pair, preceded, separated_pair, terminated, tuple,
+};
 use nom::{Finish, IResult};
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_tag_matcher,
@@ -29,7 +31,7 @@ pub struct Path {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
     subfield_matcher: Option<SubfieldMatcher>,
-    codes: Vec<char>,
+    codes: Vec<Vec<char>>,
 }
 
 impl Path {
@@ -54,8 +56,12 @@ impl Path {
         Self::from_str(data).expect("valid path expression.")
     }
 
-    pub fn codes(&self) -> &[char] {
+    pub fn codes(&self) -> &Vec<Vec<char>> {
         &self.codes
+    }
+
+    pub fn codes_flat(&self) -> Vec<char> {
+        self.codes.clone().into_iter().flatten().collect()
     }
 
     pub fn tag_matcher(&self) -> &TagMatcher {
@@ -97,7 +103,7 @@ impl FromStr for Path {
     }
 }
 
-/// Strip whitespaces from the beginning and end.
+// Strip whitespaces from the beginning and end.
 fn ws<'a, F: 'a, O, E: ParseError<&'a [u8]>>(
     inner: F,
 ) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
@@ -107,14 +113,45 @@ where
     delimited(multispace0, inner, multispace0)
 }
 
-fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
-    preceded(
-        char('.'),
-        alt((
-            map(parse_subfield_code, |code| vec![code]),
-            delimited(char('['), many1(parse_subfield_code), char(']')),
-        )),
+#[inline]
+fn parse_subfield_code_range(i: &[u8]) -> ParseResult<Vec<char>> {
+    map(
+        verify(
+            separated_pair(
+                parse_subfield_code,
+                char('-'),
+                parse_subfield_code,
+            ),
+            |(min, max)| min < max,
+        ),
+        |(min, max)| (min..=max).collect(),
     )(i)
+}
+
+#[inline]
+fn parse_subfield_code_single(i: &[u8]) -> ParseResult<Vec<char>> {
+    map(parse_subfield_code, |code| vec![code])(i)
+}
+
+fn parse_subfield_codes(i: &[u8]) -> ParseResult<Vec<char>> {
+    alt((
+        delimited(
+            char('['),
+            fold_many1(
+                alt((
+                    parse_subfield_code_range,
+                    parse_subfield_code_single,
+                )),
+                Vec::new,
+                |mut acc: Vec<_>, item| {
+                    acc.extend_from_slice(&item);
+                    acc
+                },
+            ),
+            char(']'),
+        ),
+        parse_subfield_code_single,
+    ))(i)
 }
 
 fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
@@ -124,7 +161,7 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
             tuple((
                 parse_tag_matcher,
                 parse_occurrence_matcher,
-                parse_subfield_codes,
+                preceded(char('.'), parse_subfield_codes),
             )),
             multispace0,
         ),
@@ -132,13 +169,12 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
             tag_matcher: t,
             occurrence_matcher: o,
             subfield_matcher: None,
-            codes: c,
+            codes: vec![c],
         },
     )(i)
 }
 
-// depricated syntax
-fn parse_path_matcher_old(i: &[u8]) -> ParseResult<Path> {
+fn parse_path_depricated(i: &[u8]) -> ParseResult<Path> {
     map(
         delimited(
             multispace0,
@@ -154,7 +190,7 @@ fn parse_path_matcher_old(i: &[u8]) -> ParseResult<Path> {
                         )),
                         separated_list1(
                             ws(char(',')),
-                            parse_subfield_code,
+                            parse_subfield_codes,
                         ),
                     ),
                     ws(char('}')),
@@ -171,7 +207,7 @@ fn parse_path_matcher_old(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
-fn parse_path_matcher_new(i: &[u8]) -> ParseResult<Path> {
+fn parse_path_curly(i: &[u8]) -> ParseResult<Path> {
     map(
         delimited(
             multispace0,
@@ -185,14 +221,14 @@ fn parse_path_matcher_new(i: &[u8]) -> ParseResult<Path> {
                             // list syntax
                             separated_list1(
                                 ws(char(',')),
-                                parse_subfield_code,
+                                parse_subfield_codes,
                             ),
                             // tuple-syntax
                             delimited(
                                 ws(char('(')),
                                 separated_list1(
                                     ws(char(',')),
-                                    parse_subfield_code,
+                                    parse_subfield_codes,
                                 ),
                                 ws(char(')')),
                             ),
@@ -217,11 +253,7 @@ fn parse_path_matcher_new(i: &[u8]) -> ParseResult<Path> {
 }
 
 pub fn parse_path(i: &[u8]) -> ParseResult<Path> {
-    alt((
-        parse_path_matcher_new,
-        parse_path_matcher_old,
-        parse_path_simple,
-    ))(i)
+    alt((parse_path_simple, parse_path_curly, parse_path_depricated))(i)
 }
 
 pub trait PathExt<T: AsRef<[u8]>> {
@@ -297,7 +329,7 @@ impl<T: AsRef<[u8]>> PathExt<T> for Record<T> {
             })
             .flat_map(|field| field.subfields())
             .filter_map(|subfield| {
-                if path.codes.contains(&subfield.code()) {
+                if path.codes_flat().contains(&subfield.code()) {
                     Some(subfield.value())
                 } else {
                     None
@@ -320,9 +352,55 @@ impl<'de> Deserialize<'de> for Path {
 
 #[cfg(test)]
 mod tests {
-    use nom_test_helpers::assert_finished_and_eq;
+    use nom_test_helpers::{assert_error, assert_finished_and_eq};
 
     use super::*;
+
+    #[test]
+    fn test_parse_subfield_code_single() -> anyhow::Result<()> {
+        assert_finished_and_eq!(
+            parse_subfield_code_single(b"a"),
+            vec!['a']
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_code_range() -> anyhow::Result<()> {
+        assert_finished_and_eq!(
+            parse_subfield_code_range(b"a-c"),
+            vec!['a', 'b', 'c']
+        );
+
+        assert_error!(parse_subfield_code_range(b"a-a"));
+        assert_error!(parse_subfield_code_range(b"c-a"));
+        assert_error!(parse_subfield_code_range(b"a"));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_subfield_codes() -> anyhow::Result<()> {
+        assert_finished_and_eq!(parse_subfield_codes(b"a"), vec!['a']);
+
+        assert_finished_and_eq!(
+            parse_subfield_codes(b"[a]"),
+            vec!['a']
+        );
+
+        assert_finished_and_eq!(
+            parse_subfield_codes(b"[a-c]"),
+            vec!['a', 'b', 'c']
+        );
+
+        assert_finished_and_eq!(
+            parse_subfield_codes(b"[a-cx]"),
+            vec!['a', 'b', 'c', 'x']
+        );
+
+        Ok(())
+    }
 
     #[test]
     fn test_parse_path() -> anyhow::Result<()> {
@@ -332,7 +410,7 @@ mod tests {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,
                 subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec!['b']
+                codes: vec![vec!['b']]
             }
         );
 
@@ -342,7 +420,7 @@ mod tests {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,
                 subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec!['b']
+                codes: vec![vec!['b']]
             }
         );
 
@@ -352,7 +430,17 @@ mod tests {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,
                 subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec!['b', 'c']
+                codes: vec![vec!['b'], vec!['c']]
+            }
+        );
+
+        assert_finished_and_eq!(
+            parse_path(b"012A/*{a?, [b-dx], c}"),
+            Path {
+                tag_matcher: TagMatcher::new("012A")?,
+                occurrence_matcher: OccurrenceMatcher::new("/*")?,
+                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
+                codes: vec![vec!['b', 'c', 'd', 'x'], vec!['c']]
             }
         );
 
@@ -362,7 +450,7 @@ mod tests {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,
                 subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec!['b', 'c']
+                codes: vec![vec!['b'], vec!['c']]
             }
         );
 
@@ -372,7 +460,17 @@ mod tests {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,
                 subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec!['b', 'c']
+                codes: vec![vec!['b'], vec!['c']]
+            }
+        );
+
+        assert_finished_and_eq!(
+            parse_path(b"012A/*{ (b, [c-ex]) | a?}"),
+            Path {
+                tag_matcher: TagMatcher::new("012A")?,
+                occurrence_matcher: OccurrenceMatcher::new("/*")?,
+                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
+                codes: vec![vec!['b'], vec!['c', 'd', 'e', 'x']]
             }
         );
 
@@ -382,7 +480,7 @@ mod tests {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,
                 subfield_matcher: None,
-                codes: vec!['a']
+                codes: vec![vec!['a']],
             }
         );
 
@@ -392,16 +490,37 @@ mod tests {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/01")?,
                 subfield_matcher: None,
-                codes: vec!['a']
+                codes: vec![vec!['a']],
             }
         );
+
         assert_finished_and_eq!(
             parse_path(b"012A.a"),
             Path {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::None,
                 subfield_matcher: None,
-                codes: vec!['a']
+                codes: vec![vec!['a']],
+            }
+        );
+
+        assert_finished_and_eq!(
+            parse_path(b"012A.[abc]"),
+            Path {
+                tag_matcher: TagMatcher::new("012A")?,
+                occurrence_matcher: OccurrenceMatcher::None,
+                subfield_matcher: None,
+                codes: vec![vec!['a', 'b', 'c']],
+            }
+        );
+
+        assert_finished_and_eq!(
+            parse_path(b"012A.[a-cx]"),
+            Path {
+                tag_matcher: TagMatcher::new("012A")?,
+                occurrence_matcher: OccurrenceMatcher::None,
+                subfield_matcher: None,
+                codes: vec![vec!['a', 'b', 'c', 'x']],
             }
         );
 
