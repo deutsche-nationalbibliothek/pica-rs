@@ -12,7 +12,7 @@ use pica_record::{Tag, TagMut};
 use crate::ParseMatcherError;
 
 /// A matcher that matches against PICA+ [Tags](`pica_record::Tag`).
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TagMatcher {
     Simple(TagMut),
     Pattern([Vec<char>; 4]),

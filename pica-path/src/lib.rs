@@ -26,7 +26,7 @@ use thiserror::Error;
 #[error("invalid path expression, got `{0}`")]
 pub struct ParsePathError(String);
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,

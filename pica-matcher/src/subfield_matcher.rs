@@ -52,7 +52,7 @@ pub trait Matcher {
 /// This matcher can be used to determine if a single subfield or a list
 /// of subfields contains at least one subfield with a code, that is
 /// contained in the matcher's code list.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ExistsMatcher {
     codes: Vec<char>,
 }
@@ -139,7 +139,7 @@ impl Matcher for ExistsMatcher {
 /// * StartsWith (`=^`)
 /// * EndsWith (`=$`)
 /// * Similar (`=*`)
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RelationMatcher {
     codes: Vec<char>,
     op: RelationalOp,
@@ -331,7 +331,7 @@ impl Matcher for RelationMatcher {
 }
 
 /// A matcher that checks a subfield value against a regex.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RegexMatcher {
     codes: Vec<char>,
     pattern: String,
@@ -421,7 +421,7 @@ impl Matcher for RegexMatcher {
 }
 
 /// A matcher that checks if a subfield value is in a predefined list.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InMatcher {
     codes: Vec<char>,
     values: Vec<BString>,
@@ -520,7 +520,7 @@ impl Matcher for InMatcher {
 }
 
 /// A matcher that checks the number of occurrences of a subfield.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CardinalityMatcher {
     code: char,
     op: RelationalOp,
@@ -615,7 +615,7 @@ impl Matcher for CardinalityMatcher {
 ///
 /// This matcher combines all atomic, singleton matcher into a new
 /// matcher.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SingletonMatcher {
     Cardinality(CardinalityMatcher),
     Exists(ExistsMatcher),
@@ -685,7 +685,7 @@ impl Matcher for SingletonMatcher {
 
 /// A matcher that allows grouping, negation and connecting of singleton
 /// matcher.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SubfieldMatcher {
     Singleton(SingletonMatcher),
     Group(Box<SubfieldMatcher>),

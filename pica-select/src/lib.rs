@@ -104,6 +104,12 @@ impl FromStr for Query {
     }
 }
 
+impl From<Path> for Query {
+    fn from(path: Path) -> Self {
+        Self(vec![path.into()])
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 enum Quotes {
     Single,
@@ -467,15 +473,16 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
                             }
                         })
                         .map(|field| {
-                            // FIXME
-                            path.codes_flat()
+                            path.codes()
                                 .iter()
-                                .map(|code| {
+                                .map(|codes| {
                                     field
                                         .subfields()
                                         .iter()
                                         .filter(|subfield| {
-                                            subfield.code() == *code
+                                            codes.contains(
+                                                &subfield.code(),
+                                            )
                                         })
                                         .map(|subfield| {
                                             subfield.value()
