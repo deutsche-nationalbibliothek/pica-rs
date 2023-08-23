@@ -610,6 +610,7 @@ fn parse_field_matcher_or(i: &[u8]) -> ParseResult<FieldMatcher> {
             ws(parse_field_matcher_and),
             ws(parse_field_matcher_cardinality),
             ws(parse_field_matcher_singleton),
+            ws(parse_field_matcher_not),
             ws(parse_field_matcher_exists),
         )),
         many1(preceded(
@@ -619,6 +620,7 @@ fn parse_field_matcher_or(i: &[u8]) -> ParseResult<FieldMatcher> {
                 ws(parse_field_matcher_and),
                 ws(parse_field_matcher_cardinality),
                 ws(parse_field_matcher_singleton),
+                ws(parse_field_matcher_not),
                 ws(parse_field_matcher_exists),
             ))),
         )),

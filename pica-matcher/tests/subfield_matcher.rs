@@ -721,6 +721,21 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
     assert!(!matcher
         .is_match(&SubfieldRef::from_bytes(b"\x1fabcbc")?, &options));
 
+    // or
+    let matcher = SubfieldMatcher::new("!a? || b == 'x'")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher
+        .is_match(&SubfieldRef::from_bytes(b"\x1faabab")?, &options));
+
+    assert!(matcher.is_match(
+        vec![
+            &SubfieldRef::from_bytes(b"\x1fabccd")?,
+            &SubfieldRef::from_bytes(b"\x1fbx")?
+        ],
+        &options
+    ));
+
     // not
     let matcher = SubfieldMatcher::new("a == 'bcd' || !(a != 'def')")?;
     let options = MatcherOptions::default();
