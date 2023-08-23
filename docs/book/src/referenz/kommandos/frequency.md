@@ -87,8 +87,8 @@ Ts1,1
 ### Auswertung mehrerer Felder bzw. Unterfelder
 
 Durch die Angabe von mehreren Pfadausdrücken lässt sich eine
-Häufigkeitsverteilung über mehrere Untefelder ermittelt. Das folgende
-Beispiel ermitteln die Häufigkeit der Kombination aus Satzart (`002@.0`)
+Häufigkeitsverteilung über mehrere Untefelder ermitteln. Das folgende
+Beispiel berechnet die Häufigkeit der Kombination aus Satzart (`002@.0`)
 und dem Entitätencode(s) (`004B.a`):
 
 ```console
