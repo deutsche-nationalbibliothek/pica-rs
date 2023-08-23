@@ -419,5 +419,17 @@ fn field_matcher_composite_or() -> anyhow::Result<()> {
         &options
     ));
 
+    let matcher =
+        FieldMatcher::new("!014A.x? || 013A{#a == 2 && a == '1'}")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(
+        vec![
+            &FieldMut::new("012A", None, vec![('0', "abc")]),
+            &FieldMut::new("013A", None, vec![('a', "1"), ('a', "2")]),
+        ],
+        &options
+    ));
+
     Ok(())
 }
