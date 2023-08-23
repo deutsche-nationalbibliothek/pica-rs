@@ -9,7 +9,7 @@ aller Werte eines oder mehrerer Unterfelder bestimmen.
 
 Das Kommando `frequency` wird dazu genutzt, um die Häufigkeiten der
 Werte ein oder mehrerer Unterfelder zu bestimmen. Ist das zu
-untersuchende Feld bzw. Unterfeld wiederholbar, dann gehen alle
+untersuchende Feld bzw. Unterfeld wiederholbar, gehen alle
 Wertausprägungen eines Datensatzes in die Häufigkeitsverteilung ein. Die
 Ausgabe erfolgt standardmäßig im CSV-Format. Im folgenden Beispiel wird
 die Häufigkeitsverteilung des Unterfelds `002@.0` (Satzart) ermittelt:
@@ -35,8 +35,8 @@ Ts1,1
   Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
 * `--reverse` — Ergebnisse werden in aufsteigender Reihenfolge
   ausgegeben.
-* `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten _n_
-  Unterfeldwerte.
+* `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten
+  `<n>` Unterfeldwerte.
 * `--threshold` `<n>` — Zeilen mit einer Häufigkeit < `<n>` ignorieren.
 * `-H`, `--header` `<header>` — Kopfzeile, die den Ergebnissen
   vorangestellt wird.
@@ -69,7 +69,7 @@ der Konfiguration.
 
 Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen
 ist es häufig sinnvoll, eine Kopfzeile hinzuzufügen. Dies erfolgt mit der
-Option `--header` bzw. `-H`. Die Namen der Spalten werden komma-separiert
+Option `--header` bzw. `-H`. Die Namen der Spalten werden kommasepariert
 angegeben. Eine Angabe von mehr als zwei Spalten ist nicht erlaubt.
 
 ```console
@@ -120,12 +120,12 @@ Ts1,stud,1
 
 ### Eingrenzung auf bestimmte Felder
 
-Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten mit
-einbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand
-eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der
-Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation
-können nur die Felder ausgewählt werden, die einem bestimmten Kriterium
-entsprechen.
+Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten
+miteinbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder
+anhand eines Unterfelds unterschieden lassen, wie etwa durch die Angabe
+der Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in
+{}-Notation können nur die Felder ausgewählt werden, die einem
+bestimmten Kriterium entsprechen.
 
 Das folgende Beispiel bezieht nur die Felder `041R` in die Auswertung
 mit ein, bei denen ein Unterfeld `4` existiert, das entweder `berc` oder
