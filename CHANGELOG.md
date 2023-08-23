@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added 
+### Added
 
 * #687 Allow multi-field queries in `frequency` command
 
 
 ### Fixed
 
-* #688 Allow "not"-operands in or-expressions
+* #688 Allow `Not` operands in `Or` expressions
 
 
 ## [0.18.0] - 2023-07-27
