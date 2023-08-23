@@ -3,7 +3,7 @@
 ![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
 
 Mithilfe des Kommandos `frequency` lässt sich die Häufigkeitsverteilung
-aller Werte eine oder mehrerer Unterfelder bestimmen.
+aller Werte eines oder mehrerer Unterfelder bestimmen.
 
 ## Beschreibung
 
@@ -87,7 +87,7 @@ Ts1,1
 ### Auswertung mehrerer Felder bzw. Unterfelder
 
 Durch die Angabe von mehreren Pfadausdrücken lässt sich eine
-Häufigkeitsverteilung über mehrere Untefelder ermitteln. Das folgende
+Häufigkeitsverteilung über mehrere Untefelder ermittelt. Das folgende
 Beispiel ermitteln die Häufigkeit der Kombination aus Satzart (`002@.0`)
 und dem Entitätencode(s) (`004B.a`):
 
