@@ -6,7 +6,6 @@ use std::io::{self, Write};
 use std::str::FromStr;
 
 use clap::{value_parser, Parser};
-use pica_path::Path;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
 use serde::{Deserialize, Serialize};
@@ -95,8 +94,9 @@ pub(crate) struct Frequency {
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 
-    /// A PICA path expression
-    path: String,
+    /// Query (comma-separated list of path expressions or string
+    /// literals)
+    query: String,
 
     /// Read one or more files in normalized PICA+ format. With no
     /// files, or when a filename is '-', read from standard input
@@ -113,13 +113,13 @@ impl Frequency {
             config.global
         );
 
-        let path = if let Some(ref global) = config.global {
-            Path::from_str(&translit_maybe2(
-                &self.path,
+        let query = if let Some(ref global) = config.global {
+            Query::from_str(&translit_maybe2(
+                &self.query,
                 global.translit,
             ))?
         } else {
-            Path::from_str(&self.path)?
+            Query::from_str(&self.query)?
         };
 
         let mut ftable: HashMap<Vec<String>, u64> = HashMap::new();
@@ -150,11 +150,7 @@ impl Frequency {
                         }
                     }
                     Ok(record) => {
-                        let outcome = record.query(
-                            &Query::from(path.clone()),
-                            &options,
-                        );
-
+                        let outcome = record.query(&query, &options);
                         for key in outcome.clone().into_iter() {
                             if key.iter().any(|e| !e.is_empty()) {
                                 *ftable.entry(key).or_insert(0) += 1;

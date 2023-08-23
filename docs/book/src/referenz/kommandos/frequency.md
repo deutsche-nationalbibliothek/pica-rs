@@ -3,18 +3,16 @@
 ![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
 
 Mithilfe des Kommandos `frequency` lässt sich die Häufigkeitsverteilung
-aller Werte eines Unterfelds bestimmen.
+aller Werte eines oder mehrerer Unterfelder bestimmen.
 
 ## Beschreibung
 
 Das Kommando `frequency` wird dazu genutzt, um die Häufigkeiten der
-Werte eines Unterfelds zu bestimmen. Ist das zu untersuchende Feld bzw.
-Unterfeld wiederholbar, dann gehen alle Wertausprägungen eines
-Datensatzes in die Häufigkeitsverteilung ein. Die Ausgabe erfolgt
-standardmäßig im CSV-Format.
-
-Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds
-`002@.0` (Satzart) ermittelt:
+Werte ein oder mehrerer Unterfelder zu bestimmen. Ist das zu
+untersuchende Feld bzw. Unterfeld wiederholbar, gehen alle
+Wertausprägungen eines Datensatzes in die Häufigkeitsverteilung ein. Die
+Ausgabe erfolgt standardmäßig im CSV-Format. Im folgenden Beispiel wird
+die Häufigkeitsverteilung des Unterfelds `002@.0` (Satzart) ermittelt:
 
 ```console
 $ pica frequency -s "002@.0" DUMP.dat.gz
@@ -37,8 +35,8 @@ Ts1,1
   Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
 * `--reverse` — Ergebnisse werden in aufsteigender Reihenfolge
   ausgegeben.
-* `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten _n_
-  Unterfeldwerte.
+* `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten
+  `<n>` Unterfeldwerte.
 * `--threshold` `<n>` — Zeilen mit einer Häufigkeit < `<n>` ignorieren.
 * `-H`, `--header` `<header>` — Kopfzeile, die den Ergebnissen
   vorangestellt wird.
@@ -71,7 +69,7 @@ der Konfiguration.
 
 Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen
 ist es häufig sinnvoll, eine Kopfzeile hinzuzufügen. Dies erfolgt mit der
-Option `--header` bzw. `-H`. Die Namen der Spalten werden komma-separiert
+Option `--header` bzw. `-H`. Die Namen der Spalten werden kommasepariert
 angegeben. Eine Angabe von mehr als zwei Spalten ist nicht erlaubt.
 
 ```console
@@ -86,14 +84,48 @@ Ts1,1
 
 ```
 
+### Auswertung mehrerer Felder bzw. Unterfelder
+
+Durch die Angabe von mehreren Pfadausdrücken lässt sich eine
+Häufigkeitsverteilung über mehrere Untefelder ermitteln. Das folgende
+Beispiel berechnet die Häufigkeit der Kombination aus Satzart (`002@.0`)
+und dem Entitätencode(s) (`004B.a`):
+
+```console
+$ pica frequency -s -H "bbg,ent,count" "002@.0, 004B.a" DUMP.dat.gz
+bbg,ent,count
+Tu1,wit,6
+Tsz,saz,2
+Tg1,gik,1
+Tp1,piz,1
+Tpz,piz,1
+Ts1,saz,1
+
+```
+
+Ebenfalls können auch mehrere Unterfelder ausgewertet werden. Eine
+Auswertung der Häufigkeiten von verknüpften Sachbegriffen (Level 1) und
+dem GND-Code für Beziehungen im Feld `041R` (Sachbegriff - Beziehung)
+wird wie folgt ermittelt:
+
+```console
+$ pica frequency -s '041R{(7,4) | 7 == "Ts1"}' DUMP.dat.gz
+Ts1,beru,12
+Ts1,obal,5
+Ts1,vbal,3
+Ts1,obge,1
+Ts1,stud,1
+
+```
+
 ### Eingrenzung auf bestimmte Felder
 
-Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten mit
-einbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand
-eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der
-Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation
-können nur die Felder ausgewählt werden, die einem bestimmten Kriterium
-entsprechen.
+Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten
+miteinbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder
+anhand eines Unterfelds unterschieden lassen, wie etwa durch die Angabe
+der Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in
+{}-Notation können nur die Felder ausgewählt werden, die einem
+bestimmten Kriterium entsprechen.
 
 Das folgende Beispiel bezieht nur die Felder `041R` in die Auswertung
 mit ein, bei denen ein Unterfeld `4` existiert, das entweder `berc` oder
