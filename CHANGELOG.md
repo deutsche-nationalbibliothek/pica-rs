@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.19.0] - 2023-08-23
+
 ### Added
 
 * #687 Allow multi-field queries in `frequency` command
+* #684 Allow code ranges in path expressions
 
+### Changed
+
+* #686 Adapt select/frequency to new path struct
+* #685 Deprecate outdated path syntax
 
 ### Fixed
 
