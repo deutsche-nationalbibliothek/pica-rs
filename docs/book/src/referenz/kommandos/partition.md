@@ -8,8 +8,8 @@ Unterfelds in Partitionen einteilen.
 ## Beschreibung
 
 Lassen sich Datensätze anhand von den Wertausprägungen in einem
-Unterfeld gruppieren, ist es mitunter hilfreich die Gesamtmenge an
-Datensätzen in Partitionen aufzuteilen. Ist das Unterfeld, nach dem
+Unterfeld gruppieren, ist es mitunter hilfreich die Gesamtmenge der
+Datensätze in Partitionen aufzuteilen. Ist das Unterfeld, nach dem
 partitioniert werden soll, wiederholbar, sind die erzeugten Partitionen
 i.d.R. nicht disjunkt. Ein Datensatz der das Unterfeld nicht besitzt,
 geht in keine Partition ein.
@@ -63,7 +63,7 @@ gzip = true
 
 ### Eingrenzen der Partitionen
 
-Sollen nicht alle Partitionen erstellt werden, kann die Menge der
+Sollen nicht alle Partitionen erstellt werden, kann die Anzahl der
 möglichen Partition durch die Angabe eines Filterausdrucks eingegrenzt
 werden:
 
