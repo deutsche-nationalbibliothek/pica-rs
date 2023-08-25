@@ -61,6 +61,21 @@ gzip = true
 
 ## Beispiele
 
+### Eingrenzen der Partitionen
+
+Sollen nicht alle Partitionen erstellt werden, kann die Menge der
+möglichen Partition durch die Angabe eines Filterausdrucks eingegrenzt
+werden:
+
+```console
+$ pica partition -s "004B{a | a in ['piz', 'saz']}" DUMP.dat.gz -o out
+$ tree out/
+out
+├── piz.dat
+└── saz.dat
+
+```
+
 ### Benutzerdefinierte Dateinamen
 
 Standardmäßig werden die erstellten Partitionen nach den Werten im
