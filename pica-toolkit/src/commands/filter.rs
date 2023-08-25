@@ -11,6 +11,7 @@ use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
+use crate::progress::Progress;
 use crate::translit::translit_maybe2;
 use crate::util::{CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag, Config};
@@ -122,6 +123,10 @@ pub(crate) struct Filter {
     #[arg(long, value_name = "filename", conflicts_with = "output")]
     tee: Option<PathBuf>,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -231,6 +236,8 @@ impl Filter {
             FilterList::default()
         };
 
+        let mut progress = Progress::new(self.progress);
+
         let mut count = 0;
         let options = MatcherOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100.0)
@@ -244,12 +251,15 @@ impl Filter {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(mut record) => {
+                        progress.record();
+
                         if !allow_list.is_empty()
                             && !allow_list.check(&record)
                         {
@@ -315,6 +325,7 @@ impl Filter {
             }
         }
 
+        progress.finish();
         writer.finish()?;
         if let Some(ref mut writer) = tee_writer {
             writer.finish()?;

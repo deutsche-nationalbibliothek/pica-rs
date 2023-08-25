@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::skip_invalid_flag;
 use crate::translit::{translit_maybe, translit_maybe2};
 use crate::util::CliResult;
@@ -136,6 +137,10 @@ pub(crate) struct Select {
     #[arg(long, short = 'D')]
     deny_list: Vec<PathBuf>,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -253,6 +258,8 @@ impl Select {
             writer.write_record(header.split(',').map(|s| s.trim()))?;
         }
 
+        let mut progess = Progress::new(self.progress);
+
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
@@ -261,12 +268,15 @@ impl Select {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progess.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progess.record();
+
                         if !allow_list.is_empty()
                             && !allow_list.check(&record)
                         {
@@ -331,6 +341,7 @@ impl Select {
             }
         }
 
+        progess.finish();
         writer.flush()?;
         Ok(())
     }
