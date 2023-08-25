@@ -18,6 +18,7 @@
     - [frequency](./referenz/kommandos/frequency.md)
     - [hash](./referenz/kommandos/hash.md)
     - [invalid](./referenz/kommandos/invalid.md)
+    - [partition](./referenz/kommandos/partition.md)
     - [print](./referenz/kommandos/print.md)
     - [slice](./referenz/kommandos/slice.md)
     - [split](./referenz/kommandos/split.md)
