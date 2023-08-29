@@ -28,17 +28,19 @@ impl Progress {
         }
     }
 
-    pub fn record(&mut self) {
+    #[inline]
+    pub(crate) fn record(&mut self) {
         self.records += 1;
         self.update();
     }
 
-    pub fn invalid(&mut self) {
+    #[inline]
+    pub(crate) fn invalid(&mut self) {
         self.invalid += 1;
         self.update();
     }
 
-    pub fn update(&mut self) {
+    pub(crate) fn update(&mut self) {
         self.bar.inc(1);
         let per_sec = self.bar.per_sec();
 
@@ -50,6 +52,7 @@ impl Progress {
         ));
     }
 
+    #[inline]
     pub(crate) fn finish(&self) {
         self.bar.finish();
     }
