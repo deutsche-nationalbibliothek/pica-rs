@@ -9,7 +9,7 @@ use nom::sequence::tuple;
 use nom::Finish;
 
 use crate::parser::ParseResult;
-use crate::ParsePicaError;
+use crate::{Level, ParsePicaError};
 
 /// A PICA+ tag.
 #[derive(Eq, Debug, Clone)]
@@ -75,6 +75,15 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Tag<T> {
     /// Creates a new Tag without checking the input.
     pub fn from_unchecked(value: impl Into<T>) -> Self {
         Self(value.into())
+    }
+
+    pub fn level(&self) -> Level {
+        match self.as_ref().first().expect("valid tag") {
+            b'0' => Level::Main,
+            b'1' => Level::Local,
+            b'2' => Level::Copy,
+            _ => unreachable!(),
+        }
     }
 }
 
