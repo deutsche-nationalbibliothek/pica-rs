@@ -7,6 +7,7 @@ use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::skip_invalid_flag;
 use crate::util::CliResult;
 
@@ -55,6 +56,10 @@ pub(crate) struct Count {
     #[arg(long)]
     no_header: bool,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -88,6 +93,8 @@ impl Count {
         let mut fields = 0;
         let mut subfields = 0;
 
+        let mut progress = Progress::new(self.progress);
+
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
@@ -96,12 +103,15 @@ impl Count {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         records += 1;
                         fields += record.iter().len();
                         subfields += record
@@ -135,6 +145,7 @@ impl Count {
             writeln!(writer, "subfields: {subfields}")?;
         }
 
+        progress.finish();
         writer.flush()?;
         Ok(())
     }

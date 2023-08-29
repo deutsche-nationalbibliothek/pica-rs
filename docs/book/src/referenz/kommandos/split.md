@@ -37,6 +37,8 @@ $ tree
 * `-g`, `--gzip` — Komprimieren der Ausgabe im [Gzip]-Format.
 * `--template` — Template für die Dateinamen. Der Platzhalter `{}` wird
   durch eine fortlaufende Nummer ersetzt.
+* `-p`, `--progress` — Anzeige des Fortschritts, der die Anzahl der
+  eingelesenen gültigen sowie invaliden Datensätze anzeigt.
 * `-o`, `--outdir` — Angabe, in welches Verzeichnis die Ausgabe
   geschrieben werden soll. Standardmäßig wird das aktuelle Verzeichnis
   verwendet.

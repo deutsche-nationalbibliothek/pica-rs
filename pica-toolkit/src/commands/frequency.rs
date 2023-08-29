@@ -11,6 +11,7 @@ use pica_select::{Query, QueryExt, QueryOptions};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::skip_invalid_flag;
 use crate::translit::{translit_maybe, translit_maybe2};
 use crate::util::CliResult;
@@ -90,6 +91,10 @@ pub(crate) struct Frequency {
     )]
     translit: Option<String>,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout.
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -136,6 +141,8 @@ impl Frequency {
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
 
+        let mut progress = Progress::new(self.progress);
+
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
@@ -144,12 +151,15 @@ impl Frequency {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         let outcome = record.query(&query, &options);
                         for key in outcome.clone().into_iter() {
                             if key.iter().any(|e| !e.is_empty()) {
@@ -199,6 +209,7 @@ impl Frequency {
             writer.write_record(record)?;
         }
 
+        progress.finish();
         writer.flush()?;
         Ok(())
     }

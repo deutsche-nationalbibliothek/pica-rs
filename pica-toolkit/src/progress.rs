@@ -16,7 +16,7 @@ impl Progress {
 
         bar.set_style(
             ProgressStyle::with_template(
-                "{spinner} {msg}, {elapsed_precise}",
+                "{spinner} {msg}, elapsed: {elapsed_precise}",
             )
             .unwrap(),
         );
@@ -45,7 +45,7 @@ impl Progress {
         let per_sec = self.bar.per_sec();
 
         self.bar.set_message(format!(
-            "records: {} invalid: {} | {} records/s",
+            "records: {}, invalid: {} | {} records/s",
             HumanCount(self.records),
             HumanCount(self.invalid),
             per_sec.round() as i64,

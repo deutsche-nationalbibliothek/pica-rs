@@ -42,11 +42,12 @@ $ pica convert --from plus --to xml DUMP.dat.gz -o dump.xml
 
 * `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die nicht
   dekodiert werden konnten.
-
 * `-f`, `--from` — Auswahl des Datenformats der Eingabe.
-
 * `-t`, `--to` — Auswahl des Datenformats der Ausgabe.
-
+* `-p`, `--progress` — Anzeige des Fortschritts, der die Anzahl der
+  eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
+  Aktivieren der Option erfordert das Schreiben der Datensätze in eine
+  Datei mittels `-o` bzw. `--output`.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben.

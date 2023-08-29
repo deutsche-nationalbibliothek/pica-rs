@@ -10,6 +10,7 @@ use pica_record::ByteRecord;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag};
 
@@ -84,6 +85,10 @@ pub(crate) struct Cat {
     #[arg(short, long, requires = "output")]
     gzip: bool,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <OUTPUT> instead of stdout
     #[arg(short, long)]
     output: Option<OsString>,
@@ -145,6 +150,8 @@ impl Cat {
             None => None,
         };
 
+        let mut progress = Progress::new(self.progress);
+
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
@@ -153,12 +160,15 @@ impl Cat {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         if self.unique {
                             let k = key(&record);
 
@@ -178,6 +188,7 @@ impl Cat {
             }
         }
 
+        progress.finish();
         writer.finish()?;
         if let Some(ref mut writer) = tee_writer {
             writer.finish()?;
