@@ -124,12 +124,12 @@ fn process_main(
     writer: &mut Box<dyn ByteRecordWrite>,
 ) -> io::Result<()> {
     if let Some(matcher) = matcher {
-        if !matcher.is_match(&record, options) {
+        if !matcher.is_match(record, options) {
             return Ok(());
         }
     }
 
-    writer.write_byte_record(&record)
+    writer.write_byte_record(record)
 }
 
 fn process_copy(
