@@ -35,6 +35,7 @@ fn doc_tests() {
         .case("../docs/book/src/referenz/kommandos/count.md")
         .case("../docs/book/src/referenz/kommandos/filter.md")
         .case("../docs/book/src/referenz/kommandos/frequency.md")
+        .case("../docs/book/src/referenz/kommandos/explode.md")
         .case("../docs/book/src/referenz/kommandos/hash.md")
         .case("../docs/book/src/referenz/kommandos/invalid.md")
         .case("../docs/book/src/referenz/kommandos/partition.md")

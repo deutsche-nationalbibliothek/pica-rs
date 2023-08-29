@@ -8,6 +8,8 @@
 * [completions](./completions.md) — Erzeugung von Shell-Skripten zur
   Autovervollständigung
 * [count](./count.md) — Zählen von Datensätzen, Feldern und Unterfeldern
+* [explode](./explode.md) — Teilt Datensätzen in Lokal- oder
+  Exemplardatensätze auf
 * [filter](./filter.md) — Filtert Datensätze anhand eines Kriteriums
 * [frequency](./frequency.md) — Ermitteln einer Häufigkeitsverteilung
   über ein oder mehrere Unterfelder

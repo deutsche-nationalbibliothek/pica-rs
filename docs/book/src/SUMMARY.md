@@ -14,6 +14,7 @@
     - [completions](./referenz/kommandos/completions.md)
     - [convert](./referenz/kommandos/convert.md)
     - [count](./referenz/kommandos/count.md)
+    - [explode](./referenz/kommandos/explode.md)
     - [filter](./referenz/kommandos/filter.md)
     - [frequency](./referenz/kommandos/frequency.md)
     - [hash](./referenz/kommandos/hash.md)
