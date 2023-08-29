@@ -9,6 +9,7 @@ use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::skip_invalid_flag;
 use crate::util::CliResult;
 
@@ -33,6 +34,10 @@ pub(crate) struct Hash {
     /// Write output tab-separated (TSV)
     #[arg(long, short)]
     tsv: bool,
+
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
 
     /// Write output to <OUTPUT> instead of stdout
     #[arg(short, long)]
@@ -71,6 +76,8 @@ impl Hash {
         writer
             .write_record(self.header.split(',').map(|s| s.trim()))?;
 
+        let mut progress = Progress::new(self.progress);
+
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
@@ -79,12 +86,15 @@ impl Hash {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         if let Some(idn) = record.idn() {
                             let hash = record.sha256().iter().fold(
                                 String::new(),
@@ -104,7 +114,9 @@ impl Hash {
             }
         }
 
+        progress.finish();
         writer.flush()?;
+
         Ok(())
     }
 }

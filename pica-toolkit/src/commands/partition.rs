@@ -14,6 +14,7 @@ use pica_record::io::{
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag, template_opt};
 
@@ -50,6 +51,10 @@ pub(crate) struct Partition {
     /// Compress each partition in gzip format
     #[arg(long, short)]
     gzip: bool,
+
+    /// Show progress bar
+    #[arg(short, long)]
+    progress: bool,
 
     /// Write partitions into <outdir>
     ///
@@ -100,6 +105,8 @@ impl Partition {
         let mut writers: HashMap<Vec<u8>, Box<dyn ByteRecordWrite>> =
             HashMap::new();
 
+        let mut progress = Progress::new(self.progress);
+
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
@@ -108,12 +115,15 @@ impl Partition {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         let mut values =
                             record.path(&path, &Default::default());
                         values.sort_unstable();
@@ -154,6 +164,8 @@ impl Partition {
                 }
             }
         }
+
+        progress.finish();
 
         for (_, mut writer) in writers {
             writer.finish()?;

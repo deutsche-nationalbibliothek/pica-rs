@@ -8,6 +8,7 @@ use rand::{thread_rng, Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag};
 
@@ -29,6 +30,10 @@ pub(crate) struct Sample {
     /// Compress output in gzip format
     #[arg(long, short)]
     gzip: bool,
+
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
 
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
@@ -72,6 +77,7 @@ impl Sample {
         let mut reservoir: Vec<Vec<u8>> =
             Vec::with_capacity(sample_size);
 
+        let mut progress = Progress::new(self.progress);
         let mut i = 0;
 
         for filename in self.filenames {
@@ -82,12 +88,15 @@ impl Sample {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         let mut data = Vec::<u8>::new();
                         record.write_to(&mut data)?;
 
@@ -111,7 +120,9 @@ impl Sample {
             writer.write_byte_record(&record)?;
         }
 
+        progress.finish();
         writer.finish()?;
+
         Ok(())
     }
 }
