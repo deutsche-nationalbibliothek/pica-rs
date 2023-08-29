@@ -5,6 +5,7 @@ use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag};
 
@@ -74,6 +75,10 @@ pub(crate) struct Slice {
     #[arg(long, short)]
     append: bool,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -108,6 +113,7 @@ impl Slice {
             self.start..::std::usize::MAX
         };
 
+        let mut progress = Progress::new(self.progress);
         let mut i = 0;
 
         'outer: for filename in self.filenames {
@@ -117,6 +123,8 @@ impl Slice {
             while let Some(result) = reader.next() {
                 match result {
                     Ok(record) => {
+                        progress.record();
+
                         if range.contains(&i) {
                             writer.write_byte_record(&record)?;
                         } else if i < range.start {
@@ -128,6 +136,8 @@ impl Slice {
                     }
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
+
                             if self.length > 0
                                 && range.end < std::usize::MAX
                             {
@@ -143,7 +153,9 @@ impl Slice {
             }
         }
 
+        progress.finish();
         writer.finish()?;
+
         Ok(())
     }
 }

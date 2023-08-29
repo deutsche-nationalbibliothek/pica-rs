@@ -45,6 +45,10 @@ $ pica count --records slice.dat
 * `--append` — Wenn die Ausgabedatei bereits existiert, wird die
   Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
   bestehende Datei standardmäßig überschrieben.
+* `-p`, `--progress` — Anzeige des Fortschritts, der die Anzahl der
+  eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
+  Aktivieren der Option erfordert das Schreiben der Datensätze in eine
+  Datei mittels `-o` bzw. `--output`.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben.

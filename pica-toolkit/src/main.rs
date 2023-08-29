@@ -8,6 +8,7 @@ mod commands;
 mod common;
 mod config;
 mod macros;
+mod progress;
 mod translit;
 mod util;
 

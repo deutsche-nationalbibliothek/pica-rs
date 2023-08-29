@@ -6,6 +6,7 @@ use pica_record::io::{ReadPicaError, ReaderBuilder, RecordsIterator};
 use pica_record::ParsePicaError;
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::util::CliResult;
 
 /// Write input lines, which can't be decoded as normalized PICA+
@@ -15,6 +16,10 @@ use crate::util::CliResult;
 /// order.
 #[derive(Parser, Debug)]
 pub(crate) struct Invalid {
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -27,6 +32,7 @@ pub(crate) struct Invalid {
 impl Invalid {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
         let mut writer = config.writer(self.output)?;
+        let mut progress = Progress::new(self.progress);
 
         for filename in self.filenames {
             let mut reader =
@@ -38,15 +44,21 @@ impl Invalid {
                         msg: _,
                         err: ParsePicaError::InvalidRecord(data),
                     }) => {
+                        progress.invalid();
                         writer.write_all(&data)?;
                     }
                     Err(e) => return Err(e.into()),
-                    _ => continue,
+                    _ => {
+                        progress.record();
+                        continue;
+                    }
                 }
             }
         }
 
+        progress.finish();
         writer.flush()?;
+
         Ok(())
     }
 }

@@ -12,6 +12,7 @@ use termcolor::{
 };
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::skip_invalid_flag;
 use crate::translit::translit_maybe;
 use crate::util::{CliError, CliResult};
@@ -96,6 +97,10 @@ pub(crate) struct Print {
     )]
     color: String,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -159,6 +164,7 @@ impl Print {
             None => Box::new(StandardStream::stdout(choice)),
         };
 
+        let mut progress = Progress::new(self.progress);
         let mut count = 0;
 
         'outer: for filename in self.filenames {
@@ -169,12 +175,15 @@ impl Print {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         for field in record.iter() {
                             writer.set_color(&tag_color)?;
                             write!(writer, "{}", field.tag())?;
@@ -215,7 +224,9 @@ impl Print {
             }
         }
 
+        progress.finish();
         writer.flush()?;
+
         Ok(())
     }
 }

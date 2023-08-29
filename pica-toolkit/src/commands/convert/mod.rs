@@ -17,6 +17,7 @@ use self::import::ImportWriter;
 use self::json::JsonWriter;
 use self::plain::PlainWriter;
 use self::xml::XmlWriter;
+use crate::progress::Progress;
 use crate::util::CliError;
 use crate::{skip_invalid_flag, CliResult, Config};
 
@@ -66,6 +67,10 @@ pub(crate) struct Convert {
     )]
     to: Format,
 
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long, requires = "output")]
+    progress: bool,
+
     /// Write output to <filename> instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
@@ -101,6 +106,8 @@ impl Convert {
             Format::Xml => Box::new(XmlWriter::new(self.output)?),
         };
 
+        let mut progress = Progress::new(self.progress);
+
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
@@ -109,19 +116,23 @@ impl Convert {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
                         writer.write_byte_record(&record)?;
                     }
                 }
             }
         }
 
+        progress.finish();
         writer.finish()?;
+
         Ok(())
     }
 }

@@ -78,11 +78,14 @@ $ pica print goethe.dat
   Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
   bestehende Datei überschrieben.
 * `--tee <filename>` — Abzweigen der Ausgabe in eine zusätzliche Datei.
+* `-p`, `--progress` — Anzeige des Fortschritts, der die Anzahl der
+  eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
+  Aktivieren der Option erfordert das Schreiben der Datensätze in eine
+  Datei mittels `-o` bzw. `--output`.
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben. Endet der Dateiname mit dem Suffix `.gz`, wird
   die Ausgabe automatisch im gzip-Format komprimiert.
-
 
 
 ## Konfiguration

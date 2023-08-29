@@ -7,6 +7,7 @@ use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::progress::Progress;
 use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag, template_opt};
 
@@ -33,6 +34,10 @@ pub(crate) struct Split {
     /// Compress output in gzip format
     #[arg(long, short)]
     gzip: bool,
+
+    /// Show progress bar (requires `-o`/`--output`).
+    #[arg(short, long)]
+    progress: bool,
 
     /// Write partitions into <outdir>
     #[arg(long, short, value_name = "outdir", default_value = ".")]
@@ -79,6 +84,7 @@ impl Split {
 
         let mut chunks: u32 = 0;
         let mut count = 0;
+        let mut progress = Progress::new(self.progress);
         let mut writer =
             WriterBuilder::new().gzip(gzip_compression).from_path(
                 self.outdir
@@ -98,12 +104,15 @@ impl Split {
                 match result {
                     Err(e) => {
                         if e.is_invalid_record() && skip_invalid {
+                            progress.invalid();
                             continue;
                         } else {
                             return Err(e.into());
                         }
                     }
                     Ok(record) => {
+                        progress.record();
+
                         if count > 0
                             && count as u32 % self.chunk_size == 0
                         {
@@ -132,7 +141,9 @@ impl Split {
             }
         }
 
+        progress.finish();
         writer.finish()?;
+
         Ok(())
     }
 }
