@@ -36,6 +36,41 @@ pub(crate) struct Explode {
     filenames: Vec<OsString>,
 }
 
+macro_rules! record_bytes {
+    ($fields:expr) => {{
+        let mut buffer = Vec::<u8>::new();
+        $fields.iter().for_each(|field| {
+            let _ = field.write_to(&mut buffer);
+        });
+        buffer.push(b'\n');
+        buffer
+    }};
+}
+
+macro_rules! push_record {
+    ($records:expr, $main:expr, $local:expr, $acc:expr) => {
+        if !$acc.is_empty() {
+            let mut record = $main.clone();
+            if let Some(local) = $local {
+                record.push(local);
+            }
+            record.extend_from_slice(&$acc);
+
+            $records.push(record);
+            $acc.clear();
+        }
+    };
+
+    ($records:expr, $main:expr, $acc:expr) => {
+        if !$acc.is_empty() {
+            let mut record = $main.clone();
+            record.extend_from_slice(&$acc);
+            $records.push(record);
+            $acc.clear();
+        }
+    };
+}
+
 impl Explode {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
         let skip_invalid = skip_invalid_flag!(
@@ -75,35 +110,19 @@ impl Explode {
                                 match field.level() {
                                     Level::Main => main.push(field),
                                     Level::Local => {
-                                        if !acc.is_empty() {
-                                            let mut record =
-                                                main.clone();
-                                            record.push(local.unwrap());
-                                            record.extend_from_slice(
-                                                &acc,
-                                            );
-                                            records.push(record);
-                                            acc.clear();
-                                        }
+                                        push_record!(
+                                            records, main, local, acc
+                                        );
 
                                         local = Some(field);
                                         count = None;
                                     }
                                     Level::Copy => {
                                         if count != field.occurrence() {
-                                            if !acc.is_empty() {
-                                                let mut record =
-                                                    main.clone();
-                                                record.push(
-                                                    local.unwrap(),
-                                                );
-                                                record
-                                                    .extend_from_slice(
-                                                        &acc,
-                                                    );
-                                                records.push(record);
-                                                acc.clear();
-                                            }
+                                            push_record!(
+                                                records, main, local,
+                                                acc
+                                            );
 
                                             count = field.occurrence();
                                         }
@@ -113,25 +132,13 @@ impl Explode {
                                 }
                             }
 
-                            if !acc.is_empty() {
-                                let mut record = main.clone();
-                                record.push(local.unwrap());
-                                record.extend_from_slice(&acc);
-                                records.push(record);
-                                acc.clear();
-                            }
+                            push_record!(records, main, local, acc);
 
                             for fields in records {
-                                let mut buffer = Vec::<u8>::new();
-                                fields.iter().for_each(|field| {
-                                    let _ = field.write_to(&mut buffer);
-                                });
-                                buffer.push(b'\n');
-
+                                let data = record_bytes!(fields);
                                 let record =
-                                    ByteRecord::from_bytes(&buffer)
-                                        .unwrap();
-
+                                    ByteRecord::from_bytes(&data)
+                                        .expect("valid record");
                                 writer.write_byte_record(&record)?;
                             }
                         }
@@ -145,37 +152,21 @@ impl Explode {
                                     Level::Main => main.push(field),
                                     Level::Copy => acc.push(field),
                                     Level::Local => {
-                                        if !acc.is_empty() {
-                                            let mut record =
-                                                main.clone();
-                                            record.extend_from_slice(
-                                                &acc,
-                                            );
-                                            records.push(record);
-                                            acc.clear();
-                                        }
+                                        push_record!(
+                                            records, main, acc
+                                        );
                                         acc.push(field)
                                     }
                                 }
                             }
 
-                            if !acc.is_empty() {
-                                let mut record = main.clone();
-                                record.extend_from_slice(&acc);
-                                records.push(record);
-                            }
+                            push_record!(records, main, acc);
 
                             for fields in records.iter() {
-                                let mut buffer = Vec::<u8>::new();
-                                fields.iter().for_each(|field| {
-                                    let _ = field.write_to(&mut buffer);
-                                });
-                                buffer.push(b'\n');
-
+                                let data = record_bytes!(fields);
                                 let record =
-                                    ByteRecord::from_bytes(&buffer)
+                                    ByteRecord::from_bytes(&data)
                                         .unwrap();
-
                                 writer.write_byte_record(&record)?;
                             }
                         }
