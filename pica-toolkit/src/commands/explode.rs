@@ -11,15 +11,18 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::progress::Progress;
-use crate::skip_invalid_flag;
 use crate::translit::translit_maybe2;
 use crate::util::CliResult;
+use crate::{gzip_flag, skip_invalid_flag};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct ExplodeConfig {
     /// Skip invalid records that can't be decoded.
     pub(crate) skip_invalid: Option<bool>,
+
+    /// Compress output in gzip format
+    pub(crate) gzip: Option<bool>,
 }
 
 #[derive(Parser, Debug)]
@@ -27,6 +30,10 @@ pub(crate) struct Explode {
     /// Skip invalid records that can't be decoded.
     #[arg(short, long)]
     skip_invalid: bool,
+
+    /// Compress each partition in gzip format
+    #[arg(long, short)]
+    gzip: bool,
 
     /// A filter expression used for searching
     #[arg(long = "where")]
@@ -222,6 +229,7 @@ fn process_local(
 
 impl Explode {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        let gzip_compression = gzip_flag!(self.gzip, config.explode);
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,
             config.explode,
@@ -274,8 +282,10 @@ impl Explode {
         };
 
         let mut progress = Progress::new(self.progress);
-        let mut writer =
-            WriterBuilder::new().from_path_or_stdout(self.output)?;
+
+        let mut writer = WriterBuilder::new()
+            .gzip(gzip_compression)
+            .from_path_or_stdout(self.output)?;
 
         let process_record = match self.level {
             Level::Main => process_main,
