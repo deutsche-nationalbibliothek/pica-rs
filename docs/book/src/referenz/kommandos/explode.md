@@ -175,3 +175,6 @@ $ pica print copy.dat
 
 
 ```
+
+
+[Gzip]: https://de.wikipedia.org/wiki/Gzip
