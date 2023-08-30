@@ -35,7 +35,7 @@ jobs:
         target:
           - { image: "ubuntu:22.04", triple: x86_64-unknown-linux-gnu, glibc: 2.35 }
           - { image: "ubuntu:20.04", triple: x86_64-unknown-linux-gnu, glibc: 2.31 }
-          - { image: "debian:10" triple: x86_64-unknown-linux-gnu, glibc: 2.28 }
+          - { image: "debian:10", triple: x86_64-unknown-linux-gnu, glibc: 2.28 }
           - { image: "centos:centos7", triple: x86_64-unknown-linux-gnu, glibc: 2.17 }
     container:
       image: ${{ matrix.target.image }}
