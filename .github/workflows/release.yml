@@ -35,6 +35,7 @@ jobs:
         target:
           - { image: "ubuntu:22.04", triple: x86_64-unknown-linux-gnu, glibc: 2.35 }
           - { image: "ubuntu:20.04", triple: x86_64-unknown-linux-gnu, glibc: 2.31 }
+          - { image: "debian:10", triple: x86_64-unknown-linux-gnu, glibc: 2.28 }
           - { image: "centos:centos7", triple: x86_64-unknown-linux-gnu, glibc: 2.17 }
     container:
       image: ${{ matrix.target.image }}
@@ -53,6 +54,9 @@ jobs:
             target/
       - name: "Install packages (Ubuntu)"
         if: ${{ startsWith(matrix.target.image, 'ubuntu') }}
+        run: apt-get update && apt-get install curl build-essential -y
+      - name: "Install packages (Debian)"
+        if: ${{ startsWith(matrix.target.image, 'debian') }}
         run: apt-get update && apt-get install curl build-essential -y
       - name: "Install packages (CentOS)"
         if: ${{ startsWith(matrix.target.image, 'centos') }}
@@ -88,7 +92,6 @@ jobs:
           ./target/release/pica completions bash > "$staging/pica.bash"
           ./target/release/pica completions fish > "$staging/pica.fish"
           ./target/release/pica completions zsh > "$staging/pica.zsh"
-          # cp "target/release/pica-lint" "$staging/"
           tar cfvz "$staging.tar.gz" "$staging/"
           echo "filename=$staging.tar.gz" >> $GITHUB_OUTPUT
           echo "ASSET_PATH=$staging.tar.gz" >> $GITHUB_ENV
@@ -216,6 +219,8 @@ jobs:
         target:
           - { triple: x86_64-unknown-linux-gnu, glibc: 2.17, format: deb }
           - { triple: x86_64-unknown-linux-gnu, glibc: 2.17, format: rpm }
+          - { triple: x86_64-unknown-linux-gnu, glibc: 2.28, format: deb }
+          - { triple: x86_64-unknown-linux-gnu, glibc: 2.28, format: rpm }
           - { triple: x86_64-unknown-linux-gnu, glibc: 2.31, format: deb }
           - { triple: x86_64-unknown-linux-gnu, glibc: 2.31, format: rpm }
           - { triple: x86_64-unknown-linux-gnu, glibc: 2.35, format: deb }
@@ -253,12 +258,12 @@ jobs:
       matrix:
         target:
           - { name: "Debian 11", image: "debian:11", glibc: 2.31 }
-          - { name: "Debian 10", image: "debian:10", glibc: 2.31 }
+          - { name: "Debian 10", image: "debian:10", glibc: 2.28 }
           - { name: "Ubuntu 22.04", image: "ubuntu:22.04", glibc: 2.35 }
           - { name: "Ubuntu 21.10", image: "ubuntu:21.10", glibc: 2.35 }
           - { name: "Ubuntu 20.04", image: "ubuntu:20.04", glibc: 2.31 }
           - { name: "CentOS 7", image: "centos:7", glibc: 2.17 }
-          - { name: "CentOS 8", image: "centos:8", glibc: 2.31 }
+          - { name: "CentOS 8", image: "centos:8", glibc: 2.28 }
     steps:
       - name: "Download Package (DEB)"
         if: ${{ !startsWith(matrix.target.name, 'CentOS') }}
