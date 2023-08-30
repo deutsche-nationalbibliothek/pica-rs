@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "explode main COPY.dat.gz -o main.dat"
+status = "success"
+stdout = ""
+stderr = ""

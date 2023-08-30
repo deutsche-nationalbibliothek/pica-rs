@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "explode copy --where '101@.a == \"1\"' COPY.dat.gz -o 1.dat"
+status = "success"
+stdout = ""
+stderr = ""

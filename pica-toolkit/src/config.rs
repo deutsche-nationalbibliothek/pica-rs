@@ -30,12 +30,13 @@ pub(crate) struct GlobalConfig {
 pub(crate) struct Config {
     #[serde(skip)]
     pub(crate) path: Option<PathBuf>,
-    pub(crate) global: Option<GlobalConfig>,
     pub(crate) cat: Option<CatConfig>,
     pub(crate) convert: Option<ConvertConfig>,
     pub(crate) count: Option<CountConfig>,
+    pub(crate) explode: Option<ExplodeConfig>,
     pub(crate) filter: Option<FilterConfig>,
     pub(crate) frequency: Option<FrequencyConfig>,
+    pub(crate) global: Option<GlobalConfig>,
     pub(crate) hash: Option<HashConfig>,
     pub(crate) partition: Option<PartitionConfig>,
     pub(crate) print: Option<PrintConfig>,

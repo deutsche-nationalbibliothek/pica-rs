@@ -14,7 +14,7 @@ use crate::occurrence::parse_occurrence;
 use crate::parser::{ParseResult, RS, SP};
 use crate::subfield::parse_subfield;
 use crate::tag::parse_tag;
-use crate::{Occurrence, ParsePicaError, Subfield, Tag};
+use crate::{Level, Occurrence, ParsePicaError, Subfield, Tag};
 
 /// A PICA+ field.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -228,6 +228,11 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Field<T> {
             subfield.write_to(out)?;
         }
         write!(out, "\x1e")
+    }
+
+    #[inline]
+    pub fn level(&self) -> Level {
+        self.tag.level()
     }
 }
 
