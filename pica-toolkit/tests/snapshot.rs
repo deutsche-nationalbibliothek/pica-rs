@@ -7,6 +7,8 @@ fn cli_tests() {
         .case("tests/snapshot/completions/*.trycmd")
         .case("tests/snapshot/count/*.toml")
         .case("tests/snapshot/count/*.trycmd")
+        .case("tests/snapshot/explode/*.toml")
+        .case("tests/snapshot/explode/*.trycmd")
         .case("tests/snapshot/filter/*.toml")
         .case("tests/snapshot/filter/*.trycmd")
         .case("tests/snapshot/frequency/*.toml")
