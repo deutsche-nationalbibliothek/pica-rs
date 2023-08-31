@@ -12,7 +12,15 @@ Exemplardatensätze aufteilen.
 
 ## Beschreibung
 
-<!-- TODO: Seite über den Aufbau eines PICA+-Datensatzes erstellen -->
+<!-- TODO: Separate Seite über den Aufbau eines PICA+-Datensatzes erstellen. Untenstehende Notizen dazu stammen aus https://wiki.k10plus.de/download/attachments/203128864/K10plusKatalogisierungsschulung-mit-Notizen-Teil1.pdf?version=3&modificationDate=1606824839604&api=v2 -->
+
+Ausgehend vom Modell der relationalen Datenbank besteht der grundlegende Aufbau 
+eines PICA+-Datensatzes aus drei Ebenen: Die Bibliografische Ebene (main) beinhaltet alle Angaben
+zur bibliografischen Beschreibung des Werkes, auf die alle Teilnehmer gemeinsam zugreifen.
+Auf der Lokalen Ebene (local) befinden sich die Angaben, die für alle Exemplare einer
+Bibliothek (ILN1) gemeinsam gelten, z.B. Sacherschließungsmerkmale nach lokal
+verwendeten Regelwerken. Die Exemplarebene (copy) schließlich beinhaltet alle Angaben zum vorliegenden
+Exemplar, z.B. Signatur, Verbuchungsnummer, Zugangsnummer.
 
 Die Verarbeitung und Analyse von Datensätzen auf Lokal- bzw.
 Exemplarebene ist mitunter nur unzureichend möglich, da Filterausdrücke
@@ -29,15 +37,15 @@ Werte ausgewählt werden:
 * `local` (Aufteilen auf Ebene der Lokaldaten),
 * sowie `copy` (Aufteilen auf Ebene der Exemplardaten).
 
-Sollen ein Datensatz in alle Lokaldatensätze aufgeteilt werden, muss die
+Soll ein Datensatz in alle Lokaldatensätze aufgeteilt werden, muss die
 Ebene `local` ausgewählt werden. Die neu erstellten Datensätze enthalten
-alle Titeldaten (Felder der Ebene 0), den Identifikator des
+alle Titeldaten (Felder der Ebene main), den Identifikator des
 Lokaldatensatzes (Feld `101@.a`) sowie alle Exemplare, die diesem
 Lokaldatensatz zugeordnet werden.
 
 Soll darüber hinaus für jedes Exemplar ein eigenständiger Datensatz
 erzeugt werden, muss die Ebene `copy` angegeben werden. Jeder erzeugte
-Datensatz enthält die Titeldaten (Felder der Ebene 0), den Identifikator
+Datensatz enthält die Titeldaten (Felder der Ebene main), den Identifikator
 des Lokaldatensatzes (Feld `101@.a`) und nur die Felder, die zum
 jeweiligen Exemplar gehören.
 
