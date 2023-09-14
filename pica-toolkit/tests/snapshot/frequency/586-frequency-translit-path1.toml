@@ -1,5 +1,5 @@
 bin.name = "pica"
-args = "-c Pica.toml frequency \"029@{a =^ 'Städtische', a}\""
+args = "-c Pica.toml frequency \"029@{ a | a =^ 'Städtische'}\""
 status = "success"
 stdout = "Sta\u0308dtische Pressestelle,1\n"
-stderr = "WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.\n"
+stderr = ""

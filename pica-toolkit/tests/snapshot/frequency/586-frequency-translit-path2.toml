@@ -1,5 +1,5 @@
 bin.name = "pica"
-args = "frequency \"029@{a =^ 'Städtische', a}\""
+args = "frequency \"029@{a | a =^ 'Städtische'}\""
 status = "success"
 stdout = ""
-stderr = "WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.\n"
+stderr = ""

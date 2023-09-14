@@ -1,5 +1,5 @@
 bin.name = "pica"
-args = "frequency -s -i \"065R{4 =^ 'ORT', 9}\" dump.dat.gz"
+args = "frequency -s -i \"065R{9 | 4 =^ 'ORT'}\" dump.dat.gz"
 status = "success"
 stdout = "041178548,2\n040660095,1\n040787044,1\n"
-stderr = "WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.\n"
+stderr = ""
