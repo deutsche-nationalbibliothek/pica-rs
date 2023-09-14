@@ -5,9 +5,7 @@ use nom::character::complete::{char, multispace0};
 use nom::combinator::{all_consuming, map, opt, verify};
 use nom::error::ParseError;
 use nom::multi::{fold_many1, separated_list1};
-use nom::sequence::{
-    delimited, pair, preceded, separated_pair, terminated, tuple,
-};
+use nom::sequence::{delimited, pair, preceded, separated_pair, tuple};
 use nom::{Finish, IResult};
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_tag_matcher,
@@ -174,45 +172,6 @@ fn parse_path_simple(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
-fn parse_path_deprecated(i: &[u8]) -> ParseResult<Path> {
-    let (i, path) = map(
-        delimited(
-            multispace0,
-            tuple((
-                parse_tag_matcher,
-                parse_occurrence_matcher,
-                delimited(
-                    ws(char('{')),
-                    pair(
-                        opt(terminated(
-                            parse_subfield_matcher,
-                            ws(char(',')),
-                        )),
-                        separated_list1(
-                            ws(char(',')),
-                            parse_subfield_codes,
-                        ),
-                    ),
-                    ws(char('}')),
-                ),
-            )),
-            multispace0,
-        ),
-        |(t, o, (m, c))| Path {
-            tag_matcher: t,
-            occurrence_matcher: o,
-            subfield_matcher: m,
-            codes: c,
-        },
-    )(i)?;
-
-    if path.subfield_matcher.is_some() {
-        eprintln!("WARNING: Specifying subfield matcher in the first position of an path expression is deprecated. Please use the set-builder notation instead.");
-    }
-
-    Ok((i, path))
-}
-
 fn parse_path_curly(i: &[u8]) -> ParseResult<Path> {
     map(
         delimited(
@@ -258,8 +217,9 @@ fn parse_path_curly(i: &[u8]) -> ParseResult<Path> {
     )(i)
 }
 
+#[inline]
 pub fn parse_path(i: &[u8]) -> ParseResult<Path> {
-    alt((parse_path_simple, parse_path_curly, parse_path_deprecated))(i)
+    alt((parse_path_simple, parse_path_curly))(i)
 }
 
 pub trait PathExt<T: AsRef<[u8]>> {
@@ -411,16 +371,6 @@ mod tests {
     #[test]
     fn test_parse_path() -> anyhow::Result<()> {
         assert_finished_and_eq!(
-            parse_path(b"012A/*{a?, b}"),
-            Path {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec![vec!['b']]
-            }
-        );
-
-        assert_finished_and_eq!(
             parse_path(b"012A/*{b | a?}"),
             Path {
                 tag_matcher: TagMatcher::new("012A")?,
@@ -431,17 +381,7 @@ mod tests {
         );
 
         assert_finished_and_eq!(
-            parse_path(b"012A/*{a?, b, c}"),
-            Path {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::new("/*")?,
-                subfield_matcher: Some(SubfieldMatcher::new("a?")?),
-                codes: vec![vec!['b'], vec!['c']]
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_path(b"012A/*{a?, [b-dx], c}"),
+            parse_path(b"012A/*{[b-dx], c | a?}"),
             Path {
                 tag_matcher: TagMatcher::new("012A")?,
                 occurrence_matcher: OccurrenceMatcher::new("/*")?,
