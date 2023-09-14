@@ -12,7 +12,7 @@ bereit. Diese können mit folgendem Kommando heruntergeladen und
 installiert werden:
 
 ```bash
-$ dpkg -i pica_0.19.0-glibc2.35-1_amd64.deb
+$ dpkg -i pica_0.20.0-glibc2.35-1_amd64.deb
 ```
 
 ## RedHat & SUSE & CentOS
@@ -22,7 +22,7 @@ Für [RedHat](https://www.redhat.com/), [SUSE](https://www.suse.com/) und
 Download bereit. Diese können mit folgendem Kommando installiert werden:
 
 ```bash
-$ rpm -i pica-0.19.0-glibc2.35-1.x86_64.rpm
+$ rpm -i pica-0.20.0-glibc2.35-1.x86_64.rpm
 ```
 
 Für altere Distributionen (bspw. CentOS 7) stehen spezielle `RPM`-Pakete
@@ -68,9 +68,9 @@ den Paketmanager `cargo` installiert werden:
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
      --branch main pica-toolkit
 
-# Installation der Version 0.19.0
+# Installation der Version 0.20.0
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
-      --tag v0.19.0 pica-toolkit
+      --tag v0.20.0 pica-toolkit
 
 # Installation des Entwicklungszweigs "feat1"
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
