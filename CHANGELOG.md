@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.20.0] - 2023-09-14
+
 ### Added
 
+* #694 Add `explode` command
 * #693 Add progress bar
 
 

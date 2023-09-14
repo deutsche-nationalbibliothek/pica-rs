@@ -35,7 +35,7 @@ To install the latest stable release:
 
 ```bash
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
-    --tag v0.19.0 pica-toolkit
+    --tag v0.20.0 pica-toolkit
 ```
 
 ## Commands
