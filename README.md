@@ -1,4 +1,4 @@
-<p align="center"><img  height="250" width="250" src="./.github/pica-rs_logo.svg"></p>
+<p align="center"><img  height="250" width="250" src="./.github/pica-rs_logo.png"></p>
 
 <div align="center" markdown="1">
 
@@ -14,7 +14,7 @@
 
 Das Toolkit pica-rs ermöglicht eine effiziente Verarbeitung von
 bibliografischen Metadaten, die in PICA+, dem internen Format des
-OCLC-Katalogsystems, kodiert sind. Mithilfe verschiedener Kommandos
+[OCLC]-Katalogsystems, kodiert sind. Mithilfe verschiedener Kommandos
 können aus den Metadaten elementare statistische Größen ermittelt und
 aufbereitet werden. Zudem kann das Toolkit als Brückentechnologie
 fungieren, um Metadaten für populäre Frameworks wie Pandas oder Polars
@@ -32,10 +32,12 @@ eingesetzt.
 Die Mitwirkung an pica-rs ist sehr erwünscht. Wir würden Sie bitten,
 mögliche Fehler, Fragen und neue Ideen als GitHub-Issues (LINK)
 anzulegen. Diese werden wir dann intern beraten und möglichst zeitnah
-ein Feedback geben. 
+ein Feedback geben.
 
 Die Installation des Toolkits und alle Kommandos sind in der
 Dokumentation beschrieben.
+
+[OCLC]: https://www.oclc.org/
 
 <!-- ## About -->
 
