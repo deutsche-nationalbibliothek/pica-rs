@@ -17,14 +17,15 @@ bibliografischen Metadaten, die in PICA+, dem internen Format des
 [OCLC]-Katalogsystems, kodiert sind. Mithilfe verschiedener [Kommandos]
 können aus den Metadaten elementare statistische Größen ermittelt und
 aufbereitet werden. Zudem kann das Toolkit als Brückentechnologie
-fungieren, um Metadaten für populäre Frameworks wie Pandas oder Polars
-(Python), in Programmiersprachen wie R oder für Excel nutzbar zu machen.
+fungieren, um Metadaten für populäre Frameworks wie [Pandas] oder
+[Polars] (Python), in Programmiersprachen wie [R] oder für Excel nutzbar
+zu machen.
 
-Das Projekt ist eine Entwicklung des Referats Automatische
-Erschließungsverfahren; Netzpublikationen (AEN) der Deutschen
-Nationalbibliothek (DNB). Es wird für die Erstellung von Datenanalysen
+Das Projekt ist eine Entwicklung des Referats _Automatische
+Erschließungsverfahren; Netzpublikationen_ (AEN) der [Deutschen
+Nationalbibliothek] (DNB). Es wird für die Erstellung von Datenanalysen
 sowie für die Automatisierung von Metadaten-Workflows (Datenmanagement)
-im Rahmen der automatischen Inhaltserschließung genutzt. Weiterhin wird
+im Rahmen der [automatischen Inhaltserschließung][AE] genutzt. Weiterhin wird
 es zur Unterstützung der Forschungsarbeiten im Projekt Automatisches
 Erschließungssystem und für diverse andere Datenanalysen in der DNB
 eingesetzt.
@@ -51,11 +52,16 @@ Dokumentation beschrieben.
 * partition — Partitioniert Datensätze anhand eines Unterfelds
 * print — Gibt Datensätze in einer menschenlesbaren Form aus
 * slice — Ausschneiden eines zusammenhängenden Teilbereichs aus der Eingabe
-+ split — Teilt eine Menge an Datensätzen in Dateien fester Größe
+* split — Teilt eine Menge an Datensätzen in Dateien fester Größe
 
 
 [OCLC]: https://www.oclc.org/
 [Kommandos]: #kommandos
+[Pandas]: https://pandas.pydata.org/
+[Polars]: https://www.pola.rs/
+[R]: https://www.r-project.org/
+[Deutschen Nationalbibliothek]: https://www.dnb.de/
+[AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
 
 <!-- ## About -->
 
