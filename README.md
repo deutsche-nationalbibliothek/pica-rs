@@ -60,6 +60,12 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 * [split] — Teilt eine Menge an Datensätzen in Dateien fester Größe
 
 
+### Verwandte Projekte
+
+- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) — Catmandu modules for working with PICA+ data
+- [Metafacture](https://github.com/metafacture) — Tool suite for metadata processing
+
+
 [AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
 [DNB]: https://www.dnb.de/
 [Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/
@@ -74,13 +80,13 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 
 [cat]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/cat.html
 [completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/completions.html
-[convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/convert.html 
+[convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/convert.html
 [count]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/count.html
 [explode]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/explode.html
 [filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/filter.html
 [frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/frequency.html
 [hash]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/hash.html
-[invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/inalid.html
+[invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/invalid.html
 [partition]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/partition.html
 [print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/print.html
 [slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/slice.html
