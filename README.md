@@ -38,7 +38,7 @@ ein Feedback geben.
 Die [Installation] des Toolkits und alle Kommandos sind in der
 [Dokumentation] beschrieben.
 
-## Übersicht
+### Übersicht
 
 * [cat] — Zusammenfügen (Konkatenieren) von Datensätzen
 * [completions] — Erzeugung von Shell-Skripten zur Autovervollständigung
