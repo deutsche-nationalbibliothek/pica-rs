@@ -35,8 +35,8 @@ mögliche Fehler, Fragen und neue Ideen als [GitHub-Issues][Issues]
 anzulegen. Diese werden wir dann intern beraten und möglichst zeitnah
 ein Feedback geben.
 
-Die Installation des Toolkits und alle Kommandos sind in der
-Dokumentation beschrieben.
+Die [Installation] des Toolkits und alle Kommandos sind in der
+[Dokumentation] beschrieben.
 
 ## Kommandos
 
@@ -55,15 +55,17 @@ Dokumentation beschrieben.
 * split — Teilt eine Menge an Datensätzen in Dateien fester Größe
 
 
-[OCLC]: https://www.oclc.org/
+[AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
+[DNB]: https://www.dnb.de/
+[Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/
+[Installation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/anleitungen/installation.html
+[Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
+[KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
 [Kommandos]: #kommandos
+[OCLC]: https://www.oclc.org/
 [Pandas]: https://pandas.pydata.org/
 [Polars]: https://www.pola.rs/
 [R]: https://www.r-project.org/
-[DNB]: https://www.dnb.de/
-[AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
-[KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
-[Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
 
 <!-- ## About -->
 
