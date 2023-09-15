@@ -38,21 +38,26 @@ ein Feedback geben.
 Die [Installation] des Toolkits und alle Kommandos sind in der
 [Dokumentation] beschrieben.
 
-## Kommandos
+## Übersicht
 
-* cat — Zusammenfügen (Konkatenieren) von Datensätzen
-* convert — Konvertierung zwischen verschiedenen PICA-Formaten
-* completions — Erzeugung von Shell-Skripten zur Autovervollständigung
-* count — Zählen von Datensätzen, Feldern und Unterfeldern
-* explode — Teilt Datensätze in Lokal- oder Exemplardatensätze auf
-* filter — Filtert Datensätze anhand eines Kriteriums
-* frequency — Ermitteln einer Häufigkeitsverteilung über ein oder mehrere Unterfelder
-* hash — Erzeugt SHA-256-Hashwerte von Datensätzen
-* invalid — Findet ungültige Zeilen in der Eingabe
-* partition — Partitioniert Datensätze anhand eines Unterfelds
-* print — Gibt Datensätze in einer menschenlesbaren Form aus
-* slice — Ausschneiden eines zusammenhängenden Teilbereichs aus der Eingabe
-* split — Teilt eine Menge an Datensätzen in Dateien fester Größe
+* [cat] — Zusammenfügen (Konkatenieren) von Datensätzen
+* [completions] — Erzeugung von Shell-Skripten zur Autovervollständigung
+* [convert] — Konvertierung zwischen verschiedenen PICA-Formaten
+* [count] — Zählen von Datensätzen, Feldern und Unterfeldern
+* [explode] — Teilt Datensätze in Lokal- oder Exemplardatensätze auf
+* [filter] — Filtert Datensätze anhand eines Kriteriums
+* [frequency] — Ermitteln einer Häufigkeitsverteilung über ein oder
+  mehrere Unterfelder
+* [hash] — Erzeugt SHA-256-Hashwerte von Datensätzen
+* [invalid] — Findet ungültige Zeilen in der Eingabe
+* [partition] — Partitioniert Datensätze anhand eines Unterfelds
+* [print] — Gibt Datensätze in einer menschenlesbaren Form aus
+* sample — Wählt eine Zufallsstichprobe eines bestimmten Umfangs aus
+* select — Selektiert ein oder mehrere Unterfelder und gibt die Daten im
+  CSV- bzw. TSV-Format aus
+* [slice] — Ausschneiden eines zusammenhängenden Teilbereichs aus der
+  Eingabe
+* [split] — Teilt eine Menge an Datensätzen in Dateien fester Größe
 
 
 [AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
@@ -66,6 +71,20 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 [Pandas]: https://pandas.pydata.org/
 [Polars]: https://www.pola.rs/
 [R]: https://www.r-project.org/
+
+[cat]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/cat.html
+[completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/completions.html
+[convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/convert.html 
+[count]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/count.html
+[explode]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/explode.html
+[filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/filter.html
+[frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/frequency.html
+[hash]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/hash.html
+[invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/inalid.html
+[partition]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/partition.html
+[print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/print.html
+[slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/slice.html
+[split]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/split.html
 
 <!-- ## About -->
 
