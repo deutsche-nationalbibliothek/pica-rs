@@ -1,13 +1,37 @@
-<p align="center"><img  height="250" src="./.github/pica-rs_logo.svg"></p>
+<p align="center"><img  height="250" width="250" src="./.github/pica-rs_logo.svg"></p>
 
-<!-- # pica-rs -->
+<p align="center">
+[![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/workflows/CI/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions?query=workflow%3ACI+branch%3Amain)
+[![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/)
+[![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
+</p>
 
-<!-- [![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/workflows/CI/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions?query=workflow%3ACI+branch%3Amain) -->
-<!-- [![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/) -->
-<!-- [![Coverage Status](https://coveralls.io/repos/github/deutsche-nationalbibliothek/pica-rs/badge.svg?branch=main)](https://coveralls.io/github/deutsche-nationalbibliothek/pica-rs?branch=main) -->
-<!-- [![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs) -->
-<!-- [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) -->
-<!-- [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/) -->
+Das Toolkit pica-rs ermöglicht eine effiziente Verarbeitung von
+bibliografischen Metadaten, die in PICA+, dem internen Format des
+OCLC-Katalogsystems, kodiert sind. Mithilfe verschiedener Kommandos
+können aus den Metadaten elementare statistische Größen ermittelt und
+aufbereitet werden. Zudem kann das Toolkit als Brückentechnologie
+fungieren, um Metadaten für populäre Frameworks wie Pandas oder Polars
+(Python), in Programmiersprachen wie R oder für Excel nutzbar zu machen.
+
+Das Projekt ist eine Entwicklung des Referats Automatische
+Erschließungsverfahren; Netzpublikationen (AEN) der Deutschen
+Nationalbibliothek (DNB). Es wird für die Erstellung von Datenanalysen
+sowie für die Automatisierung von Metadaten-Workflows (Datenmanagement)
+im Rahmen der automatischen Inhaltserschließung genutzt. Weiterhin wird
+es zur Unterstützung der Forschungsarbeiten im Projekt Automatisches
+Erschließungssystem und für diverse andere Datenanalysen in der DNB
+eingesetzt.
+
+Die Mitwirkung an pica-rs ist sehr erwünscht. Wir würden Sie bitten,
+mögliche Fehler, Fragen und neue Ideen als GitHub-Issues (LINK)
+anzulegen. Diese werden wir dann intern beraten und möglichst zeitnah
+ein Feedback geben. 
+
+Die Installation des Toolkits und alle Kommandos sind in der
+Dokumentation beschrieben.
 
 <!-- ## About -->
 
