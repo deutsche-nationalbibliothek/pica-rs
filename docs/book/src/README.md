@@ -1,26 +1,51 @@
-# pica-rs
+<p align="center"><img  height="250" width="250" src="images/pica-rs_logo.png"></p>
+
+<center>
 
 [![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/workflows/CI/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions?query=workflow%3ACI+branch%3Amain)
 [![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/)
 [![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs)
 
+</center>
+
 Das Toolkit _pica-rs_ ermöglicht eine effiziente Verarbeitung von
 bibliografischen Metadaten, die in PICA+, dem internen Format des
-[_OCLC_]-Katalogsystems, kodiert sind. Mithilfe verschiedener
-[_Kommandos_] können aus den Metadaten elementare statistische Größen
-ermittelt und aufbereitet werden. Zudem kann das Toolkit als
-Brückentechnologie fungieren, um Metadaten für populäre Frameworks wie
-[_Pandas_] oder [_Polars_] (Python), in Programmiersprachen wie [_R_]
-oder für Excel nutzbar zu machen. Darüber hinaus eignet sich das Toolkit
-für die Automatisierung von Metadaten-Workflows.
+[OCLC]-Katalogsystems, kodiert sind. Mithilfe verschiedener [Kommandos]
+können aus den Metadaten elementare statistische Größen ermittelt und
+aufbereitet werden. Zudem kann das Toolkit als Brückentechnologie
+fungieren, um Metadaten für populäre Frameworks wie [Pandas] oder
+[Polars] (Python), in Programmiersprachen wie [R] oder für Excel nutzbar
+zu machen.
+
+Das Projekt ist eine Entwicklung des Referats _Automatische
+Erschließungsverfahren; Netzpublikationen_ (AEN) der [Deutschen
+Nationalbibliothek][DNB] (DNB). Es wird für die Erstellung von
+Datenanalysen sowie für die Automatisierung von Metadaten-Workflows
+(Datenmanagement) im Rahmen der [automatischen Inhaltserschließung][AE]
+genutzt. Weiterhin wird es zur Unterstützung der Forschungsarbeiten im
+Projekt [Automatisches Erschließungssystem][KI] und für diverse andere
+Datenanalysen in der DNB eingesetzt.
+
+Die Mitwirkung an _pica-rs_ ist sehr erwünscht. Wir würden Sie bitten,
+mögliche Fehler, Fragen und neue Ideen als [GitHub-Issues][Issues]
+anzulegen. Diese werden wir dann intern beraten und möglichst zeitnah
+ein Feedback geben.
 
 ## Verwandte Projekte
 
 - [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) — Catmandu modules for working with PICA+ data
 - [Metafacture](https://github.com/metafacture) — Tool suite for metadata processing
 
-[_Kommandos_]: referenz/kommandos/index.md
-[_OCLC_]: https://www.oclc.org/de/
-[_Pandas_]: https://pandas.pydata.org/
-[_Polars_]: https://www.pola.rs/
-[_R_]: https://www.r-project.org/
+
+[AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
+[DNB]: https://www.dnb.de/
+[Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/
+[Installation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/anleitungen/installation.html
+[Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
+[KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
+[Kommandos]: referenz/kommandos/index.md
+[OCLC]: https://www.oclc.org/
+[Pandas]: https://pandas.pydata.org/
+[Polars]: https://www.pola.rs/
+[R]: https://www.r-project.org/
+
