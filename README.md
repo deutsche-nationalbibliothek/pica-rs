@@ -1,4 +1,4 @@
-<p align="center"><img  height="200" src="./.github/pica-rs_logo.svg"></p>
+<p align="center"><img  height="250" src="./.github/pica-rs_logo.svg"></p>
 
 <!-- # pica-rs -->
 
