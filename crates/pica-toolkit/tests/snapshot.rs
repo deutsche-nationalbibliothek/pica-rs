@@ -34,14 +34,14 @@ fn cli_tests() {
 #[test]
 fn doc_tests() {
     trycmd::TestCases::new()
-        .case("../docs/book/src/referenz/kommandos/count.md")
-        .case("../docs/book/src/referenz/kommandos/filter.md")
-        .case("../docs/book/src/referenz/kommandos/frequency.md")
-        .case("../docs/book/src/referenz/kommandos/explode.md")
-        .case("../docs/book/src/referenz/kommandos/hash.md")
-        .case("../docs/book/src/referenz/kommandos/invalid.md")
-        .case("../docs/book/src/referenz/kommandos/partition.md")
-        .case("../docs/book/src/referenz/kommandos/print.md")
-        .case("../docs/book/src/referenz/kommandos/slice.md")
-        .case("../docs/book/src/referenz/kommandos/split.md");
+        .case("../../docs/book/src/referenz/kommandos/count.md")
+        .case("../../docs/book/src/referenz/kommandos/filter.md")
+        .case("../../docs/book/src/referenz/kommandos/frequency.md")
+        .case("../../docs/book/src/referenz/kommandos/explode.md")
+        .case("../../docs/book/src/referenz/kommandos/hash.md")
+        .case("../../docs/book/src/referenz/kommandos/invalid.md")
+        .case("../../docs/book/src/referenz/kommandos/partition.md")
+        .case("../../docs/book/src/referenz/kommandos/print.md")
+        .case("../../docs/book/src/referenz/kommandos/slice.md")
+        .case("../../docs/book/src/referenz/kommandos/split.md");
 }
