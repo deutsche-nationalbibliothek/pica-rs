@@ -1,14 +1,14 @@
 [workspace]
 resolver = "2"
-default-members = ["pica-toolkit"]
+default-members = ["crates/pica-toolkit"]
 
 members = [
-    "pica-lint",
-    "pica-matcher",
-    "pica-path",
-    "pica-record",
-    "pica-select",
-    "pica-toolkit"
+    "crates/pica-lint",
+    "crates/pica-matcher",
+    "crates/pica-path",
+    "crates/pica-record",
+    "crates/pica-select",
+    "crates/pica-toolkit"
 ]
 
 [workspace.package]
@@ -20,10 +20,10 @@ keywords = ["PICA+", "code4lib"]
 edition = "2021"
 
 [workspace.dependencies]
-pica-matcher = { version = "0.20", path = "./pica-matcher" }
-pica-path = { version = "0.20", path = "./pica-path" }
-pica-record = { version = "0.20", path = "./pica-record" }
-pica-select = { version = "0.20", path = "./pica-select" }
+pica-matcher = { version = "0.20", path = "./crates/pica-matcher" }
+pica-path = { version = "0.20", path = "./crates/pica-path" }
+pica-record = { version = "0.20", path = "./crates/pica-record" }
+pica-select = { version = "0.20", path = "./crates/pica-select" }
 
 anyhow = "1.0"
 arrow2 = "0.17"
