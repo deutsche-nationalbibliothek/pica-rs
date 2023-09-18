@@ -8,11 +8,11 @@ use pica_matcher::{
     RecordMatcher, TagMatcher,
 };
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
+use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
 use crate::progress::Progress;
-use crate::translit::translit_maybe2;
 use crate::util::{CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag, Config};
 
@@ -152,6 +152,12 @@ impl Filter {
             config.global
         );
 
+        let nf = if let Some(ref global) = config.global {
+            global.translit
+        } else {
+            None
+        };
+
         let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .append(self.append)
@@ -191,11 +197,8 @@ impl Filter {
             self.filter
         };
 
-        let filter_str = if let Some(ref global) = config.global {
-            translit_maybe2(&filter_str, global.translit)
-        } else {
-            filter_str
-        };
+        let filter_str =
+            NormalizationForm::translit_opt(filter_str, nf);
 
         let mut filter = match RecordMatcher::new(&filter_str) {
             Ok(f) => f,
@@ -208,19 +211,25 @@ impl Filter {
 
         if !self.and.is_empty() {
             for predicate in self.and.iter() {
-                filter = filter & RecordMatcher::new(predicate)?;
+                let predicate =
+                    NormalizationForm::translit_opt(predicate, nf);
+                filter = filter & RecordMatcher::new(&predicate)?;
             }
         }
 
         if !self.not.is_empty() {
             for predicate in self.not.iter() {
-                filter = filter & !RecordMatcher::new(predicate)?;
+                let predicate =
+                    NormalizationForm::translit_opt(predicate, nf);
+                filter = filter & !RecordMatcher::new(&predicate)?;
             }
         }
 
         if !self.or.is_empty() {
             for predicate in self.or.iter() {
-                filter = filter | RecordMatcher::new(predicate)?;
+                let predicate =
+                    NormalizationForm::translit_opt(predicate, nf);
+                filter = filter | RecordMatcher::new(&predicate)?;
             }
         }
 

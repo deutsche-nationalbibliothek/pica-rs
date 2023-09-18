@@ -11,13 +11,13 @@ use clap::Parser;
 use pica_matcher::{MatcherOptions, RecordMatcher};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
+use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 
 use crate::common::FilterList;
 use crate::config::Config;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
-use crate::translit::{translit_maybe, translit_maybe2};
 use crate::util::CliResult;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -75,12 +75,8 @@ pub(crate) struct Select {
 
     /// Transliterate output into the selected normal form <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
-    #[arg(long,
-          value_name = "NF",
-          value_parser = ["nfd", "nfkd", "nfc", "nfkc"],
-          hide_possible_values = true,
-    )]
-    translit: Option<String>,
+    #[arg(long = "translit", value_name = "NF")]
+    nf: Option<NormalizationForm>,
 
     /// Comma-separated list of column names
     #[arg(long, short = 'H')]
@@ -182,7 +178,7 @@ impl Select {
         );
 
         let mut seen = BTreeSet::new();
-        let translit = if let Some(ref global) = config.global {
+        let nf = if let Some(ref global) = config.global {
             global.translit
         } else {
             None
@@ -195,33 +191,26 @@ impl Select {
             .merge(self.merge);
 
         let matcher = if let Some(matcher_str) = self.filter {
-            let mut matcher = RecordMatcher::new(&translit_maybe2(
-                &matcher_str,
-                translit,
-            ))?;
+            let matcher_str =
+                NormalizationForm::translit_opt(matcher_str, nf);
+            let mut matcher = RecordMatcher::new(&matcher_str)?;
 
             for matcher_str in self.and.iter() {
-                matcher = matcher
-                    & RecordMatcher::new(&translit_maybe2(
-                        matcher_str,
-                        translit,
-                    ))?;
+                let matcher_str =
+                    NormalizationForm::translit_opt(matcher_str, nf);
+                matcher = matcher & RecordMatcher::new(&matcher_str)?;
             }
 
             for matcher_str in self.or.iter() {
-                matcher = matcher
-                    | RecordMatcher::new(&translit_maybe2(
-                        matcher_str,
-                        translit,
-                    ))?;
+                let matcher_str =
+                    NormalizationForm::translit_opt(matcher_str, nf);
+                matcher = matcher | RecordMatcher::new(&matcher_str)?;
             }
 
             for matcher_str in self.not.iter() {
-                matcher = matcher
-                    & !RecordMatcher::new(&translit_maybe2(
-                        matcher_str,
-                        translit,
-                    ))?;
+                let matcher_str =
+                    NormalizationForm::translit_opt(matcher_str, nf);
+                matcher = matcher & !RecordMatcher::new(&matcher_str)?;
             }
 
             Some(matcher)
@@ -241,14 +230,10 @@ impl Select {
             FilterList::default()
         };
 
-        let query = if let Some(ref global) = config.global {
-            Query::from_str(&translit_maybe2(
-                &self.query,
-                global.translit,
-            ))?
-        } else {
-            Query::from_str(&self.query)?
-        };
+        let query = Query::from_str(&NormalizationForm::translit_opt(
+            &self.query,
+            nf,
+        ))?;
 
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
@@ -321,15 +306,10 @@ impl Select {
                             }
 
                             if !row.iter().all(|col| col.is_empty()) {
-                                if self.translit.is_some() {
+                                if let Some(nf) = self.nf {
                                     writer.write_record(
-                                        row.iter().map(|s| {
-                                            translit_maybe(
-                                                s,
-                                                self.translit
-                                                    .as_deref(),
-                                            )
-                                        }),
+                                        row.iter()
+                                            .map(|s| nf.translit(s)),
                                     )?;
                                 } else {
                                     writer.write_record(row)?;
