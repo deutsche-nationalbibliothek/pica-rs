@@ -8,7 +8,8 @@ members = [
     "crates/pica-path",
     "crates/pica-record",
     "crates/pica-select",
-    "crates/pica-toolkit"
+    "crates/pica-toolkit",
+    "crates/pica-utils"
 ]
 
 [workspace.package]
@@ -24,6 +25,7 @@ pica-matcher = { version = "0.20", path = "./crates/pica-matcher" }
 pica-path = { version = "0.20", path = "./crates/pica-path" }
 pica-record = { version = "0.20", path = "./crates/pica-record" }
 pica-select = { version = "0.20", path = "./crates/pica-select" }
+pica-utils = { version = "0.20", path = "./crates/pica-utils" }
 
 anyhow = "1.0"
 arrow2 = "0.17"

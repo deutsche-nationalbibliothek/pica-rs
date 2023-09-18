@@ -8,12 +8,12 @@ use std::str::FromStr;
 use clap::{value_parser, Parser};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
+use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
-use crate::translit::{translit_maybe, translit_maybe2};
 use crate::util::CliResult;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -84,12 +84,8 @@ pub(crate) struct Frequency {
 
     /// Transliterate output into the selected normal form <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
-    #[arg(long,
-          value_name = "NF",
-          value_parser = ["nfd", "nfkd", "nfc", "nfkc"],
-          hide_possible_values = true,
-    )]
-    translit: Option<String>,
+    #[arg(long = "translit", value_name = "NF")]
+    nf: Option<NormalizationForm>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -119,8 +115,8 @@ impl Frequency {
         );
 
         let query = if let Some(ref global) = config.global {
-            Query::from_str(&translit_maybe2(
-                &self.query,
+            Query::from_str(&NormalizationForm::translit_opt(
+                self.query,
                 global.translit,
             ))?
         } else {
@@ -202,7 +198,7 @@ impl Frequency {
 
             let mut record = values
                 .iter()
-                .map(|s| translit_maybe(s, self.translit.as_deref()))
+                .map(|s| NormalizationForm::translit_opt(s, self.nf))
                 .collect::<Vec<_>>();
 
             record.push(frequency.to_string());

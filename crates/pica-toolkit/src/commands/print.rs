@@ -6,6 +6,7 @@ use std::str::FromStr;
 use bstr::ByteSlice;
 use clap::Parser;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 use termcolor::{
     Color, ColorChoice, ColorSpec, NoColor, StandardStream, WriteColor,
@@ -14,7 +15,6 @@ use termcolor::{
 use crate::config::Config;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
-use crate::translit::translit_maybe;
 use crate::util::{CliError, CliResult};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -84,11 +84,8 @@ pub(crate) struct Print {
     limit: usize,
 
     /// Transliterate output into the selected normal form <NF>
-    #[arg(long,
-          value_name = "NF",
-          value_parser = ["nfd", "nfkd", "nfc", "nfkc"]
-    )]
-    translit: Option<String>,
+    #[arg(long = "translit", value_name = "NF")]
+    nf: Option<NormalizationForm>,
 
     /// Specify color settings for use in the output
     #[arg(long,
@@ -200,11 +197,10 @@ impl Print {
                                 write!(writer, " ${code}")?;
 
                                 let value =
-                                    subfield.value().to_str_lossy();
-                                let value = translit_maybe(
-                                    &value,
-                                    self.translit.as_deref(),
-                                );
+                                    NormalizationForm::translit_opt(
+                                        subfield.value().to_str_lossy(),
+                                        self.nf,
+                                    );
 
                                 writer.set_color(&value_color)?;
                                 write!(writer, " {value}")?;

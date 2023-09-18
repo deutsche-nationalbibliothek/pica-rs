@@ -7,11 +7,11 @@ use pica_record::io::{
     ByteRecordWrite, ReaderBuilder, RecordsIterator, WriterBuilder,
 };
 use pica_record::{ByteRecord, Level};
+use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::progress::Progress;
-use crate::translit::translit_maybe2;
 use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag};
 
@@ -240,40 +240,33 @@ impl Explode {
             .strsim_threshold(self.strsim_threshold as f64 / 100.0)
             .case_ignore(self.ignore_case);
 
-        let translit = if let Some(ref global) = config.global {
+        let nf = if let Some(ref global) = config.global {
             global.translit
         } else {
             None
         };
 
         let matcher = if let Some(matcher_str) = self.filter {
-            let mut matcher = RecordMatcher::new(&translit_maybe2(
-                &matcher_str,
-                translit,
-            ))?;
+            let matcher_str =
+                NormalizationForm::translit_opt(matcher_str, nf);
+            let mut matcher = RecordMatcher::new(&matcher_str)?;
 
             for matcher_str in self.and.iter() {
-                matcher = matcher
-                    & RecordMatcher::new(&translit_maybe2(
-                        matcher_str,
-                        translit,
-                    ))?;
+                let matcher_str =
+                    NormalizationForm::translit_opt(matcher_str, nf);
+                matcher = matcher & RecordMatcher::new(&matcher_str)?;
             }
 
             for matcher_str in self.or.iter() {
-                matcher = matcher
-                    | RecordMatcher::new(&translit_maybe2(
-                        matcher_str,
-                        translit,
-                    ))?;
+                let matcher_str =
+                    NormalizationForm::translit_opt(matcher_str, nf);
+                matcher = matcher | RecordMatcher::new(&matcher_str)?;
             }
 
             for matcher_str in self.not.iter() {
-                matcher = matcher
-                    & !RecordMatcher::new(&translit_maybe2(
-                        matcher_str,
-                        translit,
-                    ))?;
+                let matcher_str =
+                    NormalizationForm::translit_opt(matcher_str, nf);
+                matcher = matcher & !RecordMatcher::new(&matcher_str)?;
             }
 
             Some(matcher)

@@ -3,21 +3,10 @@ use std::io::{self, BufWriter, Write};
 use std::path::{Path, PathBuf};
 
 use directories::ProjectDirs;
+use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 
 use crate::commands::*;
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub(crate) enum NormalizationForm {
-    #[serde(alias = "nfc")]
-    Nfc,
-    #[serde(alias = "nfkc")]
-    Nfkc,
-    #[serde(alias = "nfd")]
-    Nfd,
-    #[serde(alias = "nfkd")]
-    Nfkd,
-}
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
