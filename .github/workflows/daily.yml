@@ -9,9 +9,9 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -20,10 +20,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/registry/index/
             target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: actions-rs/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,9 +28,9 @@ jobs:
   upgrades:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -42,12 +39,9 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/registry/index/
             target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - run: |
+      - uses: dtolnay/rust-toolchain@stable
+      - name: "Install `cargo-upgrades`"
+        run: |
           cargo install -f cargo-upgrades
       - run: |
           cargo upgrades

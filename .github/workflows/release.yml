@@ -6,8 +6,7 @@ on:
     - 'v*'
 
 env:
-  # RUSTFLAGS: -D warnings -W unreachable-pub -W rust-2021-compatibility
-  RUSTFLAGS: -D warnings -W rust-2021-compatibility
+  RUSTFLAGS: -D warnings -W unreachable-pub -W rust-2021-compatibility
   RUSTUP_MAX_RETRIES: 10
   CARGO_INCREMENTAL: 0
 
@@ -42,8 +41,8 @@ jobs:
     steps:
       - name: "Print glibc version"
         run: ldd --version
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-cargo-stable-${{ matrix.target.triple }}-glibc${{ matrix.target.glibc }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -61,22 +60,15 @@ jobs:
       - name: "Install packages (CentOS)"
         if: ${{ startsWith(matrix.target.image, 'centos') }}
         run: yum install gcc -y
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --workspace
       - name: "Run prepare tests"
         run: ci/prepare-tests.sh
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --workspace
+      - run: |
+          cargo build --release --workspace
+          cargo test --release --workspace
       - name: "Strip release binary"
         run: |
           # strip target/release/pica-lint
@@ -111,8 +103,8 @@ jobs:
           - { triple: x86_64-pc-windows-msvc, variant: "MSVC" }
           - { triple: x86_64-pc-windows-gnu, variant: "GNU" }
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-cargo-stable-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -121,22 +113,16 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/registry/index/
             target/
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-          profile: minimal
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --workspace
       - name: "Run prepare tests"
         run: ci/prepare-tests.sh
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --workspace
+      - run: |
+          cargo build --release --workspace
+          cargo test --release --workspace
       - name: "Build release archive"
         id: build-archive
         shell: bash
@@ -163,8 +149,8 @@ jobs:
         target:
           - { triple: x86_64-apple-darwin }
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-cargo-stable-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -173,23 +159,16 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/registry/index/
             target/
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-          profile: minimal
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --workspace
       - name: "Run prepare tests"
         run: ci/prepare-tests.sh
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --workspace
+      - run: |
+          cargo build --release --workspace
+          cargo test --release --workspace
       - name: "Strip release binary"
         run: |
           strip target/release/pica-lint
@@ -226,9 +205,9 @@ jobs:
           - { triple: x86_64-unknown-linux-gnu, glibc: 2.35, format: deb }
           - { triple: x86_64-unknown-linux-gnu, glibc: 2.35, format: rpm }
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Download binary release
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: pica-${{ needs.version.outputs.VERSION }}-${{ matrix.target.triple }}-glibc${{ matrix.target.glibc }}.tar.gz
       - name: Extract binary release
@@ -243,7 +222,7 @@ jobs:
           arch: x86_64
           format: ${{ matrix.target.format }}
           package: .github/actions-rs/package.yaml
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.build_rpm.outputs.package }}
           path: ${{ steps.build_rpm.outputs.package }}
@@ -305,7 +284,7 @@ jobs:
       - version
     steps:
       - name: "Download releases/packages"
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
       - name: Assemble data
         run: |
           mkdir uploads/
