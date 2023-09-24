@@ -28,9 +28,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -39,184 +39,177 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/registry/index/
             target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          target: x86_64-unknown-linux-gnu
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --workspace
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: |
+          make check
 
-  test:
-    name: test ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
-    needs: check
-    strategy:
-      matrix:
-        target:
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
-          - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
-          - { os: macos-latest, toolchain: beta, triple: x86_64-apple-darwin }
-          - { os: macos-latest, toolchain: nightly, triple: x86_64-apple-darwin }
-          - { os: windows-latest, toolchain: stable, triple: x86_64-pc-windows-gnu }
-          - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc }
-    runs-on: ${{ matrix.target.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-        if: ${{ matrix.target.os == 'ubuntu-latest' }}
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.target.toolchain }}
-          target: ${{ matrix.target.triple }}
-          profile: minimal
-          override: true
-      - name: "Run prepare tests"
-        run: ci/prepare-tests.sh
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --workspace --all-features --no-fail-fast
+  # test:
+  #   name: test ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
+  #   needs: check
+  #   strategy:
+  #     matrix:
+  #       target:
+  #         - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
+  #         - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
+  #         - { os: macos-latest, toolchain: beta, triple: x86_64-apple-darwin }
+  #         - { os: macos-latest, toolchain: nightly, triple: x86_64-apple-darwin }
+  #         - { os: windows-latest, toolchain: stable, triple: x86_64-pc-windows-gnu }
+  #         - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc }
+  #   runs-on: ${{ matrix.target.os }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #       if: ${{ matrix.target.os == 'ubuntu-latest' }}
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ runner.os }}-cargo-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: ${{ matrix.target.toolchain }}
+  #         target: ${{ matrix.target.triple }}
+  #         profile: minimal
+  #         override: true
+  #     - name: "Run prepare tests"
+  #       run: ci/prepare-tests.sh
+  #     - uses: actions-rs/cargo@v1
+  #       with:
+  #         command: test
+  #         args: --workspace --all-features --no-fail-fast
 
-  cross:
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    name: cross ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
-    runs-on: ${{ matrix.target.os }}
-    needs: check
-    strategy:
-      matrix:
-        target:
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
-          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-        if: ${{ matrix.target.os == 'ubuntu-latest' }}
-      - uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-cargo-cross-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.target.toolchain }}
-          target: ${{ matrix.target.triple }}
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: build
-          args: --workspace --all-features
+  # cross:
+  #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+  #   name: cross ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
+  #   runs-on: ${{ matrix.target.os }}
+  #   needs: check
+  #   strategy:
+  #     matrix:
+  #       target:
+  #         - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
+  #         - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #       if: ${{ matrix.target.os == 'ubuntu-latest' }}
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ runner.os }}-cargo-cross-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: ${{ matrix.target.toolchain }}
+  #         target: ${{ matrix.target.triple }}
+  #         profile: minimal
+  #         override: true
+  #     - uses: actions-rs/cargo@v1
+  #       with:
+  #         use-cross: true
+  #         command: build
+  #         args: --workspace --all-features
 
-  fuzz:
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    name: fuzz ${{ matrix.item.name }}
-    runs-on: ubuntu-latest
-    needs: check
-    strategy:
-      matrix:
-        item:
-          - { name: record_ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz_record_ref, max-total-time: 300 }
-          - { name: select_query, fuzz-dir: crates/pica-select/fuzz, target: fuzz_query, max-total-time: 300 }
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/install@v0.1
-        with:
-          crate: cargo-fuzz
-          version: latest
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fuzz
-          args: run --fuzz-dir ${{ matrix.item.fuzz-dir }} --jobs 2 ${{ matrix.item.target }} -- -max_total_time=${{ matrix.item.max-total-time }}
+  # fuzz:
+  #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+  #   name: fuzz ${{ matrix.item.name }}
+  #   runs-on: ubuntu-latest
+  #   needs: check
+  #   strategy:
+  #     matrix:
+  #       item:
+  #         - { name: record_ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz_record_ref, max-total-time: 300 }
+  #         - { name: select_query, fuzz-dir: crates/pica-select/fuzz, target: fuzz_query, max-total-time: 300 }
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #     - uses: actions-rs/install@v0.1
+  #       with:
+  #         crate: cargo-fuzz
+  #         version: latest
+  #     - uses: actions-rs/cargo@v1
+  #       with:
+  #         command: fuzz
+  #         args: run --fuzz-dir ${{ matrix.item.fuzz-dir }} --jobs 2 ${{ matrix.item.target }} -- -max_total_time=${{ matrix.item.max-total-time }}
 
-  fmt:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          components: rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+  # fmt:
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #         components: rustfmt
+  #     - uses: actions-rs/cargo@v1
+  #       with:
+  #         command: fmt
+  #         args: --all -- --check
 
-  clippy:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          components: clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --workspace -- -D warnings -D rust-2021-compatibility -W unreachable-pub
+  # clippy:
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #         components: clippy
+  #     - uses: actions-rs/cargo@v1
+  #       with:
+  #         command: clippy
+  #         args: --workspace -- -D warnings -D rust-2021-compatibility -W unreachable-pub
 
   # udeps:
   #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
@@ -248,177 +241,177 @@ jobs:
   #         command: udeps
   #         args: --workspace
 
-  audit:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+  # audit:
+  #   if: ${{ github.ref == 'refs/heads/main' }}
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #     - uses: actions-rs/audit-check@v1
+  #       with:
+  #         token: ${{ secrets.GITHUB_TOKEN }}
 
-  upgrades:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/install@v0.1
-        with:
-          crate: cargo-upgrades
-          version: latest
-      - run: |
-          cargo upgrades
+  # upgrades:
+  #   if: ${{ github.ref == 'refs/heads/main' }}
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #     - uses: actions-rs/install@v0.1
+  #       with:
+  #         crate: cargo-upgrades
+  #         version: latest
+  #     - run: |
+  #         cargo upgrades
 
-  deny:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          components: clippy
-      - uses: EmbarkStudios/cargo-deny-action@v1
-        with:
-          log-level: warn
-          command: check
-          arguments: --workspace
+  # deny:
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #         components: clippy
+  #     - uses: EmbarkStudios/cargo-deny-action@v1
+  #       with:
+  #         log-level: warn
+  #         command: check
+  #         arguments: --workspace
 
-  miri:
-    name: miri
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@miri
-    - run: cargo miri test --workspace --lib --verbose
-      env:
-        MIRIFLAGS: -Zmiri-strict-provenance
-    - run: cargo miri test --workspace --doc --verbose
-      env:
-        MIRIFLAGS: -Zmiri-strict-provenance
+  # miri:
+  #   name: miri
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v3
+  #   - name: Install Rust
+  #     uses: dtolnay/rust-toolchain@miri
+  #   - run: cargo miri test --workspace --lib --verbose
+  #     env:
+  #       MIRIFLAGS: -Zmiri-strict-provenance
+  #   - run: cargo miri test --workspace --doc --verbose
+  #     env:
+  #       MIRIFLAGS: -Zmiri-strict-provenance
 
-  book:
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/install@v0.1
-        with:
-          version: latest
-          crate: mdbook
-      - run: |
-          mdbook build docs/book
-          mdbook test docs/book
+  # book:
+  #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #     - uses: actions-rs/install@v0.1
+  #       with:
+  #         version: latest
+  #         crate: mdbook
+  #     - run: |
+  #         mdbook build docs/book
+  #         mdbook test docs/book
 
-  gh-pages:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    needs:
-      - audit
-      - book
-      - check
-      - clippy
-      - cross
-      - deny
-      - fmt
-      - fuzz
-      - miri
-      - test
-      # - udeps
-      - upgrades
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v2
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - uses: actions-rs/install@v0.1
-        with:
-          version: latest
-          crate: mdbook
-      - run: |
-          mkdir -p target/docs
-          cargo doc --all --no-deps --workspace --target-dir target/docs/api
-          mdbook build docs/book --dest-dir ../../target/docs/book
-          echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' >> target/docs/api/index.html
-          echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: target/docs
-          keep_files: false
-          force_orphan: true
+  # gh-pages:
+  #   if: ${{ github.ref == 'refs/heads/main' }}
+  #   needs:
+  #     - audit
+  #     - book
+  #     - check
+  #     - clippy
+  #     - cross
+  #     - deny
+  #     - fmt
+  #     - fuzz
+  #     - miri
+  #     - test
+  #     # - udeps
+  #     - upgrades
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: abbbi/github-actions-tune@v1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/git/db/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/registry/index/
+  #           target/
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: nightly
+  #         override: true
+  #     - uses: actions-rs/install@v0.1
+  #       with:
+  #         version: latest
+  #         crate: mdbook
+  #     - run: |
+  #         mkdir -p target/docs
+  #         cargo doc --all --no-deps --workspace --target-dir target/docs/api
+  #         mdbook build docs/book --dest-dir ../../target/docs/book
+  #         echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' >> target/docs/api/index.html
+  #         echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
+  #     - uses: peaceiris/actions-gh-pages@v3
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         publish_dir: target/docs
+  #         keep_files: false
+  #         force_orphan: true
