@@ -80,44 +80,41 @@ jobs:
       - run: |
           make test
 
-  # cross:
-  #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-  #   name: cross ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
-  #   runs-on: ${{ matrix.target.os }}
-  #   needs: check
-  #   strategy:
-  #     matrix:
-  #       target:
-  #         - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-  #         - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
-  #         - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
-  #         - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
-  #         - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
-  #         - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: abbbi/github-actions-tune@v1
-  #       if: ${{ matrix.target.os == 'ubuntu-latest' }}
-  #     - uses: actions/cache@v2
-  #       with:
-  #         key: ${{ runner.os }}-cargo-cross-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
-  #         path: |
-  #           ~/.cargo/bin/
-  #           ~/.cargo/git/db/
-  #           ~/.cargo/registry/cache/
-  #           ~/.cargo/registry/index/
-  #           target/
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: ${{ matrix.target.toolchain }}
-  #         target: ${{ matrix.target.triple }}
-  #         profile: minimal
-  #         override: true
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         use-cross: true
-  #         command: build
-  #         args: --workspace --all-features
+  cross:
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+    name: cross ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
+    runs-on: ${{ matrix.target.os }}
+    needs: check
+    strategy:
+      matrix:
+        target:
+          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
+          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
+          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: abbbi/github-actions-tune@v1
+        if: ${{ matrix.target.os == 'ubuntu-latest' }}
+      - uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-cargo-cross-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/git/db/
+            ~/.cargo/registry/cache/
+            ~/.cargo/registry/index/
+            target/
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.target.toolchain }}
+          targets: ${{ matrix.target.triple }}
+      - name: "Install cross"
+        run: cargo install cross
+      - run: |
+          cross build --target ${{ matrix.target.triple }}
 
   # fuzz:
   #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
