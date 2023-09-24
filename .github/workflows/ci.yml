@@ -112,7 +112,7 @@ jobs:
           toolchain: ${{ matrix.target.toolchain }}
           targets: ${{ matrix.target.triple }}
       - name: "Install cross"
-        run: cargo install cross
+        run: cargo install -f cross
       - run: |
           cross build --target ${{ matrix.target.triple }}
 
