@@ -87,7 +87,7 @@ jobs:
           tar cfvz "$staging.tar.gz" "$staging/"
           echo "filename=$staging.tar.gz" >> $GITHUB_OUTPUT
           echo "ASSET_PATH=$staging.tar.gz" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.ASSET_PATH }}
           path: ${{ env.ASSET_PATH }}
@@ -134,7 +134,7 @@ jobs:
           cp "target/release/pica-lint.exe" "$staging/"
           7z a "$staging.zip" "$staging/"
           echo "ASSET_PATH=$staging.zip" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.ASSET_PATH }}
           path: ${{ env.ASSET_PATH }}
@@ -183,7 +183,7 @@ jobs:
           cp "target/release/pica" "$staging/"
           tar cfvz "$staging.tar.gz" "$staging/"
           echo "ASSET_PATH=$staging.tar.gz" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.ASSET_PATH }}
           path: ${{ env.ASSET_PATH }}
