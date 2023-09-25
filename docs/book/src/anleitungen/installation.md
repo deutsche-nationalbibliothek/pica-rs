@@ -25,11 +25,6 @@ Download bereit. Diese können mit folgendem Kommando installiert werden:
 $ rpm -i pica-0.20.0-glibc2.35-1.x86_64.rpm
 ```
 
-Für altere Distributionen (bspw. CentOS 7) stehen spezielle `RPM`-Pakete
-bereit, die eine ältere Version der
-[GNU C Library (glibc)](https://www.gnu.org/software/libc) verwenden
-(`2.17` und `2.31`).
-
 ## Binary-Releases
 
 Für die Betriebssysteme Linux, macOS und Windows stehen mit jeder neuen Version Binaries zum
