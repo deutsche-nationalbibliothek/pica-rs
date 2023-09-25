@@ -117,7 +117,6 @@ jobs:
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-          override: true
       - name: "Run prepare tests"
         run: ci/prepare-tests.sh
       - run: |
@@ -163,7 +162,6 @@ jobs:
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-          override: true
       - name: "Run prepare tests"
         run: ci/prepare-tests.sh
       - run: |
@@ -246,12 +244,12 @@ jobs:
     steps:
       - name: "Download Package (DEB)"
         if: ${{ !startsWith(matrix.target.name, 'CentOS') }}
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: pica_${{ needs.version.outputs.VERSION }}-glibc${{ matrix.target.glibc}}-1_amd64.deb
       - name: "Download Package (RPM)"
         if: ${{ startsWith(matrix.target.name, 'CentOS') }}
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: pica-${{ needs.version.outputs.VERSION }}-glibc${{ matrix.target.glibc }}-1.x86_64.rpm
       - name: Fix CentoOS8
