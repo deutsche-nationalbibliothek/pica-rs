@@ -5,7 +5,6 @@ use std::io;
 use bstr::ByteSlice;
 use thiserror::Error;
 
-use crate::parser::LF;
 use crate::{ByteRecord, ParsePicaError};
 
 type ParseResult<'a> = Result<ByteRecord<'a>, ParsePicaError>;
@@ -117,7 +116,7 @@ pub trait BufReadExt: io::BufRead {
             {
                 let mut buf = self.fill_buf()?;
 
-                while let Some(index) = buf.find_byte(LF) {
+                while let Some(index) = buf.find_byte(b'\n') {
                     let (line, rest) = buf.split_at(index + 1);
                     buf = rest;
                     consumed += line.len();
@@ -140,7 +139,7 @@ pub trait BufReadExt: io::BufRead {
             self.consume(consumed);
             consumed = 0;
 
-            self.read_until(LF, &mut bytes)?;
+            self.read_until(b'\n', &mut bytes)?;
             if bytes.is_empty() {
                 break;
             }
