@@ -22,13 +22,13 @@ pica-matcher = { workspace = true }
 pica-path = { workspace = true }
 pica-record = { workspace = true }
 pica-select = { workspace = true }
-quick-xml = { version = "0.30" }
+quick-xml = { version = "0.31" }
 rand = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 strsim = { version = "0.10" }
-termcolor = { version = "1.2" }
+termcolor = { version = "1.4" }
 toml = { workspace = true }
 unicode-normalization = { version = "0.1" }
 
@@ -37,7 +37,7 @@ assert_cmd = "2.0"
 predicates = "3.0"
 quickcheck = "1.0"
 quickcheck_macros = "1.0"
-tempfile = "3.7"
+tempfile = "3.8"
 trycmd = "0.14"
 
 [[bin]]
