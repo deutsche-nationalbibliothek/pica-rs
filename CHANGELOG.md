@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Changed
+
+## [0.21.0] - 2023-11-15
+
+### Changed
 
 * #698 Remove deprecated path syntax
 * #701 Move crates into `crates` dir
