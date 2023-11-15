@@ -13,7 +13,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.20.0"
+version = "0.21.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "MIT OR Unlicense"
 readme = "./README.md"
@@ -21,11 +21,11 @@ keywords = ["PICA+", "code4lib"]
 edition = "2021"
 
 [workspace.dependencies]
-pica-matcher = { version = "0.20", path = "./crates/pica-matcher" }
-pica-path = { version = "0.20", path = "./crates/pica-path" }
-pica-record = { version = "0.20", path = "./crates/pica-record" }
-pica-select = { version = "0.20", path = "./crates/pica-select" }
-pica-utils = { version = "0.20", path = "./crates/pica-utils" }
+pica-matcher = { version = "0.21", path = "./crates/pica-matcher" }
+pica-path = { version = "0.21", path = "./crates/pica-path" }
+pica-record = { version = "0.21", path = "./crates/pica-record" }
+pica-select = { version = "0.21", path = "./crates/pica-select" }
+pica-utils = { version = "0.21", path = "./crates/pica-utils" }
 
 anyhow = "1.0"
 arrow2 = "0.18"
