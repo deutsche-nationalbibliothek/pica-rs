@@ -277,7 +277,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_field() {
+    fn parse_field() {
+        use super::parse_field;
+
         macro_rules! parse_success {
             ($i:expr, $tag:expr, $occurrence:expr, $subfields:expr) => {
                 let field = Field::new($tag, $occurrence, $subfields);
@@ -318,5 +320,34 @@ mod tests {
         parse_error!(b"012!/01 \x1fabc\x1e");
         parse_error!(b"012A/0! \x1fabc\x1e");
         parse_error!(b"012A/00 \x1f!bc\x1e");
+    }
+
+    #[test]
+    fn field_new() {
+        assert_eq!(
+            Field::new("012A", None, vec![('a', "123"), ('b', "456")]),
+            Field {
+                tag: Tag::new("012A"),
+                occurrence: None,
+                subfields: vec![
+                    Subfield::new('a', "123"),
+                    Subfield::new('b', "456"),
+                ]
+            }
+        );
+
+        let field = Field::new("012A", Some("03"), vec![('a', "123")]);
+
+        assert_eq!(
+            field,
+            Field {
+                tag: Tag::new("012A"),
+                occurrence: Some(Occurrence::new("03")),
+                subfields: vec![
+                    Subfield::new('a', "123"),
+                    Subfield::new('b', "456"),
+                ]
+            }
+        );
     }
 }

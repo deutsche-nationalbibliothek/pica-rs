@@ -1,3 +1,4 @@
+use std::fmt::{self, Display};
 use std::io::{self, Write};
 
 use bstr::{BStr, ByteSlice};
@@ -111,9 +112,9 @@ impl<'a, T: AsRef<[u8]>> PartialEq<T> for Occurrence<'a> {
     }
 }
 
-impl<'a> ToString for Occurrence<'a> {
-    fn to_string(&self) -> String {
-        self.0.to_string()
+impl<'a> Display for Occurrence<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "/{}", self.0)
     }
 }
 
@@ -133,33 +134,128 @@ impl<'a> TryFrom<&'a BStr> for Occurrence<'a> {
 mod tests {
     use super::*;
 
+    use bstr::ByteSlice;
+    use std::io::Cursor;
+
     #[test]
-    fn test_parse_occurrence_digits() {
-        assert_eq!(
-            parse_occurrence_digits.parse_peek(b"00").unwrap(),
-            (b"".as_bytes(), b"00".as_bstr())
-        );
+    fn parse_occurrence_digits() {
+        use super::parse_occurrence_digits;
 
-        assert_eq!(
-            parse_occurrence_digits.parse_peek(b"01").unwrap(),
-            (b"".as_bytes(), b"01".as_bstr())
-        );
+        macro_rules! parse_success {
+            ($input:expr) => {
+                assert_eq!(
+                    parse_occurrence_digits.parse($input).unwrap(),
+                    $input.as_bstr()
+                );
+            };
+        }
 
-        assert_eq!(
-            parse_occurrence_digits.parse_peek(b"001").unwrap(),
-            (b"".as_bytes(), b"001".as_bstr())
-        );
+        parse_success!(b"00");
+        parse_success!(b"01");
+        parse_success!(b"000");
+        parse_success!(b"001");
 
-        assert!(parse_occurrence_digits.parse_peek(b"0a").is_err());
-        assert!(parse_occurrence_digits.parse_peek(b"").is_err());
-        assert!(parse_occurrence_digits.parse_peek(b"0").is_err());
+        assert!(parse_occurrence_digits.parse(b"").is_err());
+        assert!(parse_occurrence_digits.parse(b"0").is_err());
+        assert!(parse_occurrence_digits.parse(b"0001").is_err());
+        assert!(parse_occurrence_digits.parse(b"0a").is_err());
     }
 
     #[test]
-    fn test_parse_occurrence() {
+    fn parse_occurrence() {
+        macro_rules! parse_success {
+            ($input:expr) => {
+                assert_eq!(
+                    super::parse_occurrence.parse($input).unwrap(),
+                    Occurrence($input[1..].as_bstr())
+                );
+            };
+        }
+
+        parse_success!(b"/00");
+        parse_success!(b"/000");
+        parse_success!(b"/001");
+        parse_success!(b"/01");
+
+        macro_rules! parse_error {
+            ($input:expr) => {
+                assert!(super::parse_occurrence.parse($input).is_err());
+            };
+        }
+
+        parse_error!(b"");
+        parse_error!(b"/");
+        parse_error!(b"/0a");
+        parse_error!(b"/0001");
+        parse_error!(b"/0");
+    }
+
+    #[test]
+    fn occurrence_new() {
+        let _ = Occurrence::new("001");
+        let _ = Occurrence::new("00");
+    }
+
+    #[test]
+    #[should_panic]
+    fn occurrence_new_panic() {
+        Occurrence::new("00a");
+    }
+
+    #[test]
+    fn occurrence_from_bytes() {
         assert_eq!(
-            parse_occurrence.parse_peek(b"/01").unwrap(),
-            (b"".as_bytes(), Occurrence(b"01".as_bstr()))
+            Occurrence::from_bytes(b"/00").unwrap(),
+            Occurrence("00".into())
         );
+
+        assert_eq!(
+            Occurrence::from_bytes(b"/001").unwrap(),
+            Occurrence("001".into())
+        );
+
+        assert_eq!(
+            Occurrence::from_bytes(b"00").unwrap_err(),
+            ParsePicaError::InvalidOccurrence
+        );
+    }
+
+    #[test]
+    fn occurrence_try_from() {
+        assert_eq!(
+            Occurrence::try_from(b"00".as_bstr()).unwrap(),
+            Occurrence("00".into())
+        );
+
+        assert_eq!(
+            Occurrence::try_from(b"001".as_bstr()).unwrap(),
+            Occurrence("001".into())
+        );
+
+        assert_eq!(
+            Occurrence::try_from(b"/00".as_bstr()).unwrap_err(),
+            ParsePicaError::InvalidOccurrence
+        );
+    }
+
+    #[test]
+    fn occurrence_write_to() {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let occurrence = Occurrence::new("99");
+        let _ = occurrence.write_to(&mut writer);
+
+        assert_eq!(writer.into_inner(), b"/99");
+    }
+
+    #[test]
+    fn occurrence_eq() {
+        assert_eq!(Occurrence::new("003"), "003");
+        assert_eq!(Occurrence::new("03"), b"03");
+    }
+
+    #[test]
+    fn occurrence_to_string() {
+        let occurrence_str = format!("{}", Occurrence::new("002"));
+        assert_eq!(occurrence_str, "/002");
     }
 }
