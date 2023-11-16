@@ -13,7 +13,7 @@ pub struct Tag<'a>(&'a BStr);
 
 /// Parse a PICA+ tag.
 #[inline]
-pub(crate) fn parse_tag<'a>(i: &mut &'a [u8]) -> PResult<Tag<'a>> {
+pub fn parse_tag<'a>(i: &mut &'a [u8]) -> PResult<Tag<'a>> {
     (
         one_of([b'0', b'1', b'2']),
         one_of(|c: u8| c.is_ascii_digit()),
@@ -127,8 +127,9 @@ impl<'a> TryFrom<&'a BStr> for Tag<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use bstr::ByteSlice;
+
+    use super::*;
 
     #[test]
     fn parse_tag() {

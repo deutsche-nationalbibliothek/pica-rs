@@ -1,36 +1,37 @@
 use std::fmt::{self, Display};
 
-use winnow::combinator::alt;
-use winnow::error::ParserError;
-use winnow::stream::Stream;
-use winnow::token::{tag, take_until1};
+use winnow::ascii::{multispace0, multispace1};
+use winnow::combinator::{alt, delimited, fold_repeat, preceded};
+use winnow::error::{ContextError, ParserError};
+use winnow::prelude::*;
+use winnow::stream::{AsChar, Stream, StreamIsPartial};
+use winnow::token::{tag, take_till1};
 use winnow::{PResult, Parser};
 
-// use nom::branch::alt;
-// use nom::bytes::complete::{is_not, tag};
-// use nom::character::complete::{char, multispace0, multispace1};
-// use nom::combinator::{map, map_res, value, verify};
-// use nom::multi::fold_many0;
-// use nom::sequence::{delimited, preceded};
-// use nom::IResult;
-// use pica_record::parser::ParseResult;
+/// Boolean Operators.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BooleanOp {
+    And, // and, "&&"
+    Or,  // or, "||"
+}
 
-// /// Boolean Operators.
-// #[derive(Debug, Clone, PartialEq, Eq)]
-// pub enum BooleanOp {
-//     And, // and, "&&"
-//     Or,  // or, "||"
-// }
+/// Strip whitespaces from the beginning and end.
+pub(crate) fn ws<I, O, E: ParserError<I>, F>(
+    mut inner: F,
+) -> impl Parser<I, O, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar + Clone,
+    F: Parser<I, O, E>,
+{
+    move |i: &mut I| {
+        let _ = multispace0.parse_next(i)?;
+        let o = inner.parse_next(i);
+        let _ = multispace0.parse_next(i)?;
 
-// /// Strip whitespaces from the beginning and end.
-// pub(crate) fn ws<'a, F: 'a, O, E: nom::error::ParseError<&'a [u8]>>(
-//     inner: F,
-// ) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
-// where
-//     F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
-// {
-//     delimited(multispace0, inner, multispace0)
-// }
+        o
+    }
+}
 
 /// Relational Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -108,88 +109,111 @@ enum Quotes {
     Double,
 }
 
-// #[derive(Debug, Clone)]
-// enum StringFragment<'a> {
-//     Literal(&'a str),
-//     EscapedChar(char),
-//     EscapedWs,
-// }
-
-/// Parse a non-empty block of text that doesn't include \ or ".
-#[inline]
-fn parse_literal<'a, I: Stream, E: ParserError<I>>(
+fn parse_literal<'a, I, O, E>(
     quotes: Quotes,
-    i: I,
-) -> impl Parser<I, &str, E> {
-    move |i: &mut I| match quotes {
-        Quotes::Single => take_until1("\'\\")
-            .try_map(std::str::from_utf8)
-            .parse_next(i),
-        Quotes::Double => take_until1("\"\\")
-            .try_map(std::str::from_utf8)
-            .parse_next(i),
+) -> impl Parser<I, <I as Stream>::Slice, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar,
+    E: ParserError<I>,
+{
+    match quotes {
+        Quotes::Single => take_till1(['\'', '\\']),
+        Quotes::Double => take_till1(['"', '\\']),
     }
 }
 
-// /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
-// fn parse_escaped_char(
-//     quotes: Quotes,
-// ) -> impl Fn(&[u8]) -> ParseResult<char> { move |i: &[u8]| { let val
-//   = match quotes { Quotes::Single => '"', Quotes::Double => '\'', };
+fn parse_escaped_char<'a, I, O, E>(
+    quotes: Quotes,
+) -> impl Parser<I, char, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar + Clone,
+    E: ParserError<I>,
+{
+    let v = match quotes {
+        Quotes::Single => '\'',
+        Quotes::Double => '"',
+    };
 
-//         preceded(
-//             char('\\'),
-//             alt((
-//                 // parse_unicode,
-//                 value('\n', char('n')),
-//                 value('\r', char('r')),
-//                 value('\t', char('t')),
-//                 value('\u{08}', char('b')),
-//                 value('\u{0C}', char('f')),
-//                 value('\\', char('\\')),
-//                 value('/', char('/')),
-//                 value(val, char(val)),
-//             )),
-//         )(i)
-//     }
-// }
+    preceded(
+        '\\',
+        alt((
+            'n'.value('\n'),
+            'r'.value('\r'),
+            't'.value('\t'),
+            'b'.value('\u{08}'),
+            'f'.value('\u{0C}'),
+            '\\'.value('\\'),
+            '/'.value('/'),
+            v.value(v),
+        )),
+    )
+}
 
-// /// Combine parse_literal, parse_escaped_char into a StringFragment.
-// fn parse_fragment(
-//     quotes: Quotes,
-// ) -> impl Fn(&[u8]) -> ParseResult<StringFragment> { move |i: &[u8]|
-//   { alt(( map(parse_literal(quotes), StringFragment::Literal), map(
-//   parse_escaped_char(quotes), StringFragment::EscapedChar, ), value(
-//   StringFragment::EscapedWs, preceded(char('\\'), multispace1), ),
-//   ))(i) }
-// }
+#[derive(Debug, Clone)]
+enum StringFragment<'a> {
+    Literal(&'a str),
+    EscapedChar(char),
+    EscapedWs,
+}
 
-// fn parse_string_inner(
-//     quotes: Quotes,
-// ) -> impl Fn(&[u8]) -> ParseResult<String> { move |i: &[u8]| {
-//   fold_many0( parse_fragment(quotes), String::new, |mut string,
-//   fragment| { match fragment { StringFragment::Literal(s) =>
-//   string.push_str(s), StringFragment::EscapedChar(c) =>
-//   string.push(c), StringFragment::EscapedWs => {} } string }, )(i) }
-// }
+fn parse_quoted_fragment<'a, O, E: ParserError<&'a str>>(
+    quotes: Quotes,
+) -> impl Parser<&'a str, StringFragment<'a>, E> {
+    use StringFragment::*;
 
-// fn parse_string_single_quoted(i: &[u8]) -> ParseResult<String> {
-//     delimited(
-//         char('\''),
-//         parse_string_inner(Quotes::Single),
-//         char('\''),
-//     )(i)
-// }
+    alt((
+        parse_literal::<&'a str, O, E>(quotes).map(Literal),
+        parse_escaped_char::<&'a str, O, E>(quotes).map(EscapedChar),
+        preceded('\\', multispace1).value(EscapedWs),
+    ))
+}
 
-// fn parse_string_double_quoted(i: &[u8]) -> ParseResult<String> {
-//     delimited(char('"'), parse_string_inner(Quotes::Double),
-// char('"'))(         i,
-//     )
-// }
+fn parse_quoted_string<'a, O, E>(
+    quotes: Quotes,
+) -> impl Parser<&'a str, String, E>
+where
+    E: ParserError<&'a str>,
+{
+    use StringFragment::*;
 
-// pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
-//     alt((parse_string_single_quoted, parse_string_double_quoted))(i)
-// }
+    let string_builder = fold_repeat(
+        0..,
+        parse_quoted_fragment::<O, E>(quotes),
+        String::new,
+        |mut string, fragment| {
+            match fragment {
+                Literal(s) => string.push_str(s),
+                EscapedChar(c) => string.push(c),
+                EscapedWs => {}
+            }
+            string
+        },
+    );
+
+    match quotes {
+        Quotes::Single => delimited('\'', string_builder, '\''),
+        Quotes::Double => delimited('"', string_builder, '"'),
+    }
+}
+
+#[inline]
+fn parse_string_single_quoted<'a>(i: &mut &'a str) -> PResult<String> {
+    parse_quoted_string::<String, ContextError>(Quotes::Single)
+        .parse_next(i)
+}
+
+#[inline]
+fn parse_string_double_quoted<'a>(i: &mut &'a str) -> PResult<String> {
+    parse_quoted_string::<String, ContextError>(Quotes::Double)
+        .parse_next(i)
+}
+
+pub(crate) fn parse_string<'a>(i: &mut &'a str) -> PResult<String> {
+    alt((parse_string_single_quoted, parse_string_double_quoted))
+        .parse_next(i)
+}
 
 #[cfg(test)]
 mod tests {
@@ -258,23 +282,40 @@ mod tests {
     }
 
     #[test]
-    fn parse_literal() {
-        use super::parse_literal;
-        todo!()
+    fn parse_string_single_quoted() {
+        use super::parse_string_single_quoted;
+
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_string_single_quoted.parse($input).unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!("'abc'", "abc");
+        parse_success!("'a\"bc'", "a\"bc");
+        parse_success!("'a\\'bc'", "a'bc");
+        parse_success!("''", "");
     }
 
-    //     #[test]
-    //     fn test_parse_string() {
-    //         assert_done_and_eq!(parse_string(b"'abc'"),
-    // "abc".to_string());
-    // assert_done_and_eq!(parse_string(b"'\tc'"
-    // ), "\tc".to_string());         assert_done_and_eq!(
-    //             parse_string(b"\"abc\""),
-    //             "abc".to_string()
-    //         );
-    //         assert_done_and_eq!(
-    //             parse_string(b"\"\tc\""),
-    //             "\tc".to_string()
-    //         );
-    //     }
+    #[test]
+    fn parse_string_double_quoted() {
+        use super::parse_string_double_quoted;
+
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_string_double_quoted.parse($input).unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!("\"abc\"", "abc");
+        parse_success!("\"a\\\"bc\"", "a\"bc");
+        parse_success!("\"a\'bc\"", "a'bc");
+        parse_success!("\"\"", "");
+    }
 }
