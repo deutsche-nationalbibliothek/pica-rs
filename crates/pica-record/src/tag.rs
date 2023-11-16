@@ -18,7 +18,7 @@ pub fn parse_tag<'a>(i: &mut &'a [u8]) -> PResult<Tag<'a>> {
         one_of([b'0', b'1', b'2']),
         one_of(|c: u8| c.is_ascii_digit()),
         one_of(|c: u8| c.is_ascii_digit()),
-        one_of(|c: u8| (b'A'..=b'Z').contains(&c) || c == b'@'),
+        one_of(|c: u8| c.is_ascii_uppercase() || c == b'@'),
     )
         .recognize()
         .map(|tag| Tag(ByteSlice::as_bstr(tag)))

@@ -3,7 +3,6 @@ use std::fmt::{self, Display};
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{alt, delimited, fold_repeat, preceded};
 use winnow::error::{ContextError, ParserError};
-use winnow::prelude::*;
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
 use winnow::token::{tag, take_till1};
 use winnow::{PResult, Parser};
@@ -109,7 +108,7 @@ enum Quotes {
     Double,
 }
 
-fn parse_literal<'a, I, O, E>(
+fn parse_literal<I, E>(
     quotes: Quotes,
 ) -> impl Parser<I, <I as Stream>::Slice, E>
 where
@@ -123,9 +122,7 @@ where
     }
 }
 
-fn parse_escaped_char<'a, I, O, E>(
-    quotes: Quotes,
-) -> impl Parser<I, char, E>
+fn parse_escaped_char<I, E>(quotes: Quotes) -> impl Parser<I, char, E>
 where
     I: Stream + StreamIsPartial,
     <I as Stream>::Token: AsChar + Clone,
@@ -158,19 +155,19 @@ enum StringFragment<'a> {
     EscapedWs,
 }
 
-fn parse_quoted_fragment<'a, O, E: ParserError<&'a str>>(
+fn parse_quoted_fragment<'a, E: ParserError<&'a str>>(
     quotes: Quotes,
 ) -> impl Parser<&'a str, StringFragment<'a>, E> {
     use StringFragment::*;
 
     alt((
-        parse_literal::<&'a str, O, E>(quotes).map(Literal),
-        parse_escaped_char::<&'a str, O, E>(quotes).map(EscapedChar),
+        parse_literal::<&'a str, E>(quotes).map(Literal),
+        parse_escaped_char::<&'a str, E>(quotes).map(EscapedChar),
         preceded('\\', multispace1).value(EscapedWs),
     ))
 }
 
-fn parse_quoted_string<'a, O, E>(
+fn parse_quoted_string<'a, E>(
     quotes: Quotes,
 ) -> impl Parser<&'a str, String, E>
 where
@@ -180,7 +177,7 @@ where
 
     let string_builder = fold_repeat(
         0..,
-        parse_quoted_fragment::<O, E>(quotes),
+        parse_quoted_fragment::<E>(quotes),
         String::new,
         |mut string, fragment| {
             match fragment {
@@ -199,18 +196,16 @@ where
 }
 
 #[inline]
-fn parse_string_single_quoted<'a>(i: &mut &'a str) -> PResult<String> {
-    parse_quoted_string::<String, ContextError>(Quotes::Single)
-        .parse_next(i)
+fn parse_string_single_quoted(i: &mut &str) -> PResult<String> {
+    parse_quoted_string::<ContextError>(Quotes::Single).parse_next(i)
 }
 
 #[inline]
-fn parse_string_double_quoted<'a>(i: &mut &'a str) -> PResult<String> {
-    parse_quoted_string::<String, ContextError>(Quotes::Double)
-        .parse_next(i)
+fn parse_string_double_quoted(i: &mut &str) -> PResult<String> {
+    parse_quoted_string::<ContextError>(Quotes::Double).parse_next(i)
 }
 
-pub(crate) fn parse_string<'a>(i: &mut &'a str) -> PResult<String> {
+pub(crate) fn parse_string(i: &mut &str) -> PResult<String> {
     alt((parse_string_single_quoted, parse_string_double_quoted))
         .parse_next(i)
 }

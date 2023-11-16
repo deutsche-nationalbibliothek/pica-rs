@@ -11,10 +11,7 @@ pub enum TagMatcher<'a> {
     Pattern([Vec<u8>; 4]),
 }
 
-fn parse_fragment<'a>(
-    allowed: &[u8],
-    i: &mut &'a [u8],
-) -> PResult<Vec<u8>> {
+fn parse_fragment(allowed: &[u8], i: &mut &[u8]) -> PResult<Vec<u8>> {
     alt((
         one_of(|c: u8| allowed.contains(&c)).map(|c| vec![c]),
         '.'.value(allowed.to_vec()),
