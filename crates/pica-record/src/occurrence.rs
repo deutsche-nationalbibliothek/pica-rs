@@ -15,7 +15,9 @@ pub struct Occurrence<'a>(&'a BStr);
 
 /// Parse the digits of an PICA+ occurrence.
 #[inline]
-fn parse_occurrence_digits<'a>(i: &mut &'a [u8]) -> PResult<&'a BStr> {
+pub fn parse_occurrence_digits<'a>(
+    i: &mut &'a [u8],
+) -> PResult<&'a BStr> {
     take_while(2..=3, AsChar::is_dec_digit)
         .map(ByteSlice::as_bstr)
         .parse_next(i)
@@ -77,6 +79,24 @@ impl<'a> Occurrence<'a> {
             .map_err(|_| ParsePicaError::InvalidOccurrence)
     }
 
+    /// Creates an immutable PICA+ tag from a unchecked byte string.
+    ///
+    /// ```rust
+    /// use pica_record::Occurrence;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     assert_eq!(Occurrence::new(b"01"), "01");
+    ///     assert_ne!(Occurrence::new(b"01"), "02");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn from_unchecked(value: &'a BStr) -> Self {
+        Self(value)
+    }
+
     /// Write the occurrence into the given writer.
     ///
     /// # Example
@@ -132,10 +152,11 @@ impl<'a> TryFrom<&'a BStr> for Occurrence<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::io::Cursor;
 
     use bstr::ByteSlice;
-    use std::io::Cursor;
+
+    use super::*;
 
     #[test]
     fn parse_occurrence_digits() {
