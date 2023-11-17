@@ -17,8 +17,7 @@ pub struct Subfield<'a> {
 }
 
 /// Parse a PICA+ subfield code.
-#[inline]
-fn parse_subfield_code(i: &mut &[u8]) -> PResult<char> {
+pub fn parse_subfield_code(i: &mut &[u8]) -> PResult<char> {
     one_of((b'0'..=b'9', b'a'..=b'z', b'A'..=b'Z'))
         .map(char::from)
         .parse_next(i)
@@ -262,10 +261,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::io::Cursor;
 
     use bstr::ByteSlice;
-    use std::io::Cursor;
+
+    use super::*;
 
     #[test]
     fn parse_subfield_code() {

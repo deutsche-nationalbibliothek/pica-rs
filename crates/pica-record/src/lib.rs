@@ -35,7 +35,7 @@ pub mod parser {
 //    pub use super::field::parse_field;
 //    pub use super::occurrence::parse_occurrence;
     pub use super::occurrence::parse_occurrence_digits;
-//    pub use super::subfield::parse_subfield_code;
+    pub use super::subfield::parse_subfield_code;
 //    pub use super::subfield::parse_subfield_value;
     pub use super::tag::parse_tag;
 }

@@ -150,42 +150,42 @@ where
 
 #[derive(Debug, Clone)]
 enum StringFragment<'a> {
-    Literal(&'a str),
+    Literal(&'a [u8]),
     EscapedChar(char),
     EscapedWs,
 }
 
-fn parse_quoted_fragment<'a, E: ParserError<&'a str>>(
+fn parse_quoted_fragment<'a, E: ParserError<&'a [u8]>>(
     quotes: Quotes,
-) -> impl Parser<&'a str, StringFragment<'a>, E> {
+) -> impl Parser<&'a [u8], StringFragment<'a>, E> {
     use StringFragment::*;
 
     alt((
-        parse_literal::<&'a str, E>(quotes).map(Literal),
-        parse_escaped_char::<&'a str, E>(quotes).map(EscapedChar),
+        parse_literal::<&'a [u8], E>(quotes).map(Literal),
+        parse_escaped_char::<&'a [u8], E>(quotes).map(EscapedChar),
         preceded('\\', multispace1).value(EscapedWs),
     ))
 }
 
 fn parse_quoted_string<'a, E>(
     quotes: Quotes,
-) -> impl Parser<&'a str, String, E>
+) -> impl Parser<&'a [u8], Vec<u8>, E>
 where
-    E: ParserError<&'a str>,
+    E: ParserError<&'a [u8]>,
 {
     use StringFragment::*;
 
     let string_builder = fold_repeat(
         0..,
         parse_quoted_fragment::<E>(quotes),
-        String::new,
-        |mut string, fragment| {
+        Vec::new,
+        |mut acc, fragment| {
             match fragment {
-                Literal(s) => string.push_str(s),
-                EscapedChar(c) => string.push(c),
+                Literal(s) => acc.extend_from_slice(s),
+                EscapedChar(c) => acc.push(c as u8),
                 EscapedWs => {}
             }
-            string
+            acc
         },
     );
 
@@ -196,16 +196,16 @@ where
 }
 
 #[inline]
-fn parse_string_single_quoted(i: &mut &str) -> PResult<String> {
+fn parse_string_single_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
     parse_quoted_string::<ContextError>(Quotes::Single).parse_next(i)
 }
 
 #[inline]
-fn parse_string_double_quoted(i: &mut &str) -> PResult<String> {
+fn parse_string_double_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
     parse_quoted_string::<ContextError>(Quotes::Double).parse_next(i)
 }
 
-pub(crate) fn parse_string(i: &mut &str) -> PResult<String> {
+pub(crate) fn parse_string(i: &mut &[u8]) -> PResult<Vec<u8>> {
     alt((parse_string_single_quoted, parse_string_double_quoted))
         .parse_next(i)
 }
@@ -289,10 +289,10 @@ mod tests {
             };
         }
 
-        parse_success!("'abc'", "abc");
-        parse_success!("'a\"bc'", "a\"bc");
-        parse_success!("'a\\'bc'", "a'bc");
-        parse_success!("''", "");
+        parse_success!(b"'abc'", b"abc");
+        parse_success!(b"'a\"bc'", b"a\"bc");
+        parse_success!(b"'a\\'bc'", b"a'bc");
+        parse_success!(b"''", b"");
     }
 
     #[test]
@@ -308,9 +308,9 @@ mod tests {
             };
         }
 
-        parse_success!("\"abc\"", "abc");
-        parse_success!("\"a\\\"bc\"", "a\"bc");
-        parse_success!("\"a\'bc\"", "a'bc");
-        parse_success!("\"\"", "");
+        parse_success!(b"\"abc\"", b"abc");
+        parse_success!(b"\"a\\\"bc\"", b"a\"bc");
+        parse_success!(b"\"a\'bc\"", b"a'bc");
+        parse_success!(b"\"\"", b"");
     }
 }
