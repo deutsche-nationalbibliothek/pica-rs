@@ -43,7 +43,9 @@ fn parse_subfield_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
 }
 
 /// Parse the matcher expression from a byte slice.
-fn parse_exists_matcher(i: &mut &[u8]) -> PResult<ExistsMatcher> {
+pub(crate) fn parse_exists_matcher(
+    i: &mut &[u8],
+) -> PResult<ExistsMatcher> {
     terminated(parse_subfield_codes, '?')
         .map(|codes| ExistsMatcher { codes })
         .parse_next(i)
@@ -55,7 +57,7 @@ impl ExistsMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::ExistsMatcher;
+    /// use pica_matcher::subfield_matcher::ExistsMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -83,7 +85,7 @@ impl ExistsMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::ExistsMatcher;
+    /// use pica_matcher::subfield_matcher::ExistsMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -146,7 +148,7 @@ impl RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::RelationMatcher;
+    /// use pica_matcher::subfield_matcher::RelationMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -317,7 +319,7 @@ impl RegexMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::RegexMatcher;
+    /// use pica_matcher::subfield_matcher::RegexMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -401,7 +403,7 @@ impl InMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::InMatcher;
+    /// use pica_matcher::subfield_matcher::InMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -497,7 +499,7 @@ impl CardinalityMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::CardinalityMatcher;
+    /// use pica_matcher::subfield_matcher::CardinalityMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -609,7 +611,7 @@ impl SingletonMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::SingletonMatcher;
+    /// use pica_matcher::subfield_matcher::SingletonMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -674,7 +676,7 @@ impl SubfieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_matcher::SubfieldMatcher;
+    /// use pica_matcher::subfield_matcher::SubfieldMatcher;
     /// use pica_record::Subfield;
     ///
     /// # fn main() { example().unwrap(); }
@@ -726,7 +728,7 @@ fn parse_subfield_exists_matcher(
 }
 
 #[inline]
-fn parse_subfield_singleton_matcher(
+pub(crate) fn parse_subfield_singleton_matcher(
     i: &mut &[u8],
 ) -> PResult<SubfieldMatcher> {
     parse_singleton_matcher

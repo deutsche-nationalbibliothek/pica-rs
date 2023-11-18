@@ -1,4 +1,5 @@
-use pica_matcher::*;
+use pica_matcher::subfield_matcher::*;
+use pica_matcher::MatcherOptions;
 use pica_record::Subfield;
 
 #[test]

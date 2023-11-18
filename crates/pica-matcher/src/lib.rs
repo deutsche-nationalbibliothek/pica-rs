@@ -3,24 +3,20 @@
 
 mod common;
 mod error;
-mod subfield_matcher;
-// pub mod field_matcher;
+pub mod field_matcher;
 mod occurrence_matcher;
 mod options;
+pub mod subfield_matcher;
 // mod record_matcher;
 mod tag_matcher;
 
 pub use error::ParseMatcherError;
-// pub use field_matcher::FieldMatcher;
+pub use field_matcher::FieldMatcher;
 pub use occurrence_matcher::OccurrenceMatcher;
 pub use options::MatcherOptions;
 // pub use record_matcher::RecordMatcher;
 // pub use subfield_matcher::SubfieldMatcher;
-pub use subfield_matcher::ExistsMatcher;
-pub use subfield_matcher::{
-    CardinalityMatcher, InMatcher, RegexMatcher, RelationMatcher,
-    SingletonMatcher, SubfieldMatcher,
-};
+pub use subfield_matcher::SubfieldMatcher;
 pub use tag_matcher::TagMatcher;
 
 // /// Parsers recognizing matcher for PICA+ primitives.

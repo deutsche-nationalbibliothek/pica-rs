@@ -128,3 +128,17 @@ impl<'a> PartialEq<Tag<'_>> for TagMatcher<'a> {
         self.is_match(other)
     }
 }
+
+impl<'a> PartialEq<TagMatcher<'a>> for &Tag<'_> {
+    #[inline]
+    fn eq(&self, matcher: &TagMatcher) -> bool {
+        matcher.is_match(self)
+    }
+}
+
+impl<'a> PartialEq<&Tag<'_>> for TagMatcher<'a> {
+    #[inline]
+    fn eq(&self, other: &&Tag<'_>) -> bool {
+        self.is_match(other)
+    }
+}
