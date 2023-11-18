@@ -25,7 +25,7 @@ fn test_path_simple() -> anyhow::Result<()> {
 
     assert_eq!(
         record.path(&path, &Default::default()),
-        vec![&b"119232022".as_bstr()]
+        vec![b"119232022".as_bstr()]
     );
 
     Ok(())
@@ -38,7 +38,7 @@ fn test_path_matcher() -> anyhow::Result<()> {
 
     assert_eq!(
         record.path(&path, &Default::default()),
-        vec![&b"040743357".as_bstr()]
+        vec![b"040743357".as_bstr()]
     );
 
     Ok(())
@@ -47,7 +47,7 @@ fn test_path_matcher() -> anyhow::Result<()> {
 #[test]
 fn test_path_idn() -> anyhow::Result<()> {
     let record = ByteRecord::from_bytes(ada_lovelace())?;
-    assert_eq!(record.idn(), Some(&b"119232022".as_bstr()));
+    assert_eq!(record.idn(), Some(b"119232022".as_bstr()));
     Ok(())
 }
 
@@ -58,7 +58,7 @@ fn test_path_codes() -> anyhow::Result<()> {
 
     assert_eq!(
         record.path(&path, &Default::default()),
-        vec![&b"DE-386".as_bstr(), &b"DE-576".as_bstr()]
+        vec![b"DE-386".as_bstr(), b"DE-576".as_bstr()]
     );
 
     Ok(())
