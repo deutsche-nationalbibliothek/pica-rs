@@ -137,6 +137,14 @@ impl<'a> TryFrom<&'a [u8]> for OccurrenceMatcher<'a> {
     }
 }
 
+impl<'a> TryFrom<&'a str> for OccurrenceMatcher<'a> {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        Self::try_from(value.as_bytes())
+    }
+}
+
 impl<'a> From<Occurrence<'a>> for OccurrenceMatcher<'a> {
     fn from(value: Occurrence<'a>) -> Self {
         OccurrenceMatcher::Exact(value)

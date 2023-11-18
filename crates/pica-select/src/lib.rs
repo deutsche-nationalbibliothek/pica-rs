@@ -88,6 +88,14 @@ impl<'a> TryFrom<&'a [u8]> for Query<'a> {
     }
 }
 
+impl<'a> TryFrom<&'a String> for Query<'a> {
+    type Error = ParseQueryError;
+
+    fn try_from(value: &'a String) -> Result<Self, Self::Error> {
+        Self::try_from(value.as_bytes())
+    }
+}
+
 impl<'a> From<Path<'a>> for Query<'a> {
     fn from(path: Path<'a>) -> Self {
         Self(vec![path.into()])

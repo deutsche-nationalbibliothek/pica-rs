@@ -65,6 +65,14 @@ impl<'a> TryFrom<&'a [u8]> for RecordMatcher<'a> {
     }
 }
 
+impl<'a> TryFrom<&'a String> for RecordMatcher<'a> {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &'a String) -> Result<Self, Self::Error> {
+        Self::try_from(value.as_bytes())
+    }
+}
+
 impl<'a> BitAnd for RecordMatcher<'a> {
     type Output = Self;
 

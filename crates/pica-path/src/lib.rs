@@ -85,6 +85,13 @@ impl<'a> TryFrom<&'a [u8]> for Path<'a> {
         })
     }
 }
+impl<'a> TryFrom<&'a String> for Path<'a> {
+    type Error = ParsePathError;
+
+    fn try_from(value: &'a String) -> Result<Self, Self::Error> {
+        Self::try_from(value.as_bytes())
+    }
+}
 
 /// Strip whitespaces from the beginning and end.
 pub(crate) fn ws<I, O, E: ParserError<I>, F>(
@@ -105,9 +112,7 @@ where
 }
 
 #[inline]
-fn parse_subfield_code_range<'a>(
-    i: &mut &'a [u8],
-) -> PResult<Vec<char>> {
+fn parse_subfield_code_range(i: &mut &[u8]) -> PResult<Vec<char>> {
     separated_pair(parse_subfield_code, '-', parse_subfield_code)
         .verify(|(min, max)| min < max)
         .map(|(min, max)| (min..=max).collect())
@@ -115,16 +120,12 @@ fn parse_subfield_code_range<'a>(
 }
 
 #[inline]
-fn parse_subfield_code_single<'a>(
-    i: &mut &'a [u8],
-) -> PResult<Vec<char>> {
+fn parse_subfield_code_single(i: &mut &[u8]) -> PResult<Vec<char>> {
     parse_subfield_code.map(|code| vec![code]).parse_next(i)
 }
 
 #[inline]
-fn parse_subfield_code_list<'a>(
-    i: &mut &'a [u8],
-) -> PResult<Vec<char>> {
+fn parse_subfield_code_list(i: &mut &[u8]) -> PResult<Vec<char>> {
     delimited(
         '[',
         fold_repeat(
@@ -145,7 +146,7 @@ fn parse_subfield_code_list<'a>(
 }
 
 #[inline]
-fn parse_subfield_codes<'a>(i: &mut &'a [u8]) -> PResult<Vec<char>> {
+fn parse_subfield_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
     alt((parse_subfield_code_list, parse_subfield_code_single))
         .parse_next(i)
 }

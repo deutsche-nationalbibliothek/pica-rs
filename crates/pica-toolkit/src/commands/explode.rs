@@ -246,27 +246,44 @@ impl Explode {
             None
         };
 
-        let matcher = if let Some(matcher_str) = self.filter {
-            let matcher_str =
-                NormalizationForm::translit_opt(matcher_str, nf);
-            let mut matcher = RecordMatcher::new(&matcher_str)?;
+        let filter = self
+            .filter
+            .map(|value| NormalizationForm::translit_opt(value, nf));
 
-            for matcher_str in self.and.iter() {
-                let matcher_str =
-                    NormalizationForm::translit_opt(matcher_str, nf);
-                matcher = matcher & RecordMatcher::new(&matcher_str)?;
+        let not: Vec<_> = self
+            .not
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        let and: Vec<_> = self
+            .and
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        let or: Vec<_> = self
+            .or
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        let matcher = if let Some(ref matcher_str) = filter {
+            let mut matcher = RecordMatcher::try_from(matcher_str)?;
+
+            for matcher_str in and.iter() {
+                matcher =
+                    matcher & RecordMatcher::try_from(matcher_str)?;
             }
 
-            for matcher_str in self.or.iter() {
-                let matcher_str =
-                    NormalizationForm::translit_opt(matcher_str, nf);
-                matcher = matcher | RecordMatcher::new(&matcher_str)?;
+            for matcher_str in or.iter() {
+                matcher =
+                    matcher | RecordMatcher::try_from(matcher_str)?;
             }
 
-            for matcher_str in self.not.iter() {
-                let matcher_str =
-                    NormalizationForm::translit_opt(matcher_str, nf);
-                matcher = matcher & !RecordMatcher::new(&matcher_str)?;
+            for matcher_str in not.iter() {
+                matcher =
+                    matcher & !RecordMatcher::try_from(matcher_str)?;
             }
 
             Some(matcher)

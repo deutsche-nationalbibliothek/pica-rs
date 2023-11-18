@@ -332,7 +332,6 @@ impl<'a> ByteRecord<'a> {
         hasher.update(data);
 
         let result = hasher.finalize();
-        eprintln!("result = {:02X?}", result.to_vec());
         result.to_vec()
     }
 }

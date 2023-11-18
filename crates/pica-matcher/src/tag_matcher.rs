@@ -4,6 +4,8 @@ use winnow::combinator::{alt, delimited, fold_repeat, separated_pair};
 use winnow::token::one_of;
 use winnow::{PResult, Parser};
 
+use crate::ParseMatcherError;
+
 /// A matcher that matches against PICA+ [Tags](`pica_record::Tag`).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TagMatcher<'a> {
@@ -140,5 +142,15 @@ impl<'a> PartialEq<&Tag<'_>> for TagMatcher<'a> {
     #[inline]
     fn eq(&self, other: &&Tag<'_>) -> bool {
         self.is_match(other)
+    }
+}
+
+impl<'a> TryFrom<&'a str> for TagMatcher<'a> {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        parse_tag_matcher
+            .parse(value.as_bytes())
+            .map_err(|_| ParseMatcherError::InvalidTagMatcher)
     }
 }
