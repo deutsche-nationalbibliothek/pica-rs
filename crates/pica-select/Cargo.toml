@@ -8,13 +8,13 @@ keywords.workspace = true
 edition.workspace = true
 
 [dependencies]
-nom = { workspace = true }
+bstr = { workspace = true }
 pica-matcher = { workspace = true }
 pica-path = { workspace = true }
 pica-record = { workspace = true }
 thiserror = { workspace = true }
+winnow = { workspace = true, features = ["simd"] }
 
 [dev-dependencies]
 bstr = { workspace = true }
-nom-test-helpers = "6.1"
 anyhow = { workspace = true }
