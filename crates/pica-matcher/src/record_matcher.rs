@@ -1,115 +1,99 @@
-use std::fmt::{self, Display};
 use std::ops::{BitAnd, BitOr, Not};
-use std::str::FromStr;
 
-use nom::combinator::all_consuming;
-use nom::Finish;
+use bstr::ByteSlice;
 use pica_record::Record;
 #[cfg(feature = "serde")]
 use serde::Deserialize;
+use winnow::Parser;
 
 use crate::common::BooleanOp;
 use crate::field_matcher::parse_field_matcher;
 use crate::{FieldMatcher, MatcherOptions, ParseMatcherError};
 
 /// A Matcher that works on PICA+ [Records](pica_record::Record).
-#[derive(Debug, PartialEq, Eq)]
-pub struct RecordMatcher {
-    pub(crate) field_matcher: FieldMatcher,
-    pub(crate) matcher_str: String,
+#[derive(Debug)]
+pub struct RecordMatcher<'a> {
+    pub(crate) field_matcher: FieldMatcher<'a>,
 }
 
-impl RecordMatcher {
+impl<'a> RecordMatcher<'a> {
     /// Create a new field matcher from a string slice.
     ///
     /// # Example
     ///
     /// ```rust
     /// use pica_matcher::RecordMatcher;
-    /// use pica_record::RecordRef;
+    /// use pica_record::Record;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = RecordMatcher::new("003@?")?;
+    ///     let matcher = RecordMatcher::new("003@?");
     ///     let record =
-    ///         RecordRef::new(vec![("003@", None, vec![('0', "abc")])]);
+    ///         Record::new(vec![("003@", None, vec![('0', "abc")])]);
     ///
     ///     assert!(matcher.is_match(&record, &Default::default()));
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(data: &str) -> Result<Self, ParseMatcherError> {
-        all_consuming(parse_field_matcher)(data.as_bytes())
-            .finish()
-            .map_err(|_| {
-                ParseMatcherError::InvalidRecordMatcher(data.into())
-            })
-            .map(|(_, matcher)| Self {
-                field_matcher: matcher,
-                matcher_str: data.into(),
-            })
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+        Self::try_from(data.as_ref()).expect("record matcher")
     }
 
     /// Returns `true` if the given record matches against the record
     /// matcher.
-    pub fn is_match<T: AsRef<[u8]>>(
+    pub fn is_match(
         &self,
-        record: &Record<T>,
+        record: &Record,
         options: &MatcherOptions,
     ) -> bool {
         self.field_matcher.is_match(record.iter(), options)
     }
 }
 
-impl Display for RecordMatcher {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.matcher_str)
+impl<'a> TryFrom<&'a [u8]> for RecordMatcher<'a> {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+        let matcher_str = value.to_str_lossy().to_string();
+
+        parse_field_matcher
+            .parse(value)
+            .map(|field_matcher| RecordMatcher { field_matcher })
+            .map_err(|_| {
+                ParseMatcherError::InvalidRecordMatcher(matcher_str)
+            })
     }
 }
 
-impl FromStr for RecordMatcher {
-    type Err = ParseMatcherError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::new(s)
-    }
-}
-
-impl BitAnd for RecordMatcher {
+impl<'a> BitAnd for RecordMatcher<'a> {
     type Output = Self;
-    fn bitand(self, rhs: Self) -> Self::Output {
-        let matcher_str =
-            format!("({}) && ({})", self.matcher_str, rhs.matcher_str);
 
+    fn bitand(self, rhs: Self) -> Self::Output {
         RecordMatcher {
             field_matcher: FieldMatcher::Composite {
                 lhs: Box::new(self.field_matcher),
                 op: BooleanOp::And,
                 rhs: Box::new(rhs.field_matcher),
             },
-            matcher_str,
         }
     }
 }
 
-impl BitOr for RecordMatcher {
+impl<'a> BitOr for RecordMatcher<'a> {
     type Output = Self;
-    fn bitor(self, rhs: Self) -> Self::Output {
-        let matcher_str =
-            format!("({}) || ({})", self.matcher_str, rhs.matcher_str);
 
+    fn bitor(self, rhs: Self) -> Self::Output {
         RecordMatcher {
             field_matcher: FieldMatcher::Composite {
                 lhs: Box::new(self.field_matcher),
                 op: BooleanOp::Or,
                 rhs: Box::new(rhs.field_matcher),
             },
-            matcher_str,
         }
     }
 }
 
-impl Not for RecordMatcher {
+impl<'a> Not for RecordMatcher<'a> {
     type Output = Self;
 
     fn not(self) -> Self::Output {
@@ -117,18 +101,18 @@ impl Not for RecordMatcher {
             field_matcher: FieldMatcher::Not(Box::new(
                 self.field_matcher,
             )),
-            matcher_str: format!("!({})", self.matcher_str),
         }
     }
 }
 
 #[cfg(feature = "serde")]
-impl<'de> Deserialize<'de> for RecordMatcher {
+impl<'a, 'de: 'a> Deserialize<'de> for RecordMatcher<'a> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
-        RecordMatcher::from_str(&s).map_err(serde::de::Error::custom)
+        let s: &'de str = Deserialize::deserialize(deserializer)?;
+        RecordMatcher::try_from(s.as_bytes())
+            .map_err(serde::de::Error::custom)
     }
 }
