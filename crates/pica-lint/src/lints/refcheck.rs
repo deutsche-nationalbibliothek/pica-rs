@@ -49,7 +49,7 @@ impl Lint for RefCheck {
                 let idn = record.idn().unwrap().to_owned();
                 self.unseen
                     .entry(value.to_owned().into())
-                    .and_modify(|e| e.push(idn.into()))
+                    .and_modify(|e| e.push(idn.clone()))
                     .or_insert_with(|| vec![idn.into()]);
             }
         }

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::create_dir;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use bstr::ByteSlice;
 use clap::Parser;
@@ -79,7 +80,7 @@ pub(crate) struct Partition {
 
 impl Partition {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let path = Path::try_from(&self.path)?;
+        let path = Path::from_str(&self.path)?;
         let gzip_compression = gzip_flag!(self.gzip, config.partition);
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,

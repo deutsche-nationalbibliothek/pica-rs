@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 use std::ops::{Deref, Index};
 
-use bstr::{BStr, ByteSlice};
+use bstr::{BStr, BString, ByteSlice};
 use winnow::token::one_of;
 use winnow::{PResult, Parser};
 
@@ -9,11 +9,15 @@ use crate::{Level, ParsePicaError};
 
 /// An immutable PICA+ tag.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Tag<'a>(&'a BStr);
+pub struct TagRef<'a>(&'a BStr);
+
+/// A mutable PICA+ tag.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Tag(BString);
 
 /// Parse a PICA+ tag.
 #[inline]
-pub fn parse_tag<'a>(i: &mut &'a [u8]) -> PResult<Tag<'a>> {
+pub fn parse_tag<'a>(i: &mut &'a [u8]) -> PResult<TagRef<'a>> {
     (
         one_of([b'0', b'1', b'2']),
         one_of(|c: u8| c.is_ascii_digit()),
@@ -21,11 +25,11 @@ pub fn parse_tag<'a>(i: &mut &'a [u8]) -> PResult<Tag<'a>> {
         one_of(|c: u8| c.is_ascii_uppercase() || c == b'@'),
     )
         .recognize()
-        .map(|tag| Tag(ByteSlice::as_bstr(tag)))
+        .map(|tag| TagRef(ByteSlice::as_bstr(tag)))
         .parse_next(i)
 }
 
-impl<'a> Tag<'a> {
+impl<'a> TagRef<'a> {
     /// Create a new PICA+ tag.
     ///
     /// # Panics
@@ -55,12 +59,12 @@ impl<'a> Tag<'a> {
     /// If an invalid tag is given, an error is returned.
     ///
     /// ```rust
-    /// use pica_record::Tag;
+    /// use pica_record::TagRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     assert!(Tag::from_bytes(b"003@").is_ok());
-    ///     assert!(Tag::from_bytes(b"!03@").is_err());
+    ///     assert!(TagRef::from_bytes(b"003@").is_ok());
+    ///     assert!(TagRef::from_bytes(b"!03@").is_err());
     ///     Ok(())
     /// }
     /// ```
@@ -82,14 +86,14 @@ impl<'a> Tag<'a> {
     }
 }
 
-impl<'a, T: AsRef<[u8]>> PartialEq<T> for Tag<'a> {
+impl<'a, T: AsRef<[u8]>> PartialEq<T> for TagRef<'a> {
     #[inline]
     fn eq(&self, other: &T) -> bool {
         self.0 == other.as_ref()
     }
 }
 
-impl<'a> Deref for Tag<'a> {
+impl<'a> Deref for TagRef<'a> {
     type Target = BStr;
 
     #[inline]
@@ -98,7 +102,7 @@ impl<'a> Deref for Tag<'a> {
     }
 }
 
-impl<'a> Index<usize> for Tag<'a> {
+impl<'a> Index<usize> for TagRef<'a> {
     type Output = u8;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -107,13 +111,13 @@ impl<'a> Index<usize> for Tag<'a> {
     }
 }
 
-impl<'a> Display for Tag<'a> {
+impl<'a> Display for TagRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<'a> TryFrom<&'a BStr> for Tag<'a> {
+impl<'a> TryFrom<&'a BStr> for TagRef<'a> {
     type Error = ParsePicaError;
 
     fn try_from(value: &'a BStr) -> Result<Self, Self::Error> {
@@ -122,6 +126,30 @@ impl<'a> TryFrom<&'a BStr> for Tag<'a> {
         }
 
         Ok(Self(value))
+    }
+}
+
+impl Tag {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(value: &T) -> Self {
+        TagRef::new(value).into()
+    }
+}
+
+impl From<TagRef<'_>> for Tag {
+    fn from(value: TagRef<'_>) -> Self {
+        Tag(value.0.into())
+    }
+}
+
+impl PartialEq<TagRef<'_>> for Tag {
+    fn eq(&self, other: &TagRef<'_>) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl<T: AsRef<[u8]>> PartialEq<T> for Tag {
+    fn eq(&self, other: &T) -> bool {
+        self.0 == other.as_ref()
     }
 }
 
@@ -138,7 +166,7 @@ mod tests {
         for tag in ["003@", "002@", "123@", "247C"] {
             assert_eq!(
                 parse_tag.parse(tag.as_bytes()).unwrap(),
-                Tag(tag.as_bytes().into())
+                TagRef(tag.as_bytes().into())
             );
         }
 
@@ -150,14 +178,14 @@ mod tests {
     #[test]
     fn tag_new() {
         for i in ["003@", "101@", "203@"] {
-            assert_eq!(Tag::new(i), Tag(i.as_bytes().as_bstr()));
+            assert_eq!(TagRef::new(i), TagRef(i.as_bytes().as_bstr()));
         }
     }
 
     #[test]
     #[should_panic]
     fn tag_new_panic() {
-        Tag::new("403@");
+        TagRef::new("403@");
     }
 
     #[test]
@@ -166,14 +194,14 @@ mod tests {
             let bytes = i.as_bytes();
 
             assert_eq!(
-                Tag::from_bytes(bytes).unwrap(),
-                Tag(bytes.as_bstr())
+                TagRef::from_bytes(bytes).unwrap(),
+                TagRef(bytes.as_bstr())
             );
         }
 
         for i in ["003@0", "403@", "03@"] {
             assert_eq!(
-                Tag::from_bytes(i.as_bytes()).unwrap_err(),
+                TagRef::from_bytes(i.as_bytes()).unwrap_err(),
                 ParsePicaError::InvalidTag
             );
         }
@@ -185,14 +213,14 @@ mod tests {
             let bytes = i.as_bytes();
 
             assert_eq!(
-                Tag::try_from(bytes.as_bstr()).unwrap(),
-                Tag(bytes.as_bstr())
+                TagRef::try_from(bytes.as_bstr()).unwrap(),
+                TagRef(bytes.as_bstr())
             );
         }
 
         for i in ["003@0", "403@", "03@"] {
             assert_eq!(
-                Tag::try_from(i.as_bytes().as_bstr()).unwrap_err(),
+                TagRef::try_from(i.as_bytes().as_bstr()).unwrap_err(),
                 ParsePicaError::InvalidTag
             );
         }
@@ -200,31 +228,31 @@ mod tests {
 
     #[test]
     fn tag_level() {
-        let tag = Tag::new("003@");
+        let tag = TagRef::new("003@");
         assert_eq!(tag.level(), Level::Main);
 
-        let tag = Tag::new("101@");
+        let tag = TagRef::new("101@");
         assert_eq!(tag.level(), Level::Local);
 
-        let tag = Tag::new("203@");
+        let tag = TagRef::new("203@");
         assert_eq!(tag.level(), Level::Copy);
     }
 
     #[test]
     fn tag_eq() {
-        assert_eq!(Tag::new("003@"), b"003@");
-        assert_eq!(Tag::new("003@"), "003@");
+        assert_eq!(TagRef::new("003@"), b"003@");
+        assert_eq!(TagRef::new("003@"), "003@");
     }
 
     #[test]
     fn tag_deref() {
-        let tag = Tag::new("003@");
+        let tag = TagRef::new("003@");
         assert_eq!(tag.len(), 4);
     }
 
     #[test]
     fn tag_index() {
-        let tag = Tag::new("003@");
+        let tag = TagRef::new("003@");
         assert_eq!(tag[0], b'0');
         assert_eq!(tag[1], b'0');
         assert_eq!(tag[2], b'3');
@@ -234,13 +262,13 @@ mod tests {
     #[test]
     #[should_panic]
     fn tag_index_panic() {
-        let tag = Tag::new("003@");
+        let tag = TagRef::new("003@");
         assert_eq!(tag[4], b'0');
     }
 
     #[test]
     fn tag_to_string() {
-        let tag_str = format!("{}", Tag::new("003@"));
+        let tag_str = format!("{}", TagRef::new("003@"));
         assert_eq!(tag_str, "003@");
     }
 }

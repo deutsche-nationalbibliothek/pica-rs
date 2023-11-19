@@ -21,31 +21,31 @@ use winnow::token::take_till1;
 pub struct ParseSelectorError(String);
 
 #[derive(Debug)]
-pub enum QueryFragment<'a> {
-    Path(Path<'a>),
+pub enum QueryFragment {
+    Path(Path),
     Const(String),
 }
 
-impl<'a> From<Path<'a>> for QueryFragment<'a> {
-    fn from(value: Path<'a>) -> Self {
+impl From<Path> for QueryFragment {
+    fn from(value: Path) -> Self {
         Self::Path(value)
     }
 }
 
-impl<'a> From<String> for QueryFragment<'a> {
+impl From<String> for QueryFragment {
     fn from(value: String) -> Self {
         Self::Const(value)
     }
 }
 
 #[derive(Debug)]
-pub struct Query<'a>(Vec<QueryFragment<'a>>);
+pub struct Query(Vec<QueryFragment>);
 
 #[derive(Debug, Error)]
 #[error("invalid query, got `{0}`")]
 pub struct ParseQueryError(String);
 
-impl<'a> Query<'a> {
+impl Query {
     /// Create a new select query from a string slice.
     ///
     /// # Panics
@@ -64,23 +64,23 @@ impl<'a> Query<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("valid query expression.")
     }
 }
 
-impl<'a> Deref for Query<'a> {
-    type Target = Vec<QueryFragment<'a>>;
+impl Deref for Query {
+    type Target = Vec<QueryFragment>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> TryFrom<&'a [u8]> for Query<'a> {
+impl TryFrom<&[u8]> for Query {
     type Error = ParseQueryError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_query.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseQueryError(value)
@@ -88,16 +88,17 @@ impl<'a> TryFrom<&'a [u8]> for Query<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a String> for Query<'a> {
+impl TryFrom<&String> for Query {
     type Error = ParseQueryError;
 
-    fn try_from(value: &'a String) -> Result<Self, Self::Error> {
+    fn try_from(value: &String) -> Result<Self, Self::Error> {
         Self::try_from(value.as_bytes())
     }
 }
 
-impl<'a> From<Path<'a>> for Query<'a> {
-    fn from(path: Path<'a>) -> Self {
+impl From<Path> for Query {
+    #[inline]
+    fn from(path: Path) -> Self {
         Self(vec![path.into()])
     }
 }
@@ -210,9 +211,7 @@ pub(crate) fn parse_string(i: &mut &[u8]) -> PResult<Vec<u8>> {
         .parse_next(i)
 }
 
-fn parse_query_fragment<'a>(
-    i: &mut &'a [u8],
-) -> PResult<QueryFragment<'a>> {
+fn parse_query_fragment(i: &mut &[u8]) -> PResult<QueryFragment> {
     alt((
         parse_path.map(QueryFragment::Path),
         parse_string
@@ -222,7 +221,7 @@ fn parse_query_fragment<'a>(
     .parse_next(i)
 }
 
-fn parse_query<'a>(i: &mut &'a [u8]) -> PResult<Query<'a>> {
+fn parse_query(i: &mut &[u8]) -> PResult<Query> {
     separated(
         1..,
         parse_query_fragment,
@@ -528,9 +527,6 @@ impl QueryExt for Record<'_> {
 
 #[cfg(test)]
 mod tests {
-    //     use nom_test_helpers::assert_finished_and_eq;
-    //     use pica_record::Record;
-
     use super::*;
 
     macro_rules! s {

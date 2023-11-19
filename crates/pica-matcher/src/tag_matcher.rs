@@ -1,5 +1,7 @@
+use std::str::FromStr;
+
 use pica_record::parser::parse_tag;
-use pica_record::Tag;
+use pica_record::{Tag, TagRef};
 use winnow::combinator::{alt, delimited, fold_repeat, separated_pair};
 use winnow::token::one_of;
 use winnow::{PResult, Parser};
@@ -8,8 +10,8 @@ use crate::ParseMatcherError;
 
 /// A matcher that matches against PICA+ [Tags](`pica_record::Tag`).
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum TagMatcher<'a> {
-    Simple(Tag<'a>),
+pub enum TagMatcher {
+    Simple(Tag),
     Pattern([Vec<u8>; 4]),
 }
 
@@ -44,7 +46,7 @@ fn parse_fragment(allowed: &[u8], i: &mut &[u8]) -> PResult<Vec<u8>> {
 }
 
 #[inline]
-fn parse_pattern<'a>(i: &mut &'a [u8]) -> PResult<TagMatcher<'a>> {
+fn parse_pattern(i: &mut &[u8]) -> PResult<TagMatcher> {
     let p0 = parse_fragment(b"012", i)?;
     let p1 = parse_fragment(b"0123456789", i)?;
     let p2 = parse_fragment(b"0123456789", i)?;
@@ -54,34 +56,34 @@ fn parse_pattern<'a>(i: &mut &'a [u8]) -> PResult<TagMatcher<'a>> {
 }
 
 #[inline]
-fn parse_simple<'a>(i: &mut &'a [u8]) -> PResult<TagMatcher<'a>> {
-    parse_tag.map(TagMatcher::Simple).parse_next(i)
+fn parse_simple(i: &mut &[u8]) -> PResult<TagMatcher> {
+    parse_tag
+        .map(|tag| TagMatcher::Simple(Tag::from(tag)))
+        .parse_next(i)
 }
 
-pub fn parse_tag_matcher<'a>(
-    i: &mut &'a [u8],
-) -> PResult<TagMatcher<'a>> {
+pub fn parse_tag_matcher(i: &mut &[u8]) -> PResult<TagMatcher> {
     alt((parse_simple, parse_pattern)).parse_next(i)
 }
 
-impl<'a> TagMatcher<'a> {
+impl TagMatcher {
     /// Create a new tag matcher.
     ///
     /// # Example
     ///
     /// ```rust
     /// use pica_matcher::TagMatcher;
-    /// use pica_record::Tag;
+    /// use pica_record::TagRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher = TagMatcher::new("003@");
-    ///     assert_eq!(matcher, Tag::new("003@"));
+    ///     assert_eq!(matcher, TagRef::new("003@"));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<B: ?Sized + AsRef<[u8]>>(value: &'a B) -> Self {
+    pub fn new<B: ?Sized + AsRef<[u8]>>(value: &B) -> Self {
         parse_tag_matcher
             .parse(value.as_ref())
             .expect("tag matcher")
@@ -93,18 +95,18 @@ impl<'a> TagMatcher<'a> {
     ///
     /// ```rust
     /// use pica_matcher::TagMatcher;
-    /// use pica_record::Tag;
+    /// use pica_record::TagRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher = TagMatcher::new("00[3-5]@");
-    ///     assert!(matcher.is_match(&Tag::new("003@")));
-    ///     assert!(!matcher.is_match(&Tag::new("002@")));
+    ///     assert!(matcher.is_match(&TagRef::new("003@")));
+    ///     assert!(!matcher.is_match(&TagRef::new("002@")));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn is_match(&self, tag: &Tag) -> bool {
+    pub fn is_match(&self, tag: &TagRef) -> bool {
         match self {
             Self::Simple(lhs) => lhs == tag,
             Self::Pattern(pattern) => {
@@ -117,40 +119,40 @@ impl<'a> TagMatcher<'a> {
     }
 }
 
-impl<'a> PartialEq<TagMatcher<'a>> for Tag<'_> {
+impl PartialEq<TagMatcher> for TagRef<'_> {
     #[inline]
     fn eq(&self, matcher: &TagMatcher) -> bool {
         matcher.is_match(self)
     }
 }
 
-impl<'a> PartialEq<Tag<'_>> for TagMatcher<'a> {
+impl<'a> PartialEq<TagRef<'_>> for TagMatcher {
     #[inline]
-    fn eq(&self, other: &Tag<'_>) -> bool {
+    fn eq(&self, other: &TagRef<'_>) -> bool {
         self.is_match(other)
     }
 }
 
-impl<'a> PartialEq<TagMatcher<'a>> for &Tag<'_> {
+impl PartialEq<TagMatcher> for &TagRef<'_> {
     #[inline]
     fn eq(&self, matcher: &TagMatcher) -> bool {
         matcher.is_match(self)
     }
 }
 
-impl<'a> PartialEq<&Tag<'_>> for TagMatcher<'a> {
+impl PartialEq<&TagRef<'_>> for TagMatcher {
     #[inline]
-    fn eq(&self, other: &&Tag<'_>) -> bool {
+    fn eq(&self, other: &&TagRef<'_>) -> bool {
         self.is_match(other)
     }
 }
 
-impl<'a> TryFrom<&'a str> for TagMatcher<'a> {
-    type Error = ParseMatcherError;
+impl FromStr for TagMatcher {
+    type Err = ParseMatcherError;
 
-    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         parse_tag_matcher
-            .parse(value.as_bytes())
+            .parse(s.as_bytes())
             .map_err(|_| ParseMatcherError::InvalidTagMatcher)
     }
 }

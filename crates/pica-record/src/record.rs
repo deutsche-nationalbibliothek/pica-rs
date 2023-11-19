@@ -134,7 +134,7 @@ impl<'a> Record<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{Record, Tag};
+    /// use pica_record::{Record, TagRef};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -143,7 +143,7 @@ impl<'a> Record<'a> {
     ///         ("002@", None, vec![('0', "Oaf")]),
     ///     ]);
     ///
-    ///     record.retain(|field| field.tag() == &Tag::new("003@"));
+    ///     record.retain(|field| field.tag() == &TagRef::new("003@"));
     ///     assert_eq!(record.iter().len(), 1);
     ///
     ///     Ok(())
@@ -283,7 +283,7 @@ impl<'a> ByteRecord<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{ByteRecord, Tag};
+    /// use pica_record::{ByteRecord, TagRef};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -291,7 +291,7 @@ impl<'a> ByteRecord<'a> {
     ///         b"003@ \x1f0a\x1e002@ \x1f0Olfo\x1e\n",
     ///     )?;
     ///
-    ///     record.retain(|field| field.tag() == &Tag::new("003@"));
+    ///     record.retain(|field| field.tag() == &TagRef::new("003@"));
     ///     assert_eq!(record.iter().len(), 1);
     ///     Ok(())
     /// }
@@ -387,22 +387,6 @@ impl<'a> TryFrom<ByteRecord<'a>> for StringRecord<'a> {
         Ok(StringRecord(record))
     }
 }
-
-// use std::fmt::Display;
-// use std::io::{self, Cursor, Write};
-// use std::ops::{Deref, DerefMut};
-// use std::str::Utf8Error;
-
-// use bstr::{BStr, BString};
-// use nom::character::complete::char;
-// use nom::combinator::all_consuming;
-// use nom::multi::many1;
-// use nom::sequence::terminated;
-// use nom::Finish;
-
-// use crate::field::{parse_field, RawField};
-// use crate::parser::{ParseResult, LF};
-// use crate::{Field, FieldRef, ParsePicaError};
 
 impl<'a> StringRecord<'a> {
     /// Creates an PICA+ record from a byte slice.

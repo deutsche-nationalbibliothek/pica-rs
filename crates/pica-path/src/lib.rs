@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use bstr::{BStr, ByteSlice};
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_tag_matcher,
@@ -25,14 +27,14 @@ use winnow::stream::{AsChar, Stream, StreamIsPartial};
 pub struct ParsePathError(String);
 
 #[derive(Clone, Debug)]
-pub struct Path<'a> {
-    tag_matcher: TagMatcher<'a>,
-    occurrence_matcher: OccurrenceMatcher<'a>,
+pub struct Path {
+    tag_matcher: TagMatcher,
+    occurrence_matcher: OccurrenceMatcher,
     subfield_matcher: Option<SubfieldMatcher>,
     codes: Vec<Vec<char>>,
 }
 
-impl<'a> Path<'a> {
+impl Path {
     /// Create a new path from a string slice.
     ///
     /// # Panics
@@ -50,7 +52,7 @@ impl<'a> Path<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("valid path expression.")
     }
 
@@ -75,21 +77,21 @@ impl<'a> Path<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a [u8]> for Path<'a> {
+impl TryFrom<&[u8]> for Path {
     type Error = ParsePathError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_path.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParsePathError(value)
         })
     }
 }
-impl<'a> TryFrom<&'a String> for Path<'a> {
-    type Error = ParsePathError;
+impl FromStr for Path {
+    type Err = ParsePathError;
 
-    fn try_from(value: &'a String) -> Result<Self, Self::Error> {
-        Self::try_from(value.as_bytes())
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -151,7 +153,7 @@ fn parse_subfield_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
         .parse_next(i)
 }
 
-fn parse_path_simple<'a>(i: &mut &'a [u8]) -> PResult<Path<'a>> {
+fn parse_path_simple(i: &mut &[u8]) -> PResult<Path> {
     ws((
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -166,7 +168,7 @@ fn parse_path_simple<'a>(i: &mut &'a [u8]) -> PResult<Path<'a>> {
     .parse_next(i)
 }
 
-fn parse_path_curly<'a>(i: &mut &'a [u8]) -> PResult<Path<'a>> {
+fn parse_path_curly(i: &mut &[u8]) -> PResult<Path> {
     ws((
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -195,7 +197,7 @@ fn parse_path_curly<'a>(i: &mut &'a [u8]) -> PResult<Path<'a>> {
     .parse_next(i)
 }
 
-pub fn parse_path<'a>(i: &mut &'a [u8]) -> PResult<Path<'a>> {
+pub fn parse_path(i: &mut &[u8]) -> PResult<Path> {
     alt((parse_path_simple, parse_path_curly)).parse_next(i)
 }
 
@@ -288,7 +290,7 @@ impl<'a> PathExt for Record<'a> {
 }
 
 #[cfg(feature = "serde")]
-impl<'a, 'de: 'a> Deserialize<'de> for Path<'a> {
+impl<'de> Deserialize<'de> for Path {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,

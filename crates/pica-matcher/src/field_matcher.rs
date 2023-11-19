@@ -25,12 +25,12 @@ use crate::{
 
 /// A field matcher that checks if a field exists.
 #[derive(Debug, PartialEq, Eq)]
-pub struct ExistsMatcher<'a> {
-    tag_matcher: TagMatcher<'a>,
-    occurrence_matcher: OccurrenceMatcher<'a>,
+pub struct ExistsMatcher {
+    tag_matcher: TagMatcher,
+    occurrence_matcher: OccurrenceMatcher,
 }
 
-impl<'a> ExistsMatcher<'a> {
+impl ExistsMatcher {
     /// Create a new exists matcher from a string slice.
     ///
     /// # Example
@@ -57,15 +57,15 @@ impl<'a> ExistsMatcher<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("exists matcher")
     }
 
     /// Returns `true` if the matcher matches against the given
     /// subfield(s).
-    pub fn is_match<'b>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'b Field<'b>> + Clone,
+        fields: impl IntoIterator<Item = &'a Field<'a>> + Clone,
         _options: &MatcherOptions,
     ) -> bool {
         fields.into_iter().any(|field| {
@@ -76,9 +76,7 @@ impl<'a> ExistsMatcher<'a> {
 }
 
 /// Parse a exists matcher expression.
-fn parse_exists_matcher<'a>(
-    i: &mut &'a [u8],
-) -> PResult<ExistsMatcher<'a>> {
+fn parse_exists_matcher(i: &mut &[u8]) -> PResult<ExistsMatcher> {
     terminated(ws((parse_tag_matcher, parse_occurrence_matcher)), '?')
         .map(|(t, o)| ExistsMatcher {
             tag_matcher: t,
@@ -87,10 +85,10 @@ fn parse_exists_matcher<'a>(
         .parse_next(i)
 }
 
-impl<'a> TryFrom<&'a [u8]> for ExistsMatcher<'a> {
+impl TryFrom<&[u8]> for ExistsMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_exists_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
@@ -101,13 +99,13 @@ impl<'a> TryFrom<&'a [u8]> for ExistsMatcher<'a> {
 /// A field matcher that checks for fields satisfies subfield
 /// criterion.
 #[derive(Debug)]
-pub struct SubfieldsMatcher<'a> {
-    tag_matcher: TagMatcher<'a>,
-    occurrence_matcher: OccurrenceMatcher<'a>,
+pub struct SubfieldsMatcher {
+    tag_matcher: TagMatcher,
+    occurrence_matcher: OccurrenceMatcher,
     subfield_matcher: SubfieldMatcher,
 }
 
-impl<'a> SubfieldsMatcher<'a> {
+impl SubfieldsMatcher {
     /// Create a new subfields matcher from a string slice.
     ///
     /// # Example
@@ -134,16 +132,16 @@ impl<'a> SubfieldsMatcher<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("subfields matcher")
     }
 
     /// Returns `true` if at least one field exists with a matching tag
     /// and occurrence and a subfield matching the subfield
     /// matcher's criteria.
-    pub fn is_match<'b>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'b Field<'b>>,
+        fields: impl IntoIterator<Item = &'a Field<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         fields.into_iter().any(|field| {
@@ -156,9 +154,9 @@ impl<'a> SubfieldsMatcher<'a> {
     }
 }
 
-fn parse_subfields_matcher_dot<'a>(
-    i: &mut &'a [u8],
-) -> PResult<SubfieldsMatcher<'a>> {
+fn parse_subfields_matcher_dot(
+    i: &mut &[u8],
+) -> PResult<SubfieldsMatcher> {
     (
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -178,9 +176,9 @@ fn parse_subfields_matcher_dot<'a>(
         .parse_next(i)
 }
 
-fn parse_subfields_matcher_bracket<'a>(
-    i: &mut &'a [u8],
-) -> PResult<SubfieldsMatcher<'a>> {
+fn parse_subfields_matcher_bracket(
+    i: &mut &[u8],
+) -> PResult<SubfieldsMatcher> {
     (
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -194,17 +192,15 @@ fn parse_subfields_matcher_bracket<'a>(
         .parse_next(i)
 }
 
-fn parse_subfields_matcher<'a>(
-    i: &mut &'a [u8],
-) -> PResult<SubfieldsMatcher<'a>> {
+fn parse_subfields_matcher(i: &mut &[u8]) -> PResult<SubfieldsMatcher> {
     alt((parse_subfields_matcher_dot, parse_subfields_matcher_bracket))
         .parse_next(i)
 }
 
-impl<'a> TryFrom<&'a [u8]> for SubfieldsMatcher<'a> {
+impl TryFrom<&[u8]> for SubfieldsMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_subfields_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
@@ -214,12 +210,12 @@ impl<'a> TryFrom<&'a [u8]> for SubfieldsMatcher<'a> {
 
 /// A field matcher that checks for the singleton matcher.
 #[derive(Debug)]
-pub enum SingletonMatcher<'a> {
-    Exists(ExistsMatcher<'a>),
-    Subfields(SubfieldsMatcher<'a>),
+pub enum SingletonMatcher {
+    Exists(ExistsMatcher),
+    Subfields(SubfieldsMatcher),
 }
 
-impl<'a> SingletonMatcher<'a> {
+impl SingletonMatcher {
     /// Create a new singleton matcher from a string slice.
     ///
     /// # Example
@@ -241,15 +237,15 @@ impl<'a> SingletonMatcher<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("singleton macher")
     }
 
     /// Returns `true` if the given field matches against the field
     /// matcher.
-    pub fn is_match<'b>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'b Field<'b>> + Clone,
+        fields: impl IntoIterator<Item = &'a Field<'a>> + Clone,
         options: &MatcherOptions,
     ) -> bool {
         match self {
@@ -260,9 +256,7 @@ impl<'a> SingletonMatcher<'a> {
 }
 
 /// Parse a singleton matcher expression.
-fn parse_singleton_matcher<'a>(
-    i: &mut &'a [u8],
-) -> PResult<SingletonMatcher<'a>> {
+fn parse_singleton_matcher(i: &mut &[u8]) -> PResult<SingletonMatcher> {
     alt((
         parse_exists_matcher.map(SingletonMatcher::Exists),
         parse_subfields_matcher.map(SingletonMatcher::Subfields),
@@ -270,10 +264,10 @@ fn parse_singleton_matcher<'a>(
     .parse_next(i)
 }
 
-impl<'a> TryFrom<&'a [u8]> for SingletonMatcher<'a> {
+impl TryFrom<&[u8]> for SingletonMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_singleton_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
@@ -283,15 +277,15 @@ impl<'a> TryFrom<&'a [u8]> for SingletonMatcher<'a> {
 
 /// A field matcher that checks the number of occurrences of a field.
 #[derive(Debug)]
-pub struct CardinalityMatcher<'a> {
-    tag_matcher: TagMatcher<'a>,
-    occurrence_matcher: OccurrenceMatcher<'a>,
+pub struct CardinalityMatcher {
+    tag_matcher: TagMatcher,
+    occurrence_matcher: OccurrenceMatcher,
     subfield_matcher: Option<SubfieldMatcher>,
     op: RelationalOp,
     value: usize,
 }
 
-impl<'a> CardinalityMatcher<'a> {
+impl CardinalityMatcher {
     /// Create a new cardinality matcher from a string slice.
     ///
     /// # Example
@@ -313,15 +307,15 @@ impl<'a> CardinalityMatcher<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("cardinality matcher")
     }
 
     /// Returns `true` if the given field matches against the field
     /// matcher.
-    pub fn is_match<'b>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'b Field<'b>>,
+        fields: impl IntoIterator<Item = &'a Field<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         let count = fields
@@ -352,9 +346,9 @@ impl<'a> CardinalityMatcher<'a> {
 }
 
 /// Parse a cardinality matcher expressions.
-fn parse_cardinality_matcher<'a>(
-    i: &mut &'a [u8],
-) -> PResult<CardinalityMatcher<'a>> {
+fn parse_cardinality_matcher(
+    i: &mut &[u8],
+) -> PResult<CardinalityMatcher> {
     preceded(
         ws('#'),
         (
@@ -377,10 +371,10 @@ fn parse_cardinality_matcher<'a>(
     .parse_next(i)
 }
 
-impl<'a> TryFrom<&'a [u8]> for CardinalityMatcher<'a> {
+impl TryFrom<&[u8]> for CardinalityMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_cardinality_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
@@ -391,19 +385,19 @@ impl<'a> TryFrom<&'a [u8]> for CardinalityMatcher<'a> {
 /// A field matcher that allows grouping, negation and connecting of
 /// singleton matcher.
 #[derive(Debug)]
-pub enum FieldMatcher<'a> {
-    Singleton(SingletonMatcher<'a>),
-    Cardinality(CardinalityMatcher<'a>),
-    Group(Box<FieldMatcher<'a>>),
-    Not(Box<FieldMatcher<'a>>),
+pub enum FieldMatcher {
+    Singleton(SingletonMatcher),
+    Cardinality(CardinalityMatcher),
+    Group(Box<FieldMatcher>),
+    Not(Box<FieldMatcher>),
     Composite {
-        lhs: Box<FieldMatcher<'a>>,
+        lhs: Box<FieldMatcher>,
         op: BooleanOp,
-        rhs: Box<FieldMatcher<'a>>,
+        rhs: Box<FieldMatcher>,
     },
 }
 
-impl<'a> FieldMatcher<'a> {
+impl FieldMatcher {
     /// Create a new field matcher from a string slice.
     ///
     /// # Example
@@ -425,15 +419,15 @@ impl<'a> FieldMatcher<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("field matcher")
     }
 
     /// Returns `true` if the given field matches against the field
     /// matcher.
-    pub fn is_match<'b>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'b Field<'b>> + Clone,
+        fields: impl IntoIterator<Item = &'a Field<'a>> + Clone,
         options: &MatcherOptions,
     ) -> bool {
         match self {
@@ -456,9 +450,9 @@ impl<'a> FieldMatcher<'a> {
 
 /// Parse a singleton matcher expression (curly bracket notation).
 #[inline]
-fn parse_singleton_matcher_bracket<'a>(
-    i: &mut &'a [u8],
-) -> PResult<SingletonMatcher<'a>> {
+fn parse_singleton_matcher_bracket(
+    i: &mut &[u8],
+) -> PResult<SingletonMatcher> {
     parse_subfields_matcher_bracket
         .map(SingletonMatcher::Subfields)
         .parse_next(i)
@@ -466,9 +460,9 @@ fn parse_singleton_matcher_bracket<'a>(
 
 /// Parse field matcher singleton expression.
 #[inline]
-fn parse_field_matcher_singleton<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_singleton(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
     parse_singleton_matcher
         .map(FieldMatcher::Singleton)
         .parse_next(i)
@@ -476,9 +470,9 @@ fn parse_field_matcher_singleton<'a>(
 
 /// Parse field matcher expression (curly bracket notation).
 #[inline]
-fn parse_field_matcher_singleton_bracket<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_singleton_bracket(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
     parse_singleton_matcher_bracket
         .map(FieldMatcher::Singleton)
         .parse_next(i)
@@ -486,9 +480,7 @@ fn parse_field_matcher_singleton_bracket<'a>(
 
 /// Parse field matcher exists expression.
 #[inline]
-fn parse_field_matcher_exists<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_exists(i: &mut &[u8]) -> PResult<FieldMatcher> {
     alt((
         parse_exists_matcher.map(|matcher| {
             FieldMatcher::Singleton(SingletonMatcher::Exists(matcher))
@@ -517,18 +509,16 @@ fn parse_field_matcher_exists<'a>(
 
 /// Parse field matcher cardinality expression.
 #[inline]
-fn parse_field_matcher_cardinality<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_cardinality(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
     parse_cardinality_matcher
         .map(FieldMatcher::Cardinality)
         .parse_next(i)
 }
 
 #[inline]
-fn parse_field_matcher_group<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_group(i: &mut &[u8]) -> PResult<FieldMatcher> {
     delimited(
         ws('('),
         alt((
@@ -545,9 +535,7 @@ fn parse_field_matcher_group<'a>(
 }
 
 #[inline]
-fn parse_field_matcher_not<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_not(i: &mut &[u8]) -> PResult<FieldMatcher> {
     preceded(
         ws('!'),
         alt((
@@ -562,9 +550,7 @@ fn parse_field_matcher_not<'a>(
 }
 
 #[inline]
-fn parse_field_matcher_and<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_and(i: &mut &[u8]) -> PResult<FieldMatcher> {
     (
         ws(alt((
             parse_field_matcher_group,
@@ -594,9 +580,7 @@ fn parse_field_matcher_and<'a>(
 }
 
 #[inline]
-fn parse_field_matcher_or<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_or(i: &mut &[u8]) -> PResult<FieldMatcher> {
     (
         ws(alt((
             parse_field_matcher_group,
@@ -627,15 +611,13 @@ fn parse_field_matcher_or<'a>(
         .parse_next(i)
 }
 
-fn parse_field_matcher_composite<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+fn parse_field_matcher_composite(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
     alt((parse_field_matcher_or, parse_field_matcher_and)).parse_next(i)
 }
 
-pub fn parse_field_matcher<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldMatcher<'a>> {
+pub fn parse_field_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
     ws(alt((
         parse_field_matcher_composite,
         parse_field_matcher_group,
@@ -646,10 +628,10 @@ pub fn parse_field_matcher<'a>(
     .parse_next(i)
 }
 
-impl<'a> TryFrom<&'a [u8]> for FieldMatcher<'a> {
+impl TryFrom<&[u8]> for FieldMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_field_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
@@ -657,7 +639,7 @@ impl<'a> TryFrom<&'a [u8]> for FieldMatcher<'a> {
     }
 }
 
-impl<'a> BitAnd for FieldMatcher<'a> {
+impl<'a> BitAnd for FieldMatcher {
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
@@ -669,7 +651,7 @@ impl<'a> BitAnd for FieldMatcher<'a> {
     }
 }
 
-impl<'a> BitOr for FieldMatcher<'a> {
+impl<'a> BitOr for FieldMatcher {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
@@ -681,7 +663,7 @@ impl<'a> BitOr for FieldMatcher<'a> {
     }
 }
 
-impl<'a> Not for FieldMatcher<'a> {
+impl<'a> Not for FieldMatcher {
     type Output = Self;
 
     fn not(self) -> Self::Output {

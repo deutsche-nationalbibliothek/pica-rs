@@ -12,11 +12,11 @@ use crate::{FieldMatcher, MatcherOptions, ParseMatcherError};
 
 /// A Matcher that works on PICA+ [Records](pica_record::Record).
 #[derive(Debug)]
-pub struct RecordMatcher<'a> {
-    pub(crate) field_matcher: FieldMatcher<'a>,
+pub struct RecordMatcher {
+    pub(crate) field_matcher: FieldMatcher,
 }
 
-impl<'a> RecordMatcher<'a> {
+impl RecordMatcher {
     /// Create a new field matcher from a string slice.
     ///
     /// # Example
@@ -35,7 +35,7 @@ impl<'a> RecordMatcher<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
         Self::try_from(data.as_ref()).expect("record matcher")
     }
 
@@ -50,10 +50,10 @@ impl<'a> RecordMatcher<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a [u8]> for RecordMatcher<'a> {
+impl TryFrom<&[u8]> for RecordMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         let matcher_str = value.to_str_lossy().to_string();
 
         parse_field_matcher
@@ -65,15 +65,15 @@ impl<'a> TryFrom<&'a [u8]> for RecordMatcher<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a String> for RecordMatcher<'a> {
+impl TryFrom<&String> for RecordMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a String) -> Result<Self, Self::Error> {
+    fn try_from(value: &String) -> Result<Self, Self::Error> {
         Self::try_from(value.as_bytes())
     }
 }
 
-impl<'a> BitAnd for RecordMatcher<'a> {
+impl BitAnd for RecordMatcher {
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
@@ -87,7 +87,7 @@ impl<'a> BitAnd for RecordMatcher<'a> {
     }
 }
 
-impl<'a> BitOr for RecordMatcher<'a> {
+impl BitOr for RecordMatcher {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
@@ -101,7 +101,7 @@ impl<'a> BitOr for RecordMatcher<'a> {
     }
 }
 
-impl<'a> Not for RecordMatcher<'a> {
+impl Not for RecordMatcher {
     type Output = Self;
 
     fn not(self) -> Self::Output {
@@ -114,7 +114,7 @@ impl<'a> Not for RecordMatcher<'a> {
 }
 
 #[cfg(feature = "serde")]
-impl<'a, 'de: 'a> Deserialize<'de> for RecordMatcher<'a> {
+impl<'de> Deserialize<'de> for RecordMatcher {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,

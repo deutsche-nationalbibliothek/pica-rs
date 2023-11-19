@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use bstr::{BStr, ByteSlice};
 use pica_record::parser::parse_occurrence_digits;
-use pica_record::Occurrence;
+use pica_record::{Occurrence, OccurrenceRef};
 use winnow::combinator::{alt, preceded, separated_pair, success};
 use winnow::{PResult, Parser};
 
@@ -9,14 +11,14 @@ use crate::ParseMatcherError;
 /// A matcher that matches against PICA+
 /// [Occurrence](`pica_record::Occurrence`).
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum OccurrenceMatcher<'a> {
+pub enum OccurrenceMatcher {
     Any,
-    Exact(Occurrence<'a>),
-    Range(Occurrence<'a>, Occurrence<'a>),
+    Exact(Occurrence),
+    Range(Occurrence, Occurrence),
     None,
 }
 
-impl<'a> OccurrenceMatcher<'a> {
+impl OccurrenceMatcher {
     /// Create a new occurrence matcher.
     ///
     /// # Example
@@ -34,7 +36,7 @@ impl<'a> OccurrenceMatcher<'a> {
     /// }
     /// ```
     #[inline]
-    pub fn new<T: ?Sized + AsRef<[u8]>>(value: &'a T) -> Self {
+    pub fn new<T: ?Sized + AsRef<[u8]>>(value: &T) -> Self {
         Self::try_from(value.as_ref()).expect("occurrence matcher")
     }
 
@@ -45,41 +47,45 @@ impl<'a> OccurrenceMatcher<'a> {
     ///
     /// ```rust
     /// use pica_matcher::OccurrenceMatcher;
-    /// use pica_record::Occurrence;
+    /// use pica_record::OccurrenceRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher = OccurrenceMatcher::new("/01-03");
-    ///     assert!(matcher.is_match(&Occurrence::new("02")));
-    ///     assert!(!matcher.is_match(&Occurrence::new("04")));
+    ///     assert!(matcher.is_match(&OccurrenceRef::new("02")));
+    ///     assert!(!matcher.is_match(&OccurrenceRef::new("04")));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn is_match(&self, other: &Occurrence) -> bool {
+    pub fn is_match(&self, other: &OccurrenceRef) -> bool {
         match self {
             Self::Any => true,
             Self::None => other == b"00",
             Self::Exact(rhs) => other == rhs,
-            Self::Range(min, max) => (other >= min) && (other <= max),
+            Self::Range(min, max) => {
+                (other.as_bytes() >= min.as_bytes())
+                    && (other.as_bytes() <= max.as_bytes())
+            }
         }
     }
 
     #[cfg(test)]
-    fn exact<T: ?Sized + AsRef<[u8]>>(value: &'a T) -> Self {
-        Self::Exact(Occurrence::new(value))
+    fn exact<T: ?Sized + AsRef<[u8]>>(value: &T) -> Self {
+        Self::Exact(OccurrenceRef::new(value).into())
     }
 
     #[cfg(test)]
-    fn range<T: ?Sized + AsRef<[u8]>>(min: &'a T, max: &'a T) -> Self {
-        Self::Range(Occurrence::new(min), Occurrence::new(max))
+    fn range<T: ?Sized + AsRef<[u8]>>(min: &T, max: &T) -> Self {
+        Self::Range(
+            OccurrenceRef::new(min).into(),
+            OccurrenceRef::new(max).into(),
+        )
     }
 }
 
 #[inline]
-fn parse_occurrence_range<'a>(
-    i: &mut &'a [u8],
-) -> PResult<OccurrenceMatcher<'a>> {
+fn parse_occurrence_range(i: &mut &[u8]) -> PResult<OccurrenceMatcher> {
     separated_pair(
         parse_occurrence_digits,
         '-',
@@ -88,28 +94,28 @@ fn parse_occurrence_range<'a>(
     .verify(|(min, max)| min.len() == max.len() && min < max)
     .map(|(min, max)| {
         OccurrenceMatcher::Range(
-            Occurrence::from_unchecked(min),
-            Occurrence::from_unchecked(max),
+            OccurrenceRef::from_unchecked(min).into(),
+            OccurrenceRef::from_unchecked(max).into(),
         )
     })
     .parse_next(i)
 }
 
 #[inline]
-fn parse_occurrence_exact<'a>(
-    i: &mut &'a [u8],
-) -> PResult<OccurrenceMatcher<'a>> {
+fn parse_occurrence_exact(i: &mut &[u8]) -> PResult<OccurrenceMatcher> {
     parse_occurrence_digits
         .verify(|x: &BStr| x != "00")
         .map(|value| {
-            OccurrenceMatcher::Exact(Occurrence::from_unchecked(value))
+            OccurrenceMatcher::Exact(
+                OccurrenceRef::from_unchecked(value).into(),
+            )
         })
         .parse_next(i)
 }
 
-pub fn parse_occurrence_matcher<'a>(
-    i: &mut &'a [u8],
-) -> PResult<OccurrenceMatcher<'a>> {
+pub fn parse_occurrence_matcher(
+    i: &mut &[u8],
+) -> PResult<OccurrenceMatcher> {
     alt((
         preceded(
             '/',
@@ -125,10 +131,10 @@ pub fn parse_occurrence_matcher<'a>(
     .parse_next(i)
 }
 
-impl<'a> TryFrom<&'a [u8]> for OccurrenceMatcher<'a> {
+impl TryFrom<&[u8]> for OccurrenceMatcher {
     type Error = ParseMatcherError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_occurrence_matcher.parse(value).map_err(|_| {
             ParseMatcherError::InvalidOccurrenceMatcher(
                 value.to_str_lossy().to_string(),
@@ -137,34 +143,34 @@ impl<'a> TryFrom<&'a [u8]> for OccurrenceMatcher<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a str> for OccurrenceMatcher<'a> {
-    type Error = ParseMatcherError;
+impl FromStr for OccurrenceMatcher {
+    type Err = ParseMatcherError;
 
-    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        Self::try_from(value.as_bytes())
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
-impl<'a> From<Occurrence<'a>> for OccurrenceMatcher<'a> {
-    fn from(value: Occurrence<'a>) -> Self {
-        OccurrenceMatcher::Exact(value)
+impl From<OccurrenceRef<'_>> for OccurrenceMatcher {
+    fn from(value: OccurrenceRef) -> Self {
+        OccurrenceMatcher::Exact(value.into())
     }
 }
 
-impl PartialEq<Occurrence<'_>> for OccurrenceMatcher<'_> {
-    fn eq(&self, other: &Occurrence) -> bool {
+impl PartialEq<OccurrenceRef<'_>> for OccurrenceMatcher {
+    fn eq(&self, other: &OccurrenceRef) -> bool {
         self.is_match(other)
     }
 }
 
-impl PartialEq<OccurrenceMatcher<'_>> for Occurrence<'_> {
+impl PartialEq<OccurrenceMatcher> for OccurrenceRef<'_> {
     fn eq(&self, matcher: &OccurrenceMatcher) -> bool {
         matcher.is_match(self)
     }
 }
 
-impl PartialEq<Option<&Occurrence<'_>>> for OccurrenceMatcher<'_> {
-    fn eq(&self, other: &Option<&Occurrence>) -> bool {
+impl PartialEq<Option<&OccurrenceRef<'_>>> for OccurrenceMatcher {
+    fn eq(&self, other: &Option<&OccurrenceRef>) -> bool {
         match other {
             Some(occurrence) => self.is_match(occurrence),
             None => matches!(self, Self::Any | Self::None),
@@ -174,7 +180,7 @@ impl PartialEq<Option<&Occurrence<'_>>> for OccurrenceMatcher<'_> {
 
 #[cfg(test)]
 mod tests {
-    use pica_record::Occurrence;
+    use pica_record::OccurrenceRef;
 
     use super::*;
 
@@ -214,50 +220,50 @@ mod tests {
     #[test]
     fn is_match() {
         let matcher = OccurrenceMatcher::new("/01");
-        assert!(!matcher.is_match(&Occurrence::new("00")));
-        assert!(matcher.is_match(&Occurrence::new("01")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
 
         let matcher = OccurrenceMatcher::new("/01-03");
-        assert!(!matcher.is_match(&Occurrence::new("00")));
-        assert!(matcher.is_match(&Occurrence::new("01")));
-        assert!(matcher.is_match(&Occurrence::new("02")));
-        assert!(matcher.is_match(&Occurrence::new("03")));
-        assert!(!matcher.is_match(&Occurrence::new("04")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
+        assert!(matcher.is_match(&OccurrenceRef::new("02")));
+        assert!(matcher.is_match(&OccurrenceRef::new("03")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("04")));
 
         let matcher = OccurrenceMatcher::new("/*");
-        assert!(matcher.is_match(&Occurrence::new("00")));
-        assert!(matcher.is_match(&Occurrence::new("01")));
+        assert!(matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(matcher.is_match(&OccurrenceRef::new("01")));
 
         let matcher = OccurrenceMatcher::new("/00");
-        assert!(matcher.is_match(&Occurrence::new("00")));
-        assert!(!matcher.is_match(&Occurrence::new("01")));
+        assert!(matcher.is_match(&OccurrenceRef::new("00")));
+        assert!(!matcher.is_match(&OccurrenceRef::new("01")));
     }
 
     #[test]
     fn test_partial_eq() {
         let matcher = OccurrenceMatcher::new("/01");
-        assert_ne!(matcher, Occurrence::new("00"));
-        assert_eq!(matcher, Occurrence::new("01"));
-        assert_ne!(matcher, Option::<Occurrence>::None.as_ref());
+        assert_ne!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
+        assert_ne!(matcher, Option::<OccurrenceRef>::None.as_ref());
 
         let matcher = OccurrenceMatcher::new("/01-03");
-        assert_ne!(matcher, Occurrence::new("00"));
-        assert_eq!(matcher, Occurrence::new("01"));
-        assert_eq!(matcher, Occurrence::new("02"));
-        assert_eq!(matcher, Occurrence::new("03"));
-        assert_ne!(matcher, Occurrence::new("04"));
-        assert_ne!(matcher, Option::<Occurrence>::None.as_ref());
+        assert_ne!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
+        assert_eq!(matcher, OccurrenceRef::new("02"));
+        assert_eq!(matcher, OccurrenceRef::new("03"));
+        assert_ne!(matcher, OccurrenceRef::new("04"));
+        assert_ne!(matcher, Option::<OccurrenceRef>::None.as_ref());
 
         let matcher = OccurrenceMatcher::new("/*");
-        assert_eq!(matcher, Occurrence::new("000"));
-        assert_eq!(matcher, Occurrence::new("00"));
-        assert_eq!(matcher, Occurrence::new("001"));
-        assert_eq!(matcher, Occurrence::new("01"));
-        assert_eq!(matcher, Option::<Occurrence>::None.as_ref());
+        assert_eq!(matcher, OccurrenceRef::new("000"));
+        assert_eq!(matcher, OccurrenceRef::new("00"));
+        assert_eq!(matcher, OccurrenceRef::new("001"));
+        assert_eq!(matcher, OccurrenceRef::new("01"));
+        assert_eq!(matcher, Option::<OccurrenceRef>::None.as_ref());
 
         let matcher = OccurrenceMatcher::new("/00");
-        assert_eq!(matcher, Occurrence::new("00"));
-        assert_ne!(matcher, Occurrence::new("01"));
-        assert_eq!(matcher, Option::<Occurrence>::None.as_ref());
+        assert_eq!(matcher, OccurrenceRef::new("00"));
+        assert_ne!(matcher, OccurrenceRef::new("01"));
+        assert_eq!(matcher, Option::<OccurrenceRef>::None.as_ref());
     }
 }

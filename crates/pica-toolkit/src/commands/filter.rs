@@ -1,6 +1,7 @@
 use std::ffi::OsString;
 use std::fs::read_to_string;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use clap::{value_parser, Parser};
 use pica_matcher::{
@@ -366,12 +367,12 @@ fn parse_predicates(
     for item in items {
         if let Some(pos) = item.rfind('/') {
             result.push((
-                TagMatcher::try_from(&item[0..pos])?,
-                OccurrenceMatcher::try_from(&item[pos..])?,
+                TagMatcher::from_str(&item[0..pos])?,
+                OccurrenceMatcher::from_str(&item[pos..])?,
             ));
         } else {
             result.push((
-                TagMatcher::try_from(item)?,
+                TagMatcher::from_str(item)?,
                 OccurrenceMatcher::None,
             ));
         }

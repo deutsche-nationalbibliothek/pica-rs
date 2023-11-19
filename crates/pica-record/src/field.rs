@@ -8,13 +8,13 @@ use winnow::{PResult, Parser};
 use crate::occurrence::parse_occurrence;
 use crate::subfield::parse_subfield;
 use crate::tag::parse_tag;
-use crate::{Level, Occurrence, ParsePicaError, Subfield, Tag};
+use crate::{Level, OccurrenceRef, ParsePicaError, Subfield, TagRef};
 
 /// An immutable PICA+ field.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Field<'a> {
-    tag: Tag<'a>,
-    occurrence: Option<Occurrence<'a>>,
+    tag: TagRef<'a>,
+    occurrence: Option<OccurrenceRef<'a>>,
     subfields: Vec<Subfield<'a>>,
 }
 
@@ -62,7 +62,7 @@ impl<'a> Field<'a> {
         occurrence: Option<&'a B>,
         subfields: Vec<(char, &'a B)>,
     ) -> Self {
-        let occurrence = occurrence.map(Occurrence::new);
+        let occurrence = occurrence.map(OccurrenceRef::new);
         let subfields: Vec<Subfield<'a>> = subfields
             .into_iter()
             .map(TryFrom::try_from)
@@ -70,7 +70,7 @@ impl<'a> Field<'a> {
             .expect("valid subfields");
 
         Self {
-            tag: Tag::new(tag),
+            tag: TagRef::new(tag),
             occurrence,
             subfields,
         }
@@ -101,18 +101,18 @@ impl<'a> Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{Field, Tag};
+    /// use pica_record::{Field, TagRef};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let field =
     ///         Field::from_bytes(b"003@ \x1f0123456789X\x1e").unwrap();
-    ///     assert_eq!(field.tag(), &Tag::new("003@"));
+    ///     assert_eq!(field.tag(), &TagRef::new("003@"));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn tag(&self) -> &Tag {
+    pub fn tag(&self) -> &TagRef {
         &self.tag
     }
 
@@ -132,7 +132,7 @@ impl<'a> Field<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn occurrence(&self) -> Option<&Occurrence> {
+    pub fn occurrence(&self) -> Option<&OccurrenceRef> {
         self.occurrence.as_ref()
     }
 
@@ -327,7 +327,7 @@ mod tests {
         assert_eq!(
             Field::new("012A", None, vec![('a', "123"), ('b', "456")]),
             Field {
-                tag: Tag::new("012A"),
+                tag: TagRef::new("012A"),
                 occurrence: None,
                 subfields: vec![
                     Subfield::new('a', "123"),
@@ -341,12 +341,9 @@ mod tests {
         assert_eq!(
             field,
             Field {
-                tag: Tag::new("012A"),
-                occurrence: Some(Occurrence::new("03")),
-                subfields: vec![
-                    Subfield::new('a', "123"),
-                    Subfield::new('b', "456"),
-                ]
+                tag: TagRef::new("012A"),
+                occurrence: Some(OccurrenceRef::new("03")),
+                subfields: vec![Subfield::new('a', "123"),]
             }
         );
     }
