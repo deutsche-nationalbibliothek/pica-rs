@@ -6,10 +6,11 @@ use winnow::combinator::{opt, repeat};
 use winnow::{PResult, Parser};
 
 use crate::occurrence::parse_occurrence;
-use crate::subfield::parse_subfield;
+use crate::subfield::{parse_subfield, Subfield};
 use crate::tag::parse_tag;
 use crate::{
-    Level, OccurrenceRef, ParsePicaError, SubfieldRef, TagRef,
+    Level, Occurrence, OccurrenceRef, ParsePicaError, SubfieldRef, Tag,
+    TagRef,
 };
 
 /// An immutable PICA+ field.
@@ -18,6 +19,14 @@ pub struct FieldRef<'a> {
     tag: TagRef<'a>,
     occurrence: Option<OccurrenceRef<'a>>,
     subfields: Vec<SubfieldRef<'a>>,
+}
+
+/// A mutable PICA+ field.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Field {
+    tag: Tag,
+    occurrence: Option<Occurrence>,
+    subfields: Vec<Subfield>,
 }
 
 /// Parse a PICA+ field.
@@ -273,6 +282,25 @@ impl<'a> IntoIterator for &'a FieldRef<'a> {
     /// ```
     fn into_iter(self) -> Self::IntoIter {
         iter::once(self)
+    }
+}
+
+impl From<FieldRef<'_>> for Field {
+    fn from(other: FieldRef<'_>) -> Self {
+        let FieldRef {
+            tag,
+            occurrence,
+            subfields,
+        } = other;
+
+        Field {
+            tag: tag.into(),
+            occurrence: occurrence.map(Occurrence::from),
+            subfields: subfields
+                .into_iter()
+                .map(Subfield::from)
+                .collect(),
+        }
     }
 }
 
