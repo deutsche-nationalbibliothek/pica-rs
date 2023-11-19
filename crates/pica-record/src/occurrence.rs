@@ -1,26 +1,43 @@
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use std::io::{self, Write};
 
 use bstr::{BStr, BString, ByteSlice};
-use nom::character::complete::{char, satisfy};
-use nom::combinator::{all_consuming, map, opt, recognize};
-use nom::sequence::{preceded, tuple};
-use nom::Finish;
+use winnow::combinator::preceded;
+use winnow::stream::AsChar;
+use winnow::token::take_while;
+use winnow::{PResult, Parser};
 
-use crate::parser::ParseResult;
 use crate::ParsePicaError;
 
-/// A PICA+ occurrence.
-#[derive(Eq, Debug, Clone)]
-pub struct Occurrence<T: AsRef<[u8]>>(T);
-
-/// A immutable PICA+ occurrence.
-pub type OccurrenceRef<'a> = Occurrence<&'a BStr>;
+/// An immutable PICA+ occurrence.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct OccurrenceRef<'a>(&'a BStr);
 
 /// A mutable PICA+ occurrence.
-pub type OccurrenceMut = Occurrence<BString>;
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct Occurrence(BString);
 
-impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Occurrence<T> {
+/// Parse the digits of an PICA+ occurrence.
+#[inline]
+pub fn parse_occurrence_digits<'a>(
+    i: &mut &'a [u8],
+) -> PResult<&'a BStr> {
+    take_while(2..=3, AsChar::is_dec_digit)
+        .map(ByteSlice::as_bstr)
+        .parse_next(i)
+}
+
+/// Parse a PICA+ occurrence (read-only).
+#[inline]
+pub(crate) fn parse_occurrence<'a>(
+    i: &mut &'a [u8],
+) -> PResult<OccurrenceRef<'a>> {
+    preceded(b'/', parse_occurrence_digits)
+        .map(|value| OccurrenceRef(value.as_bstr()))
+        .parse_next(i)
+}
+
+impl<'a> OccurrenceRef<'a> {
     /// Create a new PICA+ occurrence.
     ///
     /// # Panics
@@ -40,15 +57,9 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Occurrence<T> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(value: impl Into<T>) -> Self {
-        let value = value.into();
-
-        all_consuming(parse_occurrence_digits)(value.as_ref())
-            .finish()
-            .map_err(|_| ParsePicaError::InvalidOccurrence)
-            .unwrap();
-
-        Self(value)
+    pub fn new<B: ?Sized + AsRef<[u8]>>(value: &'a B) -> Self {
+        Self::try_from(value.as_ref().as_bstr())
+            .expect("value occurrence")
     }
 
     /// Creates an immutable PICA+ tag from a byte slice.
@@ -62,20 +73,49 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Occurrence<T> {
     /// fn example() -> anyhow::Result<()> {
     ///     assert!(OccurrenceRef::from_bytes(b"/01").is_ok());
     ///     assert!(OccurrenceRef::from_bytes(b"01").is_err());
+    ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn from_bytes(data: &'a [u8]) -> Result<Self, ParsePicaError> {
-        all_consuming(parse_occurrence)(data)
-            .finish()
+    pub fn from_bytes(bytes: &'a [u8]) -> Result<Self, ParsePicaError> {
+        parse_occurrence
+            .parse(bytes)
             .map_err(|_| ParsePicaError::InvalidOccurrence)
-            .map(|(_, digits)| Occurrence(digits.into()))
     }
 
-    /// Creates a new Occurrence without checking the input
+    /// Converts a occurrence reference into the underlying byte slice.
+    ///
+    /// ```rust
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let occurrence = OccurrenceRef::from_bytes(b"/01")?;
+    ///     assert_eq!(occurrence.as_bytes(), b"01");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+
+    /// Creates an immutable PICA+ tag from a unchecked byte string.
+    ///
+    /// ```rust
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     assert_eq!(OccurrenceRef::new(b"01"), "01");
+    ///     assert_ne!(OccurrenceRef::new(b"01"), "02");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
     #[inline]
-    pub fn from_unchecked(value: impl Into<T>) -> Self {
-        Self(value.into())
+    pub fn from_unchecked(value: &'a BStr) -> Self {
+        Self(value)
     }
 
     /// Write the occurrence into the given writer.
@@ -106,130 +146,189 @@ impl<'a, T: AsRef<[u8]> + From<&'a BStr> + Display> Occurrence<T> {
     }
 }
 
-impl<S, T> PartialEq<Occurrence<S>> for Occurrence<T>
-where
-    S: AsRef<[u8]>,
-    T: AsRef<[u8]>,
-{
-    fn eq(&self, other: &Occurrence<S>) -> bool {
-        self.0.as_ref() == other.0.as_ref()
-    }
-}
-
-impl<S, T> PartialOrd<Occurrence<S>> for Occurrence<T>
-where
-    S: AsRef<[u8]>,
-    T: AsRef<[u8]>,
-{
-    fn partial_cmp(
-        &self,
-        other: &Occurrence<S>,
-    ) -> Option<std::cmp::Ordering> {
-        self.0.as_ref().partial_cmp(other.0.as_ref())
-    }
-}
-
-/// Parse the digits of an PICA+ occurrence.
-#[inline]
-pub fn parse_occurrence_digits(i: &[u8]) -> ParseResult<&BStr> {
-    map(
-        recognize(tuple((
-            satisfy(|c| c.is_ascii_digit()),
-            satisfy(|c| c.is_ascii_digit()),
-            opt(satisfy(|c| c.is_ascii_digit())),
-        ))),
-        ByteSlice::as_bstr,
-    )(i)
-}
-
-/// Parse a PICA+ occurrence (read-only).
-pub fn parse_occurrence(i: &[u8]) -> ParseResult<&BStr> {
-    preceded(char('/'), parse_occurrence_digits)(i)
-}
-
-impl<T: AsRef<[u8]>> PartialEq<&str> for Occurrence<T> {
+impl<'a, T: AsRef<[u8]>> PartialEq<T> for OccurrenceRef<'a> {
     #[inline]
-    fn eq(&self, other: &&str) -> bool {
-        self.0.as_ref() == other.as_bytes()
+    fn eq(&self, other: &T) -> bool {
+        self.0 == other.as_ref()
     }
 }
 
-impl<T: AsRef<[u8]>> PartialEq<str> for Occurrence<T> {
-    #[inline]
-    fn eq(&self, other: &str) -> bool {
-        self.0.as_ref() == other.as_bytes()
+impl<'a> Display for OccurrenceRef<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "/{}", self.0)
     }
 }
 
-impl<'a> From<OccurrenceRef<'a>> for OccurrenceMut {
-    #[inline]
-    fn from(occurrence: Occurrence<&'a BStr>) -> Self {
-        Self(occurrence.0.into())
+impl<'a> TryFrom<&'a BStr> for OccurrenceRef<'a> {
+    type Error = ParsePicaError;
+
+    fn try_from(value: &'a BStr) -> Result<Self, Self::Error> {
+        if parse_occurrence_digits.parse(value).is_err() {
+            return Err(ParsePicaError::InvalidOccurrence);
+        }
+
+        Ok(Self(value))
     }
 }
 
-impl<'a> ToString for OccurrenceRef<'a> {
-    fn to_string(&self) -> String {
-        self.0.to_string()
-    }
-}
-
-impl<'a> OccurrenceRef<'a> {
-    /// Converts the immutable occurrence into its mutable counterpart
-    /// by consuming the source.
-    ///
-    /// # Example
+impl Occurrence {
+    /// Converts a occurrence into the underlying byte slice.
     ///
     /// ```rust
-    /// use pica_record::OccurrenceRef;
+    /// use pica_record::{Occurrence, OccurrenceRef};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let occurrence = OccurrenceRef::new("01").into_owned();
-    ///     assert_eq!(occurrence, "01");
+    ///     let occurrence = Occurrence::from(OccurrenceRef::new("01"));
+    ///     assert_eq!(occurrence.as_bytes(), b"01");
+    ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn into_owned(self) -> OccurrenceMut {
-        self.into()
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
     }
+}
 
-    /// Converts the immutable tag into its mutable counterpart.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::OccurrenceRef;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let occurrence = OccurrenceRef::new("01").to_owned();
-    ///     assert_eq!(occurrence, "01");
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn to_owned(&self) -> OccurrenceMut {
-        self.clone().into()
+impl From<OccurrenceRef<'_>> for Occurrence {
+    fn from(value: OccurrenceRef<'_>) -> Self {
+        Self(value.0.into())
+    }
+}
+
+impl AsRef<[u8]> for Occurrence {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use nom_test_helpers::prelude::*;
+    use std::io::Cursor;
+
+    use bstr::ByteSlice;
 
     use super::*;
 
     #[test]
-    fn test_parse_occurrence_ref() {
-        for occurrence in ["/00", "/01", "/000", "/123"] {
-            assert_done_and_eq!(
-                parse_occurrence(occurrence.as_bytes()),
-                occurrence[1..].as_bytes()
-            )
+    fn parse_occurrence_digits() {
+        use super::parse_occurrence_digits;
+
+        macro_rules! parse_success {
+            ($input:expr) => {
+                assert_eq!(
+                    parse_occurrence_digits.parse($input).unwrap(),
+                    $input.as_bstr()
+                );
+            };
         }
 
-        for occurrence in ["00", "/0A", "/!0", "/9x"] {
-            assert_error!(parse_occurrence(occurrence.as_bytes()))
+        parse_success!(b"00");
+        parse_success!(b"01");
+        parse_success!(b"000");
+        parse_success!(b"001");
+
+        assert!(parse_occurrence_digits.parse(b"").is_err());
+        assert!(parse_occurrence_digits.parse(b"0").is_err());
+        assert!(parse_occurrence_digits.parse(b"0001").is_err());
+        assert!(parse_occurrence_digits.parse(b"0a").is_err());
+    }
+
+    #[test]
+    fn parse_occurrence() {
+        macro_rules! parse_success {
+            ($input:expr) => {
+                assert_eq!(
+                    super::parse_occurrence.parse($input).unwrap(),
+                    OccurrenceRef($input[1..].as_bstr())
+                );
+            };
         }
+
+        parse_success!(b"/00");
+        parse_success!(b"/000");
+        parse_success!(b"/001");
+        parse_success!(b"/01");
+
+        macro_rules! parse_error {
+            ($input:expr) => {
+                assert!(super::parse_occurrence.parse($input).is_err());
+            };
+        }
+
+        parse_error!(b"");
+        parse_error!(b"/");
+        parse_error!(b"/0a");
+        parse_error!(b"/0001");
+        parse_error!(b"/0");
+    }
+
+    #[test]
+    fn occurrence_new() {
+        let _ = OccurrenceRef::new("001");
+        let _ = OccurrenceRef::new("00");
+    }
+
+    #[test]
+    #[should_panic]
+    fn occurrence_new_panic() {
+        OccurrenceRef::new("00a");
+    }
+
+    #[test]
+    fn occurrence_from_bytes() {
+        assert_eq!(
+            OccurrenceRef::from_bytes(b"/00").unwrap(),
+            OccurrenceRef("00".into())
+        );
+
+        assert_eq!(
+            OccurrenceRef::from_bytes(b"/001").unwrap(),
+            OccurrenceRef("001".into())
+        );
+
+        assert_eq!(
+            OccurrenceRef::from_bytes(b"00").unwrap_err(),
+            ParsePicaError::InvalidOccurrence
+        );
+    }
+
+    #[test]
+    fn occurrence_try_from() {
+        assert_eq!(
+            OccurrenceRef::try_from(b"00".as_bstr()).unwrap(),
+            OccurrenceRef("00".into())
+        );
+
+        assert_eq!(
+            OccurrenceRef::try_from(b"001".as_bstr()).unwrap(),
+            OccurrenceRef("001".into())
+        );
+
+        assert_eq!(
+            OccurrenceRef::try_from(b"/00".as_bstr()).unwrap_err(),
+            ParsePicaError::InvalidOccurrence
+        );
+    }
+
+    #[test]
+    fn occurrence_write_to() {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let occurrence = OccurrenceRef::new("99");
+        let _ = occurrence.write_to(&mut writer);
+
+        assert_eq!(writer.into_inner(), b"/99");
+    }
+
+    #[test]
+    fn occurrence_eq() {
+        assert_eq!(OccurrenceRef::new("003"), "003");
+        assert_eq!(OccurrenceRef::new("03"), b"03");
+    }
+
+    #[test]
+    fn occurrence_to_string() {
+        let occurrence_str = format!("{}", OccurrenceRef::new("002"));
+        assert_eq!(occurrence_str, "/002");
     }
 }

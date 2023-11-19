@@ -10,14 +10,13 @@ edition.workspace = true
 [dependencies]
 bstr = { workspace = true }
 flate2 = { workspace = true }
-nom = { workspace = true }
 sha2 = { workspace = true }
 thiserror = { workspace = true }
+winnow = { workspace = true, features = ["simd"] }
 
 [dev-dependencies]
 anyhow = "1.0"
 criterion = { version = "0.5", features = ["html_reports"] }
-nom-test-helpers = "6.1"
 
 [[bench]]
 name = "main"

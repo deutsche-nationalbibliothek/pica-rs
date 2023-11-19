@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{self, Write};
-use std::str::FromStr;
 
 use clap::{value_parser, Parser};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
@@ -115,13 +114,12 @@ impl Frequency {
         );
 
         let query = if let Some(ref global) = config.global {
-            Query::from_str(&NormalizationForm::translit_opt(
-                self.query,
-                global.translit,
-            ))?
+            NormalizationForm::translit_opt(self.query, global.translit)
         } else {
-            Query::from_str(&self.query)?
+            self.query.to_string()
         };
+
+        let query = Query::try_from(&query)?;
 
         let mut ftable: HashMap<Vec<String>, u64> = HashMap::new();
         let options = QueryOptions::new()

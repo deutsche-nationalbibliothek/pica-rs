@@ -1,13 +1,11 @@
 use std::fmt::{self, Display};
 
-use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{char, multispace0, multispace1};
-use nom::combinator::{map, map_res, value, verify};
-use nom::multi::fold_many0;
-use nom::sequence::{delimited, preceded};
-use nom::IResult;
-use pica_record::parser::ParseResult;
+use winnow::ascii::{multispace0, multispace1};
+use winnow::combinator::{alt, delimited, fold_repeat, preceded};
+use winnow::error::{ContextError, ParserError};
+use winnow::stream::{AsChar, Stream, StreamIsPartial};
+use winnow::token::{tag, take_till1};
+use winnow::{PResult, Parser};
 
 /// Boolean Operators.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -17,13 +15,21 @@ pub enum BooleanOp {
 }
 
 /// Strip whitespaces from the beginning and end.
-pub(crate) fn ws<'a, F: 'a, O, E: nom::error::ParseError<&'a [u8]>>(
-    inner: F,
-) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
+pub(crate) fn ws<I, O, E: ParserError<I>, F>(
+    mut inner: F,
+) -> impl Parser<I, O, E>
 where
-    F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar + Clone,
+    F: Parser<I, O, E>,
 {
-    delimited(multispace0, inner, multispace0)
+    move |i: &mut I| {
+        let _ = multispace0.parse_next(i)?;
+        let o = inner.parse_next(i);
+        let _ = multispace0.parse_next(i)?;
+
+        o
+    }
 }
 
 /// Relational Operator
@@ -63,33 +69,37 @@ impl Display for RelationalOp {
 }
 
 /// Parse RelationalOp which can be used for string comparisons.
+#[inline]
 pub(crate) fn parse_relational_op_str(
-    i: &[u8],
-) -> ParseResult<RelationalOp> {
+    i: &mut &[u8],
+) -> PResult<RelationalOp> {
     alt((
-        value(RelationalOp::Eq, tag("==")),
-        value(RelationalOp::Ne, tag("!=")),
-        value(RelationalOp::StartsWith, tag("=^")),
-        value(RelationalOp::StartsNotWith, tag("!^")),
-        value(RelationalOp::EndsWith, tag("=$")),
-        value(RelationalOp::EndsNotWith, tag("!$")),
-        value(RelationalOp::Similar, tag("=*")),
-        value(RelationalOp::Contains, tag("=?")),
-    ))(i)
+        tag("==").value(RelationalOp::Eq),
+        tag("!=").value(RelationalOp::Ne),
+        tag("=^").value(RelationalOp::StartsWith),
+        tag("!^").value(RelationalOp::StartsNotWith),
+        tag("=$").value(RelationalOp::EndsWith),
+        tag("!$").value(RelationalOp::EndsNotWith),
+        tag("=*").value(RelationalOp::Similar),
+        tag("=?").value(RelationalOp::Contains),
+    ))
+    .parse_next(i)
 }
 
 /// Parse RelationalOp which can be used for usize comparisons.
+#[inline]
 pub(crate) fn parse_relational_op_usize(
-    i: &[u8],
-) -> ParseResult<RelationalOp> {
+    i: &mut &[u8],
+) -> PResult<RelationalOp> {
     alt((
-        value(RelationalOp::Eq, tag("==")),
-        value(RelationalOp::Ne, tag("!=")),
-        value(RelationalOp::Ge, tag(">=")),
-        value(RelationalOp::Gt, tag(">")),
-        value(RelationalOp::Le, tag("<=")),
-        value(RelationalOp::Lt, tag("<")),
-    ))(i)
+        tag("==").value(RelationalOp::Eq),
+        tag("!=").value(RelationalOp::Ne),
+        tag(">=").value(RelationalOp::Ge),
+        tag(">").value(RelationalOp::Gt),
+        tag("<=").value(RelationalOp::Le),
+        tag("<").value(RelationalOp::Lt),
+    ))
+    .parse_next(i)
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -98,194 +108,209 @@ enum Quotes {
     Double,
 }
 
+fn parse_literal<I, E>(
+    quotes: Quotes,
+) -> impl Parser<I, <I as Stream>::Slice, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar,
+    E: ParserError<I>,
+{
+    match quotes {
+        Quotes::Single => take_till1(['\'', '\\']),
+        Quotes::Double => take_till1(['"', '\\']),
+    }
+}
+
+fn parse_escaped_char<I, E>(quotes: Quotes) -> impl Parser<I, char, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar + Clone,
+    E: ParserError<I>,
+{
+    let v = match quotes {
+        Quotes::Single => '\'',
+        Quotes::Double => '"',
+    };
+
+    preceded(
+        '\\',
+        alt((
+            'n'.value('\n'),
+            'r'.value('\r'),
+            't'.value('\t'),
+            'b'.value('\u{08}'),
+            'f'.value('\u{0C}'),
+            '\\'.value('\\'),
+            '/'.value('/'),
+            v.value(v),
+        )),
+    )
+}
+
 #[derive(Debug, Clone)]
 enum StringFragment<'a> {
-    Literal(&'a str),
+    Literal(&'a [u8]),
     EscapedChar(char),
     EscapedWs,
 }
 
-/// Parse a non-empty block of text that doesn't include \ or ".
-fn parse_literal(
+fn parse_quoted_fragment<'a, E: ParserError<&'a [u8]>>(
     quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<&str> {
-    move |i: &[u8]| {
-        let arr = match quotes {
-            Quotes::Single => "\'\\",
-            Quotes::Double => "\"\\",
-        };
+) -> impl Parser<&'a [u8], StringFragment<'a>, E> {
+    use StringFragment::*;
 
-        map_res(
-            verify(is_not(arr), |s: &[u8]| !s.is_empty()),
-            std::str::from_utf8,
-        )(i)
+    alt((
+        parse_literal::<&'a [u8], E>(quotes).map(Literal),
+        parse_escaped_char::<&'a [u8], E>(quotes).map(EscapedChar),
+        preceded('\\', multispace1).value(EscapedWs),
+    ))
+}
+
+fn parse_quoted_string<'a, E>(
+    quotes: Quotes,
+) -> impl Parser<&'a [u8], Vec<u8>, E>
+where
+    E: ParserError<&'a [u8]>,
+{
+    use StringFragment::*;
+
+    let string_builder = fold_repeat(
+        0..,
+        parse_quoted_fragment::<E>(quotes),
+        Vec::new,
+        |mut acc, fragment| {
+            match fragment {
+                Literal(s) => acc.extend_from_slice(s),
+                EscapedChar(c) => acc.push(c as u8),
+                EscapedWs => {}
+            }
+            acc
+        },
+    );
+
+    match quotes {
+        Quotes::Single => delimited('\'', string_builder, '\''),
+        Quotes::Double => delimited('"', string_builder, '"'),
     }
 }
 
-/// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
-fn parse_escaped_char(
-    quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<char> {
-    move |i: &[u8]| {
-        let val = match quotes {
-            Quotes::Single => '"',
-            Quotes::Double => '\'',
-        };
-
-        preceded(
-            char('\\'),
-            alt((
-                // parse_unicode,
-                value('\n', char('n')),
-                value('\r', char('r')),
-                value('\t', char('t')),
-                value('\u{08}', char('b')),
-                value('\u{0C}', char('f')),
-                value('\\', char('\\')),
-                value('/', char('/')),
-                value(val, char(val)),
-            )),
-        )(i)
-    }
+#[inline]
+fn parse_string_single_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
+    parse_quoted_string::<ContextError>(Quotes::Single).parse_next(i)
 }
 
-/// Combine parse_literal, parse_escaped_char into a StringFragment.
-fn parse_fragment(
-    quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<StringFragment> {
-    move |i: &[u8]| {
-        alt((
-            map(parse_literal(quotes), StringFragment::Literal),
-            map(
-                parse_escaped_char(quotes),
-                StringFragment::EscapedChar,
-            ),
-            value(
-                StringFragment::EscapedWs,
-                preceded(char('\\'), multispace1),
-            ),
-        ))(i)
-    }
+#[inline]
+fn parse_string_double_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
+    parse_quoted_string::<ContextError>(Quotes::Double).parse_next(i)
 }
 
-fn parse_string_inner(
-    quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<String> {
-    move |i: &[u8]| {
-        fold_many0(
-            parse_fragment(quotes),
-            String::new,
-            |mut string, fragment| {
-                match fragment {
-                    StringFragment::Literal(s) => string.push_str(s),
-                    StringFragment::EscapedChar(c) => string.push(c),
-                    StringFragment::EscapedWs => {}
-                }
-                string
-            },
-        )(i)
-    }
-}
-
-fn parse_string_single_quoted(i: &[u8]) -> ParseResult<String> {
-    delimited(
-        char('\''),
-        parse_string_inner(Quotes::Single),
-        char('\''),
-    )(i)
-}
-
-fn parse_string_double_quoted(i: &[u8]) -> ParseResult<String> {
-    delimited(char('"'), parse_string_inner(Quotes::Double), char('"'))(
-        i,
-    )
-}
-
-pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
-    alt((parse_string_single_quoted, parse_string_double_quoted))(i)
+pub(crate) fn parse_string(i: &mut &[u8]) -> PResult<Vec<u8>> {
+    alt((parse_string_single_quoted, parse_string_double_quoted))
+        .parse_next(i)
 }
 
 #[cfg(test)]
 mod tests {
-    use nom_test_helpers::prelude::*;
 
     use super::*;
 
     #[test]
-    fn test_parse_relational_op_str() {
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"=="),
-            RelationalOp::Eq
-        );
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"!="),
-            RelationalOp::Ne
-        );
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"=^"),
-            RelationalOp::StartsWith
-        );
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"!^"),
-            RelationalOp::StartsNotWith
-        );
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"=$"),
-            RelationalOp::EndsWith
-        );
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"!$"),
-            RelationalOp::EndsNotWith
-        );
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"=*"),
-            RelationalOp::Similar
-        );
-        assert_finished_and_eq!(
-            parse_relational_op_str(b"=?"),
-            RelationalOp::Contains
-        );
+    fn parse_relational_op_str() {
+        use super::parse_relational_op_str;
+
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_relational_op_str
+                        .parse($input.as_bytes())
+                        .unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!("==", RelationalOp::Eq);
+        parse_success!("!=", RelationalOp::Ne);
+        parse_success!("=^", RelationalOp::StartsWith);
+        parse_success!("!^", RelationalOp::StartsNotWith);
+        parse_success!("=$", RelationalOp::EndsWith);
+        parse_success!("!$", RelationalOp::EndsNotWith);
+        parse_success!("=*", RelationalOp::Similar);
+        parse_success!("=?", RelationalOp::Contains);
+
+        assert!(parse_relational_op_str.parse(b"=>").is_err());
+        assert!(parse_relational_op_str.parse(b">").is_err());
+        assert!(parse_relational_op_str.parse(b"<").is_err());
+        assert!(parse_relational_op_str.parse(b"<=").is_err());
     }
 
     #[test]
-    fn test_parse_relational_op_usize() {
-        assert_done_and_eq!(
-            parse_relational_op_usize(b"=="),
-            RelationalOp::Eq
-        );
-        assert_done_and_eq!(
-            parse_relational_op_usize(b"!="),
-            RelationalOp::Ne
-        );
-        assert_done_and_eq!(
-            parse_relational_op_usize(b">="),
-            RelationalOp::Ge
-        );
-        assert_done_and_eq!(
-            parse_relational_op_usize(b">"),
-            RelationalOp::Gt
-        );
-        assert_done_and_eq!(
-            parse_relational_op_usize(b"<="),
-            RelationalOp::Le
-        );
-        assert_done_and_eq!(
-            parse_relational_op_usize(b"<"),
-            RelationalOp::Lt
-        );
+    fn parse_relational_op_usize() {
+        use super::parse_relational_op_usize;
+
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_relational_op_usize
+                        .parse($input.as_bytes())
+                        .unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!("==", RelationalOp::Eq);
+        parse_success!("!=", RelationalOp::Ne);
+        parse_success!(">=", RelationalOp::Ge);
+        parse_success!(">", RelationalOp::Gt);
+        parse_success!("<=", RelationalOp::Le);
+        parse_success!("<", RelationalOp::Lt);
+
+        assert!(parse_relational_op_usize.parse(b"=*").is_err());
+        assert!(parse_relational_op_usize.parse(b"=~").is_err());
+        assert!(parse_relational_op_usize.parse(b"=^").is_err());
+        assert!(parse_relational_op_usize.parse(b"!^").is_err());
+        assert!(parse_relational_op_usize.parse(b"=$").is_err());
+        assert!(parse_relational_op_usize.parse(b"!$").is_err());
+        assert!(parse_relational_op_usize.parse(b"=?").is_err());
     }
 
     #[test]
-    fn test_parse_string() {
-        assert_done_and_eq!(parse_string(b"'abc'"), "abc".to_string());
-        assert_done_and_eq!(parse_string(b"'\tc'"), "\tc".to_string());
-        assert_done_and_eq!(
-            parse_string(b"\"abc\""),
-            "abc".to_string()
-        );
-        assert_done_and_eq!(
-            parse_string(b"\"\tc\""),
-            "\tc".to_string()
-        );
+    fn parse_string_single_quoted() {
+        use super::parse_string_single_quoted;
+
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_string_single_quoted.parse($input).unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!(b"'abc'", b"abc");
+        parse_success!(b"'a\"bc'", b"a\"bc");
+        parse_success!(b"'a\\'bc'", b"a'bc");
+        parse_success!(b"''", b"");
+    }
+
+    #[test]
+    fn parse_string_double_quoted() {
+        use super::parse_string_double_quoted;
+
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_string_double_quoted.parse($input).unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!(b"\"abc\"", b"abc");
+        parse_success!(b"\"a\\\"bc\"", b"a\"bc");
+        parse_success!(b"\"a\'bc\"", b"a'bc");
+        parse_success!(b"\"\"", b"");
     }
 }

@@ -1,27 +1,27 @@
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 use std::iter::repeat;
 use std::ops::{Add, Deref, Mul};
 use std::str::FromStr;
 
-use nom::branch::alt;
-use nom::bytes::complete::is_not;
-use nom::character::complete::{char, multispace0, multispace1};
-use nom::combinator::{all_consuming, map, map_res, value, verify};
-use nom::multi::{fold_many0, separated_list1};
-use nom::sequence::{delimited, preceded};
-use nom::Finish;
-use pica_matcher::subfield_matcher::Matcher;
+use bstr::ByteSlice;
 use pica_matcher::MatcherOptions;
 use pica_path::{parse_path, Path};
-use pica_record::parser::ParseResult;
-use pica_record::Record;
+use pica_record::RecordRef;
 use thiserror::Error;
+use winnow::ascii::{multispace0, multispace1};
+use winnow::combinator::{
+    alt, delimited, fold_repeat, preceded, separated,
+};
+use winnow::error::{ContextError, ParserError};
+use winnow::prelude::*;
+use winnow::stream::{AsChar, Stream, StreamIsPartial};
+use winnow::token::take_till1;
 
 #[derive(Debug, Error)]
 #[error("invalid selector, got `{0}`")]
 pub struct ParseSelectorError(String);
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum QueryFragment {
     Path(Path),
     Const(String),
@@ -39,7 +39,7 @@ impl From<String> for QueryFragment {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Query(Vec<QueryFragment>);
 
 #[derive(Debug, Error)]
@@ -65,8 +65,8 @@ impl Query {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(data: &str) -> Self {
-        Self::from_str(data).expect("valid query expression.")
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
+        Self::try_from(data.as_ref()).expect("valid query expression.")
     }
 }
 
@@ -78,33 +78,34 @@ impl Deref for Query {
     }
 }
 
+impl TryFrom<&[u8]> for Query {
+    type Error = ParseQueryError;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        parse_query.parse(value).map_err(|_| {
+            let value = value.to_str_lossy().to_string();
+            ParseQueryError(value)
+        })
+    }
+}
+
 impl FromStr for Query {
     type Err = ParseQueryError;
-
-    /// Create a new query from a string slice.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_select::Query;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let _query = "003@.0, 012A/*.[abc]"
-    ///         .parse::<Query>()
-    ///         .expect("valid query expression");
-    ///     Ok(())
-    /// }
-    /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        all_consuming(parse_query)(s.as_bytes())
-            .finish()
-            .map_err(|_| ParseQueryError(s.into()))
-            .map(|(_, selector)| selector)
+        Self::try_from(s.as_bytes())
+    }
+}
+
+impl TryFrom<&String> for Query {
+    type Error = ParseQueryError;
+
+    fn try_from(value: &String) -> Result<Self, Self::Error> {
+        Self::try_from(value.as_bytes())
     }
 }
 
 impl From<Path> for Query {
+    #[inline]
     fn from(path: Path) -> Self {
         Self(vec![path.into()])
     }
@@ -116,128 +117,126 @@ enum Quotes {
     Double,
 }
 
+fn parse_literal<I, E>(
+    quotes: Quotes,
+) -> impl Parser<I, <I as Stream>::Slice, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar,
+    E: ParserError<I>,
+{
+    match quotes {
+        Quotes::Single => take_till1(['\'', '\\']),
+        Quotes::Double => take_till1(['"', '\\']),
+    }
+}
+
+fn parse_escaped_char<I, E>(quotes: Quotes) -> impl Parser<I, char, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar + Clone,
+    E: ParserError<I>,
+{
+    let v = match quotes {
+        Quotes::Single => '\'',
+        Quotes::Double => '"',
+    };
+
+    preceded(
+        '\\',
+        alt((
+            'n'.value('\n'),
+            'r'.value('\r'),
+            't'.value('\t'),
+            'b'.value('\u{08}'),
+            'f'.value('\u{0C}'),
+            '\\'.value('\\'),
+            '/'.value('/'),
+            v.value(v),
+        )),
+    )
+}
+
 #[derive(Debug, Clone)]
 enum StringFragment<'a> {
-    Literal(&'a str),
+    Literal(&'a [u8]),
     EscapedChar(char),
     EscapedWs,
 }
 
-/// Parse a non-empty block of text that doesn't include \ or ".
-fn parse_literal(
+fn parse_quoted_fragment<'a, E: ParserError<&'a [u8]>>(
     quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<&str> {
-    move |i: &[u8]| {
-        let arr = match quotes {
-            Quotes::Single => "\'\\",
-            Quotes::Double => "\"\\",
-        };
+) -> impl Parser<&'a [u8], StringFragment<'a>, E> {
+    use StringFragment::*;
 
-        map_res(
-            verify(is_not(arr), |s: &[u8]| !s.is_empty()),
-            std::str::from_utf8,
-        )(i)
-    }
-}
-
-/// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
-fn parse_escaped_char(
-    quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<char> {
-    move |i: &[u8]| {
-        let val = match quotes {
-            Quotes::Single => '"',
-            Quotes::Double => '\'',
-        };
-
-        preceded(
-            char('\\'),
-            alt((
-                // parse_unicode,
-                value('\n', char('n')),
-                value('\r', char('r')),
-                value('\t', char('t')),
-                value('\u{08}', char('b')),
-                value('\u{0C}', char('f')),
-                value('\\', char('\\')),
-                value('/', char('/')),
-                value(val, char(val)),
-            )),
-        )(i)
-    }
-}
-
-/// Combine parse_literal, parse_escaped_char into a StringFragment.
-fn parse_fragment(
-    quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<StringFragment> {
-    move |i: &[u8]| {
-        alt((
-            map(parse_literal(quotes), StringFragment::Literal),
-            map(
-                parse_escaped_char(quotes),
-                StringFragment::EscapedChar,
-            ),
-            value(
-                StringFragment::EscapedWs,
-                preceded(char('\\'), multispace1),
-            ),
-        ))(i)
-    }
-}
-
-fn parse_string_inner(
-    quotes: Quotes,
-) -> impl Fn(&[u8]) -> ParseResult<String> {
-    move |i: &[u8]| {
-        fold_many0(
-            parse_fragment(quotes),
-            String::new,
-            |mut string, fragment| {
-                match fragment {
-                    StringFragment::Literal(s) => string.push_str(s),
-                    StringFragment::EscapedChar(c) => string.push(c),
-                    StringFragment::EscapedWs => {}
-                }
-                string
-            },
-        )(i)
-    }
-}
-
-fn parse_string_single_quoted(i: &[u8]) -> ParseResult<String> {
-    delimited(
-        char('\''),
-        parse_string_inner(Quotes::Single),
-        char('\''),
-    )(i)
-}
-
-fn parse_string_double_quoted(i: &[u8]) -> ParseResult<String> {
-    delimited(char('"'), parse_string_inner(Quotes::Double), char('"'))(
-        i,
-    )
-}
-
-pub(crate) fn parse_string(i: &[u8]) -> ParseResult<String> {
-    alt((parse_string_single_quoted, parse_string_double_quoted))(i)
-}
-
-fn parse_query_fragment(i: &[u8]) -> ParseResult<QueryFragment> {
     alt((
-        map(parse_path, QueryFragment::Path),
-        map(parse_string, QueryFragment::Const),
-    ))(i)
+        parse_literal::<&'a [u8], E>(quotes).map(Literal),
+        parse_escaped_char::<&'a [u8], E>(quotes).map(EscapedChar),
+        preceded('\\', multispace1).value(EscapedWs),
+    ))
 }
 
-fn parse_query(i: &[u8]) -> ParseResult<Query> {
-    map(
-        separated_list1(
-            delimited(multispace0, char(','), multispace0),
-            parse_query_fragment,
-        ),
-        Query,
-    )(i)
+fn parse_quoted_string<'a, E>(
+    quotes: Quotes,
+) -> impl Parser<&'a [u8], Vec<u8>, E>
+where
+    E: ParserError<&'a [u8]>,
+{
+    use StringFragment::*;
+
+    let string_builder = fold_repeat(
+        0..,
+        parse_quoted_fragment::<E>(quotes),
+        Vec::new,
+        |mut acc, fragment| {
+            match fragment {
+                Literal(s) => acc.extend_from_slice(s),
+                EscapedChar(c) => acc.push(c as u8),
+                EscapedWs => {}
+            }
+            acc
+        },
+    );
+
+    match quotes {
+        Quotes::Single => delimited('\'', string_builder, '\''),
+        Quotes::Double => delimited('"', string_builder, '"'),
+    }
+}
+
+#[inline]
+fn parse_string_single_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
+    parse_quoted_string::<ContextError>(Quotes::Single).parse_next(i)
+}
+
+#[inline]
+fn parse_string_double_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
+    parse_quoted_string::<ContextError>(Quotes::Double).parse_next(i)
+}
+
+pub(crate) fn parse_string(i: &mut &[u8]) -> PResult<Vec<u8>> {
+    alt((parse_string_single_quoted, parse_string_double_quoted))
+        .parse_next(i)
+}
+
+fn parse_query_fragment(i: &mut &[u8]) -> PResult<QueryFragment> {
+    alt((
+        parse_path.map(QueryFragment::Path),
+        parse_string
+            .verify_map(|value| String::from_utf8(value).ok())
+            .map(QueryFragment::Const),
+    ))
+    .parse_next(i)
+}
+
+fn parse_query(i: &mut &[u8]) -> PResult<Query> {
+    separated(
+        1..,
+        parse_query_fragment,
+        delimited(multispace0, ',', multispace0),
+    )
+    .map(Query)
+    .parse_next(i)
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
@@ -415,7 +414,7 @@ pub trait QueryExt {
     fn query(&self, query: &Query, options: &QueryOptions) -> Outcome;
 }
 
-impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
+impl QueryExt for RecordRef<'_> {
     /// Performs a query against a PICA+ record.
     ///
     /// # Example
@@ -428,8 +427,7 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let query =
-    ///         Query::from_str("003@.0, 012A{(a,b) | a == 'abc'}")?;
+    ///     let query = Query::new("003@.0, 012A{(a,b) | a == 'abc'}");
     ///     let record = RecordRef::from_bytes(
     ///         b"003@ \x1f01234\x1e012A \x1faabc\x1e\n",
     ///     )?;
@@ -537,9 +535,6 @@ impl<T: AsRef<[u8]> + Debug + Display> QueryExt for Record<T> {
 
 #[cfg(test)]
 mod tests {
-    use nom_test_helpers::assert_finished_and_eq;
-    use pica_record::RecordRef;
-
     use super::*;
 
     macro_rules! s {
@@ -549,38 +544,15 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query() -> anyhow::Result<()> {
-        assert_finished_and_eq!(
-            parse_query(b"003@.0,012A/*.a"),
-            Query(vec![
-                Path::new("003@.0").into(),
-                Path::new("012A/*.a").into(),
-            ])
-        );
-
-        assert_finished_and_eq!(
-            parse_query(b"003@.0, 012A/*{b, c | a?}"),
-            Query(vec![
-                Path::new("003@.0").into(),
-                Path::new("012A/*{b,c |a?}").into(),
-            ])
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_outcome_from_vec() -> anyhow::Result<()> {
+    fn test_outcome_from_vec() {
         assert_eq!(
             Outcome::from(vec![s!("abc"), s!("def")]),
             Outcome(vec![vec![s!("abc")], vec![s!("def")]])
         );
-
-        Ok(())
     }
 
     #[test]
-    fn test_outcome_add() -> anyhow::Result<()> {
+    fn test_outcome_add() {
         let lhs = Outcome::from(vec!["abc", "def"]);
         let rhs = Outcome::from(vec!["123", "456"]);
 
@@ -599,12 +571,10 @@ mod tests {
                 vec![s!("123"), s!("456")]
             ])
         );
-
-        Ok(())
     }
 
     #[test]
-    fn test_outcome_mul() -> anyhow::Result<()> {
+    fn test_outcome_mul() {
         let lhs = Outcome::from(vec!["abc", "def"]);
         let rhs = Outcome::from(vec!["123", "456"]);
 
@@ -638,18 +608,16 @@ mod tests {
             Outcome::from(vec!["123", "456"]) * Outcome::default(),
             Outcome::from(vec!["123", "456"])
         );
-
-        Ok(())
     }
 
     #[test]
-    fn test_query() -> anyhow::Result<()> {
+    fn test_query() {
         let options = QueryOptions::default();
 
         let record =
             RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a")?, &options),
+            record.query(&Query::new("012A.a"), &options),
             Outcome::from(vec![s!("1")])
         );
 
@@ -659,7 +627,7 @@ mod tests {
             vec![('a', "1"), ('a', "2")],
         )]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a")?, &options),
+            record.query(&Query::new("012A.a"), &options),
             Outcome::from(vec![s!("1"), s!("2")])
         );
 
@@ -668,7 +636,7 @@ mod tests {
             ("012A", None, vec![('a', "2")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a")?, &options),
+            record.query(&Query::new("012A.a"), &options),
             Outcome::from(vec![s!("1"), s!("2")])
         );
 
@@ -677,7 +645,7 @@ mod tests {
             ("012A", None, vec![('a', "1")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A.a")?, &options),
+            record.query(&Query::new("003@.0, 012A.a"), &options),
             Outcome(vec![vec![s!("9"), s!("1")]])
         );
 
@@ -687,7 +655,7 @@ mod tests {
             ("012A", None, vec![('a', "2")]),
         ]);
         assert_eq!(
-            record.query(&Query::from_str("003@.0, 012A.a")?, &options),
+            record.query(&Query::new("003@.0, 012A.a"), &options),
             Outcome(vec![
                 vec![s!("9"), s!("1")],
                 vec![s!("9"), s!("2")],
@@ -699,10 +667,8 @@ mod tests {
             ("012A", None, vec![('a', "1"), ('b', "2")]),
         ]);
         assert_eq!(
-            record.query(
-                &Query::from_str("003@.0, 012A{ (a, b) }")?,
-                &options
-            ),
+            record
+                .query(&Query::new("003@.0, 012A{ (a, b) }"), &options),
             Outcome(vec![vec![s!("9"), s!("1"), s!("2")]])
         );
 
@@ -711,10 +677,8 @@ mod tests {
             ("012A", None, vec![('a', "1")]),
         ]);
         assert_eq!(
-            record.query(
-                &Query::from_str("003@.0, 012A{ (a, b) }")?,
-                &options
-            ),
+            record
+                .query(&Query::new("003@.0, 012A{ (a, b) }"), &options),
             Outcome(vec![vec![s!("9"), s!("1"), s!("")]])
         );
 
@@ -723,10 +687,8 @@ mod tests {
             ("012A", None, vec![('a', "1"), ('a', "2")]),
         ]);
         assert_eq!(
-            record.query(
-                &Query::from_str("003@.0, 012A{ (a, b) }")?,
-                &options
-            ),
+            record
+                .query(&Query::new("003@.0, 012A{ (a, b) }"), &options),
             Outcome(vec![
                 vec![s!("9"), s!("1"), s!("")],
                 vec![s!("9"), s!("2"), s!("")],
@@ -739,10 +701,8 @@ mod tests {
             ("012A", None, vec![('a', "3"), ('b', "4")]),
         ]);
         assert_eq!(
-            record.query(
-                &Query::from_str("003@.0, 012A{ (a, b) }")?,
-                &options
-            ),
+            record
+                .query(&Query::new("003@.0, 012A{ (a, b) }"), &options),
             Outcome(vec![
                 vec![s!("9"), s!("1"), s!("")],
                 vec![s!("9"), s!("2"), s!("")],
@@ -757,7 +717,7 @@ mod tests {
         ]);
         assert_eq!(
             record.query(
-                &Query::from_str("003@.0, 012A{ (a,b) | x? }")?,
+                &Query::new("003@.0, 012A{ (a,b) | x? }"),
                 &options
             ),
             Outcome(vec![vec![s!("9"), s!("3"), s!("4")],])
@@ -766,7 +726,7 @@ mod tests {
         let record =
             RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
         assert_eq!(
-            record.query(&Query::from_str("012A.a, 'foo'")?, &options),
+            record.query(&Query::new("012A.a, 'foo'"), &options),
             Outcome(vec![vec![s!("1"), s!("foo")]])
         );
 
@@ -777,14 +737,10 @@ mod tests {
         ]);
         assert_eq!(
             record.query(
-                &Query::from_str(
-                    "003@.0, \"bar\", 012A{ (a,b) | x? }"
-                )?,
+                &Query::new("003@.0, \"bar\", 012A{ (a,b) | x? }"),
                 &options
             ),
             Outcome(vec![vec![s!("9"), s!("bar"), s!("3"), s!("4")],])
         );
-
-        Ok(())
     }
 }

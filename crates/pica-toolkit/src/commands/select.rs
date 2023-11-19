@@ -5,7 +5,6 @@ use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use clap::Parser;
 use pica_matcher::{MatcherOptions, RecordMatcher};
@@ -190,27 +189,44 @@ impl Select {
             .squash(self.squash)
             .merge(self.merge);
 
-        let matcher = if let Some(matcher_str) = self.filter {
-            let matcher_str =
-                NormalizationForm::translit_opt(matcher_str, nf);
-            let mut matcher = RecordMatcher::new(&matcher_str)?;
+        let filter = self
+            .filter
+            .map(|value| NormalizationForm::translit_opt(value, nf));
 
-            for matcher_str in self.and.iter() {
-                let matcher_str =
-                    NormalizationForm::translit_opt(matcher_str, nf);
-                matcher = matcher & RecordMatcher::new(&matcher_str)?;
+        let and: Vec<String> = self
+            .and
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        let or: Vec<String> = self
+            .or
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        let not: Vec<String> = self
+            .not
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        let matcher = if let Some(ref matcher_str) = filter {
+            let mut matcher = RecordMatcher::try_from(matcher_str)?;
+
+            for matcher_str in and.iter() {
+                matcher =
+                    matcher & RecordMatcher::try_from(matcher_str)?;
             }
 
-            for matcher_str in self.or.iter() {
-                let matcher_str =
-                    NormalizationForm::translit_opt(matcher_str, nf);
-                matcher = matcher | RecordMatcher::new(&matcher_str)?;
+            for matcher_str in or.iter() {
+                matcher =
+                    matcher | RecordMatcher::try_from(matcher_str)?;
             }
 
-            for matcher_str in self.not.iter() {
-                let matcher_str =
-                    NormalizationForm::translit_opt(matcher_str, nf);
-                matcher = matcher & !RecordMatcher::new(&matcher_str)?;
+            for matcher_str in not.iter() {
+                matcher =
+                    matcher & !RecordMatcher::try_from(matcher_str)?;
             }
 
             Some(matcher)
@@ -230,10 +246,8 @@ impl Select {
             FilterList::default()
         };
 
-        let query = Query::from_str(&NormalizationForm::translit_opt(
-            &self.query,
-            nf,
-        ))?;
+        let query = NormalizationForm::translit_opt(&self.query, nf);
+        let query = Query::try_from(&query)?;
 
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })

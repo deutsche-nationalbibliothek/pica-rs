@@ -1,13 +1,10 @@
-use pica_matcher::subfield_matcher::{
-    CardinalityMatcher, ExistsMatcher, InMatcher, Matcher,
-    RegexMatcher, RelationMatcher, SubfieldMatcher,
-};
+use pica_matcher::subfield_matcher::*;
 use pica_matcher::MatcherOptions;
 use pica_record::SubfieldRef;
 
 #[test]
 fn exists_matcher() -> anyhow::Result<()> {
-    let matcher = ExistsMatcher::new("1?")?;
+    let matcher = ExistsMatcher::new("1?");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -23,7 +20,7 @@ fn exists_matcher() -> anyhow::Result<()> {
         &options
     ));
 
-    let matcher = ExistsMatcher::new("[a12]?")?;
+    let matcher = ExistsMatcher::new("[a12]?");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -45,7 +42,7 @@ fn exists_matcher() -> anyhow::Result<()> {
 #[test]
 fn relational_matcher_eq() -> anyhow::Result<()> {
     // case sensitive
-    let matcher = RelationMatcher::new("0 == 'abc'")?;
+    let matcher = RelationMatcher::new("0 == 'abc'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -64,7 +61,7 @@ fn relational_matcher_eq() -> anyhow::Result<()> {
     ));
 
     // case insensitive
-    let matcher = RelationMatcher::new("0 == 'abc'")?;
+    let matcher = RelationMatcher::new("0 == 'abc'");
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(matcher
@@ -73,7 +70,7 @@ fn relational_matcher_eq() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &options));
 
     // multiple subfields
-    let matcher = RelationMatcher::new("0 == 'abc'")?;
+    let matcher = RelationMatcher::new("0 == 'abc'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -99,7 +96,7 @@ fn relational_matcher_eq() -> anyhow::Result<()> {
 #[test]
 fn relational_matcher_ne() -> anyhow::Result<()> {
     // case sensitive
-    let matcher = RelationMatcher::new("0 != 'abc'")?;
+    let matcher = RelationMatcher::new("0 != 'abc'");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -117,7 +114,7 @@ fn relational_matcher_ne() -> anyhow::Result<()> {
     ));
 
     // case insensitive
-    let matcher = RelationMatcher::new("0 != 'abc'")?;
+    let matcher = RelationMatcher::new("0 != 'abc'");
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(!matcher
@@ -126,7 +123,7 @@ fn relational_matcher_ne() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &options));
 
     // multiple subfields
-    let matcher = RelationMatcher::new("0 != 'abc'")?;
+    let matcher = RelationMatcher::new("0 != 'abc'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -152,7 +149,7 @@ fn relational_matcher_ne() -> anyhow::Result<()> {
 #[test]
 fn relational_matcher_starts_with() -> anyhow::Result<()> {
     // case sensitive
-    let matcher = RelationMatcher::new("0 =^ 'ab'")?;
+    let matcher = RelationMatcher::new("0 =^ 'ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -161,7 +158,7 @@ fn relational_matcher_starts_with() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0def")?, &options));
 
     // case insensitive
-    let matcher = RelationMatcher::new("0 =^ 'ab'")?;
+    let matcher = RelationMatcher::new("0 =^ 'ab'");
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(matcher
@@ -172,7 +169,7 @@ fn relational_matcher_starts_with() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0def")?, &options));
 
     // multiple subfields
-    let matcher = RelationMatcher::new("0 =^ 'ab'")?;
+    let matcher = RelationMatcher::new("0 =^ 'ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -196,7 +193,7 @@ fn relational_matcher_starts_with() -> anyhow::Result<()> {
 #[test]
 fn relational_matcher_ends_with() -> anyhow::Result<()> {
     // case sensitive
-    let matcher = RelationMatcher::new("0 =$ 'ab'")?;
+    let matcher = RelationMatcher::new("0 =$ 'ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -205,7 +202,7 @@ fn relational_matcher_ends_with() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0abba")?, &options));
 
     // case insensitive
-    let matcher = RelationMatcher::new("0 =$ 'ab'")?;
+    let matcher = RelationMatcher::new("0 =$ 'ab'");
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(matcher
@@ -214,7 +211,7 @@ fn relational_matcher_ends_with() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0abAB")?, &options));
 
     // multiple subfields
-    let matcher = RelationMatcher::new("0 =$ 'ab'")?;
+    let matcher = RelationMatcher::new("0 =$ 'ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -238,7 +235,7 @@ fn relational_matcher_ends_with() -> anyhow::Result<()> {
 #[test]
 fn relational_matcher_similar() -> anyhow::Result<()> {
     // default threshold
-    let matcher = RelationMatcher::new("a =* 'Heike'")?;
+    let matcher = RelationMatcher::new("a =* 'Heike'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -247,7 +244,7 @@ fn relational_matcher_similar() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1faHeiko")?, &options));
 
     // threshold set
-    let matcher = RelationMatcher::new("a =* 'Heike'")?;
+    let matcher = RelationMatcher::new("a =* 'Heike'");
     let options = MatcherOptions::new().strsim_threshold(0.7);
 
     assert!(matcher
@@ -256,14 +253,14 @@ fn relational_matcher_similar() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1faHeiko")?, &options));
 
     // default threshold
-    let matcher = RelationMatcher::new("a =* 'Heike'")?;
+    let matcher = RelationMatcher::new("a =* 'Heike'");
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(matcher
         .is_match(&SubfieldRef::from_bytes(b"\x1faheike")?, &options));
 
     // multiple subfields
-    let matcher = RelationMatcher::new("a =* 'Heike'")?;
+    let matcher = RelationMatcher::new("a =* 'Heike'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -280,7 +277,7 @@ fn relational_matcher_similar() -> anyhow::Result<()> {
 #[test]
 fn relational_matcher_contains() -> anyhow::Result<()> {
     // default options
-    let matcher = RelationMatcher::new("a =? 'aba'")?;
+    let matcher = RelationMatcher::new("a =? 'aba'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -291,7 +288,7 @@ fn relational_matcher_contains() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1faabba")?, &options));
 
     // case ignore
-    let matcher = RelationMatcher::new("a =? 'AbA'")?;
+    let matcher = RelationMatcher::new("a =? 'AbA'");
     let options = MatcherOptions::default().case_ignore(true);
 
     assert!(matcher
@@ -302,7 +299,7 @@ fn relational_matcher_contains() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1faabba")?, &options));
 
     // multiple subfields
-    let matcher = RelationMatcher::new("a =? 'aba'")?;
+    let matcher = RelationMatcher::new("a =? 'aba'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -319,7 +316,7 @@ fn relational_matcher_contains() -> anyhow::Result<()> {
 #[test]
 fn regex_matcher() -> anyhow::Result<()> {
     // case sensitive
-    let matcher = RegexMatcher::new("0 =~ '^ab'")?;
+    let matcher = RegexMatcher::new("0 =~ '^ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -330,7 +327,7 @@ fn regex_matcher() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1faabba")?, &options));
 
     // case insensitive
-    let matcher = RegexMatcher::new("0 =~ '^ab'")?;
+    let matcher = RegexMatcher::new("0 =~ '^ab'");
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(matcher
@@ -339,7 +336,7 @@ fn regex_matcher() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0ABBA")?, &options));
 
     // invert match
-    let matcher = RegexMatcher::new("0 !~ '^ab'")?;
+    let matcher = RegexMatcher::new("0 !~ '^ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -348,7 +345,7 @@ fn regex_matcher() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0abba")?, &options));
 
     // multiple subfields
-    let matcher = RegexMatcher::new("0 =~ '^ab'")?;
+    let matcher = RegexMatcher::new("0 =~ '^ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -373,7 +370,7 @@ fn regex_matcher() -> anyhow::Result<()> {
 #[test]
 fn in_matcher() -> anyhow::Result<()> {
     // case sensitive
-    let matcher = InMatcher::new("0 in ['abc', 'def']")?;
+    let matcher = InMatcher::new("0 in ['abc', 'def']");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -386,7 +383,7 @@ fn in_matcher() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0DEF")?, &options));
 
     // case insensitive
-    let matcher = InMatcher::new("0 in ['abc', 'def']")?;
+    let matcher = InMatcher::new("0 in ['abc', 'def']");
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(matcher
@@ -395,7 +392,7 @@ fn in_matcher() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &options));
 
     // multiple subfields
-    let matcher = InMatcher::new("0 in ['abc', 'def']")?;
+    let matcher = InMatcher::new("0 in ['abc', 'def']");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -406,7 +403,7 @@ fn in_matcher() -> anyhow::Result<()> {
         &options
     ));
 
-    let matcher = InMatcher::new("a in ['000', '999']")?;
+    let matcher = InMatcher::new("a in ['000', '999']");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -417,7 +414,7 @@ fn in_matcher() -> anyhow::Result<()> {
         &options
     ));
 
-    let matcher = InMatcher::new("a not in ['000', '999']")?;
+    let matcher = InMatcher::new("a not in ['000', '999']");
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(
@@ -433,7 +430,7 @@ fn in_matcher() -> anyhow::Result<()> {
 
 #[test]
 fn cardinality_matcher_eq() -> anyhow::Result<()> {
-    let matcher = CardinalityMatcher::new("#0 == 2")?;
+    let matcher = CardinalityMatcher::new("#0 == 2");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -461,7 +458,7 @@ fn cardinality_matcher_eq() -> anyhow::Result<()> {
 
 #[test]
 fn cardinality_matcher_ne() -> anyhow::Result<()> {
-    let matcher = CardinalityMatcher::new("#0 != 2")?;
+    let matcher = CardinalityMatcher::new("#0 != 2");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -489,7 +486,7 @@ fn cardinality_matcher_ne() -> anyhow::Result<()> {
 
 #[test]
 fn cardinality_matcher_ge() -> anyhow::Result<()> {
-    let matcher = CardinalityMatcher::new("#0 >= 2")?;
+    let matcher = CardinalityMatcher::new("#0 >= 2");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -517,7 +514,7 @@ fn cardinality_matcher_ge() -> anyhow::Result<()> {
 
 #[test]
 fn cardinality_matcher_gt() -> anyhow::Result<()> {
-    let matcher = CardinalityMatcher::new("#0 > 2")?;
+    let matcher = CardinalityMatcher::new("#0 > 2");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -545,7 +542,7 @@ fn cardinality_matcher_gt() -> anyhow::Result<()> {
 
 #[test]
 fn cardinality_matcher_le() -> anyhow::Result<()> {
-    let matcher = CardinalityMatcher::new("#0 <= 2")?;
+    let matcher = CardinalityMatcher::new("#0 <= 2");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -573,7 +570,7 @@ fn cardinality_matcher_le() -> anyhow::Result<()> {
 
 #[test]
 fn cardinality_matcher_lt() -> anyhow::Result<()> {
-    let matcher = CardinalityMatcher::new("#0 < 2")?;
+    let matcher = CardinalityMatcher::new("#0 < 2");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -602,7 +599,7 @@ fn cardinality_matcher_lt() -> anyhow::Result<()> {
 #[test]
 fn subfield_matcher_not() -> anyhow::Result<()> {
     // group
-    let matcher = SubfieldMatcher::new("!(a == 'bcd')")?;
+    let matcher = SubfieldMatcher::new("!(a == 'bcd')");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -611,7 +608,7 @@ fn subfield_matcher_not() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1fbcde")?, &options));
 
     // exists
-    let matcher = SubfieldMatcher::new("!a?")?;
+    let matcher = SubfieldMatcher::new("!a?");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -620,7 +617,7 @@ fn subfield_matcher_not() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1fbcde")?, &options));
 
     // not
-    let matcher = SubfieldMatcher::new("!!!(a == 'bcd')")?;
+    let matcher = SubfieldMatcher::new("!!!(a == 'bcd')");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -634,7 +631,7 @@ fn subfield_matcher_not() -> anyhow::Result<()> {
 #[test]
 fn subfield_matcher_group() -> anyhow::Result<()> {
     // and
-    let matcher = SubfieldMatcher::new("(a =^ 'ab' && a =$ 'ba')")?;
+    let matcher = SubfieldMatcher::new("(a =^ 'ab' && a =$ 'ba')");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -643,7 +640,7 @@ fn subfield_matcher_group() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1fbcde")?, &options));
 
     // or
-    let matcher = SubfieldMatcher::new("(a =^ 'ab' || a =^ 'ba')")?;
+    let matcher = SubfieldMatcher::new("(a =^ 'ab' || a =^ 'ba')");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -652,7 +649,7 @@ fn subfield_matcher_group() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1fababa")?, &options));
 
     // singleton
-    let matcher = SubfieldMatcher::new("(a == 'bcd')")?;
+    let matcher = SubfieldMatcher::new("(a == 'bcd')");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -661,14 +658,14 @@ fn subfield_matcher_group() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1fbcde")?, &options));
 
     // nested group
-    let matcher = SubfieldMatcher::new("(((a == 'bcd')))")?;
+    let matcher = SubfieldMatcher::new("(((a == 'bcd')))");
     let options = MatcherOptions::default();
 
     assert!(matcher
         .is_match(&SubfieldRef::from_bytes(b"\x1fabcd")?, &options));
 
     // not
-    let matcher = SubfieldMatcher::new("(!(a == 'bcd'))")?;
+    let matcher = SubfieldMatcher::new("(!(a == 'bcd'))");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -681,7 +678,7 @@ fn subfield_matcher_group() -> anyhow::Result<()> {
 fn subfield_matcher_or() -> anyhow::Result<()> {
     // singleton
     let matcher =
-        SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' || a =^ 'cd'")?;
+        SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' || a =^ 'cd'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -697,7 +694,7 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
 
     // group
     let matcher =
-        SubfieldMatcher::new("a =^ 'ab' || (a =^ 'bc' && a =$ 'cd')")?;
+        SubfieldMatcher::new("a =^ 'ab' || (a =^ 'bc' && a =$ 'cd')");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -709,7 +706,7 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
 
     // and
     let matcher =
-        SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' && a =$ 'cd'")?;
+        SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' && a =$ 'cd'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -722,7 +719,7 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1fabcbc")?, &options));
 
     // or
-    let matcher = SubfieldMatcher::new("!a? || b == 'x'")?;
+    let matcher = SubfieldMatcher::new("!a? || b == 'x'");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -737,7 +734,7 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
     ));
 
     // not
-    let matcher = SubfieldMatcher::new("a == 'bcd' || !(a != 'def')")?;
+    let matcher = SubfieldMatcher::new("a == 'bcd' || !(a != 'def')");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -749,7 +746,7 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
 
     // boolean op precedence
     let matcher =
-        SubfieldMatcher::new("(a =^ 'ab' || a =^ 'bc') && a =$ 'cd'")?;
+        SubfieldMatcher::new("(a =^ 'ab' || a =^ 'bc') && a =$ 'cd'");
     let options = MatcherOptions::default();
 
     assert!(!matcher
@@ -762,7 +759,7 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
         .is_match(&SubfieldRef::from_bytes(b"\x1fabcbc")?, &options));
 
     // multiple subfields
-    let matcher = SubfieldMatcher::new("#a == 2 || a =^ 'ab'")?;
+    let matcher = SubfieldMatcher::new("#a == 2 || a =^ 'ab'");
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
@@ -789,7 +786,7 @@ fn subfield_matcher_or() -> anyhow::Result<()> {
 fn subfield_matcher_and() -> anyhow::Result<()> {
     // singleton
     let matcher =
-        SubfieldMatcher::new("#a == 1 && a =^ 'ab' && a =$ 'ba'")?;
+        SubfieldMatcher::new("#a == 1 && a =^ 'ab' && a =$ 'ba'");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -806,7 +803,7 @@ fn subfield_matcher_and() -> anyhow::Result<()> {
 
     // group
     let matcher =
-        SubfieldMatcher::new("#a == 1 && (a =^ 'ab' || a =^ 'ba')")?;
+        SubfieldMatcher::new("#a == 1 && (a =^ 'ab' || a =^ 'ba')");
     let options = MatcherOptions::default();
 
     assert!(matcher
@@ -823,7 +820,7 @@ fn subfield_matcher_and() -> anyhow::Result<()> {
 
     // not
     let matcher =
-        SubfieldMatcher::new("#a == 1 && !(a =^ 'ab' || a =^ 'ba')")?;
+        SubfieldMatcher::new("#a == 1 && !(a =^ 'ab' || a =^ 'ba')");
     let options = MatcherOptions::default();
 
     assert!(!matcher

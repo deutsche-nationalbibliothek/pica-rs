@@ -9,15 +9,14 @@ edition.workspace = true
 
 [dependencies]
 bstr = { workspace = true }
-nom = { workspace = true }
 pica-matcher = { workspace = true }
 pica-record = { workspace = true }
 serde = { workspace = true, optional = true }
 thiserror = { workspace = true }
+winnow = { workspace = true, features = ["simd"] }
 
 [dev-dependencies]
 anyhow = "1.0"
-nom-test-helpers = "6.1"
 
 [features]
 serde = ["dep:serde"]

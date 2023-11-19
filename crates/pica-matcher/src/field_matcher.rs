@@ -2,29 +2,25 @@
 
 use std::ops::{BitAnd, BitOr, Not};
 
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{char, digit1};
-use nom::combinator::{all_consuming, cut, map, map_res, opt};
-use nom::multi::many1;
-use nom::sequence::{pair, preceded, terminated, tuple};
-use nom::Finish;
-use pica_record::parser::ParseResult;
-use pica_record::Field;
+use bstr::ByteSlice;
+use pica_record::FieldRef;
+use winnow::ascii::digit1;
+use winnow::combinator::{
+    alt, delimited, opt, preceded, repeat, terminated,
+};
+use winnow::prelude::*;
 
 use crate::common::{
     parse_relational_op_usize, ws, BooleanOp, RelationalOp,
 };
-use crate::occurrence_matcher::{
-    parse_occurrence_matcher, OccurrenceMatcher,
-};
+use crate::occurrence_matcher::parse_occurrence_matcher;
 use crate::subfield_matcher::{
     self, parse_subfield_matcher, parse_subfield_singleton_matcher,
-    Matcher,
 };
 use crate::tag_matcher::parse_tag_matcher;
 use crate::{
-    MatcherOptions, ParseMatcherError, SubfieldMatcher, TagMatcher,
+    MatcherOptions, OccurrenceMatcher, ParseMatcherError,
+    SubfieldMatcher, TagMatcher,
 };
 
 /// A field matcher that checks if a field exists.
@@ -32,20 +28,6 @@ use crate::{
 pub struct ExistsMatcher {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
-}
-
-/// Parse a exists matcher expression.
-fn parse_exists_matcher(i: &[u8]) -> ParseResult<ExistsMatcher> {
-    map(
-        terminated(
-            pair(ws(parse_tag_matcher), parse_occurrence_matcher),
-            char('?'),
-        ),
-        |(t, o)| ExistsMatcher {
-            tag_matcher: t,
-            occurrence_matcher: o,
-        },
-    )(i)
 }
 
 impl ExistsMatcher {
@@ -59,35 +41,31 @@ impl ExistsMatcher {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = ExistsMatcher::new("003@?")?;
+    ///     let matcher = ExistsMatcher::new("003@?");
+    ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
     ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
-    ///         &Default::default()
+    ///         &options
     ///     ));
     ///
     ///     assert!(!matcher.is_match(
     ///         &FieldRef::new("002@", None, vec![('0', "123456789X")]),
-    ///         &Default::default()
+    ///         &options
     ///     ));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(data: &str) -> Result<Self, ParseMatcherError> {
-        all_consuming(parse_exists_matcher)(data.as_bytes())
-            .finish()
-            .map_err(|_| {
-                ParseMatcherError::InvalidFieldMatcher(data.into())
-            })
-            .map(|(_, matcher)| matcher)
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
+        Self::try_from(data.as_ref()).expect("exists matcher")
     }
 
     /// Returns `true` if the matcher matches against the given
     /// subfield(s).
-    pub fn is_match<'a, T: AsRef<[u8]> + 'a>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<T>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>> + Clone,
         _options: &MatcherOptions,
     ) -> bool {
         fields.into_iter().any(|field| {
@@ -97,59 +75,34 @@ impl ExistsMatcher {
     }
 }
 
-/// A field matcher that checks for fields satisfies subfield criterion.
-#[derive(Debug, PartialEq, Eq)]
+/// Parse a exists matcher expression.
+fn parse_exists_matcher(i: &mut &[u8]) -> PResult<ExistsMatcher> {
+    terminated(ws((parse_tag_matcher, parse_occurrence_matcher)), '?')
+        .map(|(t, o)| ExistsMatcher {
+            tag_matcher: t,
+            occurrence_matcher: o,
+        })
+        .parse_next(i)
+}
+
+impl TryFrom<&[u8]> for ExistsMatcher {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        parse_exists_matcher.parse(value).map_err(|_| {
+            let value = value.to_str_lossy().to_string();
+            ParseMatcherError::InvalidFieldMatcher(value)
+        })
+    }
+}
+
+/// A field matcher that checks for fields satisfies subfield
+/// criterion.
+#[derive(Debug)]
 pub struct SubfieldsMatcher {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
     subfield_matcher: SubfieldMatcher,
-}
-
-/// Parse a subfields matcher expression.
-fn parse_subfields_matcher_dot(
-    i: &[u8],
-) -> ParseResult<SubfieldsMatcher> {
-    map(
-        tuple((
-            parse_tag_matcher,
-            parse_occurrence_matcher,
-            preceded(
-                alt((char('.'), ws(char('$')))),
-                parse_subfield_singleton_matcher,
-            ),
-        )),
-        |(t, o, s)| SubfieldsMatcher {
-            tag_matcher: t,
-            occurrence_matcher: o,
-            subfield_matcher: s,
-        },
-    )(i)
-}
-
-fn parse_subfields_matcher_bracket(
-    i: &[u8],
-) -> ParseResult<SubfieldsMatcher> {
-    map(
-        tuple((
-            parse_tag_matcher,
-            parse_occurrence_matcher,
-            preceded(
-                ws(char('{')),
-                cut(terminated(parse_subfield_matcher, ws(char('}')))),
-            ),
-        )),
-        |(t, o, s)| SubfieldsMatcher {
-            tag_matcher: t,
-            occurrence_matcher: o,
-            subfield_matcher: s,
-        },
-    )(i)
-}
-
-fn parse_subfields_matcher(i: &[u8]) -> ParseResult<SubfieldsMatcher> {
-    alt((parse_subfields_matcher_dot, parse_subfields_matcher_bracket))(
-        i,
-    )
 }
 
 impl SubfieldsMatcher {
@@ -163,36 +116,32 @@ impl SubfieldsMatcher {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = SubfieldsMatcher::new("002@.0 == 'Olfo'")?;
+    ///     let matcher = SubfieldsMatcher::new("002@.0 == 'Olfo'");
+    ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
     ///         &FieldRef::new("002@", None, vec![('0', "Olfo")]),
-    ///         &Default::default()
+    ///         &options
     ///     ));
     ///
     ///     assert!(!matcher.is_match(
     ///         &FieldRef::new("002@", None, vec![('0', "Oaf")]),
-    ///         &Default::default()
+    ///         &options
     ///     ));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(data: &str) -> Result<Self, ParseMatcherError> {
-        all_consuming(parse_subfields_matcher)(data.as_bytes())
-            .finish()
-            .map_err(|_| {
-                ParseMatcherError::InvalidFieldMatcher(data.into())
-            })
-            .map(|(_, matcher)| matcher)
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
+        Self::try_from(data.as_ref()).expect("subfields matcher")
     }
 
     /// Returns `true` if at least one field exists with a matching tag
-    /// and occurrence and a subfield matching the subfield matcher's
-    /// criteria.
-    pub fn is_match<'a, T: AsRef<[u8]> + 'a>(
+    /// and occurrence and a subfield matching the subfield
+    /// matcher's criteria.
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<T>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         fields.into_iter().any(|field| {
@@ -205,27 +154,65 @@ impl SubfieldsMatcher {
     }
 }
 
+fn parse_subfields_matcher_dot(
+    i: &mut &[u8],
+) -> PResult<SubfieldsMatcher> {
+    (
+        parse_tag_matcher,
+        parse_occurrence_matcher,
+        preceded(
+            alt((
+                '.',
+                ws('$'), // FIXME: remove legacy snytax
+            )),
+            parse_subfield_singleton_matcher,
+        ),
+    )
+        .map(|(t, o, s)| SubfieldsMatcher {
+            tag_matcher: t,
+            occurrence_matcher: o,
+            subfield_matcher: s,
+        })
+        .parse_next(i)
+}
+
+fn parse_subfields_matcher_bracket(
+    i: &mut &[u8],
+) -> PResult<SubfieldsMatcher> {
+    (
+        parse_tag_matcher,
+        parse_occurrence_matcher,
+        delimited(ws('{'), parse_subfield_matcher, ws('}')),
+    )
+        .map(|(t, o, s)| SubfieldsMatcher {
+            tag_matcher: t,
+            occurrence_matcher: o,
+            subfield_matcher: s,
+        })
+        .parse_next(i)
+}
+
+fn parse_subfields_matcher(i: &mut &[u8]) -> PResult<SubfieldsMatcher> {
+    alt((parse_subfields_matcher_dot, parse_subfields_matcher_bracket))
+        .parse_next(i)
+}
+
+impl TryFrom<&[u8]> for SubfieldsMatcher {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        parse_subfields_matcher.parse(value).map_err(|_| {
+            let value = value.to_str_lossy().to_string();
+            ParseMatcherError::InvalidFieldMatcher(value)
+        })
+    }
+}
+
 /// A field matcher that checks for the singleton matcher.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum SingletonMatcher {
     Exists(ExistsMatcher),
     Subfields(SubfieldsMatcher),
-}
-
-/// Parse a singleton matcher expression.
-fn parse_singleton_matcher(i: &[u8]) -> ParseResult<SingletonMatcher> {
-    alt((
-        map(parse_exists_matcher, SingletonMatcher::Exists),
-        map(parse_subfields_matcher, SingletonMatcher::Subfields),
-    ))(i)
-}
-
-/// Parse a singleton matcher expression (curly bracket notation).
-#[inline]
-fn parse_singleton_matcher_bracket(
-    i: &[u8],
-) -> ParseResult<SingletonMatcher> {
-    map(parse_subfields_matcher_bracket, SingletonMatcher::Subfields)(i)
 }
 
 impl SingletonMatcher {
@@ -239,41 +226,57 @@ impl SingletonMatcher {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = SingletonMatcher::new("003@?")?;
+    ///     let matcher = SingletonMatcher::new("003@?");
+    ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
     ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
-    ///         &Default::default()
+    ///         &options
     ///     ));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(data: &str) -> Result<Self, ParseMatcherError> {
-        all_consuming(parse_singleton_matcher)(data.as_bytes())
-            .finish()
-            .map_err(|_| {
-                ParseMatcherError::InvalidFieldMatcher(data.into())
-            })
-            .map(|(_, matcher)| matcher)
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
+        Self::try_from(data.as_ref()).expect("singleton macher")
     }
 
     /// Returns `true` if the given field matches against the field
     /// matcher.
-    pub fn is_match<'a, T: AsRef<[u8]> + 'a>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<T>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>> + Clone,
         options: &MatcherOptions,
     ) -> bool {
         match self {
-            Self::Exists(m) => m.is_match(fields, options),
             Self::Subfields(m) => m.is_match(fields, options),
+            Self::Exists(m) => m.is_match(fields, options),
         }
     }
 }
 
+/// Parse a singleton matcher expression.
+fn parse_singleton_matcher(i: &mut &[u8]) -> PResult<SingletonMatcher> {
+    alt((
+        parse_exists_matcher.map(SingletonMatcher::Exists),
+        parse_subfields_matcher.map(SingletonMatcher::Subfields),
+    ))
+    .parse_next(i)
+}
+
+impl TryFrom<&[u8]> for SingletonMatcher {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        parse_singleton_matcher.parse(value).map_err(|_| {
+            let value = value.to_str_lossy().to_string();
+            ParseMatcherError::InvalidFieldMatcher(value)
+        })
+    }
+}
+
 /// A field matcher that checks the number of occurrences of a field.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct CardinalityMatcher {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
@@ -294,7 +297,7 @@ impl CardinalityMatcher {
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher =
-    ///         CardinalityMatcher::new("#003@{0 == '123456789X'} >= 1")?;
+    ///         CardinalityMatcher::new("#003@{0 == '123456789X'} >= 1");
     ///
     ///     assert!(matcher.is_match(
     ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
@@ -304,20 +307,15 @@ impl CardinalityMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(data: &str) -> Result<Self, ParseMatcherError> {
-        all_consuming(parse_cardinality_matcher)(data.as_bytes())
-            .finish()
-            .map_err(|_| {
-                ParseMatcherError::InvalidFieldMatcher(data.into())
-            })
-            .map(|(_, matcher)| matcher)
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
+        Self::try_from(data.as_ref()).expect("cardinality matcher")
     }
 
     /// Returns `true` if the given field matches against the field
     /// matcher.
-    pub fn is_match<'a, T: AsRef<[u8]> + 'a>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<T>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         let count = fields
@@ -349,40 +347,44 @@ impl CardinalityMatcher {
 
 /// Parse a cardinality matcher expressions.
 fn parse_cardinality_matcher(
-    i: &[u8],
-) -> ParseResult<CardinalityMatcher> {
-    map(
-        preceded(
-            ws(char('#')),
-            cut(tuple((
-                ws(parse_tag_matcher),
-                ws(parse_occurrence_matcher),
-                opt(preceded(
-                    ws(char('{')),
-                    cut(terminated(
-                        parse_subfield_matcher,
-                        ws(char('}')),
-                    )),
-                )),
-                ws(parse_relational_op_usize),
-                map_res(digit1, |s| {
-                    std::str::from_utf8(s).unwrap().parse::<usize>()
-                }),
-            ))),
+    i: &mut &[u8],
+) -> PResult<CardinalityMatcher> {
+    preceded(
+        ws('#'),
+        (
+            ws(parse_tag_matcher),
+            ws(parse_occurrence_matcher),
+            opt(delimited('{', parse_subfield_matcher, ws('}'))),
+            ws(parse_relational_op_usize),
+            digit1
+                .verify_map(|value| std::str::from_utf8(value).ok())
+                .verify_map(|value| value.parse::<usize>().ok()),
         ),
-        |(t, o, s, op, value)| CardinalityMatcher {
-            tag_matcher: t,
-            occurrence_matcher: o,
-            subfield_matcher: s,
-            op,
-            value,
-        },
-    )(i)
+    )
+    .map(|(t, o, s, op, value)| CardinalityMatcher {
+        tag_matcher: t,
+        occurrence_matcher: o,
+        subfield_matcher: s,
+        op,
+        value,
+    })
+    .parse_next(i)
+}
+
+impl TryFrom<&[u8]> for CardinalityMatcher {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        parse_cardinality_matcher.parse(value).map_err(|_| {
+            let value = value.to_str_lossy().to_string();
+            ParseMatcherError::InvalidFieldMatcher(value)
+        })
+    }
 }
 
 /// A field matcher that allows grouping, negation and connecting of
 /// singleton matcher.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum FieldMatcher {
     Singleton(SingletonMatcher),
     Cardinality(CardinalityMatcher),
@@ -406,30 +408,26 @@ impl FieldMatcher {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = FieldMatcher::new("003@?")?;
+    ///     let matcher = FieldMatcher::new("003@?");
+    ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
     ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
-    ///         &Default::default()
+    ///         &options
     ///     ));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new(data: &str) -> Result<Self, ParseMatcherError> {
-        all_consuming(parse_field_matcher)(data.as_bytes())
-            .finish()
-            .map_err(|_| {
-                ParseMatcherError::InvalidFieldMatcher(data.into())
-            })
-            .map(|(_, matcher)| matcher)
+    pub fn new<T: ?Sized + AsRef<[u8]>>(data: &T) -> Self {
+        Self::try_from(data.as_ref()).expect("field matcher")
     }
 
     /// Returns `true` if the given field matches against the field
     /// matcher.
-    pub fn is_match<'a, T: AsRef<[u8]> + 'a>(
+    pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<T>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>> + Clone,
         options: &MatcherOptions,
     ) -> bool {
         match self {
@@ -447,6 +445,197 @@ impl FieldMatcher {
                 }
             }
         }
+    }
+}
+
+/// Parse a singleton matcher expression (curly bracket notation).
+#[inline]
+fn parse_singleton_matcher_bracket(
+    i: &mut &[u8],
+) -> PResult<SingletonMatcher> {
+    parse_subfields_matcher_bracket
+        .map(SingletonMatcher::Subfields)
+        .parse_next(i)
+}
+
+/// Parse field matcher singleton expression.
+#[inline]
+fn parse_field_matcher_singleton(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
+    parse_singleton_matcher
+        .map(FieldMatcher::Singleton)
+        .parse_next(i)
+}
+
+/// Parse field matcher expression (curly bracket notation).
+#[inline]
+fn parse_field_matcher_singleton_bracket(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
+    parse_singleton_matcher_bracket
+        .map(FieldMatcher::Singleton)
+        .parse_next(i)
+}
+
+/// Parse field matcher exists expression.
+#[inline]
+fn parse_field_matcher_exists(i: &mut &[u8]) -> PResult<FieldMatcher> {
+    alt((
+        parse_exists_matcher.map(|matcher| {
+            FieldMatcher::Singleton(SingletonMatcher::Exists(matcher))
+        }),
+        (
+            parse_tag_matcher,
+            parse_occurrence_matcher,
+            preceded(ws('.'), subfield_matcher::parse_exists_matcher),
+        )
+            .map(|(t, o, s)| {
+                FieldMatcher::Singleton(SingletonMatcher::Subfields(
+                    SubfieldsMatcher {
+                        tag_matcher: t,
+                        occurrence_matcher: o,
+                        subfield_matcher: SubfieldMatcher::Singleton(
+                            subfield_matcher::SingletonMatcher::Exists(
+                                s,
+                            ),
+                        ),
+                    },
+                ))
+            }),
+    ))
+    .parse_next(i)
+}
+
+/// Parse field matcher cardinality expression.
+#[inline]
+fn parse_field_matcher_cardinality(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
+    parse_cardinality_matcher
+        .map(FieldMatcher::Cardinality)
+        .parse_next(i)
+}
+
+#[inline]
+fn parse_field_matcher_group(i: &mut &[u8]) -> PResult<FieldMatcher> {
+    delimited(
+        ws('('),
+        alt((
+            parse_field_matcher_composite,
+            parse_field_matcher_singleton,
+            parse_field_matcher_not,
+            parse_field_matcher_cardinality,
+            parse_field_matcher_group,
+        )),
+        ws(')'),
+    )
+    .map(|matcher| FieldMatcher::Group(Box::new(matcher)))
+    .parse_next(i)
+}
+
+#[inline]
+fn parse_field_matcher_not(i: &mut &[u8]) -> PResult<FieldMatcher> {
+    preceded(
+        ws('!'),
+        alt((
+            parse_field_matcher_group,
+            parse_field_matcher_singleton_bracket,
+            parse_field_matcher_exists,
+            parse_field_matcher_not,
+        )),
+    )
+    .map(|matcher| FieldMatcher::Not(Box::new(matcher)))
+    .parse_next(i)
+}
+
+#[inline]
+fn parse_field_matcher_and(i: &mut &[u8]) -> PResult<FieldMatcher> {
+    (
+        ws(alt((
+            parse_field_matcher_group,
+            parse_field_matcher_cardinality,
+            parse_field_matcher_singleton,
+            parse_field_matcher_not,
+            parse_field_matcher_exists,
+        ))),
+        repeat(
+            1..,
+            preceded(
+                ws("&&"),
+                ws(alt((
+                    parse_field_matcher_group,
+                    parse_field_matcher_cardinality,
+                    parse_field_matcher_singleton,
+                    parse_field_matcher_not,
+                    parse_field_matcher_exists,
+                ))),
+            ),
+        ),
+    )
+        .map(|(head, remainder): (_, Vec<_>)| {
+            remainder.into_iter().fold(head, |prev, next| prev & next)
+        })
+        .parse_next(i)
+}
+
+#[inline]
+fn parse_field_matcher_or(i: &mut &[u8]) -> PResult<FieldMatcher> {
+    (
+        ws(alt((
+            parse_field_matcher_group,
+            parse_field_matcher_and,
+            parse_field_matcher_cardinality,
+            parse_field_matcher_singleton,
+            parse_field_matcher_not,
+            parse_field_matcher_exists,
+        ))),
+        repeat(
+            1..,
+            preceded(
+                ws("||"),
+                ws(alt((
+                    parse_field_matcher_group,
+                    parse_field_matcher_and,
+                    parse_field_matcher_cardinality,
+                    parse_field_matcher_singleton,
+                    parse_field_matcher_not,
+                    parse_field_matcher_exists,
+                ))),
+            ),
+        ),
+    )
+        .map(|(head, remainder): (_, Vec<_>)| {
+            remainder.into_iter().fold(head, |prev, next| prev | next)
+        })
+        .parse_next(i)
+}
+
+fn parse_field_matcher_composite(
+    i: &mut &[u8],
+) -> PResult<FieldMatcher> {
+    alt((parse_field_matcher_or, parse_field_matcher_and)).parse_next(i)
+}
+
+pub fn parse_field_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
+    ws(alt((
+        parse_field_matcher_composite,
+        parse_field_matcher_group,
+        parse_field_matcher_not,
+        parse_field_matcher_singleton,
+        parse_field_matcher_cardinality,
+    )))
+    .parse_next(i)
+}
+
+impl TryFrom<&[u8]> for FieldMatcher {
+    type Error = ParseMatcherError;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        parse_field_matcher.parse(value).map_err(|_| {
+            let value = value.to_str_lossy().to_string();
+            ParseMatcherError::InvalidFieldMatcher(value)
+        })
     }
 }
 
@@ -479,255 +668,5 @@ impl Not for FieldMatcher {
 
     fn not(self) -> Self::Output {
         Self::Not(Box::new(self))
-    }
-}
-
-/// Parse field matcher singleton expression.
-#[inline]
-fn parse_field_matcher_singleton(
-    i: &[u8],
-) -> ParseResult<FieldMatcher> {
-    map(parse_singleton_matcher, FieldMatcher::Singleton)(i)
-}
-
-/// Parse field matcher expression (curly bracket notation).
-#[inline]
-fn parse_field_matcher_singleton_bracket(
-    i: &[u8],
-) -> ParseResult<FieldMatcher> {
-    map(parse_singleton_matcher_bracket, FieldMatcher::Singleton)(i)
-}
-
-/// Parse field matcher exists expression.
-#[inline]
-fn parse_field_matcher_exists(i: &[u8]) -> ParseResult<FieldMatcher> {
-    alt((
-        map(parse_exists_matcher, |matcher| {
-            FieldMatcher::Singleton(SingletonMatcher::Exists(matcher))
-        }),
-        map(
-            tuple((
-                parse_tag_matcher,
-                parse_occurrence_matcher,
-                preceded(
-                    ws(char('.')),
-                    subfield_matcher::parse_exists_matcher,
-                ),
-            )),
-            |(t, o, s)| {
-                FieldMatcher::Singleton(SingletonMatcher::Subfields(
-                    SubfieldsMatcher {
-                        tag_matcher: t,
-                        occurrence_matcher: o,
-                        subfield_matcher: SubfieldMatcher::Singleton(
-                            subfield_matcher::SingletonMatcher::Exists(
-                                s,
-                            ),
-                        ),
-                    },
-                ))
-            },
-        ),
-    ))(i)
-}
-
-/// Parse field matcher cardinality expression.
-#[inline]
-fn parse_field_matcher_cardinality(
-    i: &[u8],
-) -> ParseResult<FieldMatcher> {
-    map(parse_cardinality_matcher, FieldMatcher::Cardinality)(i)
-}
-
-/// Parse a field matcher group expression.
-fn parse_field_matcher_group(i: &[u8]) -> ParseResult<FieldMatcher> {
-    map(
-        preceded(
-            ws(char('(')),
-            cut(terminated(
-                alt((
-                    parse_field_matcher_composite,
-                    parse_field_matcher_singleton,
-                    parse_field_matcher_not,
-                    parse_field_matcher_cardinality,
-                    parse_field_matcher_group,
-                )),
-                ws(char(')')),
-            )),
-        ),
-        |matcher| FieldMatcher::Group(Box::new(matcher)),
-    )(i)
-}
-
-/// Parse a field matcher not expression.
-fn parse_field_matcher_not(i: &[u8]) -> ParseResult<FieldMatcher> {
-    map(
-        preceded(
-            ws(char('!')),
-            cut(alt((
-                parse_field_matcher_group,
-                parse_field_matcher_singleton_bracket,
-                parse_field_matcher_exists,
-                parse_field_matcher_not,
-            ))),
-        ),
-        |matcher| FieldMatcher::Not(Box::new(matcher)),
-    )(i)
-}
-
-/// Parse a field matcher and expression.
-fn parse_field_matcher_and(i: &[u8]) -> ParseResult<FieldMatcher> {
-    let (i, (first, remainder)) = tuple((
-        alt((
-            ws(parse_field_matcher_group),
-            ws(parse_field_matcher_cardinality),
-            ws(parse_field_matcher_singleton),
-            ws(parse_field_matcher_not),
-            ws(parse_field_matcher_exists),
-        )),
-        many1(preceded(
-            ws(tag("&&")),
-            alt((
-                ws(parse_field_matcher_group),
-                ws(parse_field_matcher_cardinality),
-                ws(parse_field_matcher_singleton),
-                ws(parse_field_matcher_not),
-                ws(parse_field_matcher_exists),
-            )),
-        )),
-    ))(i)?;
-
-    Ok((
-        i,
-        remainder.into_iter().fold(first, |prev, next| prev & next),
-    ))
-}
-
-fn parse_field_matcher_or(i: &[u8]) -> ParseResult<FieldMatcher> {
-    let (i, (first, remainder)) = tuple((
-        alt((
-            ws(parse_field_matcher_group),
-            ws(parse_field_matcher_and),
-            ws(parse_field_matcher_cardinality),
-            ws(parse_field_matcher_singleton),
-            ws(parse_field_matcher_not),
-            ws(parse_field_matcher_exists),
-        )),
-        many1(preceded(
-            ws(tag("||")),
-            cut(alt((
-                ws(parse_field_matcher_group),
-                ws(parse_field_matcher_and),
-                ws(parse_field_matcher_cardinality),
-                ws(parse_field_matcher_singleton),
-                ws(parse_field_matcher_not),
-                ws(parse_field_matcher_exists),
-            ))),
-        )),
-    ))(i)?;
-
-    Ok((
-        i,
-        remainder.into_iter().fold(first, |prev, next| prev | next),
-    ))
-}
-
-/// Parse a field matcher composite expression.
-fn parse_field_matcher_composite(
-    i: &[u8],
-) -> ParseResult<FieldMatcher> {
-    alt((parse_field_matcher_or, parse_field_matcher_and))(i)
-}
-
-/// Parse a field matcher expression.
-pub fn parse_field_matcher(i: &[u8]) -> ParseResult<FieldMatcher> {
-    alt((
-        ws(parse_field_matcher_composite),
-        ws(parse_field_matcher_group),
-        ws(parse_field_matcher_not),
-        ws(parse_field_matcher_singleton),
-        ws(parse_field_matcher_cardinality),
-    ))(i)
-}
-
-#[cfg(test)]
-mod tests {
-    use nom_test_helpers::assert_finished_and_eq;
-    use pica_record::Occurrence;
-
-    use super::*;
-
-    #[test]
-    fn test_parse_exists_matcher() -> anyhow::Result<()> {
-        assert_finished_and_eq!(
-            parse_exists_matcher(b"003@?"),
-            ExistsMatcher {
-                tag_matcher: TagMatcher::new("003@")?,
-                occurrence_matcher: OccurrenceMatcher::None,
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_exists_matcher(b"00[23]@?"),
-            ExistsMatcher {
-                tag_matcher: TagMatcher::new("00[23]@")?,
-                occurrence_matcher: OccurrenceMatcher::None,
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_exists_matcher(b"012A/01?"),
-            ExistsMatcher {
-                tag_matcher: TagMatcher::new("012A")?,
-                occurrence_matcher: OccurrenceMatcher::Some(
-                    Occurrence::new("01")
-                ),
-            }
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_subfields_matcher() -> anyhow::Result<()> {
-        assert_finished_and_eq!(
-            parse_subfields_matcher(b"003@.0?"),
-            SubfieldsMatcher {
-                tag_matcher: TagMatcher::new("003@")?,
-                occurrence_matcher: OccurrenceMatcher::None,
-                subfield_matcher: SubfieldMatcher::new("0?")?,
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_subfields_matcher(b"003@$0?"),
-            SubfieldsMatcher {
-                tag_matcher: TagMatcher::new("003@")?,
-                occurrence_matcher: OccurrenceMatcher::None,
-                subfield_matcher: SubfieldMatcher::new("0?")?,
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_subfields_matcher(b"003@ $0?"),
-            SubfieldsMatcher {
-                tag_matcher: TagMatcher::new("003@")?,
-                occurrence_matcher: OccurrenceMatcher::None,
-                subfield_matcher: SubfieldMatcher::new("0?")?,
-            }
-        );
-
-        assert_finished_and_eq!(
-            parse_subfields_matcher(b"003@{ #0 == 1 && 0? }"),
-            SubfieldsMatcher {
-                tag_matcher: TagMatcher::new("003@")?,
-                occurrence_matcher: OccurrenceMatcher::None,
-                subfield_matcher: SubfieldMatcher::new(
-                    "#0 == 1 && 0?"
-                )?,
-            }
-        );
-
-        Ok(())
     }
 }

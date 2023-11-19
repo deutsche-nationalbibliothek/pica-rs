@@ -1,6 +1,7 @@
 use std::ffi::OsString;
 use std::fs::read_to_string;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use clap::{value_parser, Parser};
 use pica_matcher::{
@@ -173,10 +174,11 @@ impl Filter {
             None => None,
         };
 
-        let discard_predicates =
-            parse_predicates(&self.discard.unwrap_or_default())?;
-        let keep_predicates =
-            parse_predicates(&self.keep.unwrap_or_default())?;
+        let discard = self.discard.unwrap_or_default();
+        let discard_predicates = parse_predicates(&discard)?;
+
+        let keep = self.keep.unwrap_or_default();
+        let keep_predicates = parse_predicates(&keep)?;
 
         let mut filenames = self.filenames;
         let filter_str = if let Some(filename) = self.expr_file {
@@ -200,7 +202,7 @@ impl Filter {
         let filter_str =
             NormalizationForm::translit_opt(filter_str, nf);
 
-        let mut filter = match RecordMatcher::new(&filter_str) {
+        let mut filter = match RecordMatcher::try_from(&filter_str) {
             Ok(f) => f,
             _ => {
                 return Err(CliError::Other(format!(
@@ -209,27 +211,39 @@ impl Filter {
             }
         };
 
-        if !self.and.is_empty() {
-            for predicate in self.and.iter() {
-                let predicate =
-                    NormalizationForm::translit_opt(predicate, nf);
-                filter = filter & RecordMatcher::new(&predicate)?;
+        let and: Vec<_> = self
+            .and
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        if !and.is_empty() {
+            for predicate in and.iter() {
+                filter = filter & RecordMatcher::try_from(predicate)?;
             }
         }
 
-        if !self.not.is_empty() {
-            for predicate in self.not.iter() {
-                let predicate =
-                    NormalizationForm::translit_opt(predicate, nf);
-                filter = filter & !RecordMatcher::new(&predicate)?;
+        let not: Vec<_> = self
+            .not
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        if !not.is_empty() {
+            for predicate in not.iter() {
+                filter = filter & !RecordMatcher::try_from(predicate)?;
             }
         }
 
-        if !self.or.is_empty() {
-            for predicate in self.or.iter() {
-                let predicate =
-                    NormalizationForm::translit_opt(predicate, nf);
-                filter = filter | RecordMatcher::new(&predicate)?;
+        let or: Vec<_> = self
+            .or
+            .iter()
+            .map(|value| NormalizationForm::translit_opt(value, nf))
+            .collect();
+
+        if !or.is_empty() {
+            for predicate in or.iter() {
+                filter = filter | RecordMatcher::try_from(predicate)?;
             }
         }
 
@@ -353,12 +367,12 @@ fn parse_predicates(
     for item in items {
         if let Some(pos) = item.rfind('/') {
             result.push((
-                TagMatcher::new(&item[0..pos])?,
-                OccurrenceMatcher::new(&item[pos..])?,
+                TagMatcher::from_str(&item[0..pos])?,
+                OccurrenceMatcher::from_str(&item[pos..])?,
             ));
         } else {
             result.push((
-                TagMatcher::new(item)?,
+                TagMatcher::from_str(item)?,
                 OccurrenceMatcher::None,
             ));
         }

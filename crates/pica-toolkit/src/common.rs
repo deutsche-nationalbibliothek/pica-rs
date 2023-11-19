@@ -110,7 +110,7 @@ impl FilterList {
 
     pub(crate) fn check(&self, record: &ByteRecord) -> bool {
         if let Some(idn) = record.idn() {
-            if self.contains(*idn) {
+            if self.contains(idn) {
                 return true;
             }
         }

@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use thiserror::Error;
 
+/// The level (main, local, copy) of a field (or tag).
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub enum Level {
     #[default]
@@ -30,17 +31,15 @@ impl FromStr for Level {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
 
     #[test]
-    fn test_from_str() -> anyhow::Result<()> {
+    fn test_from_str() {
         assert_eq!("main".parse::<Level>().unwrap(), Level::Main);
         assert_eq!("local".parse::<Level>().unwrap(), Level::Local);
         assert_eq!("copy".parse::<Level>().unwrap(), Level::Copy);
+
         assert!("master".parse::<Level>().is_err());
         assert!("foo".parse::<Level>().is_err());
-
-        Ok(())
     }
 }

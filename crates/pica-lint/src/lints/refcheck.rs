@@ -32,7 +32,7 @@ impl Lint for RefCheck {
 
             if insert {
                 for value in values {
-                    self.seen.insert(value.to_owned().into());
+                    self.seen.insert(value.to_owned());
                 }
             }
         }
@@ -48,9 +48,9 @@ impl Lint for RefCheck {
             for value in values {
                 let idn = record.idn().unwrap().to_owned();
                 self.unseen
-                    .entry(value.to_owned().into())
-                    .and_modify(|e| e.push(idn.into()))
-                    .or_insert_with(|| vec![idn.into()]);
+                    .entry(value.to_owned())
+                    .and_modify(|e| e.push(idn.clone()))
+                    .or_insert_with(|| vec![idn]);
             }
         }
 
