@@ -8,14 +8,16 @@ use winnow::{PResult, Parser};
 use crate::occurrence::parse_occurrence;
 use crate::subfield::parse_subfield;
 use crate::tag::parse_tag;
-use crate::{Level, OccurrenceRef, ParsePicaError, Subfield, TagRef};
+use crate::{
+    Level, OccurrenceRef, ParsePicaError, SubfieldRef, TagRef,
+};
 
 /// An immutable PICA+ field.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Field<'a> {
     tag: TagRef<'a>,
     occurrence: Option<OccurrenceRef<'a>>,
-    subfields: Vec<Subfield<'a>>,
+    subfields: Vec<SubfieldRef<'a>>,
 }
 
 /// Parse a PICA+ field.
@@ -63,7 +65,7 @@ impl<'a> Field<'a> {
         subfields: Vec<(char, &'a B)>,
     ) -> Self {
         let occurrence = occurrence.map(OccurrenceRef::new);
-        let subfields: Vec<Subfield<'a>> = subfields
+        let subfields: Vec<SubfieldRef<'a>> = subfields
             .into_iter()
             .map(TryFrom::try_from)
             .collect::<Result<Vec<_>, _>>()
@@ -156,7 +158,7 @@ impl<'a> Field<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn subfields(&self) -> &Vec<Subfield> {
+    pub fn subfields(&self) -> &Vec<SubfieldRef> {
         self.subfields.as_ref()
     }
 
@@ -330,8 +332,8 @@ mod tests {
                 tag: TagRef::new("012A"),
                 occurrence: None,
                 subfields: vec![
-                    Subfield::new('a', "123"),
-                    Subfield::new('b', "456"),
+                    SubfieldRef::new('a', "123"),
+                    SubfieldRef::new('b', "456"),
                 ]
             }
         );
@@ -343,7 +345,7 @@ mod tests {
             Field {
                 tag: TagRef::new("012A"),
                 occurrence: Some(OccurrenceRef::new("03")),
-                subfields: vec![Subfield::new('a', "123"),]
+                subfields: vec![SubfieldRef::new('a', "123"),]
             }
         );
     }

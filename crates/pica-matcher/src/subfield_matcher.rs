@@ -4,7 +4,7 @@ use std::ops::{BitAnd, BitOr};
 
 use bstr::ByteSlice;
 use pica_record::parser::parse_subfield_code;
-use pica_record::Subfield;
+use pica_record::SubfieldRef;
 use regex::bytes::{Regex, RegexBuilder};
 use strsim::normalized_levenshtein;
 use winnow::ascii::digit1;
@@ -58,19 +58,19 @@ impl ExistsMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::ExistsMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher = ExistsMatcher::new("0?");
+    ///     let options = Default::default();
     ///
-    ///     assert!(matcher.is_match(
-    ///         &Subfield::new('0', "123456789X"),
-    ///         &Default::default()
-    ///     ));
+    ///     assert!(matcher
+    ///         .is_match(&SubfieldRef::new('0', "123456789X"), &options));
     ///
-    ///     assert!(!matcher
-    ///         .is_match(&Subfield::new('a', "abc"), &Default::default()));
+    ///     assert!(
+    ///         !matcher.is_match(&SubfieldRef::new('a', "abc"), &options)
+    ///     );
     ///
     ///     Ok(())
     /// }
@@ -86,24 +86,28 @@ impl ExistsMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::ExistsMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher = ExistsMatcher::new("[103]?");
     ///     let options = Default::default();
-    ///     assert!(matcher.is_match(&Subfield::new('0', "123"), &options));
+    ///     assert!(
+    ///         matcher.is_match(&SubfieldRef::new('0', "123"), &options)
+    ///     );
     ///
     ///     let matcher = ExistsMatcher::new("*?");
     ///     let options = Default::default();
-    ///     assert!(matcher.is_match(&Subfield::new('a', "abc"), &options));
+    ///     assert!(
+    ///         matcher.is_match(&SubfieldRef::new('a', "abc"), &options)
+    ///     );
     ///
     ///     Ok(())
     /// }
     /// ```
     pub fn is_match<'a>(
         &self,
-        subfields: impl IntoIterator<Item = &'a Subfield<'a>>,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
         _options: &MatcherOptions,
     ) -> bool {
         subfields
@@ -149,7 +153,7 @@ impl RelationMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::RelationMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -157,10 +161,10 @@ impl RelationMatcher {
     ///     let options = Default::default();
     ///
     ///     assert!(matcher
-    ///         .is_match(&Subfield::new('0', "123456789X"), &options));
+    ///         .is_match(&SubfieldRef::new('0', "123456789X"), &options));
     ///
     ///     assert!(!matcher
-    ///         .is_match(&Subfield::new('0', "123456789!"), &options));
+    ///         .is_match(&SubfieldRef::new('0', "123456789!"), &options));
     ///
     ///     Ok(())
     /// }
@@ -175,7 +179,7 @@ impl RelationMatcher {
     /// exists.
     pub fn is_match<'a>(
         &self,
-        subfields: impl IntoIterator<Item = &'a Subfield<'a>>,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         use RelationalOp::*;
@@ -320,17 +324,21 @@ impl RegexMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::RegexMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = RegexMatcher::new("0 =~ '^Oa'");
     ///     let options = Default::default();
     ///
-    ///     assert!(matcher.is_match(&Subfield::new('0', "Oa"), &options));
+    ///     let matcher = RegexMatcher::new("0 =~ '^Oa'");
+    ///     assert!(
+    ///         matcher.is_match(&SubfieldRef::new('0', "Oa"), &options)
+    ///     );
     ///
     ///     let matcher = RegexMatcher::new("0 !~ '^Oa'");
-    ///     assert!(matcher.is_match(&Subfield::new('0', "Ob"), &options));
+    ///     assert!(
+    ///         matcher.is_match(&SubfieldRef::new('0', "Ob"), &options)
+    ///     );
     ///
     ///     Ok(())
     /// }
@@ -343,7 +351,7 @@ impl RegexMatcher {
     /// matches against the regular expression.
     pub fn is_match<'a>(
         &self,
-        subfields: impl IntoIterator<Item = &'a Subfield<'a>>,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         let re = RegexBuilder::new(&self.re)
@@ -404,17 +412,21 @@ impl InMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::InMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher = InMatcher::new("0 in ['abc', 'def']");
     ///     let options = Default::default();
-    ///     assert!(matcher.is_match(&Subfield::new('0', "def"), &options));
+    ///     assert!(
+    ///         matcher.is_match(&SubfieldRef::new('0', "def"), &options)
+    ///     );
     ///
     ///     let matcher = InMatcher::new("0 not in ['abc', 'def']");
     ///     let options = Default::default();
-    ///     assert!(matcher.is_match(&Subfield::new('0', "hij"), &options));
+    ///     assert!(
+    ///         matcher.is_match(&SubfieldRef::new('0', "hij"), &options)
+    ///     );
     ///
     ///     Ok(())
     /// }
@@ -427,7 +439,7 @@ impl InMatcher {
     /// value is contained in the matcher list.
     pub fn is_match<'a>(
         &self,
-        subfields: impl IntoIterator<Item = &'a Subfield<'a>>,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         subfields
@@ -500,7 +512,7 @@ impl CardinalityMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::CardinalityMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -509,14 +521,14 @@ impl CardinalityMatcher {
     ///
     ///     assert!(matcher.is_match(
     ///         vec![
-    ///             &Subfield::new('0', "def"),
-    ///             &Subfield::new('0', "abc")
+    ///             &SubfieldRef::new('0', "def"),
+    ///             &SubfieldRef::new('0', "abc")
     ///         ],
     ///         &options
     ///     ));
     ///
     ///     assert!(
-    ///         !matcher.is_match(&Subfield::new('0', "def"), &options)
+    ///         !matcher.is_match(&SubfieldRef::new('0', "def"), &options)
     ///     );
     ///
     ///     Ok(())
@@ -531,7 +543,7 @@ impl CardinalityMatcher {
     /// matcher's value.
     pub fn is_match<'a>(
         &self,
-        subfields: impl IntoIterator<Item = &'a Subfield<'a>>,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
         _options: &MatcherOptions,
     ) -> bool {
         let count = subfields
@@ -612,7 +624,7 @@ impl SingletonMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::SingletonMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -620,7 +632,7 @@ impl SingletonMatcher {
     ///     let options = Default::default();
     ///
     ///     assert!(matcher
-    ///         .is_match(&Subfield::new('0', "2345678901"), &options));
+    ///         .is_match(&SubfieldRef::new('0', "2345678901"), &options));
     ///
     ///     Ok(())
     /// }
@@ -632,7 +644,7 @@ impl SingletonMatcher {
     /// Returns `true` if the underlying matcher returns `true`.
     pub fn is_match<'a>(
         &self,
-        subfields: impl IntoIterator<Item = &'a Subfield<'a>>,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         match self {
@@ -677,7 +689,7 @@ impl SubfieldMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::SubfieldMatcher;
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -686,7 +698,7 @@ impl SubfieldMatcher {
     ///     let options = Default::default();
     ///
     ///     assert!(matcher
-    ///         .is_match(&Subfield::new('0', "2345678901"), &options));
+    ///         .is_match(&SubfieldRef::new('0', "2345678901"), &options));
     ///
     ///     Ok(())
     /// }
@@ -697,7 +709,7 @@ impl SubfieldMatcher {
 
     pub fn is_match<'a>(
         &self,
-        subfields: impl IntoIterator<Item = &'a Subfield<'a>> + Clone,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>> + Clone,
         options: &MatcherOptions,
     ) -> bool {
         match self {

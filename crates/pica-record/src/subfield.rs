@@ -2,7 +2,7 @@ use std::io::{self, Write};
 use std::iter;
 use std::str::Utf8Error;
 
-use bstr::{BStr, ByteSlice};
+use bstr::{BStr, BString, ByteSlice};
 use winnow::combinator::preceded;
 use winnow::token::{one_of, take_till0};
 use winnow::{PResult, Parser};
@@ -11,9 +11,16 @@ use crate::error::ParsePicaError;
 
 /// An immutable PICA+ subfield.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Subfield<'a> {
+pub struct SubfieldRef<'a> {
     code: char,
     value: &'a BStr,
+}
+
+/// A mutable PICA+ subfield.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Subfield {
+    code: char,
+    value: BString,
 }
 
 /// Parse a PICA+ subfield code.
@@ -35,13 +42,13 @@ fn parse_subfield_value<'a>(i: &mut &'a [u8]) -> PResult<&'a BStr> {
 #[inline]
 pub(crate) fn parse_subfield<'a>(
     i: &mut &'a [u8],
-) -> PResult<Subfield<'a>> {
+) -> PResult<SubfieldRef<'a>> {
     preceded(b'\x1f', (parse_subfield_code, parse_subfield_value))
-        .map(|(code, value)| Subfield { code, value })
+        .map(|(code, value)| SubfieldRef { code, value })
         .parse_next(i)
 }
 
-impl<'a> Subfield<'a> {
+impl<'a> SubfieldRef<'a> {
     /// Create a new subfield.
     ///
     /// # Panics
@@ -52,11 +59,11 @@ impl<'a> Subfield<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = Subfield::new('a', "bcd");
+    ///     let subfield = SubfieldRef::new('a', "bcd");
     ///     assert_eq!(subfield.code(), 'a');
     ///     assert_eq!(subfield.value(), "bcd");
     ///
@@ -77,11 +84,11 @@ impl<'a> Subfield<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = Subfield::from_bytes(b"\x1f0123456789X")?;
+    ///     let subfield = SubfieldRef::from_bytes(b"\x1f0123456789X")?;
     ///
     ///     assert_eq!(subfield.code(), '0');
     ///     assert_eq!(subfield.value(), "123456789X");
@@ -100,11 +107,11 @@ impl<'a> Subfield<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = Subfield::new('0', "0123456789X");
+    ///     let subfield = SubfieldRef::new('0', "0123456789X");
     ///     assert_eq!(subfield.code(), '0');
     ///
     ///     Ok(())
@@ -119,11 +126,11 @@ impl<'a> Subfield<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = Subfield::new('0', "0123456789X");
+    ///     let subfield = SubfieldRef::new('0', "0123456789X");
     ///     assert_eq!(subfield.value(), "0123456789X");
     ///
     ///     Ok(())
@@ -138,14 +145,14 @@ impl<'a> Subfield<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = Subfield::new('0', "abc");
+    ///     let subfield = SubfieldRef::new('0', "abc");
     ///     assert!(!subfield.is_empty());
     ///
-    ///     let subfield = Subfield::new('0', "");
+    ///     let subfield = SubfieldRef::new('0', "");
     ///     assert!(subfield.is_empty());
     ///     Ok(())
     /// }
@@ -161,14 +168,15 @@ impl<'a> Subfield<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = Subfield::new('0', "123456789X");
+    ///     let subfield = SubfieldRef::new('0', "123456789X");
     ///     assert!(subfield.validate().is_ok());
     ///
-    ///     let subfield = Subfield::from_bytes(&[b'\x1f', b'0', 0, 159])?;
+    ///     let subfield =
+    ///         SubfieldRef::from_bytes(&[b'\x1f', b'0', 0, 159])?;
     ///     assert_eq!(subfield.validate().is_err(), true);
     ///
     ///     Ok(())
@@ -190,12 +198,12 @@ impl<'a> Subfield<'a> {
     /// ```rust
     /// use std::io::Cursor;
     ///
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let mut writer = Cursor::new(Vec::<u8>::new());
-    ///     let subfield = Subfield::new('0', "123456789X");
+    ///     let subfield = SubfieldRef::new('0', "123456789X");
     ///     subfield.write_to(&mut writer);
     ///     #
     ///     # assert_eq!(
@@ -212,8 +220,8 @@ impl<'a> Subfield<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a Subfield<'a> {
-    type Item = &'a Subfield<'a>;
+impl<'a> IntoIterator for &'a SubfieldRef<'a> {
+    type Item = &'a SubfieldRef<'a>;
     type IntoIter = iter::Once<Self::Item>;
 
     /// Creates an iterator from a single subfield. The iterator just
@@ -222,11 +230,11 @@ impl<'a> IntoIterator for &'a Subfield<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Subfield;
+    /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let subfield = Subfield::new('0', "123456789X");
+    ///     let subfield = SubfieldRef::new('0', "123456789X");
     ///     let mut iter = subfield.into_iter();
     ///
     ///     assert_eq!(iter.next(), Some(&subfield));
@@ -240,7 +248,7 @@ impl<'a> IntoIterator for &'a Subfield<'a> {
     }
 }
 
-impl<'a, T> TryFrom<(char, &'a T)> for Subfield<'a>
+impl<'a, T> TryFrom<(char, &'a T)> for SubfieldRef<'a>
 where
     T: ?Sized + AsRef<[u8]>,
 {
@@ -256,6 +264,29 @@ where
         }
 
         Ok(Self { code, value })
+    }
+}
+
+impl PartialEq<Subfield> for SubfieldRef<'_> {
+    #[inline]
+    fn eq(&self, other: &Subfield) -> bool {
+        self.code == other.code && self.value == &other.value
+    }
+}
+impl PartialEq<SubfieldRef<'_>> for Subfield {
+    #[inline]
+    fn eq(&self, other: &SubfieldRef<'_>) -> bool {
+        self.code == other.code && &self.value == other.value
+    }
+}
+
+impl From<SubfieldRef<'_>> for Subfield {
+    #[inline]
+    fn from(other: SubfieldRef<'_>) -> Self {
+        Subfield {
+            value: other.value.into(),
+            code: other.code,
+        }
     }
 }
 
@@ -308,12 +339,12 @@ mod tests {
 
         assert_eq!(
             parse_subfield.parse(b"\x1fa123").unwrap(),
-            Subfield::new('a', "123")
+            SubfieldRef::new('a', "123")
         );
 
         assert_eq!(
             parse_subfield.parse(b"\x1fa").unwrap(),
-            Subfield::new('a', "")
+            SubfieldRef::new('a', "")
         );
 
         assert!(parse_subfield.parse(b"a123").is_err());
@@ -322,31 +353,31 @@ mod tests {
 
     #[test]
     fn subfield_new() {
-        let _ = Subfield::new('a', "123");
-        let _ = Subfield::new('a', "");
+        let _ = SubfieldRef::new('a', "123");
+        let _ = SubfieldRef::new('a', "");
     }
 
     #[test]
     #[should_panic]
     fn subfield_new_panic_code() {
-        Subfield::new('!', "123");
+        SubfieldRef::new('!', "123");
     }
 
     #[test]
     #[should_panic]
     fn subfield_new_panic_value() {
-        Subfield::new('a', "a\x1eb");
+        SubfieldRef::new('a', "a\x1eb");
     }
 
     #[test]
     fn from_bytes() {
         assert_eq!(
-            Subfield::from_bytes(b"\x1fa123").unwrap(),
-            Subfield::new('a', "123")
+            SubfieldRef::from_bytes(b"\x1fa123").unwrap(),
+            SubfieldRef::new('a', "123")
         );
 
         assert_eq!(
-            Subfield::from_bytes(b"\x1f!123").unwrap_err(),
+            SubfieldRef::from_bytes(b"\x1f!123").unwrap_err(),
             ParsePicaError::InvalidSubfield
         );
     }
@@ -354,14 +385,14 @@ mod tests {
     #[test]
     fn try_from() {
         assert_eq!(
-            Subfield::try_from(('a', "123")).unwrap(),
-            Subfield::new('a', "123")
+            SubfieldRef::try_from(('a', "123")).unwrap(),
+            SubfieldRef::new('a', "123")
         );
 
         macro_rules! parse_error {
             ($input:expr) => {
                 assert_eq!(
-                    Subfield::try_from($input).unwrap_err(),
+                    SubfieldRef::try_from($input).unwrap_err(),
                     ParsePicaError::InvalidSubfield
                 );
             };
@@ -374,31 +405,31 @@ mod tests {
 
     #[test]
     fn subfield_code() {
-        let subfield = Subfield::new('a', "123");
+        let subfield = SubfieldRef::new('a', "123");
         assert_eq!(subfield.code(), 'a');
     }
 
     #[test]
     fn subfield_value() {
-        let subfield = Subfield::new('a', "123");
+        let subfield = SubfieldRef::new('a', "123");
         assert_eq!(subfield.value(), "123");
     }
 
     #[test]
     fn subfield_is_empty() {
-        let subfield = Subfield::new('a', "123");
+        let subfield = SubfieldRef::new('a', "123");
         assert!(!subfield.is_empty());
 
-        let subfield = Subfield::new('a', "");
+        let subfield = SubfieldRef::new('a', "");
         assert!(subfield.is_empty());
     }
 
     #[test]
     fn subfield_validate() {
-        let subfield = Subfield::new('a', "123");
+        let subfield = SubfieldRef::new('a', "123");
         assert!(subfield.validate().is_ok());
 
-        let subfield = Subfield::new('a', &[0, 159, 146, 150]);
+        let subfield = SubfieldRef::new('a', &[0, 159, 146, 150]);
         let error = subfield.validate().unwrap_err();
         assert_eq!(1, error.valid_up_to());
     }
@@ -406,7 +437,7 @@ mod tests {
     #[test]
     fn subfield_write_to() {
         let mut writer = Cursor::new(Vec::<u8>::new());
-        let subfield = Subfield::new('a', "123");
+        let subfield = SubfieldRef::new('a', "123");
         let _ = subfield.write_to(&mut writer);
 
         assert_eq!(
@@ -417,7 +448,7 @@ mod tests {
 
     #[test]
     fn subfield_into_iter() {
-        let subfield = Subfield::new('a', "123");
+        let subfield = SubfieldRef::new('a', "123");
         let mut iter = subfield.into_iter();
 
         assert_eq!(iter.next(), Some(&subfield));

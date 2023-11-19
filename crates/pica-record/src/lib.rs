@@ -15,7 +15,7 @@ pub use field::Field;
 pub use level::Level;
 pub use occurrence::{Occurrence, OccurrenceRef};
 pub use record::{ByteRecord, Record, StringRecord};
-pub use subfield::Subfield;
+pub use subfield::SubfieldRef;
 pub use tag::{Tag, TagRef};
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
