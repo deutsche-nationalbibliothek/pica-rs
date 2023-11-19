@@ -639,7 +639,7 @@ impl TryFrom<&[u8]> for FieldMatcher {
     }
 }
 
-impl<'a> BitAnd for FieldMatcher {
+impl BitAnd for FieldMatcher {
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
@@ -651,7 +651,7 @@ impl<'a> BitAnd for FieldMatcher {
     }
 }
 
-impl<'a> BitOr for FieldMatcher {
+impl BitOr for FieldMatcher {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
@@ -663,7 +663,7 @@ impl<'a> BitOr for FieldMatcher {
     }
 }
 
-impl<'a> Not for FieldMatcher {
+impl Not for FieldMatcher {
     type Output = Self;
 
     fn not(self) -> Self::Output {

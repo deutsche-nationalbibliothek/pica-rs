@@ -126,7 +126,7 @@ impl PartialEq<TagMatcher> for TagRef<'_> {
     }
 }
 
-impl<'a> PartialEq<TagRef<'_>> for TagMatcher {
+impl PartialEq<TagRef<'_>> for TagMatcher {
     #[inline]
     fn eq(&self, other: &TagRef<'_>) -> bool {
         self.is_match(other)
