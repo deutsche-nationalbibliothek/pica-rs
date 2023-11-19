@@ -32,7 +32,7 @@ impl Lint for RefCheck {
 
             if insert {
                 for value in values {
-                    self.seen.insert(value.to_owned().into());
+                    self.seen.insert(value.to_owned());
                 }
             }
         }
