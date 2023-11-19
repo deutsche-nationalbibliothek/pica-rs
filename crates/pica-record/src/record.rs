@@ -9,20 +9,24 @@ use winnow::combinator::{repeat, terminated};
 use winnow::{PResult, Parser};
 
 use crate::field::parse_field;
-use crate::{FieldRef, ParsePicaError};
+use crate::{Field, FieldRef, ParsePicaError};
 
 /// An immutable PICA+ record.
 #[derive(Debug)]
-pub struct Record<'a>(Vec<FieldRef<'a>>);
+pub struct RecordRef<'a>(Vec<FieldRef<'a>>);
+
+/// An immutable PICA+ record.
+#[derive(Debug)]
+pub struct Record(Vec<Field>);
 
 #[inline]
-fn parse_record<'a>(i: &mut &'a [u8]) -> PResult<Record<'a>> {
+fn parse_record<'a>(i: &mut &'a [u8]) -> PResult<RecordRef<'a>> {
     terminated(repeat(1.., parse_field), b'\n')
-        .map(Record)
+        .map(RecordRef)
         .parse_next(i)
 }
 
-impl<'a> Record<'a> {
+impl<'a> RecordRef<'a> {
     /// Create a new record.
     ///
     /// # Panics
@@ -32,12 +36,12 @@ impl<'a> Record<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let record =
-    ///         Record::new(vec![("003@", None, vec![('0', "abc")])]);
+    ///         RecordRef::new(vec![("003@", None, vec![('0', "abc")])]);
     ///     assert_eq!(record.iter().len(), 1);
     ///
     ///     Ok(())
@@ -65,11 +69,11 @@ impl<'a> Record<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let record = Record::from_bytes(b"003@ \x1f0abc\x1e\n");
+    ///     let record = RecordRef::from_bytes(b"003@ \x1f0abc\x1e\n");
     ///     assert_eq!(record.iter().len(), 1);
     ///
     ///     Ok(())
@@ -87,11 +91,11 @@ impl<'a> Record<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let record = Record::from_bytes(b"002@ \x1f0Oaf\x1e\n")?;
+    ///     let record = RecordRef::from_bytes(b"002@ \x1f0Oaf\x1e\n")?;
     ///     assert!(!record.is_empty());
     ///
     ///     Ok(())
@@ -111,11 +115,11 @@ impl<'a> Record<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let record = Record::new(vec![
+    ///     let record = RecordRef::new(vec![
     ///         ("003@", None, vec![('0', "123456789X")]),
     ///         ("002@", None, vec![('0', "Oaf")]),
     ///     ]);
@@ -134,11 +138,11 @@ impl<'a> Record<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{Record, TagRef};
+    /// use pica_record::{RecordRef, TagRef};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let mut record = Record::new(vec![
+    ///     let mut record = RecordRef::new(vec![
     ///         ("003@", None, vec![('0', "123456789X")]),
     ///         ("002@", None, vec![('0', "Oaf")]),
     ///     ]);
@@ -159,14 +163,15 @@ impl<'a> Record<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let record = Record::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    ///     let record = RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?;
     ///     assert!(record.validate().is_ok());
     ///
-    ///     let record = Record::from_bytes(b"003@ \x1f0\x00\x9F\x1e\n")?;
+    ///     let record =
+    ///         RecordRef::from_bytes(b"003@ \x1f0\x00\x9F\x1e\n")?;
     ///     assert!(record.validate().is_err());
     ///     Ok(())
     /// }
@@ -186,12 +191,12 @@ impl<'a> Record<'a> {
     /// ```rust
     /// use std::io::Cursor;
     ///
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let mut writer = Cursor::new(Vec::<u8>::new());
-    ///     let record = Record::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    ///     let record = RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?;
     ///     record.write_to(&mut writer);
     ///     #
     ///     # assert_eq!(
@@ -216,11 +221,17 @@ impl<'a> Record<'a> {
     }
 }
 
+impl From<RecordRef<'_>> for Record {
+    fn from(other: RecordRef<'_>) -> Self {
+        Self(other.0.into_iter().map(Field::from).collect())
+    }
+}
+
 /// A PICA+ record, that may contain invalid UTF-8 data.
 #[derive(Debug)]
 pub struct ByteRecord<'a> {
     raw_data: Option<&'a [u8]>,
-    record: Record<'a>,
+    record: RecordRef<'a>,
 }
 
 impl<'a> ByteRecord<'a> {
@@ -242,7 +253,7 @@ impl<'a> ByteRecord<'a> {
     /// ```
     pub fn from_bytes(bytes: &'a [u8]) -> Result<Self, ParsePicaError> {
         Ok(Self {
-            record: Record::from_bytes(bytes)?,
+            record: RecordRef::from_bytes(bytes)?,
             raw_data: Some(bytes),
         })
     }
@@ -337,7 +348,7 @@ impl<'a> ByteRecord<'a> {
 }
 
 impl<'a> Deref for ByteRecord<'a> {
-    type Target = Record<'a>;
+    type Target = RecordRef<'a>;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
@@ -351,8 +362,8 @@ impl<'a> DerefMut for ByteRecord<'a> {
     }
 }
 
-impl<'a> From<Record<'a>> for ByteRecord<'a> {
-    fn from(record: Record<'a>) -> Self {
+impl<'a> From<RecordRef<'a>> for ByteRecord<'a> {
+    fn from(record: RecordRef<'a>) -> Self {
         ByteRecord {
             raw_data: None,
             record,

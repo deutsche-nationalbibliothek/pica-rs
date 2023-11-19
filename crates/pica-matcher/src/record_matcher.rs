@@ -1,7 +1,7 @@
 use std::ops::{BitAnd, BitOr, Not};
 
 use bstr::ByteSlice;
-use pica_record::Record;
+use pica_record::RecordRef;
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 use winnow::Parser;
@@ -23,13 +23,13 @@ impl RecordMatcher {
     ///
     /// ```rust
     /// use pica_matcher::RecordMatcher;
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let matcher = RecordMatcher::new("003@?");
     ///     let record =
-    ///         Record::new(vec![("003@", None, vec![('0', "abc")])]);
+    ///         RecordRef::new(vec![("003@", None, vec![('0', "abc")])]);
     ///
     ///     assert!(matcher.is_match(&record, &Default::default()));
     ///     Ok(())
@@ -43,7 +43,7 @@ impl RecordMatcher {
     /// matcher.
     pub fn is_match(
         &self,
-        record: &Record,
+        record: &RecordRef,
         options: &MatcherOptions,
     ) -> bool {
         self.field_matcher.is_match(record.iter(), options)

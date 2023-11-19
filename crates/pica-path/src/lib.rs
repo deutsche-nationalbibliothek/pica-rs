@@ -9,7 +9,7 @@ use pica_matcher::{
     MatcherOptions, OccurrenceMatcher, SubfieldMatcher, TagMatcher,
 };
 use pica_record::parser::parse_subfield_code;
-use pica_record::Record;
+use pica_record::RecordRef;
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 use thiserror::Error;
@@ -232,7 +232,7 @@ pub trait PathExt {
     }
 }
 
-impl<'a> PathExt for Record<'a> {
+impl<'a> PathExt for RecordRef<'a> {
     /// Returns all subfield values which satisfies the path matcher.
     ///
     /// # Example
@@ -240,11 +240,11 @@ impl<'a> PathExt for Record<'a> {
     /// ```rust
     /// use bstr::BString;
     /// use pica_path::{Path, PathExt};
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let record = Record::new(vec![
+    ///     let record = RecordRef::new(vec![
     ///         ("012A", None, vec![('a', "123"), ('a', "456")]),
     ///         ("012A", Some("01"), vec![('a', "789"), ('b', "xyz")]),
     ///     ]);

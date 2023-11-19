@@ -5,7 +5,7 @@ use std::ops::{Add, Deref, Mul};
 use bstr::ByteSlice;
 use pica_matcher::MatcherOptions;
 use pica_path::{parse_path, Path};
-use pica_record::Record;
+use pica_record::RecordRef;
 use thiserror::Error;
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{
@@ -406,7 +406,7 @@ pub trait QueryExt {
     fn query(&self, query: &Query, options: &QueryOptions) -> Outcome;
 }
 
-impl QueryExt for Record<'_> {
+impl QueryExt for RecordRef<'_> {
     /// Performs a query against a PICA+ record.
     ///
     /// # Example
@@ -414,13 +414,13 @@ impl QueryExt for Record<'_> {
     /// ```rust
     /// use std::str::FromStr;
     ///
-    /// use pica_record::Record;
+    /// use pica_record::RecordRef;
     /// use pica_select::{Outcome, Query, QueryExt};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let query = Query::new("003@.0, 012A{(a,b) | a == 'abc'}");
-    ///     let record = Record::from_bytes(
+    ///     let record = RecordRef::from_bytes(
     ///         b"003@ \x1f01234\x1e012A \x1faabc\x1e\n",
     ///     )?;
     ///
@@ -607,13 +607,13 @@ mod tests {
         let options = QueryOptions::default();
 
         let record =
-            Record::new(vec![("012A", None, vec![('a', "1")])]);
+            RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
         assert_eq!(
             record.query(&Query::new("012A.a"), &options),
             Outcome::from(vec![s!("1")])
         );
 
-        let record = Record::new(vec![(
+        let record = RecordRef::new(vec![(
             "012A",
             None,
             vec![('a', "1"), ('a', "2")],
@@ -623,7 +623,7 @@ mod tests {
             Outcome::from(vec![s!("1"), s!("2")])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("012A", None, vec![('a', "1")]),
             ("012A", None, vec![('a', "2")]),
         ]);
@@ -632,7 +632,7 @@ mod tests {
             Outcome::from(vec![s!("1"), s!("2")])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1")]),
         ]);
@@ -641,7 +641,7 @@ mod tests {
             Outcome(vec![vec![s!("9"), s!("1")]])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1")]),
             ("012A", None, vec![('a', "2")]),
@@ -654,7 +654,7 @@ mod tests {
             ])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1"), ('b', "2")]),
         ]);
@@ -664,7 +664,7 @@ mod tests {
             Outcome(vec![vec![s!("9"), s!("1"), s!("2")]])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1")]),
         ]);
@@ -674,7 +674,7 @@ mod tests {
             Outcome(vec![vec![s!("9"), s!("1"), s!("")]])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1"), ('a', "2")]),
         ]);
@@ -687,7 +687,7 @@ mod tests {
             ])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1"), ('a', "2")]),
             ("012A", None, vec![('a', "3"), ('b', "4")]),
@@ -702,7 +702,7 @@ mod tests {
             ])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1"), ('a', "2")]),
             ("012A", None, vec![('a', "3"), ('b', "4"), ('x', "5")]),
@@ -716,13 +716,13 @@ mod tests {
         );
 
         let record =
-            Record::new(vec![("012A", None, vec![('a', "1")])]);
+            RecordRef::new(vec![("012A", None, vec![('a', "1")])]);
         assert_eq!(
             record.query(&Query::new("012A.a, 'foo'"), &options),
             Outcome(vec![vec![s!("1"), s!("foo")]])
         );
 
-        let record = Record::new(vec![
+        let record = RecordRef::new(vec![
             ("003@", None, vec![('0', "9")]),
             ("012A", None, vec![('a', "1"), ('a', "2")]),
             ("012A", None, vec![('a', "3"), ('b', "4"), ('x', "5")]),

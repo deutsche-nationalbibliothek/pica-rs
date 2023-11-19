@@ -14,7 +14,7 @@ pub use error::ParsePicaError;
 pub use field::{Field, FieldRef};
 pub use level::Level;
 pub use occurrence::{Occurrence, OccurrenceRef};
-pub use record::{ByteRecord, Record, StringRecord};
+pub use record::{ByteRecord, Record, RecordRef, StringRecord};
 pub use subfield::SubfieldRef;
 pub use tag::{Tag, TagRef};
 

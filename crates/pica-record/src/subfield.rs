@@ -270,13 +270,13 @@ where
 impl PartialEq<Subfield> for SubfieldRef<'_> {
     #[inline]
     fn eq(&self, other: &Subfield) -> bool {
-        self.code == other.code && self.value == &other.value
+        self.code == other.code && self.value == other.value
     }
 }
 impl PartialEq<SubfieldRef<'_>> for Subfield {
     #[inline]
     fn eq(&self, other: &SubfieldRef<'_>) -> bool {
-        self.code == other.code && &self.value == other.value
+        self.code == other.code && self.value == other.value
     }
 }
 
