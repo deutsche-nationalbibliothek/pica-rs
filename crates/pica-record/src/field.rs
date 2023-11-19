@@ -14,14 +14,16 @@ use crate::{
 
 /// An immutable PICA+ field.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Field<'a> {
+pub struct FieldRef<'a> {
     tag: TagRef<'a>,
     occurrence: Option<OccurrenceRef<'a>>,
     subfields: Vec<SubfieldRef<'a>>,
 }
 
 /// Parse a PICA+ field.
-pub(crate) fn parse_field<'a>(i: &mut &'a [u8]) -> PResult<Field<'a>> {
+pub(crate) fn parse_field<'a>(
+    i: &mut &'a [u8],
+) -> PResult<FieldRef<'a>> {
     (
         parse_tag,
         opt(parse_occurrence),
@@ -29,7 +31,7 @@ pub(crate) fn parse_field<'a>(i: &mut &'a [u8]) -> PResult<Field<'a>> {
         repeat(0.., parse_subfield),
         b'\x1e',
     )
-        .map(|(tag, occurrence, _, subfields, _)| Field {
+        .map(|(tag, occurrence, _, subfields, _)| FieldRef {
             tag,
             occurrence,
             subfields,
@@ -37,7 +39,7 @@ pub(crate) fn parse_field<'a>(i: &mut &'a [u8]) -> PResult<Field<'a>> {
         .parse_next(i)
 }
 
-impl<'a> Field<'a> {
+impl<'a> FieldRef<'a> {
     /// Create a new field.
     ///
     /// # Panics
@@ -47,11 +49,11 @@ impl<'a> Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{Field, Tag};
+    /// use pica_record::{FieldRef, Tag};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let field = Field::new("012A", None, vec![('0', "abc")]);
+    ///     let field = FieldRef::new("012A", None, vec![('0', "abc")]);
     ///
     ///     assert_eq!(field.tag(), b"012A");
     ///     assert_eq!(field.subfields().len(), 1);
@@ -83,12 +85,12 @@ impl<'a> Field<'a> {
     /// If an invalid field is given, an error is returned.
     ///
     /// ```rust
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let field =
-    ///         Field::from_bytes(b"003@ \x1f0123456789X\x1e").unwrap();
+    ///         FieldRef::from_bytes(b"003@ \x1f0123456789X\x1e").unwrap();
     ///     Ok(())
     /// }
     /// ```
@@ -103,12 +105,12 @@ impl<'a> Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{Field, TagRef};
+    /// use pica_record::{FieldRef, TagRef};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let field =
-    ///         Field::from_bytes(b"003@ \x1f0123456789X\x1e").unwrap();
+    ///         FieldRef::from_bytes(b"003@ \x1f0123456789X\x1e").unwrap();
     ///     assert_eq!(field.tag(), &TagRef::new("003@"));
     ///
     ///     Ok(())
@@ -123,11 +125,11 @@ impl<'a> Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{Field, Occurrence};
+    /// use pica_record::{FieldRef, Occurrence};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let field = Field::new("012A", Some("01"), vec![]);
+    ///     let field = FieldRef::new("012A", Some("01"), vec![]);
     ///     let occurrence = field.occurrence().unwrap();
     ///     assert_eq!(*occurrence, "01");
     ///
@@ -143,11 +145,11 @@ impl<'a> Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let field = Field::new(
+    ///     let field = FieldRef::new(
     ///         "012A",
     ///         Some("01"),
     ///         vec![('a', "b"), ('c', "d")],
@@ -168,14 +170,14 @@ impl<'a> Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let field = Field::from_bytes(b"003@ \x1f0123\x1e")?;
+    ///     let field = FieldRef::from_bytes(b"003@ \x1f0123\x1e")?;
     ///     assert!(field.validate().is_ok());
     ///
-    ///     let field = Field::from_bytes(b"003@ \x1f0\x00\x9F\x1e")?;
+    ///     let field = FieldRef::from_bytes(b"003@ \x1f0\x00\x9F\x1e")?;
     ///     ///     assert!(field.validate().is_err());
     ///     Ok(())
     /// }
@@ -195,12 +197,12 @@ impl<'a> Field<'a> {
     /// ```rust
     /// use std::io::Cursor;
     ///
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
     ///     let mut writer = Cursor::new(Vec::<u8>::new());
-    ///     let field = Field::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
+    ///     let field = FieldRef::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
     ///     field.write_to(&mut writer);
     ///     #
     ///     # assert_eq!(
@@ -230,11 +232,11 @@ impl<'a> Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::{Field, Level};
+    /// use pica_record::{FieldRef, Level};
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let field = Field::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
+    ///     let field = FieldRef::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
     ///     assert_eq!(field.level(), Level::Main);
     ///
     ///     Ok(())
@@ -246,8 +248,8 @@ impl<'a> Field<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a Field<'a> {
-    type Item = &'a Field<'a>;
+impl<'a> IntoIterator for &'a FieldRef<'a> {
+    type Item = &'a FieldRef<'a>;
     type IntoIter = iter::Once<Self::Item>;
 
     /// Creates an iterator from a single field. The iterator just
@@ -256,11 +258,11 @@ impl<'a> IntoIterator for &'a Field<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let field = Field::new("003@", None, vec![('0', "abc")]);
+    ///     let field = FieldRef::new("003@", None, vec![('0', "abc")]);
     ///     let mut iter = field.into_iter();
     ///
     ///     assert_eq!(iter.next(), Some(&field));
@@ -284,17 +286,18 @@ mod tests {
 
         macro_rules! parse_success {
             ($i:expr, $tag:expr, $occurrence:expr, $subfields:expr) => {
-                let field = Field::new($tag, $occurrence, $subfields);
+                let field =
+                    FieldRef::new($tag, $occurrence, $subfields);
                 let result = parse_field.parse($i).unwrap();
                 assert_eq!(result, field);
             };
             ($i:expr, $tag:expr, $subfields:expr) => {
-                let field = Field::new($tag, None, $subfields);
+                let field = FieldRef::new($tag, None, $subfields);
                 let result = parse_field.parse($i).unwrap();
                 assert_eq!(result, field);
             };
             ($i:expr, $tag:expr) => {
-                let field = Field::new($tag, None, vec![]);
+                let field = FieldRef::new($tag, None, vec![]);
                 let result = parse_field.parse($i).unwrap();
                 assert_eq!(result, field);
             };
@@ -327,8 +330,12 @@ mod tests {
     #[test]
     fn field_new() {
         assert_eq!(
-            Field::new("012A", None, vec![('a', "123"), ('b', "456")]),
-            Field {
+            FieldRef::new(
+                "012A",
+                None,
+                vec![('a', "123"), ('b', "456")]
+            ),
+            FieldRef {
                 tag: TagRef::new("012A"),
                 occurrence: None,
                 subfields: vec![
@@ -338,11 +345,12 @@ mod tests {
             }
         );
 
-        let field = Field::new("012A", Some("03"), vec![('a', "123")]);
+        let field =
+            FieldRef::new("012A", Some("03"), vec![('a', "123")]);
 
         assert_eq!(
             field,
-            Field {
+            FieldRef {
                 tag: TagRef::new("012A"),
                 occurrence: Some(OccurrenceRef::new("03")),
                 subfields: vec![SubfieldRef::new('a', "123"),]

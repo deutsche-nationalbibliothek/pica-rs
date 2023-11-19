@@ -3,7 +3,7 @@
 use std::ops::{BitAnd, BitOr, Not};
 
 use bstr::ByteSlice;
-use pica_record::Field;
+use pica_record::FieldRef;
 use winnow::ascii::digit1;
 use winnow::combinator::{
     alt, delimited, opt, preceded, repeat, terminated,
@@ -37,7 +37,7 @@ impl ExistsMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::ExistsMatcher;
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -45,12 +45,12 @@ impl ExistsMatcher {
     ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
-    ///         &Field::new("003@", None, vec![('0', "123456789X")]),
+    ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
     ///         &options
     ///     ));
     ///
     ///     assert!(!matcher.is_match(
-    ///         &Field::new("002@", None, vec![('0', "123456789X")]),
+    ///         &FieldRef::new("002@", None, vec![('0', "123456789X")]),
     ///         &options
     ///     ));
     ///
@@ -65,7 +65,7 @@ impl ExistsMatcher {
     /// subfield(s).
     pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<'a>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>> + Clone,
         _options: &MatcherOptions,
     ) -> bool {
         fields.into_iter().any(|field| {
@@ -112,7 +112,7 @@ impl SubfieldsMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::SubfieldsMatcher;
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -120,12 +120,12 @@ impl SubfieldsMatcher {
     ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
-    ///         &Field::new("002@", None, vec![('0', "Olfo")]),
+    ///         &FieldRef::new("002@", None, vec![('0', "Olfo")]),
     ///         &options
     ///     ));
     ///
     ///     assert!(!matcher.is_match(
-    ///         &Field::new("002@", None, vec![('0', "Oaf")]),
+    ///         &FieldRef::new("002@", None, vec![('0', "Oaf")]),
     ///         &options
     ///     ));
     ///
@@ -141,7 +141,7 @@ impl SubfieldsMatcher {
     /// matcher's criteria.
     pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<'a>>,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         fields.into_iter().any(|field| {
@@ -222,7 +222,7 @@ impl SingletonMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::SingletonMatcher;
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -230,7 +230,7 @@ impl SingletonMatcher {
     ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
-    ///         &Field::new("003@", None, vec![('0', "123456789X")]),
+    ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
     ///         &options
     ///     ));
     ///
@@ -245,7 +245,7 @@ impl SingletonMatcher {
     /// matcher.
     pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<'a>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>> + Clone,
         options: &MatcherOptions,
     ) -> bool {
         match self {
@@ -292,7 +292,7 @@ impl CardinalityMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::CardinalityMatcher;
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -300,7 +300,7 @@ impl CardinalityMatcher {
     ///         CardinalityMatcher::new("#003@{0 == '123456789X'} >= 1");
     ///
     ///     assert!(matcher.is_match(
-    ///         &Field::new("003@", None, vec![('0', "123456789X")]),
+    ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
     ///         &Default::default()
     ///     ));
     ///
@@ -315,7 +315,7 @@ impl CardinalityMatcher {
     /// matcher.
     pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<'a>>,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
         let count = fields
@@ -404,7 +404,7 @@ impl FieldMatcher {
     ///
     /// ```rust
     /// use pica_matcher::FieldMatcher;
-    /// use pica_record::Field;
+    /// use pica_record::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -412,7 +412,7 @@ impl FieldMatcher {
     ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
-    ///         &Field::new("003@", None, vec![('0', "123456789X")]),
+    ///         &FieldRef::new("003@", None, vec![('0', "123456789X")]),
     ///         &options
     ///     ));
     ///
@@ -427,7 +427,7 @@ impl FieldMatcher {
     /// matcher.
     pub fn is_match<'a>(
         &self,
-        fields: impl IntoIterator<Item = &'a Field<'a>> + Clone,
+        fields: impl IntoIterator<Item = &'a FieldRef<'a>> + Clone,
         options: &MatcherOptions,
     ) -> bool {
         match self {

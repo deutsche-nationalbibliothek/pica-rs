@@ -9,11 +9,11 @@ use winnow::combinator::{repeat, terminated};
 use winnow::{PResult, Parser};
 
 use crate::field::parse_field;
-use crate::{Field, ParsePicaError};
+use crate::{FieldRef, ParsePicaError};
 
 /// An immutable PICA+ record.
 #[derive(Debug)]
-pub struct Record<'a>(Vec<Field<'a>>);
+pub struct Record<'a>(Vec<FieldRef<'a>>);
 
 #[inline]
 fn parse_record<'a>(i: &mut &'a [u8]) -> PResult<Record<'a>> {
@@ -52,7 +52,7 @@ impl<'a> Record<'a> {
     {
         let fields = fields
             .into_iter()
-            .map(|(t, o, s)| Field::new(t, o, s))
+            .map(|(t, o, s)| FieldRef::new(t, o, s))
             .collect();
 
         Self(fields)
@@ -124,7 +124,7 @@ impl<'a> Record<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn iter(&self) -> Iter<Field> {
+    pub fn iter(&self) -> Iter<FieldRef> {
         self.0.iter()
     }
 
@@ -149,7 +149,7 @@ impl<'a> Record<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn retain<F: FnMut(&Field) -> bool>(&mut self, f: F) {
+    pub fn retain<F: FnMut(&FieldRef) -> bool>(&mut self, f: F) {
         self.0.retain(f);
     }
 
@@ -296,7 +296,7 @@ impl<'a> ByteRecord<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn retain<F: FnMut(&Field) -> bool>(&mut self, f: F) {
+    pub fn retain<F: FnMut(&FieldRef) -> bool>(&mut self, f: F) {
         self.record.retain(f);
         self.raw_data = None;
     }

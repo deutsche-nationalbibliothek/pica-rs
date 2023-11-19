@@ -1,6 +1,6 @@
 use pica_matcher::field_matcher::*;
 use pica_matcher::MatcherOptions;
-use pica_record::Field;
+use pica_record::FieldRef;
 
 #[test]
 fn field_matcher_exists() -> anyhow::Result<()> {
@@ -8,19 +8,19 @@ fn field_matcher_exists() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("003@", None, vec![('0', "123456789X")]),
+        &FieldRef::new("003@", None, vec![('0', "123456789X")]),
         &options
     ));
 
     assert!(!matcher.is_match(
-        &Field::new("002@", None, vec![('0', "Olfo")]),
+        &FieldRef::new("002@", None, vec![('0', "Olfo")]),
         &options
     ));
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("002@", None, vec![('0', "Olfo")]),
-            &Field::new("003@", None, vec![('0', "123456789X")]),
+            &FieldRef::new("002@", None, vec![('0', "Olfo")]),
+            &FieldRef::new("003@", None, vec![('0', "123456789X")]),
         ],
         &options
     ));
@@ -29,12 +29,12 @@ fn field_matcher_exists() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("003@", None, vec![('0', "123456789X")]),
+        &FieldRef::new("003@", None, vec![('0', "123456789X")]),
         &options
     ));
 
     assert!(matcher.is_match(
-        &Field::new("002@", None, vec![('0', "Olfo")]),
+        &FieldRef::new("002@", None, vec![('0', "Olfo")]),
         &options
     ));
 
@@ -48,12 +48,12 @@ fn field_matcher_subfields() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("003@", None, vec![('0', "123456789X")]),
+        &FieldRef::new("003@", None, vec![('0', "123456789X")]),
         &options
     ));
 
     assert!(!matcher.is_match(
-        &Field::new("002@", None, vec![('0', "Olfo")]),
+        &FieldRef::new("002@", None, vec![('0', "Olfo")]),
         &options
     ));
 
@@ -62,17 +62,17 @@ fn field_matcher_subfields() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("003@", None, vec![('0', "123456789X")]),
+        &FieldRef::new("003@", None, vec![('0', "123456789X")]),
         &options
     ));
 
     assert!(!matcher.is_match(
-        &Field::new("003@", None, vec![('0', "34567")]),
+        &FieldRef::new("003@", None, vec![('0', "34567")]),
         &options
     ));
 
     assert!(!matcher.is_match(
-        &Field::new("002@", None, vec![('0', "Olfo")]),
+        &FieldRef::new("002@", None, vec![('0', "Olfo")]),
         &options
     ));
 
@@ -85,14 +85,14 @@ fn field_matcher_cardinality_eq() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
 
     assert!(!matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('0', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('0', "def")]),
         ],
         &options
     ));
@@ -106,14 +106,14 @@ fn field_matcher_cardinality_ne() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('0', "abd")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('0', "abd")]),
         ],
         &options
     ));
@@ -127,14 +127,14 @@ fn field_matcher_cardinality_ge() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('0', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('0', "def")]),
         ],
         &options
     ));
@@ -148,23 +148,23 @@ fn field_matcher_cardinality_gt() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
 
     assert!(!matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('0', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('0', "def")]),
         ],
         &options
     ));
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('X', "def")]),
-            &Field::new("012A", None, vec![('0', "abd")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('X', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "abd")]),
         ],
         &options
     ));
@@ -178,23 +178,23 @@ fn field_matcher_cardinality_le() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('0', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('0', "def")]),
         ],
         &options
     ));
 
     assert!(!matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('0', "def")]),
-            &Field::new("012A", None, vec![('0', "hij")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('0', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "hij")]),
         ],
         &options
     ));
@@ -208,23 +208,23 @@ fn field_matcher_cardinality_lt() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('0', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('0', "def")]),
         ],
         &options
     ));
 
     assert!(!matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("012A", None, vec![('X', "def")]),
-            &Field::new("012A", None, vec![('0', "abd")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("012A", None, vec![('X', "def")]),
+            &FieldRef::new("012A", None, vec![('0', "abd")]),
         ],
         &options
     ));
@@ -239,11 +239,11 @@ fn field_matcher_group() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(!matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
 
@@ -252,11 +252,11 @@ fn field_matcher_group() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
 
@@ -265,11 +265,11 @@ fn field_matcher_group() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
 
@@ -278,11 +278,11 @@ fn field_matcher_group() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(!matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
 
@@ -291,11 +291,11 @@ fn field_matcher_group() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(!matcher.is_match(
-        &Field::new("012A", None, vec![('0', "def")]),
+        &FieldRef::new("012A", None, vec![('0', "def")]),
         &options
     ));
 
@@ -304,15 +304,15 @@ fn field_matcher_group() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(!matcher.is_match(
-        &Field::new("013A", None, vec![('0', "def")]),
+        &FieldRef::new("013A", None, vec![('0', "def")]),
         &options
     ));
 
@@ -326,11 +326,11 @@ fn field_matcher_not() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
 
@@ -339,11 +339,11 @@ fn field_matcher_not() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
 
@@ -352,11 +352,11 @@ fn field_matcher_not() -> anyhow::Result<()> {
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(
-        &Field::new("012A", None, vec![('0', "abc")]),
+        &FieldRef::new("012A", None, vec![('0', "abc")]),
         &options
     ));
     assert!(!matcher.is_match(
-        &Field::new("013A", None, vec![('0', "abc")]),
+        &FieldRef::new("013A", None, vec![('0', "abc")]),
         &options
     ));
 
@@ -372,17 +372,17 @@ fn field_matcher_composite_and() -> anyhow::Result<()> {
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("013A", None, vec![('a', "123")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("013A", None, vec![('a', "123")]),
         ],
         &options
     ));
 
     assert!(!matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("013A", None, vec![('a', "123")]),
-            &Field::new("014A", None, vec![('0', "hij")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("013A", None, vec![('a', "123")]),
+            &FieldRef::new("014A", None, vec![('0', "hij")]),
         ],
         &options
     ));
@@ -398,24 +398,24 @@ fn field_matcher_composite_or() -> anyhow::Result<()> {
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("013A", None, vec![('a', "1"), ('a', "2")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("013A", None, vec![('a', "1"), ('a', "2")]),
         ],
         &options
     ));
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("013A", None, vec![('a', "1")]),
-            &Field::new("014A", None, vec![('0', "abc")]),
+            &FieldRef::new("013A", None, vec![('a', "1")]),
+            &FieldRef::new("014A", None, vec![('0', "abc")]),
         ],
         &options
     ));
 
     assert!(!matcher.is_match(
         vec![
-            &Field::new("013A", None, vec![('a', "1"), ('a', "2")]),
-            &Field::new("014A", None, vec![('0', "abc")]),
+            &FieldRef::new("013A", None, vec![('a', "1"), ('a', "2")]),
+            &FieldRef::new("014A", None, vec![('0', "abc")]),
         ],
         &options
     ));
@@ -426,8 +426,8 @@ fn field_matcher_composite_or() -> anyhow::Result<()> {
 
     assert!(matcher.is_match(
         vec![
-            &Field::new("012A", None, vec![('0', "abc")]),
-            &Field::new("013A", None, vec![('a', "1"), ('a', "2")]),
+            &FieldRef::new("012A", None, vec![('0', "abc")]),
+            &FieldRef::new("013A", None, vec![('a', "1"), ('a', "2")]),
         ],
         &options
     ));

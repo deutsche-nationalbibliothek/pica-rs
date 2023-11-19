@@ -11,7 +11,7 @@ mod subfield;
 mod tag;
 
 pub use error::ParsePicaError;
-pub use field::Field;
+pub use field::FieldRef;
 pub use level::Level;
 pub use occurrence::{Occurrence, OccurrenceRef};
 pub use record::{ByteRecord, Record, StringRecord};
