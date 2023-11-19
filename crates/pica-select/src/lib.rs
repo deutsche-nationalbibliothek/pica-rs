@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::iter::repeat;
 use std::ops::{Add, Deref, Mul};
+use std::str::FromStr;
 
 use bstr::ByteSlice;
 use pica_matcher::MatcherOptions;
@@ -85,6 +86,13 @@ impl TryFrom<&[u8]> for Query {
             let value = value.to_str_lossy().to_string();
             ParseQueryError(value)
         })
+    }
+}
+
+impl FromStr for Query {
+    type Err = ParseQueryError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
