@@ -5,8 +5,8 @@
 //! The immutable variant is used to parse the corresponding component
 //! of a record, without owning the data. This type is mostly a wrapper
 //! of the underlying data (byte slices). On the other hand there is
-//! also a mutable variant, which is mostly used in upstream crates.
-//! This variant owns it's data.
+//! also a mutable variant, which is used in upstream crates. This
+//! variant owns it's data.
 //!
 //! This crate also provides two higher-level data structure to work
 //! with records: [`ByteRecord`] and [`StringRecord`]. The first type
@@ -20,7 +20,7 @@
 //!
 //! Finally, the [`io`] module provides utilities for reading and
 //! writing PICA+ records and the [`parser`] module exposes the internal
-//! parse combinators, which are used in upstream crates (matcher,
+//! parser combinators, which are used in upstream crates (matcher,
 //! select).
 
 mod error;
