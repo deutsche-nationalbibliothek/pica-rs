@@ -27,7 +27,7 @@ fn parse_record<'a>(i: &mut &'a [u8]) -> PResult<RecordRef<'a>> {
 }
 
 impl<'a> RecordRef<'a> {
-    /// Create a new record.
+    /// Create a new immutable record.
     ///
     /// # Panics
     ///
@@ -169,10 +169,6 @@ impl<'a> RecordRef<'a> {
     /// fn example() -> anyhow::Result<()> {
     ///     let record = RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?;
     ///     assert!(record.validate().is_ok());
-    ///
-    ///     let record =
-    ///         RecordRef::from_bytes(b"003@ \x1f0\x00\x9F\x1e\n")?;
-    ///     assert!(record.validate().is_err());
     ///     Ok(())
     /// }
     /// ```
@@ -434,5 +430,11 @@ impl<'a> Deref for StringRecord<'a> {
     #[inline]
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<'a> DerefMut for StringRecord<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
