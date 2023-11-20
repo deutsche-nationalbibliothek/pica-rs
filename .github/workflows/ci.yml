@@ -185,7 +185,7 @@ jobs:
         with:
           components: clippy
       - run: |
-          cargo clippy --workspace -- -D warnings -D rust-2021-compatibility -W unreachable-pub
+          make clippy
 
   # udeps:
   #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
