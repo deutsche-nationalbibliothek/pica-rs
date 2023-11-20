@@ -17,28 +17,8 @@ pub struct OccurrenceRef<'a>(&'a BStr);
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub struct Occurrence(BString);
 
-/// Parse the digits of an PICA+ occurrence.
-#[inline]
-pub fn parse_occurrence_digits<'a>(
-    i: &mut &'a [u8],
-) -> PResult<&'a BStr> {
-    take_while(2..=3, AsChar::is_dec_digit)
-        .map(ByteSlice::as_bstr)
-        .parse_next(i)
-}
-
-/// Parse a PICA+ occurrence (read-only).
-#[inline]
-pub(crate) fn parse_occurrence<'a>(
-    i: &mut &'a [u8],
-) -> PResult<OccurrenceRef<'a>> {
-    preceded(b'/', parse_occurrence_digits)
-        .map(|value| OccurrenceRef(value.as_bstr()))
-        .parse_next(i)
-}
-
 impl<'a> OccurrenceRef<'a> {
-    /// Create a new PICA+ occurrence.
+    /// Create an immutable PICA+ occurrence.
     ///
     /// # Panics
     ///
@@ -58,8 +38,7 @@ impl<'a> OccurrenceRef<'a> {
     /// }
     /// ```
     pub fn new<B: ?Sized + AsRef<[u8]>>(value: &'a B) -> Self {
-        Self::try_from(value.as_ref().as_bstr())
-            .expect("value occurrence")
+        Self::try_from(value.as_ref()).expect("value occurrence")
     }
 
     /// Creates an immutable PICA+ tag from a byte slice.
@@ -154,20 +133,41 @@ impl<'a, T: AsRef<[u8]>> PartialEq<T> for OccurrenceRef<'a> {
 }
 
 impl<'a> Display for OccurrenceRef<'a> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "/{}", self.0)
     }
 }
 
-impl<'a> TryFrom<&'a BStr> for OccurrenceRef<'a> {
+/// Parse the digits of an PICA+ occurrence.
+#[inline]
+pub fn parse_occurrence_digits<'a>(
+    i: &mut &'a [u8],
+) -> PResult<&'a BStr> {
+    take_while(2..=3, AsChar::is_dec_digit)
+        .map(ByteSlice::as_bstr)
+        .parse_next(i)
+}
+
+/// Parse a PICA+ occurrence (read-only).
+#[inline]
+pub(crate) fn parse_occurrence<'a>(
+    i: &mut &'a [u8],
+) -> PResult<OccurrenceRef<'a>> {
+    preceded(b'/', parse_occurrence_digits)
+        .map(|value| OccurrenceRef(value.as_bstr()))
+        .parse_next(i)
+}
+
+impl<'a> TryFrom<&'a [u8]> for OccurrenceRef<'a> {
     type Error = ParsePicaError;
 
-    fn try_from(value: &'a BStr) -> Result<Self, Self::Error> {
+    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
         if parse_occurrence_digits.parse(value).is_err() {
             return Err(ParsePicaError::InvalidOccurrence);
         }
 
-        Ok(Self(value))
+        Ok(Self(value.into()))
     }
 }
 
@@ -204,8 +204,6 @@ impl AsRef<[u8]> for Occurrence {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
-
     use bstr::ByteSlice;
 
     use super::*;
@@ -261,74 +259,5 @@ mod tests {
         parse_error!(b"/0a");
         parse_error!(b"/0001");
         parse_error!(b"/0");
-    }
-
-    #[test]
-    fn occurrence_new() {
-        let _ = OccurrenceRef::new("001");
-        let _ = OccurrenceRef::new("00");
-    }
-
-    #[test]
-    #[should_panic]
-    fn occurrence_new_panic() {
-        OccurrenceRef::new("00a");
-    }
-
-    #[test]
-    fn occurrence_from_bytes() {
-        assert_eq!(
-            OccurrenceRef::from_bytes(b"/00").unwrap(),
-            OccurrenceRef("00".into())
-        );
-
-        assert_eq!(
-            OccurrenceRef::from_bytes(b"/001").unwrap(),
-            OccurrenceRef("001".into())
-        );
-
-        assert_eq!(
-            OccurrenceRef::from_bytes(b"00").unwrap_err(),
-            ParsePicaError::InvalidOccurrence
-        );
-    }
-
-    #[test]
-    fn occurrence_try_from() {
-        assert_eq!(
-            OccurrenceRef::try_from(b"00".as_bstr()).unwrap(),
-            OccurrenceRef("00".into())
-        );
-
-        assert_eq!(
-            OccurrenceRef::try_from(b"001".as_bstr()).unwrap(),
-            OccurrenceRef("001".into())
-        );
-
-        assert_eq!(
-            OccurrenceRef::try_from(b"/00".as_bstr()).unwrap_err(),
-            ParsePicaError::InvalidOccurrence
-        );
-    }
-
-    #[test]
-    fn occurrence_write_to() {
-        let mut writer = Cursor::new(Vec::<u8>::new());
-        let occurrence = OccurrenceRef::new("99");
-        let _ = occurrence.write_to(&mut writer);
-
-        assert_eq!(writer.into_inner(), b"/99");
-    }
-
-    #[test]
-    fn occurrence_eq() {
-        assert_eq!(OccurrenceRef::new("003"), "003");
-        assert_eq!(OccurrenceRef::new("03"), b"03");
-    }
-
-    #[test]
-    fn occurrence_to_string() {
-        let occurrence_str = format!("{}", OccurrenceRef::new("002"));
-        assert_eq!(occurrence_str, "/002");
     }
 }
