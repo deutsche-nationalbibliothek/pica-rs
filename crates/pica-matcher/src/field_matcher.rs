@@ -160,13 +160,7 @@ fn parse_subfields_matcher_dot(
     (
         parse_tag_matcher,
         parse_occurrence_matcher,
-        preceded(
-            alt((
-                '.',
-                ws('$'), // FIXME: remove legacy snytax
-            )),
-            parse_subfield_singleton_matcher,
-        ),
+        preceded('.', parse_subfield_singleton_matcher),
     )
         .map(|(t, o, s)| SubfieldsMatcher {
             tag_matcher: t,
