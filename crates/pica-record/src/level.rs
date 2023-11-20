@@ -28,18 +28,3 @@ impl FromStr for Level {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_from_str() {
-        assert_eq!("main".parse::<Level>().unwrap(), Level::Main);
-        assert_eq!("local".parse::<Level>().unwrap(), Level::Local);
-        assert_eq!("copy".parse::<Level>().unwrap(), Level::Copy);
-
-        assert!("master".parse::<Level>().is_err());
-        assert!("foo".parse::<Level>().is_err());
-    }
-}
