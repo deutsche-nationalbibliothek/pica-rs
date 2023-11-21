@@ -270,8 +270,9 @@ impl Record {
 #[cfg(feature = "arbitrary")]
 impl quickcheck::Arbitrary for Record {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let size = g.size();
         let fields =
-            (1..=20).map(|_| Field::arbitrary(g)).collect::<Vec<_>>();
+            (0..size).map(|_| Field::arbitrary(g)).collect::<Vec<_>>();
 
         Self(fields)
     }
