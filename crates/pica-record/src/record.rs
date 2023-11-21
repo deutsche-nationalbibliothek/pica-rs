@@ -217,6 +217,12 @@ impl<'a> RecordRef<'a> {
     }
 }
 
+impl PartialEq<RecordRef<'_>> for RecordRef<'_> {
+    fn eq(&self, other: &RecordRef<'_>) -> bool {
+        self.0 == other.0
+    }
+}
+
 impl From<RecordRef<'_>> for Record {
     fn from(other: RecordRef<'_>) -> Self {
         Self(other.0.into_iter().map(Field::from).collect())
@@ -355,6 +361,15 @@ impl<'a> Deref for ByteRecord<'a> {
 impl<'a> DerefMut for ByteRecord<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.record
+    }
+}
+
+impl PartialEq<ByteRecord<'_>> for ByteRecord<'_> {
+    fn eq(&self, other: &ByteRecord<'_>) -> bool {
+        match (self.raw_data, other.raw_data) {
+            (Some(lhs), Some(rhs)) => lhs == rhs,
+            _ => self.record == other.record,
+        }
     }
 }
 

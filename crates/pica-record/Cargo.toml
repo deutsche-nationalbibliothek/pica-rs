@@ -17,6 +17,7 @@ winnow = { workspace = true, features = ["simd"] }
 [dev-dependencies]
 anyhow = "1.0"
 criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
 
 [[bench]]
 name = "main"
