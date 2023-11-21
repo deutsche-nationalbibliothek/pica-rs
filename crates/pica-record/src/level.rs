@@ -24,7 +24,7 @@ impl FromStr for Level {
             "main" => Ok(Self::Main),
             "local" => Ok(Self::Local),
             "copy" => Ok(Self::Copy),
-            _ => Err(ParseLevelError(format!("invalid level '{}'", s))),
+            _ => Err(ParseLevelError(format!("invalid level '{s}'"))),
         }
     }
 }

@@ -32,7 +32,7 @@ impl FilterList {
 
         for path in filenames {
             match path.extension().and_then(OsStr::to_str) {
-                Some("arrow") | Some("ipc") | Some("feather") => {
+                Some("arrow" | "ipc" | "feather") => {
                     let mut reader = File::open(path)?;
                     let metadata = read_file_metadata(&mut reader)
                         .map_err(|_| {

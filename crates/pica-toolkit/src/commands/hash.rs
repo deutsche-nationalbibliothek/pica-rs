@@ -73,8 +73,7 @@ impl Hash {
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
 
-        writer
-            .write_record(self.header.split(',').map(|s| s.trim()))?;
+        writer.write_record(self.header.split(',').map(str::trim))?;
 
         let mut progress = Progress::new(self.progress);
 
