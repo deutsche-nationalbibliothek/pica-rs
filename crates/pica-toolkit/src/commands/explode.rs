@@ -92,9 +92,9 @@ pub(crate) struct Explode {
 macro_rules! record_bytes {
     ($fields:expr) => {{
         let mut buffer = Vec::<u8>::new();
-        $fields.iter().for_each(|field| {
+        for field in $fields.iter() {
             let _ = field.write_to(&mut buffer);
-        });
+        }
         buffer.push(b'\n');
         buffer
     }};

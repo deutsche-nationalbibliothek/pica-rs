@@ -1,0 +1,19 @@
+[build]
+rustflags = [
+    # rust
+    "-D", "warnings",
+    "-W", "unreachable-pub",
+
+    # clippy
+    "-W", "clippy::cloned_instead_of_copied",
+    "-W", "clippy::filter_map_next",
+    "-W", "clippy::flat_map_option",
+    "-W", "clippy::map_unwrap_or",
+    "-W", "clippy::needless_bitwise_bool",
+    "-W", "clippy::needless_for_each",
+    "-W", "clippy::range_minus_one",
+    "-W", "clippy::range_plus_one",
+    "-W", "clippy::redundant_closure_for_method_calls",
+    "-W", "clippy::uninlined_format_args",
+    "-W", "clippy::unnested_or_patterns",
+]

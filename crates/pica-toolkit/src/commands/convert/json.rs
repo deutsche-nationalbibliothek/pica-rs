@@ -61,9 +61,9 @@ impl ByteRecordWrite for JsonWriter {
 
         let data = serde_json::Value::Array(fields);
         if self.count > 0 {
-            write!(self.writer, ",{}", data)?;
+            write!(self.writer, ",{data}")?;
         } else {
-            write!(self.writer, "{}", data)?;
+            write!(self.writer, "{data}")?;
         }
 
         self.count += 1;

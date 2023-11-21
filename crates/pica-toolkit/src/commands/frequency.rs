@@ -166,7 +166,7 @@ impl Frequency {
         }
 
         if let Some(header) = self.header {
-            writer.write_record(header.split(',').map(|s| s.trim()))?;
+            writer.write_record(header.split(',').map(str::trim))?;
         }
 
         let mut ftable_sorted: Vec<(&Vec<String>, &u64)> =

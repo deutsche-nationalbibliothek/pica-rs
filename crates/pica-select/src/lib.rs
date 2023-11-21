@@ -261,8 +261,7 @@ impl Outcome {
         {
             eprintln!(
                 "WARNING: A subfield value contains \
-                      squash separator '{}'.",
-                sep
+                      squash separator '{sep}'."
             );
         }
 

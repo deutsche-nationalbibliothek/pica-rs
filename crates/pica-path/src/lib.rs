@@ -9,7 +9,7 @@ use pica_matcher::{
     MatcherOptions, OccurrenceMatcher, SubfieldMatcher, TagMatcher,
 };
 use pica_record::parser::parse_subfield_code;
-use pica_record::RecordRef;
+use pica_record::{FieldRef, RecordRef};
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 use thiserror::Error;
@@ -277,7 +277,7 @@ impl<'a> PathExt for RecordRef<'a> {
                     true
                 }
             })
-            .flat_map(|field| field.subfields())
+            .flat_map(FieldRef::subfields)
             .filter_map(|subfield| {
                 if path.codes_flat().contains(&subfield.code()) {
                     Some(subfield.value())

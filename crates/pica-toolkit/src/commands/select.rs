@@ -254,7 +254,7 @@ impl Select {
             .from_writer(writer(self.output, self.append)?);
 
         if let Some(header) = self.header {
-            writer.write_record(header.split(',').map(|s| s.trim()))?;
+            writer.write_record(header.split(',').map(str::trim))?;
         }
 
         let mut progess = Progress::new(self.progress);
@@ -300,9 +300,7 @@ impl Select {
                         let outcome = record.query(&query, &options);
                         for row in outcome.iter() {
                             if self.no_empty_columns
-                                && row
-                                    .iter()
-                                    .any(|column| column.is_empty())
+                                && row.iter().any(String::is_empty)
                             {
                                 continue;
                             }
@@ -319,7 +317,7 @@ impl Select {
                                 seen.insert(hash);
                             }
 
-                            if !row.iter().all(|col| col.is_empty()) {
+                            if !row.iter().all(String::is_empty) {
                                 if let Some(nf) = self.nf {
                                     writer.write_record(
                                         row.iter()
