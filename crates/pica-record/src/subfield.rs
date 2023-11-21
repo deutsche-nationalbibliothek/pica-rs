@@ -397,6 +397,7 @@ mod tests {
         assert!(parse_subfield.parse(b"").is_err());
     }
 
+    #[cfg_attr(miri, ignore)]
     #[quickcheck_macros::quickcheck]
     fn parse_arbitrary_subfield(subfield: Subfield) -> bool {
         let mut bytes = Vec::<u8>::new();

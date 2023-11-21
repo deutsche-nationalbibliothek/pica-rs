@@ -423,6 +423,7 @@ mod tests {
         parse_error!(b"012A/00 \x1f!bc\x1e");
     }
 
+    #[cfg_attr(miri, ignore)]
     #[quickcheck_macros::quickcheck]
     fn parse_arbitrary_field(field: Field) -> bool {
         let mut bytes = Vec::<u8>::new();

@@ -507,6 +507,7 @@ impl<'a> DerefMut for StringRecord<'a> {
 mod tests {
     use super::*;
 
+    #[cfg_attr(miri, ignore)]
     #[quickcheck_macros::quickcheck]
     fn parse_arbitrary_record(record: Record) -> bool {
         let mut bytes = Vec::<u8>::new();
