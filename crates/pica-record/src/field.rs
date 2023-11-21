@@ -360,7 +360,9 @@ impl quickcheck::Arbitrary for Field {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
         let tag = Tag::arbitrary(g);
         let occurrence = Option::<Occurrence>::arbitrary(g);
-        let subfields = Vec::<Subfield>::arbitrary(g);
+        let subfields = (0..g.size())
+            .map(|_| Subfield::arbitrary(g))
+            .collect::<Vec<Subfield>>();
 
         Self {
             tag,
