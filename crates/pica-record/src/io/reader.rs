@@ -46,8 +46,8 @@ impl ReaderBuilder {
     ///     Ok(())
     /// }
     /// ```
-    pub fn limit(mut self, buffer_size: usize) -> Self {
-        self.limit = buffer_size;
+    pub fn limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
         self
     }
 

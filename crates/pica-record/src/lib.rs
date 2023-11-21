@@ -34,7 +34,7 @@ mod tag;
 
 pub use error::ParsePicaError;
 pub use field::{Field, FieldRef};
-pub use level::Level;
+pub use level::{Level, ParseLevelError};
 pub use occurrence::{Occurrence, OccurrenceRef};
 pub use record::{ByteRecord, Record, RecordRef, StringRecord};
 pub use subfield::{Subfield, SubfieldRef};

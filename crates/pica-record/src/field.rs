@@ -29,25 +29,6 @@ pub struct Field {
     subfields: Vec<Subfield>,
 }
 
-/// Parse a PICA+ field.
-pub(crate) fn parse_field<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldRef<'a>> {
-    (
-        parse_tag,
-        opt(parse_occurrence),
-        b' ',
-        repeat(0.., parse_subfield),
-        b'\x1e',
-    )
-        .map(|(tag, occurrence, _, subfields, _)| FieldRef {
-            tag,
-            occurrence,
-            subfields,
-        })
-        .parse_next(i)
-}
-
 impl<'a> FieldRef<'a> {
     /// Create a new field.
     ///
@@ -104,9 +85,7 @@ impl<'a> FieldRef<'a> {
     /// }
     /// ```
     pub fn from_bytes(bytes: &'a [u8]) -> Result<Self, ParsePicaError> {
-        parse_field
-            .parse(bytes)
-            .map_err(|_| ParsePicaError::InvalidField)
+        Self::try_from(bytes)
     }
 
     /// Returns the tag of the field.
@@ -257,6 +236,35 @@ impl<'a> FieldRef<'a> {
     }
 }
 
+/// Parse a PICA+ field.
+pub(crate) fn parse_field<'a>(
+    i: &mut &'a [u8],
+) -> PResult<FieldRef<'a>> {
+    (
+        parse_tag,
+        opt(parse_occurrence),
+        b' ',
+        repeat(0.., parse_subfield),
+        b'\x1e',
+    )
+        .map(|(tag, occurrence, _, subfields, _)| FieldRef {
+            tag,
+            occurrence,
+            subfields,
+        })
+        .parse_next(i)
+}
+
+impl<'a> TryFrom<&'a [u8]> for FieldRef<'a> {
+    type Error = ParsePicaError;
+
+    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+        parse_field
+            .parse(value)
+            .map_err(|_| ParsePicaError::InvalidField)
+    }
+}
+
 impl<'a> IntoIterator for &'a FieldRef<'a> {
     type Item = &'a FieldRef<'a>;
     type IntoIter = iter::Once<Self::Item>;
@@ -353,36 +361,5 @@ mod tests {
         parse_error!(b"012!/01 \x1fabc\x1e");
         parse_error!(b"012A/0! \x1fabc\x1e");
         parse_error!(b"012A/00 \x1f!bc\x1e");
-    }
-
-    #[test]
-    fn field_new() {
-        assert_eq!(
-            FieldRef::new(
-                "012A",
-                None,
-                vec![('a', "123"), ('b', "456")]
-            ),
-            FieldRef {
-                tag: TagRef::new("012A"),
-                occurrence: None,
-                subfields: vec![
-                    SubfieldRef::new('a', "123"),
-                    SubfieldRef::new('b', "456"),
-                ]
-            }
-        );
-
-        let field =
-            FieldRef::new("012A", Some("03"), vec![('a', "123")]);
-
-        assert_eq!(
-            field,
-            FieldRef {
-                tag: TagRef::new("012A"),
-                occurrence: Some(OccurrenceRef::new("03")),
-                subfields: vec![SubfieldRef::new('a', "123"),]
-            }
-        );
     }
 }

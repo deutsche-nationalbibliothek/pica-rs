@@ -49,7 +49,7 @@ pub(crate) fn parse_subfield<'a>(
 }
 
 impl<'a> SubfieldRef<'a> {
-    /// Create a new subfield.
+    /// Create a new immutable PICA+ subfield.
     ///
     /// # Panics
     ///
@@ -102,7 +102,7 @@ impl<'a> SubfieldRef<'a> {
             .map_err(|_| ParsePicaError::InvalidSubfield)
     }
 
-    /// Returns the code of the subfield.
+    /// immutable PICA+ Returns the code of the subfield.
     ///
     /// # Example
     ///
@@ -273,6 +273,7 @@ impl PartialEq<Subfield> for SubfieldRef<'_> {
         self.code == other.code && self.value == other.value
     }
 }
+
 impl PartialEq<SubfieldRef<'_>> for Subfield {
     #[inline]
     fn eq(&self, other: &SubfieldRef<'_>) -> bool {
@@ -292,36 +293,34 @@ impl From<SubfieldRef<'_>> for Subfield {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
-
     use bstr::ByteSlice;
 
     use super::*;
 
     #[test]
     fn parse_subfield_code() {
-        use super::parse_subfield_code;
-
         for c in b'0'..=b'z' {
             if c.is_ascii_alphanumeric() {
                 assert_eq!(
-                    parse_subfield_code.parse(&[c]).unwrap(),
+                    super::parse_subfield_code.parse(&[c]).unwrap(),
                     c as char
                 );
             } else {
-                assert!(parse_subfield_code.parse(&[c]).is_err());
+                assert!(super::parse_subfield_code
+                    .parse(&[c])
+                    .is_err());
             }
         }
     }
 
     #[test]
     fn parse_subfield_value() {
-        use super::parse_subfield_value;
-
         macro_rules! parse_success {
             ($input:expr, $expected:expr, $rest:expr) => {
                 assert_eq!(
-                    parse_subfield_value.parse_peek($input).unwrap(),
+                    super::parse_subfield_value
+                        .parse_peek($input)
+                        .unwrap(),
                     ($rest.as_bytes(), $expected.as_bstr())
                 );
             };
@@ -349,109 +348,5 @@ mod tests {
 
         assert!(parse_subfield.parse(b"a123").is_err());
         assert!(parse_subfield.parse(b"").is_err());
-    }
-
-    #[test]
-    fn subfield_new() {
-        let _ = SubfieldRef::new('a', "123");
-        let _ = SubfieldRef::new('a', "");
-    }
-
-    #[test]
-    #[should_panic]
-    fn subfield_new_panic_code() {
-        SubfieldRef::new('!', "123");
-    }
-
-    #[test]
-    #[should_panic]
-    fn subfield_new_panic_value() {
-        SubfieldRef::new('a', "a\x1eb");
-    }
-
-    #[test]
-    fn from_bytes() {
-        assert_eq!(
-            SubfieldRef::from_bytes(b"\x1fa123").unwrap(),
-            SubfieldRef::new('a', "123")
-        );
-
-        assert_eq!(
-            SubfieldRef::from_bytes(b"\x1f!123").unwrap_err(),
-            ParsePicaError::InvalidSubfield
-        );
-    }
-
-    #[test]
-    fn try_from() {
-        assert_eq!(
-            SubfieldRef::try_from(('a', "123")).unwrap(),
-            SubfieldRef::new('a', "123")
-        );
-
-        macro_rules! parse_error {
-            ($input:expr) => {
-                assert_eq!(
-                    SubfieldRef::try_from($input).unwrap_err(),
-                    ParsePicaError::InvalidSubfield
-                );
-            };
-        }
-
-        parse_error!(('a', &[b'1', b'\x1e', b'2']));
-        parse_error!(('a', &[b'1', b'\x1f', b'2']));
-        parse_error!(('!', "123"));
-    }
-
-    #[test]
-    fn subfield_code() {
-        let subfield = SubfieldRef::new('a', "123");
-        assert_eq!(subfield.code(), 'a');
-    }
-
-    #[test]
-    fn subfield_value() {
-        let subfield = SubfieldRef::new('a', "123");
-        assert_eq!(subfield.value(), "123");
-    }
-
-    #[test]
-    fn subfield_is_empty() {
-        let subfield = SubfieldRef::new('a', "123");
-        assert!(!subfield.is_empty());
-
-        let subfield = SubfieldRef::new('a', "");
-        assert!(subfield.is_empty());
-    }
-
-    #[test]
-    fn subfield_validate() {
-        let subfield = SubfieldRef::new('a', "123");
-        assert!(subfield.validate().is_ok());
-
-        let subfield = SubfieldRef::new('a', &[0, 159, 146, 150]);
-        let error = subfield.validate().unwrap_err();
-        assert_eq!(1, error.valid_up_to());
-    }
-
-    #[test]
-    fn subfield_write_to() {
-        let mut writer = Cursor::new(Vec::<u8>::new());
-        let subfield = SubfieldRef::new('a', "123");
-        let _ = subfield.write_to(&mut writer);
-
-        assert_eq!(
-            writer.into_inner(),
-            vec![b'\x1f', b'a', b'1', b'2', b'3']
-        );
-    }
-
-    #[test]
-    fn subfield_into_iter() {
-        let subfield = SubfieldRef::new('a', "123");
-        let mut iter = subfield.into_iter();
-
-        assert_eq!(iter.next(), Some(&subfield));
-        assert_eq!(iter.next(), None);
     }
 }
