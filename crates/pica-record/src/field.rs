@@ -312,6 +312,64 @@ impl From<FieldRef<'_>> for Field {
     }
 }
 
+impl Field {
+    /// Write the field into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::{Field, FieldRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let field: Field =
+    ///         FieldRef::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?.into();
+    ///     field.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "012A/01 \x1fab\x1fcd\x1e"
+    ///     # );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        let _ = out.write(self.tag.as_bytes())?;
+
+        if let Some(ref o) = self.occurrence {
+            o.write_to(out)?;
+        }
+
+        write!(out, " ")?;
+
+        for subfield in self.subfields.iter() {
+            subfield.write_to(out)?;
+        }
+
+        write!(out, "\x1e")
+    }
+}
+
+#[cfg(feature = "arbitrary")]
+impl quickcheck::Arbitrary for Field {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let tag = Tag::arbitrary(g);
+        let occurrence = Option::<Occurrence>::arbitrary(g);
+        let subfields = Vec::<Subfield>::arbitrary(g);
+
+        Self {
+            tag,
+            occurrence,
+            subfields,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -361,5 +419,13 @@ mod tests {
         parse_error!(b"012!/01 \x1fabc\x1e");
         parse_error!(b"012A/0! \x1fabc\x1e");
         parse_error!(b"012A/00 \x1f!bc\x1e");
+    }
+
+    #[quickcheck_macros::quickcheck]
+    fn parse_arbitrary_field(field: Field) -> bool {
+        let mut bytes = Vec::<u8>::new();
+        let _ = field.write_to(&mut bytes);
+
+        super::parse_field.parse(&bytes).is_ok()
     }
 }

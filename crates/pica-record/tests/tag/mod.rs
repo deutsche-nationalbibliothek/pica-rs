@@ -66,6 +66,11 @@ fn tag_new() {
 }
 
 #[test]
+fn tag_as_bytes() {
+    assert_eq!(Tag::new("044H").as_bytes(), b"044H");
+}
+
+#[test]
 fn tag_from_tag_ref() {
     let tag_ref = TagRef::new("041A");
     let tag = Tag::new("041A");
