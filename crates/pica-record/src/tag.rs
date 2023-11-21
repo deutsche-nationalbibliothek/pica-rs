@@ -163,6 +163,25 @@ impl Tag {
     pub fn new<T: ?Sized + AsRef<[u8]>>(value: &T) -> Self {
         TagRef::new(value).into()
     }
+
+    /// Returns the tag as an byte slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Tag;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let tag = Tag::new("003@");
+    ///     assert_eq!(tag.as_bytes(), b"003@");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
 }
 
 impl From<TagRef<'_>> for Tag {
@@ -192,6 +211,20 @@ impl<T: AsRef<[u8]>> PartialEq<T> for Tag {
     }
 }
 
+#[cfg(feature = "arbitrary")]
+impl quickcheck::Arbitrary for Tag {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let p0 = *g.choose(b"012").unwrap();
+        let p1 = *g.choose(b"0123456789").unwrap();
+        let p2 = *g.choose(b"0123456789").unwrap();
+        let p3 = *g.choose(b"ABCDEFGHIJKLMNOPQRSTUVWXYZ@").unwrap();
+
+        let inner = BString::from(&[p0, p1, p2, p3]);
+
+        Tag(inner)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -214,5 +247,10 @@ mod tests {
         for tag in ["456@", "0A2A", "01AA", "01Aa", "003@0"] {
             assert!(super::parse_tag.parse(tag.as_bytes()).is_err());
         }
+    }
+
+    #[quickcheck_macros::quickcheck]
+    fn parse_arbitrary_tag(tag: Tag) -> bool {
+        super::parse_tag.parse(tag.as_bytes()).is_ok()
     }
 }

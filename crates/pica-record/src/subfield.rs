@@ -274,6 +274,37 @@ impl PartialEq<Subfield> for SubfieldRef<'_> {
     }
 }
 
+impl Subfield {
+    /// Write the subfield into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::{Subfield, SubfieldRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let subfield: Subfield =
+    ///         SubfieldRef::new('0', "123456789X").into();
+    ///     subfield.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "\x1f0123456789X"
+    ///     # );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "\x1f{}{}", self.code, self.value)
+    }
+}
+
 impl PartialEq<SubfieldRef<'_>> for Subfield {
     #[inline]
     fn eq(&self, other: &SubfieldRef<'_>) -> bool {
@@ -288,6 +319,22 @@ impl From<SubfieldRef<'_>> for Subfield {
             value: other.value.into(),
             code: other.code,
         }
+    }
+}
+
+#[cfg(feature = "arbitrary")]
+impl quickcheck::Arbitrary for Subfield {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let code = (1..)
+            .map(|_| char::arbitrary(g))
+            .filter(char::is_ascii_alphanumeric)
+            .nth(0)
+            .unwrap();
+
+        let value =
+            String::arbitrary(g).replace(['\x1f', '\x1e'], "").into();
+
+        Self { code, value }
     }
 }
 
@@ -348,5 +395,14 @@ mod tests {
 
         assert!(parse_subfield.parse(b"a123").is_err());
         assert!(parse_subfield.parse(b"").is_err());
+    }
+
+    #[cfg_attr(miri, ignore)]
+    #[quickcheck_macros::quickcheck]
+    fn parse_arbitrary_subfield(subfield: Subfield) -> bool {
+        let mut bytes = Vec::<u8>::new();
+        let _ = subfield.write_to(&mut bytes);
+
+        super::parse_subfield.parse(&bytes).is_ok()
     }
 }

@@ -83,7 +83,14 @@ fn occurrence_as_ref() {
 
 #[test]
 fn occurrence_as_bytes() {
-    let occurrence_ref = OccurrenceRef::new("001");
-    let occurrence = Occurrence::from(occurrence_ref);
-    assert_eq!(occurrence.as_bytes(), b"001");
+    let occurrence: Occurrence = OccurrenceRef::new("01").into();
+    assert_eq!(occurrence.as_bytes(), b"01");
+}
+
+#[test]
+fn occurrence_write_to() {
+    let mut writer = Cursor::new(Vec::<u8>::new());
+    let ocurrence: Occurrence = OccurrenceRef::new("001").into();
+    let _ = ocurrence.write_to(&mut writer);
+    assert_eq!(writer.into_inner(), b"/001");
 }

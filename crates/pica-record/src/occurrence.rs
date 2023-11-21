@@ -188,6 +188,33 @@ impl Occurrence {
     pub fn as_bytes(&self) -> &[u8] {
         self.0.as_ref()
     }
+
+    /// Write the occurrence into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::{Occurrence, OccurrenceRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let occurrence: Occurrence = OccurrenceRef::new("01").into();
+    ///     occurrence.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #    String::from_utf8(writer.into_inner())?,
+    ///     #    "/01"
+    ///     # );
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "/{}", self.0)
+    }
 }
 
 impl From<OccurrenceRef<'_>> for Occurrence {
@@ -202,11 +229,30 @@ impl AsRef<[u8]> for Occurrence {
     }
 }
 
+#[cfg(feature = "arbitrary")]
+impl quickcheck::Arbitrary for Occurrence {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let size = *g.choose(&[2, 3]).unwrap();
+        let value = (0..size)
+            .map(|_| *g.choose(b"0123456789").unwrap())
+            .collect::<Vec<u8>>();
+
+        Occurrence(value.into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use bstr::ByteSlice;
 
     use super::*;
+
+    #[quickcheck_macros::quickcheck]
+    fn parse_arbitrary_occurrence(occurrence: Occurrence) -> bool {
+        let mut bytes = Vec::<u8>::new();
+        let _ = occurrence.write_to(&mut bytes);
+        super::parse_occurrence.parse(&bytes).is_ok()
+    }
 
     #[test]
     fn parse_occurrence_digits() {

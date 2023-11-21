@@ -94,6 +94,14 @@ fn subfield_ref_partial_eq() {
 }
 
 #[test]
+fn subfield_write_to() {
+    let mut writer = Cursor::new(Vec::<u8>::new());
+    let subfield: Subfield = SubfieldRef::new('0', "abcdef").into();
+    let _ = subfield.write_to(&mut writer);
+    assert_eq!(writer.into_inner(), b"\x1f0abcdef");
+}
+
+#[test]
 fn subfield_from_ref() {
     let subfield_ref = SubfieldRef::new('0', "abc");
     let _subfield = Subfield::from(subfield_ref.clone());

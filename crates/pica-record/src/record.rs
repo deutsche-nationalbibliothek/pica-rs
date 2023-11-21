@@ -16,7 +16,7 @@ use crate::{Field, FieldRef, ParsePicaError};
 pub struct RecordRef<'a>(Vec<FieldRef<'a>>);
 
 /// An immutable PICA+ record.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Record(Vec<Field>);
 
 #[inline]
@@ -226,6 +226,55 @@ impl PartialEq<RecordRef<'_>> for RecordRef<'_> {
 impl From<RecordRef<'_>> for Record {
     fn from(other: RecordRef<'_>) -> Self {
         Self(other.0.into_iter().map(Field::from).collect())
+    }
+}
+impl Record {
+    /// Write the record into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::{Record, RecordRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let mut writer = Cursor::new(Vec::<u8>::new());
+    ///     let record: Record =
+    ///         RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?.into();
+    ///     record.write_to(&mut writer);
+    ///     #
+    ///     # assert_eq!(
+    ///     #     String::from_utf8(writer.into_inner())?,
+    ///     #     "003@ \x1f0a\x1e\n"
+    ///     # );
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        if !self.0.is_empty() {
+            for field in self.0.iter() {
+                field.write_to(out)?;
+            }
+
+            writeln!(out)?;
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(feature = "arbitrary")]
+impl quickcheck::Arbitrary for Record {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let size = g.size();
+        let fields =
+            (0..size).map(|_| Field::arbitrary(g)).collect::<Vec<_>>();
+
+        Self(fields)
     }
 }
 
@@ -451,5 +500,19 @@ impl<'a> Deref for StringRecord<'a> {
 impl<'a> DerefMut for StringRecord<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[cfg_attr(miri, ignore)]
+    #[quickcheck_macros::quickcheck]
+    fn parse_arbitrary_record(record: Record) -> bool {
+        let mut bytes = Vec::<u8>::new();
+        let _ = record.write_to(&mut bytes);
+
+        super::parse_record.parse(&bytes).is_ok()
     }
 }
