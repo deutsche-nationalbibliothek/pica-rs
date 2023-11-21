@@ -124,7 +124,7 @@ jobs:
     strategy:
       matrix:
         item:
-          - { name: record_ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz_record_ref, max-total-time: 300 }
+          - { name: record_ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
           # - { name: select_query, fuzz-dir: crates/pica-select/fuzz, target: fuzz_query, max-total-time: 300 }
     steps:
       - uses: actions/checkout@v4

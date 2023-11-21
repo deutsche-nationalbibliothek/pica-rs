@@ -1,7 +1,6 @@
 [package]
 name = "pica-record-fuzz"
 version = "0.0.0"
-authors = ["Automatically generated"]
 publish = false
 edition = "2021"
 
@@ -18,8 +17,11 @@ path = ".."
 [workspace]
 members = ["."]
 
+[profile.release]
+debug = 1
+
 [[bin]]
-name = "fuzz_record_ref"
+name = "fuzz-record-ref"
 path = "fuzz_targets/fuzz_record_ref.rs"
 test = false
 doc = false
