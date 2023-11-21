@@ -172,6 +172,23 @@ impl<'a> TryFrom<&'a [u8]> for OccurrenceRef<'a> {
 }
 
 impl Occurrence {
+    /// Converts a occurrence into the underlying byte slice.
+    ///
+    /// ```rust
+    /// use pica_record::{Occurrence, OccurrenceRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let occurrence = Occurrence::from(OccurrenceRef::new("01"));
+    ///     assert_eq!(occurrence.as_bytes(), b"01");
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+
     /// Write the occurrence into the given writer.
     ///
     /// # Example
