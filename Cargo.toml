@@ -49,6 +49,7 @@ winnow = "0.5"
 [profile.release]
 codegen-units = 1
 panic = "abort"
+strip = true
 lto = true
 
 [profile.dev]
