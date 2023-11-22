@@ -891,14 +891,12 @@ mod tests {
 
     #[test]
     fn parse_subfield_codes() {
-        use super::parse_subfield_codes;
-
         let codes = SUBFIELD_CODES.chars().collect::<Vec<char>>();
 
         macro_rules! parse_success {
             ($input:expr, $expected:expr) => {
                 assert_eq!(
-                    parse_subfield_codes.parse($input).unwrap(),
+                    super::parse_subfield_codes.parse($input).unwrap(),
                     $expected
                 );
             };
@@ -911,8 +909,27 @@ mod tests {
         parse_success!(b"[12]", vec!['1', '2']);
         parse_success!(b"*", codes);
 
-        assert!(parse_subfield_codes.parse(b"!").is_err());
-        assert!(parse_subfield_codes.parse(b"12").is_err());
-        assert!(parse_subfield_codes.parse(b"[a1!]").is_err());
+        assert!(super::parse_subfield_codes.parse(b"!").is_err());
+        assert!(super::parse_subfield_codes.parse(b"12").is_err());
+        assert!(super::parse_subfield_codes.parse(b"[a1!]").is_err());
+    }
+
+    #[test]
+    fn parse_exists_matcher() {
+        macro_rules! parse_success {
+            ($input:expr, $codes:expr) => {
+                assert_eq!(
+                    super::parse_exists_matcher.parse($input).unwrap(),
+                    ExistsMatcher { codes: $codes }
+                );
+            };
+        }
+
+        parse_success!(b"*?", SUBFIELD_CODES.chars().collect());
+        parse_success!(b"[ab]?", vec!['a', 'b']);
+        parse_success!(b"a?", vec!['a']);
+
+        assert!(super::parse_exists_matcher.parse(b"[a-f]?").is_err());
+        assert!(super::parse_exists_matcher.parse(b"a ?").is_err());
     }
 }
