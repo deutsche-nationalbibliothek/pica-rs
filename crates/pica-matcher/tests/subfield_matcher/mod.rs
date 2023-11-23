@@ -65,66 +65,65 @@ fn exists_matcher_is_match() -> anyhow::Result<()> {
     Ok(())
 }
 
-// #[test]
-// fn exists_matcher() -> anyhow::Result<()> {
-//     let options = MatcherOptions::default();
+#[test]
+fn relational_matcher_new() {
+    let matcher = RelationMatcher::new("0 == 'abc'");
+    assert!(matcher.is_match(
+        &SubfieldRef::new('0', "abc"),
+        &MatcherOptions::new()
+    ));
+}
 
-//     Ok(())
-// }
+#[test]
+#[should_panic]
 
-// #[test]
-// fn relational_matcher_eq() -> anyhow::Result<()> {
-//     // case sensitive
-//     let matcher = RelationMatcher::new("0 == 'abc'");
-//     let options = MatcherOptions::default();
+fn relational_matcher_new_panic() {
+    let _matcher = RelationMatcher::new("! == 'abc'");
+}
 
-//     assert!(matcher
-//         .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &options));
-//     assert!(!matcher
-//         .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &options));
-//     assert!(!matcher
-//         .is_match(&SubfieldRef::from_bytes(b"\x1f1abc")?, &options));
-//     assert!(matcher.is_match(
-//         [
-//             &SubfieldRef::from_bytes(b"\x1f3def")?,
-//             &SubfieldRef::from_bytes(b"\x1f0abc")?,
-//             &SubfieldRef::from_bytes(b"\x1f2bsg")?,
-//         ],
-//         &options
-//     ));
+#[test]
+fn relational_matcher_is_matcher_equal() {
+    // case sensitive
+    let matcher = RelationMatcher::new("0 == 'abc'");
+    let options = MatcherOptions::default();
 
-//     // case insensitive
-//     let matcher = RelationMatcher::new("0 == 'abc'");
-//     let options = MatcherOptions::new().case_ignore(true);
+    assert!(matcher.is_match(&SubfieldRef::new('0', "abc"), &options));
+    assert!(!matcher.is_match(&SubfieldRef::new('0', "ABC"), &options));
+    assert!(!matcher.is_match(&SubfieldRef::new('1', "abc"), &options));
+    assert!(matcher.is_match(
+        [
+            &SubfieldRef::new('3', "def"),
+            &SubfieldRef::new('0', "abc"),
+            &SubfieldRef::new('2', "bsg"),
+        ],
+        &options
+    ));
 
-//     assert!(matcher
-//         .is_match(&SubfieldRef::from_bytes(b"\x1f0abc")?, &options));
-//     assert!(matcher
-//         .is_match(&SubfieldRef::from_bytes(b"\x1f0ABC")?, &options));
+    // case insensitive
+    let matcher = RelationMatcher::new("0 == 'abc'");
+    let options = MatcherOptions::new().case_ignore(true);
 
-//     // multiple subfields
-//     let matcher = RelationMatcher::new("0 == 'abc'");
-//     let options = MatcherOptions::default();
+    assert!(matcher.is_match(&SubfieldRef::new('0', "abc"), &options));
+    assert!(matcher.is_match(&SubfieldRef::new('0', "ABC"), &options));
 
-//     assert!(matcher.is_match(
-//         [
-//             &SubfieldRef::from_bytes(b"\x1f3def")?,
-//             &SubfieldRef::from_bytes(b"\x1f0abc")?,
-//             &SubfieldRef::from_bytes(b"\x1f2bsg")?,
-//         ],
-//         &options
-//     ));
+    // multiple subfields
+    let matcher = RelationMatcher::new("0 == 'abc'");
+    let options = MatcherOptions::default();
 
-//     assert!(!matcher.is_match(
-//         [
-//             &SubfieldRef::from_bytes(b"\x1f3def")?,
-//             &SubfieldRef::from_bytes(b"\x1f2bsg")?,
-//         ],
-//         &options
-//     ));
+    assert!(matcher.is_match(
+        [
+            &SubfieldRef::new('3', "def"),
+            &SubfieldRef::new('0', "abc"),
+            &SubfieldRef::new('2', "bsg"),
+        ],
+        &options
+    ));
 
-//     Ok(())
-// }
+    assert!(!matcher.is_match(
+        [&SubfieldRef::new('3', "def"), &SubfieldRef::new('2', "bsg"),],
+        &options
+    ));
+}
 
 // #[test]
 // fn relational_matcher_ne() -> anyhow::Result<()> {

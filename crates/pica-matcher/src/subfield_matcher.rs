@@ -135,17 +135,6 @@ pub struct RelationMatcher {
     value: Vec<u8>,
 }
 
-/// Parse a relational expression
-fn parse_relation_matcher(i: &mut &[u8]) -> PResult<RelationMatcher> {
-    (
-        ws(parse_subfield_codes),
-        ws(parse_relational_op_str),
-        ws(parse_string),
-    )
-        .map(|(codes, op, value)| RelationMatcher { codes, op, value })
-        .parse_next(i)
-}
-
 impl RelationMatcher {
     /// Create a new relation matcher from a string slice.
     ///
@@ -296,6 +285,18 @@ impl RelationMatcher {
             value.find(&self.value).is_some()
         }
     }
+}
+
+/// Parse a relational expression
+#[inline]
+fn parse_relation_matcher(i: &mut &[u8]) -> PResult<RelationMatcher> {
+    (
+        ws(parse_subfield_codes),
+        ws(parse_relational_op_str),
+        ws(parse_string),
+    )
+        .map(|(codes, op, value)| RelationMatcher { codes, op, value })
+        .parse_next(i)
 }
 
 impl TryFrom<&[u8]> for RelationMatcher {
@@ -931,5 +932,39 @@ mod tests {
 
         assert!(super::parse_exists_matcher.parse(b"[a-f]?").is_err());
         assert!(super::parse_exists_matcher.parse(b"a ?").is_err());
+    }
+
+    #[test]
+    fn parse_relation_matcher() {
+        use RelationalOp::*;
+
+        use super::parse_relation_matcher;
+
+        macro_rules! parse_success {
+            ($input:expr, $codes:expr, $op:expr, $value:expr) => {
+                assert_eq!(
+                    parse_relation_matcher.parse($input).unwrap(),
+                    RelationMatcher {
+                        codes: $codes,
+                        op: $op,
+                        value: $value.to_vec()
+                    }
+                );
+            };
+        }
+
+        parse_success!(b"0 == 'abc'", vec!['0'], Eq, b"abc");
+        parse_success!(b"0 != 'abc'", vec!['0'], Ne, b"abc");
+        parse_success!(b"0 =^ 'abc'", vec!['0'], StartsWith, b"abc");
+        parse_success!(b"0 !^ 'abc'", vec!['0'], StartsNotWith, b"abc");
+        parse_success!(b"0 =$ 'abc'", vec!['0'], EndsWith, b"abc");
+        parse_success!(b"0 !$ 'abc'", vec!['0'], EndsNotWith, b"abc");
+        parse_success!(b"0 =* 'abc'", vec!['0'], Similar, b"abc");
+        parse_success!(b"0 =? 'abc'", vec!['0'], Contains, b"abc");
+
+        assert!(parse_relation_matcher.parse(b"0 >= 'abc'").is_err());
+        assert!(parse_relation_matcher.parse(b"0 > 'abc'").is_err());
+        assert!(parse_relation_matcher.parse(b"0 <= 'abc'").is_err());
+        assert!(parse_relation_matcher.parse(b"0 < 'abc'").is_err());
     }
 }
