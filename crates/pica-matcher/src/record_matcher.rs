@@ -1,4 +1,5 @@
 use std::ops::{BitAnd, BitOr, Not};
+use std::str::FromStr;
 
 use bstr::ByteSlice;
 use pica_record::RecordRef;
@@ -62,6 +63,15 @@ impl TryFrom<&[u8]> for RecordMatcher {
             .map_err(|_| {
                 ParseMatcherError::InvalidRecordMatcher(matcher_str)
             })
+    }
+}
+
+impl FromStr for RecordMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
