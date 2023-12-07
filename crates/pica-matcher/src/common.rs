@@ -34,7 +34,7 @@ where
 
 /// Relational Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum RelationalOp {
+pub enum RelationalOp {
     Eq,            // equal, "=="
     Ne,            // not equal, "!="
     Gt,            // greater than, ">"
@@ -47,6 +47,34 @@ pub(crate) enum RelationalOp {
     EndsNotWith,   // ends not with, "!$"
     Similar,       // similar, "=*"
     Contains,      // contains, "=?"
+}
+
+impl RelationalOp {
+    /// Returns true of the operator can be used in combination with the
+    /// `usize` type, otherwise false.
+    pub fn is_usize_applicable(&self) -> bool {
+        matches!(
+            self,
+            RelationalOp::Eq
+                | RelationalOp::Ne
+                | RelationalOp::Ge
+                | RelationalOp::Gt
+                | RelationalOp::Lt
+                | RelationalOp::Le
+        )
+    }
+
+    /// Returns true of the operator can be used in combination with
+    /// `str` or byte slices, otherwise false.
+    pub fn is_str_applicable(&self) -> bool {
+        !matches!(
+            self,
+            RelationalOp::Ge
+                | RelationalOp::Gt
+                | RelationalOp::Lt
+                | RelationalOp::Le
+        )
+    }
 }
 
 impl Display for RelationalOp {

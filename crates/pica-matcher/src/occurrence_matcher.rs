@@ -180,18 +180,16 @@ impl PartialEq<Option<&OccurrenceRef<'_>>> for OccurrenceMatcher {
 
 #[cfg(test)]
 mod tests {
-    use pica_record::OccurrenceRef;
-
     use super::*;
 
     #[test]
     fn parse_occurrence_matcher() {
-        use super::parse_occurrence_matcher;
-
         macro_rules! parse_success {
             ($input:expr, $expected:expr) => {
                 assert_eq!(
-                    parse_occurrence_matcher.parse($input).unwrap(),
+                    super::parse_occurrence_matcher
+                        .parse($input)
+                        .unwrap(),
                     $expected
                 );
             };
@@ -205,7 +203,7 @@ mod tests {
 
         macro_rules! parse_error {
             ($input:expr) => {
-                assert!(parse_occurrence_matcher
+                assert!(super::parse_occurrence_matcher
                     .parse($input)
                     .is_err());
             };
@@ -215,55 +213,5 @@ mod tests {
         parse_error!(b"/0001");
         parse_error!(b"/0A");
         parse_error!(b"/A");
-    }
-
-    #[test]
-    fn is_match() {
-        let matcher = OccurrenceMatcher::new("/01");
-        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
-        assert!(matcher.is_match(&OccurrenceRef::new("01")));
-
-        let matcher = OccurrenceMatcher::new("/01-03");
-        assert!(!matcher.is_match(&OccurrenceRef::new("00")));
-        assert!(matcher.is_match(&OccurrenceRef::new("01")));
-        assert!(matcher.is_match(&OccurrenceRef::new("02")));
-        assert!(matcher.is_match(&OccurrenceRef::new("03")));
-        assert!(!matcher.is_match(&OccurrenceRef::new("04")));
-
-        let matcher = OccurrenceMatcher::new("/*");
-        assert!(matcher.is_match(&OccurrenceRef::new("00")));
-        assert!(matcher.is_match(&OccurrenceRef::new("01")));
-
-        let matcher = OccurrenceMatcher::new("/00");
-        assert!(matcher.is_match(&OccurrenceRef::new("00")));
-        assert!(!matcher.is_match(&OccurrenceRef::new("01")));
-    }
-
-    #[test]
-    fn test_partial_eq() {
-        let matcher = OccurrenceMatcher::new("/01");
-        assert_ne!(matcher, OccurrenceRef::new("00"));
-        assert_eq!(matcher, OccurrenceRef::new("01"));
-        assert_ne!(matcher, Option::<OccurrenceRef>::None.as_ref());
-
-        let matcher = OccurrenceMatcher::new("/01-03");
-        assert_ne!(matcher, OccurrenceRef::new("00"));
-        assert_eq!(matcher, OccurrenceRef::new("01"));
-        assert_eq!(matcher, OccurrenceRef::new("02"));
-        assert_eq!(matcher, OccurrenceRef::new("03"));
-        assert_ne!(matcher, OccurrenceRef::new("04"));
-        assert_ne!(matcher, Option::<OccurrenceRef>::None.as_ref());
-
-        let matcher = OccurrenceMatcher::new("/*");
-        assert_eq!(matcher, OccurrenceRef::new("000"));
-        assert_eq!(matcher, OccurrenceRef::new("00"));
-        assert_eq!(matcher, OccurrenceRef::new("001"));
-        assert_eq!(matcher, OccurrenceRef::new("01"));
-        assert_eq!(matcher, Option::<OccurrenceRef>::None.as_ref());
-
-        let matcher = OccurrenceMatcher::new("/00");
-        assert_eq!(matcher, OccurrenceRef::new("00"));
-        assert_ne!(matcher, OccurrenceRef::new("01"));
-        assert_eq!(matcher, Option::<OccurrenceRef>::None.as_ref());
     }
 }

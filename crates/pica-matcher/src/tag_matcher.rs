@@ -62,6 +62,7 @@ fn parse_simple(i: &mut &[u8]) -> PResult<TagMatcher> {
         .parse_next(i)
 }
 
+#[inline]
 pub fn parse_tag_matcher(i: &mut &[u8]) -> PResult<TagMatcher> {
     alt((parse_simple, parse_pattern)).parse_next(i)
 }
@@ -154,5 +155,98 @@ impl FromStr for TagMatcher {
         parse_tag_matcher
             .parse(s.as_bytes())
             .map_err(|_| ParseMatcherError::InvalidTagMatcher)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! pattern {
+        ($p0:expr, $p1:expr, $p2:expr, $p3:expr) => {
+            TagMatcher::Pattern([
+                $p0.as_bytes().to_vec(),
+                $p1.as_bytes().to_vec(),
+                $p2.as_bytes().to_vec(),
+                $p3.as_bytes().to_vec(),
+            ])
+        };
+    }
+
+    #[test]
+    fn parse_simple() {
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    super::parse_simple.parse($input).unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!(b"003@", TagMatcher::Simple(Tag::new("003@")));
+        parse_success!(b"101@", TagMatcher::Simple(Tag::new("101@")));
+        parse_success!(b"203@", TagMatcher::Simple(Tag::new("203@")));
+
+        assert!(super::parse_simple.parse(b"003@.0").is_err());
+        assert!(super::parse_simple.parse(b"!03@").is_err());
+    }
+
+    #[test]
+    fn parse_pattern() {
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    super::parse_pattern.parse($input).unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!(b"003@", pattern!("0", "0", "3", "@"));
+        parse_success!(b"[02]03@", pattern!("02", "0", "3", "@"));
+        parse_success!(b".03@", pattern!("012", "0", "3", "@"));
+        parse_success!(b"0.3@", pattern!("0", "0123456789", "3", "@"));
+        parse_success!(b"00.@", pattern!("0", "0", "0123456789", "@"));
+        parse_success!(b"0[2-4]1A", pattern!("0", "234", "1", "A"));
+        parse_success!(b"0[2-46]1A", pattern!("0", "2346", "1", "A"));
+
+        parse_success!(
+            b"003.",
+            pattern!("0", "0", "3", "ABCDEFGHIJKLMNOPQRSTUVWXYZ@")
+        );
+
+        parse_success!(
+            b"0[2-456-8]1A",
+            pattern!("0", "2345678", "1", "A")
+        );
+
+        parse_success!(
+            b"....",
+            pattern!(
+                "012",
+                "0123456789",
+                "0123456789",
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ@"
+            )
+        );
+
+        assert!(super::parse_pattern.parse(b"00[3-1]@").is_err());
+        assert!(super::parse_pattern.parse(b"00[3-3]@").is_err());
+    }
+
+    #[test]
+    fn parse_tag_matcher() {
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    super::parse_tag_matcher.parse($input).unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!(b"003@", TagMatcher::Simple(Tag::new("003@")));
+        parse_success!(b"0[2-46]1A", pattern!("0", "2346", "1", "A"));
     }
 }

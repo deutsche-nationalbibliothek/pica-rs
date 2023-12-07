@@ -1,6 +1,7 @@
 //! Matcher that works on PICA+ [Subfields](pica_record::Subfield).
 
 use std::ops::{BitAnd, BitOr};
+use std::str::FromStr;
 
 use bstr::ByteSlice;
 use pica_record::parser::parse_subfield_code;
@@ -62,7 +63,7 @@ impl ExistsMatcher {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = ExistsMatcher::new("0?");
+    ///     let matcher = ExistsMatcher::new(vec!['0']);
     ///     let options = Default::default();
     ///
     ///     assert!(matcher
@@ -75,8 +76,12 @@ impl ExistsMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: AsRef<[u8]>>(value: T) -> Self {
-        Self::try_from(value.as_ref()).expect("exists matcher")
+    pub fn new<T: Into<Vec<char>>>(codes: T) -> Self {
+        let codes = codes.into();
+
+        assert!(codes.iter().all(char::is_ascii_alphanumeric));
+
+        Self { codes }
     }
 
     /// Returns `true` if at least one subfield is found with a code
@@ -85,18 +90,20 @@ impl ExistsMatcher {
     /// # Example
     ///
     /// ```rust
+    /// use std::str::FromStr;
+    ///
     /// use pica_matcher::subfield_matcher::ExistsMatcher;
     /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = ExistsMatcher::new("[103]?");
+    ///     let matcher = ExistsMatcher::from_str("[103]?")?;
     ///     let options = Default::default();
     ///     assert!(
     ///         matcher.is_match(&SubfieldRef::new('0', "123"), &options)
     ///     );
     ///
-    ///     let matcher = ExistsMatcher::new("*?");
+    ///     let matcher = ExistsMatcher::from_str("*?")?;
     ///     let options = Default::default();
     ///     assert!(
     ///         matcher.is_match(&SubfieldRef::new('a', "abc"), &options)
@@ -119,11 +126,21 @@ impl ExistsMatcher {
 impl TryFrom<&[u8]> for ExistsMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_exists_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for ExistsMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -133,17 +150,6 @@ pub struct RelationMatcher {
     codes: Vec<char>,
     op: RelationalOp,
     value: Vec<u8>,
-}
-
-/// Parse a relational expression
-fn parse_relation_matcher(i: &mut &[u8]) -> PResult<RelationMatcher> {
-    (
-        ws(parse_subfield_codes),
-        ws(parse_relational_op_str),
-        ws(parse_string),
-    )
-        .map(|(codes, op, value)| RelationMatcher { codes, op, value })
-        .parse_next(i)
 }
 
 impl RelationMatcher {
@@ -298,9 +304,22 @@ impl RelationMatcher {
     }
 }
 
+/// Parse a relational expression
+#[inline]
+fn parse_relation_matcher(i: &mut &[u8]) -> PResult<RelationMatcher> {
+    (
+        ws(parse_subfield_codes),
+        ws(parse_relational_op_str),
+        ws(parse_string),
+    )
+        .map(|(codes, op, value)| RelationMatcher { codes, op, value })
+        .parse_next(i)
+}
+
 impl TryFrom<&[u8]> for RelationMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_relation_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
@@ -309,8 +328,17 @@ impl TryFrom<&[u8]> for RelationMatcher {
     }
 }
 
+impl FromStr for RelationMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
+    }
+}
+
 /// A matcher that checks a subfield value against a regex.
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct RegexMatcher {
     codes: Vec<char>,
     re: String,
@@ -330,21 +358,29 @@ impl RegexMatcher {
     /// fn example() -> anyhow::Result<()> {
     ///     let options = Default::default();
     ///
-    ///     let matcher = RegexMatcher::new("0 =~ '^Oa'");
-    ///     assert!(
-    ///         matcher.is_match(&SubfieldRef::new('0', "Oa"), &options)
-    ///     );
+    ///     let subfield = SubfieldRef::new('0', "Oa");
+    ///     let matcher = RegexMatcher::new(vec!['0'], "^Oa", false);
+    ///     assert!(matcher.is_match(&subfield, &options));
     ///
-    ///     let matcher = RegexMatcher::new("0 !~ '^Oa'");
-    ///     assert!(
-    ///         matcher.is_match(&SubfieldRef::new('0', "Ob"), &options)
-    ///     );
+    ///     let subfield = SubfieldRef::new('0', "Ob");
+    ///     let matcher = RegexMatcher::new(vec!['0'], "^Oa", true);
+    ///     assert!(matcher.is_match(&subfield, &options));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: AsRef<[u8]>>(data: T) -> Self {
-        Self::try_from(data.as_ref()).expect("regex matcher")
+    pub fn new<S, T>(codes: T, re: S, invert: bool) -> Self
+    where
+        S: Into<String>,
+        T: Into<Vec<char>>,
+    {
+        let codes = codes.into();
+        assert!(codes.iter().all(char::is_ascii_alphanumeric));
+
+        let re = re.into();
+        assert!(RegexBuilder::new(&re).build().is_ok());
+
+        RegexMatcher { codes, re, invert }
     }
 
     /// Returns true if at least one subfield value is found, that
@@ -389,11 +425,21 @@ fn parse_regex_matcher(i: &mut &[u8]) -> PResult<RegexMatcher> {
 impl TryFrom<&[u8]> for RegexMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_regex_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for RegexMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -416,13 +462,15 @@ impl InMatcher {
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = InMatcher::new("0 in ['abc', 'def']");
+    ///     let matcher =
+    ///         InMatcher::new(vec!['0'], vec!["abc", "def"], false);
     ///     let options = Default::default();
     ///     assert!(
     ///         matcher.is_match(&SubfieldRef::new('0', "def"), &options)
     ///     );
     ///
-    ///     let matcher = InMatcher::new("0 not in ['abc', 'def']");
+    ///     let matcher =
+    ///         InMatcher::new(vec!['0'], vec!["abc", "def"], true);
     ///     let options = Default::default();
     ///     assert!(
     ///         matcher.is_match(&SubfieldRef::new('0', "hij"), &options)
@@ -431,8 +479,26 @@ impl InMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: AsRef<[u8]>>(data: T) -> Self {
-        Self::try_from(data.as_ref()).expect("in matcher")
+    pub fn new<T, U, V>(codes: T, values: U, invert: bool) -> Self
+    where
+        T: Into<Vec<char>>,
+        U: Into<Vec<V>>,
+        V: AsRef<[u8]>,
+    {
+        let codes = codes.into();
+        let values = values
+            .into()
+            .into_iter()
+            .map(|s| s.as_ref().to_vec())
+            .collect::<Vec<_>>();
+
+        assert!(codes.iter().all(char::is_ascii_alphanumeric));
+
+        Self {
+            codes,
+            values,
+            invert,
+        }
     }
 
     /// Returns `true` if at least one subfield is found, where the
@@ -497,6 +563,14 @@ impl TryFrom<&[u8]> for InMatcher {
     }
 }
 
+impl FromStr for InMatcher {
+    type Err = ParseMatcherError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
+    }
+}
+
 /// A matcher that checks the number of occurrences of a subfield.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CardinalityMatcher {
@@ -506,17 +580,25 @@ pub struct CardinalityMatcher {
 }
 
 impl CardinalityMatcher {
-    /// Create a new matcher from a string slice.
+    /// Create a new matcher.
+    ///
+    /// # Panics
+    ///
+    /// This function panics on any invalid input. The cardinality
+    /// matcher uses only a subset of all relational operators; the
+    /// caller must ensure that the operator is applicable on
+    /// `usize`.
     ///
     /// # Example
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::CardinalityMatcher;
+    /// use pica_matcher::RelationalOp;
     /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = CardinalityMatcher::new("#0 > 1");
+    ///     let matcher = CardinalityMatcher::new('0', RelationalOp::Gt, 1);
     ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
@@ -534,8 +616,16 @@ impl CardinalityMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: AsRef<[u8]>>(data: T) -> Self {
-        Self::try_from(data.as_ref()).expect("cardinality matcher")
+    pub fn new<T>(code: T, op: RelationalOp, value: usize) -> Self
+    where
+        T: Into<char>,
+    {
+        let code = code.into();
+
+        assert!(code.is_ascii_alphanumeric());
+        assert!(op.is_usize_applicable());
+
+        Self { code, op, value }
     }
 
     /// Returns true of number of fields with a code equal to the
@@ -584,11 +674,21 @@ fn parse_cardinality_matcher(
 impl TryFrom<&[u8]> for CardinalityMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_cardinality_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for CardinalityMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -618,7 +718,7 @@ fn parse_singleton_matcher(i: &mut &[u8]) -> PResult<SingletonMatcher> {
 }
 
 impl SingletonMatcher {
-    /// Create a new singleton matcher from a string slice.
+    /// Create a new singleton matcher from a byte slice.
     ///
     /// # Example
     ///
@@ -660,6 +760,7 @@ impl SingletonMatcher {
 impl TryFrom<&[u8]> for SingletonMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_singleton_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
@@ -853,11 +954,21 @@ pub fn parse_subfield_matcher(
 impl TryFrom<&[u8]> for SubfieldMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_subfield_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for SubfieldMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -891,14 +1002,12 @@ mod tests {
 
     #[test]
     fn parse_subfield_codes() {
-        use super::parse_subfield_codes;
-
         let codes = SUBFIELD_CODES.chars().collect::<Vec<char>>();
 
         macro_rules! parse_success {
             ($input:expr, $expected:expr) => {
                 assert_eq!(
-                    parse_subfield_codes.parse($input).unwrap(),
+                    super::parse_subfield_codes.parse($input).unwrap(),
                     $expected
                 );
             };
@@ -911,8 +1020,86 @@ mod tests {
         parse_success!(b"[12]", vec!['1', '2']);
         parse_success!(b"*", codes);
 
-        assert!(parse_subfield_codes.parse(b"!").is_err());
-        assert!(parse_subfield_codes.parse(b"12").is_err());
-        assert!(parse_subfield_codes.parse(b"[a1!]").is_err());
+        assert!(super::parse_subfield_codes.parse(b"!").is_err());
+        assert!(super::parse_subfield_codes.parse(b"12").is_err());
+        assert!(super::parse_subfield_codes.parse(b"[a1!]").is_err());
+    }
+
+    #[test]
+    fn parse_exists_matcher() {
+        macro_rules! parse_success {
+            ($input:expr, $codes:expr) => {
+                assert_eq!(
+                    super::parse_exists_matcher.parse($input).unwrap(),
+                    ExistsMatcher { codes: $codes }
+                );
+            };
+        }
+
+        parse_success!(b"*?", SUBFIELD_CODES.chars().collect());
+        parse_success!(b"[ab]?", vec!['a', 'b']);
+        parse_success!(b"a?", vec!['a']);
+
+        assert!(super::parse_exists_matcher.parse(b"[a-f]?").is_err());
+        assert!(super::parse_exists_matcher.parse(b"a ?").is_err());
+    }
+
+    #[test]
+    fn parse_relation_matcher() {
+        use RelationalOp::*;
+
+        use super::parse_relation_matcher;
+
+        macro_rules! parse_success {
+            ($input:expr, $codes:expr, $op:expr, $value:expr) => {
+                assert_eq!(
+                    parse_relation_matcher.parse($input).unwrap(),
+                    RelationMatcher {
+                        codes: $codes,
+                        op: $op,
+                        value: $value.to_vec()
+                    }
+                );
+            };
+        }
+
+        parse_success!(b"0 == 'abc'", vec!['0'], Eq, b"abc");
+        parse_success!(b"0 != 'abc'", vec!['0'], Ne, b"abc");
+        parse_success!(b"0 =^ 'abc'", vec!['0'], StartsWith, b"abc");
+        parse_success!(b"0 !^ 'abc'", vec!['0'], StartsNotWith, b"abc");
+        parse_success!(b"0 =$ 'abc'", vec!['0'], EndsWith, b"abc");
+        parse_success!(b"0 !$ 'abc'", vec!['0'], EndsNotWith, b"abc");
+        parse_success!(b"0 =* 'abc'", vec!['0'], Similar, b"abc");
+        parse_success!(b"0 =? 'abc'", vec!['0'], Contains, b"abc");
+
+        assert!(parse_relation_matcher.parse(b"0 >= 'abc'").is_err());
+        assert!(parse_relation_matcher.parse(b"0 > 'abc'").is_err());
+        assert!(parse_relation_matcher.parse(b"0 <= 'abc'").is_err());
+        assert!(parse_relation_matcher.parse(b"0 < 'abc'").is_err());
+    }
+
+    #[test]
+    fn parse_regex_matcher() {
+        use super::parse_regex_matcher;
+
+        macro_rules! parse_success {
+            ($input:expr, $codes:expr, $re:expr, $invert:expr) => {
+                assert_eq!(
+                    parse_regex_matcher.parse($input).unwrap(),
+                    RegexMatcher {
+                        codes: $codes,
+                        invert: $invert,
+                        re: $re.to_string()
+                    }
+                );
+            };
+        }
+
+        parse_success!(b"0 =~ '^Tp'", vec!['0'], "^Tp", false);
+        parse_success!(b"0 !~ '^Tp'", vec!['0'], "^Tp", true);
+        parse_success!(b"[ab] =~ 'foo'", vec!['a', 'b'], "foo", false);
+
+        assert!(parse_regex_matcher.parse(b"0 =~ '[[ab]'").is_err());
+        assert!(parse_regex_matcher.parse(b"0 !~ '[[ab]'").is_err());
     }
 }

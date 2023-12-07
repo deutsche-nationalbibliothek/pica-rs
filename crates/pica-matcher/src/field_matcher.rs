@@ -1,6 +1,7 @@
 //! Matcher that works on PICA+ [Fields](pica_record::Field).
 
 use std::ops::{BitAnd, BitOr, Not};
+use std::str::FromStr;
 
 use bstr::ByteSlice;
 use pica_record::FieldRef;
@@ -88,11 +89,21 @@ fn parse_exists_matcher(i: &mut &[u8]) -> PResult<ExistsMatcher> {
 impl TryFrom<&[u8]> for ExistsMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_exists_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for ExistsMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -194,11 +205,21 @@ fn parse_subfields_matcher(i: &mut &[u8]) -> PResult<SubfieldsMatcher> {
 impl TryFrom<&[u8]> for SubfieldsMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_subfields_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for SubfieldsMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -261,11 +282,21 @@ fn parse_singleton_matcher(i: &mut &[u8]) -> PResult<SingletonMatcher> {
 impl TryFrom<&[u8]> for SingletonMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_singleton_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for SingletonMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -368,11 +399,21 @@ fn parse_cardinality_matcher(
 impl TryFrom<&[u8]> for CardinalityMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_cardinality_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidFieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for CardinalityMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -625,6 +666,7 @@ pub fn parse_field_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
 impl TryFrom<&[u8]> for FieldMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_field_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
@@ -633,9 +675,19 @@ impl TryFrom<&[u8]> for FieldMatcher {
     }
 }
 
+impl FromStr for FieldMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
+    }
+}
+
 impl BitAnd for FieldMatcher {
     type Output = Self;
 
+    #[inline]
     fn bitand(self, rhs: Self) -> Self::Output {
         Self::Composite {
             lhs: Box::new(self),
@@ -648,6 +700,7 @@ impl BitAnd for FieldMatcher {
 impl BitOr for FieldMatcher {
     type Output = Self;
 
+    #[inline]
     fn bitor(self, rhs: Self) -> Self::Output {
         Self::Composite {
             lhs: Box::new(self),
@@ -660,6 +713,7 @@ impl BitOr for FieldMatcher {
 impl Not for FieldMatcher {
     type Output = Self;
 
+    #[inline]
     fn not(self) -> Self::Output {
         Self::Not(Box::new(self))
     }
