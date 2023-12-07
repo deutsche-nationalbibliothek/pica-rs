@@ -16,7 +16,6 @@ csv = { workspace = true }
 directories = { version = "5.0" }
 flate2 = { workspace = true }
 indicatif = { version = "0.17" }
-nom = { workspace = true }
 pica-utils = { workspace = true }
 pica-matcher = { workspace = true }
 pica-path = { workspace = true }
