@@ -78,6 +78,7 @@ impl ExistsMatcher {
     /// ```
     pub fn new<T: Into<Vec<char>>>(codes: T) -> Self {
         let codes = codes.into();
+
         assert!(codes.iter().all(char::is_ascii_alphanumeric));
 
         Self { codes }
@@ -125,6 +126,7 @@ impl ExistsMatcher {
 impl TryFrom<&[u8]> for ExistsMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_exists_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
@@ -317,11 +319,21 @@ fn parse_relation_matcher(i: &mut &[u8]) -> PResult<RelationMatcher> {
 impl TryFrom<&[u8]> for RelationMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_relation_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for RelationMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -413,11 +425,21 @@ fn parse_regex_matcher(i: &mut &[u8]) -> PResult<RegexMatcher> {
 impl TryFrom<&[u8]> for RegexMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_regex_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for RegexMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -558,17 +580,25 @@ pub struct CardinalityMatcher {
 }
 
 impl CardinalityMatcher {
-    /// Create a new matcher from a string slice.
+    /// Create a new matcher.
+    ///
+    /// # Panics
+    ///
+    /// This function panics on any invalid input. The cardinality
+    /// matcher uses only a subset of all relational operators; the
+    /// caller must ensure that the operator is applicable on
+    /// `usize`.
     ///
     /// # Example
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::CardinalityMatcher;
+    /// use pica_matcher::RelationalOp;
     /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher = CardinalityMatcher::new("#0 > 1");
+    ///     let matcher = CardinalityMatcher::new('0', RelationalOp::Gt, 1);
     ///     let options = Default::default();
     ///
     ///     assert!(matcher.is_match(
@@ -586,8 +616,16 @@ impl CardinalityMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T: AsRef<[u8]>>(data: T) -> Self {
-        Self::try_from(data.as_ref()).expect("cardinality matcher")
+    pub fn new<T>(code: T, op: RelationalOp, value: usize) -> Self
+    where
+        T: Into<char>,
+    {
+        let code = code.into();
+
+        assert!(code.is_ascii_alphanumeric());
+        assert!(op.is_usize_applicable());
+
+        Self { code, op, value }
     }
 
     /// Returns true of number of fields with a code equal to the
@@ -636,11 +674,21 @@ fn parse_cardinality_matcher(
 impl TryFrom<&[u8]> for CardinalityMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_cardinality_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for CardinalityMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 
@@ -670,7 +718,7 @@ fn parse_singleton_matcher(i: &mut &[u8]) -> PResult<SingletonMatcher> {
 }
 
 impl SingletonMatcher {
-    /// Create a new singleton matcher from a string slice.
+    /// Create a new singleton matcher from a byte slice.
     ///
     /// # Example
     ///
@@ -712,6 +760,7 @@ impl SingletonMatcher {
 impl TryFrom<&[u8]> for SingletonMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_singleton_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
@@ -905,11 +954,21 @@ pub fn parse_subfield_matcher(
 impl TryFrom<&[u8]> for SubfieldMatcher {
     type Error = ParseMatcherError;
 
+    #[inline]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         parse_subfield_matcher.parse(value).map_err(|_| {
             let value = value.to_str_lossy().to_string();
             ParseMatcherError::InvalidSubfieldMatcher(value)
         })
+    }
+}
+
+impl FromStr for SubfieldMatcher {
+    type Err = ParseMatcherError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s.as_bytes())
     }
 }
 

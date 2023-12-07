@@ -1,7 +1,11 @@
+use std::str::FromStr;
+
 use bstr::B;
 use pica_matcher::subfield_matcher::*;
-use pica_matcher::{MatcherOptions, ParseMatcherError};
+use pica_matcher::{MatcherOptions, ParseMatcherError, RelationalOp};
 use pica_record::SubfieldRef;
+
+use crate::TestResult;
 
 macro_rules! subfield {
     ($code:expr, $value:expr) => {
@@ -22,22 +26,46 @@ fn exists_matcher_new() {
 }
 
 #[test]
-fn exists_matcher_try_from() {
+#[should_panic]
+fn exists_matcher_new_panic() {
+    let _ = ExistsMatcher::new(vec!['0', '!']);
+}
+
+#[test]
+fn exists_matcher_try_from() -> TestResult {
     let subfield = subfield!('0', "119232022");
     let options = MatcherOptions::default();
 
-    let matcher = ExistsMatcher::try_from("0?".as_bytes()).unwrap();
+    let matcher = ExistsMatcher::try_from(B("0?"))?;
     assert!(matcher.is_match(&subfield, &options));
 
     assert!(matches!(
         ExistsMatcher::try_from("ä?".as_bytes()).unwrap_err(),
         ParseMatcherError::InvalidSubfieldMatcher(_)
     ));
+
+    Ok(())
 }
 
 #[test]
-fn exists_matcher_is_match() -> anyhow::Result<()> {
-    let matcher = ExistsMatcher::try_from(B("1?"))?;
+fn exists_matcher_from_str() -> TestResult {
+    let subfield = subfield!('0', "119232022");
+    let options = MatcherOptions::default();
+
+    let matcher = ExistsMatcher::from_str("0?")?;
+    assert!(matcher.is_match(&subfield, &options));
+
+    assert!(matches!(
+        ExistsMatcher::from_str("ä?").unwrap_err(),
+        ParseMatcherError::InvalidSubfieldMatcher(_)
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn exists_matcher_is_match() -> TestResult {
+    let matcher = ExistsMatcher::from_str("1?")?;
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(&subfield!('1', "abc"), &options));
@@ -48,7 +76,7 @@ fn exists_matcher_is_match() -> anyhow::Result<()> {
         &options
     ));
 
-    let matcher = ExistsMatcher::try_from(B("[a12]?"))?;
+    let matcher = ExistsMatcher::from_str("[a12]?")?;
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(&subfield!('1', "abc"), &options));
@@ -75,11 +103,31 @@ fn relational_matcher_new() {
 #[test]
 #[should_panic]
 fn relational_matcher_new_panic() {
-    let _matcher = RelationMatcher::new("! == 'abc'");
+    let _ = RelationMatcher::new("! == 'abc'");
 }
 
 #[test]
-fn relational_matcher_is_matcher_equal() {
+fn relation_matcher_try_from() -> TestResult {
+    let matcher = RelationMatcher::try_from(B("0 == 'abc'"))?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+
+    Ok(())
+}
+
+#[test]
+fn relation_matcher_from_str() -> TestResult {
+    let matcher = RelationMatcher::from_str("0 == 'abc'")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+
+    Ok(())
+}
+
+#[test]
+fn relational_matcher_equal() {
     // case sensitive
     let matcher = RelationMatcher::new("0 == 'abc'");
     let options = MatcherOptions::default();
@@ -107,19 +155,16 @@ fn relational_matcher_is_matcher_equal() {
     let matcher = RelationMatcher::new("0 == 'abc'");
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(
-        [
-            &subfield!('3', "def"),
-            &subfield!('0', "abc"),
-            &subfield!('2', "bsg"),
-        ],
-        &options
-    ));
+    let subfields = [
+        &subfield!('3', "def"),
+        &subfield!('0', "abc"),
+        &subfield!('2', "hij"),
+    ];
 
-    assert!(!matcher.is_match(
-        [&subfield!('3', "def"), &subfield!('2', "bsg")],
-        &options
-    ));
+    assert!(matcher.is_match(subfields, &options));
+
+    let subfields = [&subfield!('3', "def"), &subfield!('2', "hij")];
+    assert!(!matcher.is_match(subfields, &options));
 }
 
 #[test]
@@ -131,10 +176,9 @@ fn relational_matcher_not_equal() {
     assert!(!matcher.is_match(&subfield!('0', "abc"), &options));
     assert!(matcher.is_match(&subfield!('0', "ABC"), &options));
     assert!(!matcher.is_match(&subfield!('1', "abc"), &options));
-    assert!(!matcher.is_match(
-        [&subfield!('0', "abc"), &subfield!('2', "bsg"),],
-        &options
-    ));
+
+    let subfields = [&subfield!('0', "abc"), &subfield!('2', "hij")];
+    assert!(!matcher.is_match(subfields, &options));
 
     // case insensitive
     let matcher = RelationMatcher::new("0 != 'abc'");
@@ -147,51 +191,45 @@ fn relational_matcher_not_equal() {
     let matcher = RelationMatcher::new("0 != 'abc'");
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(
-        [&subfield!('3', "def"), &subfield!('0', "bsg"),],
-        &options
-    ));
+    let subfields = [&subfield!('3', "def"), &subfield!('0', "bsg")];
+    assert!(matcher.is_match(subfields, &options));
 
-    assert!(!matcher.is_match(
-        [
-            &subfield!('3', "def"),
-            &subfield!('0', "abc"),
-            &subfield!('2', "bsg"),
-        ],
-        &options
-    ));
+    let subfields = [
+        &subfield!('3', "def"),
+        &subfield!('0', "abc"),
+        &subfield!('2', "bsg"),
+    ];
+
+    assert!(!matcher.is_match(subfields, &options));
 }
 
 #[test]
-fn relational_matcher_starts_with() {
+fn relational_matcher_starts_not_with() {
     // case sensitive
-    let matcher = RelationMatcher::new("0 =^ 'ab'");
+    let matcher = RelationMatcher::new("0 !^ 'ab'");
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
-    assert!(!matcher.is_match(&subfield!('0', "def"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "abc"), &options));
+    assert!(matcher.is_match(&subfield!('0', "def"), &options));
 
     // case insensitive
-    let matcher = RelationMatcher::new("0 =^ 'ab'");
+    let matcher = RelationMatcher::new("0 !^ 'ab'");
     let options = MatcherOptions::new().case_ignore(true);
 
-    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
-    assert!(matcher.is_match(&subfield!('0', "aBc"), &options));
-    assert!(!matcher.is_match(&subfield!('0', "def"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "abc"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "ABc"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "aBc"), &options));
+    assert!(matcher.is_match(&subfield!('0', "def"), &options));
 
     // multiple subfields
-    let matcher = RelationMatcher::new("0 =^ 'ab'");
+    let matcher = RelationMatcher::new("0 !^ 'ab'");
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(
-        [&subfield!('0', "baab"), &subfield!('0', "abba"),],
-        &options
-    ));
+    let subfields = [&subfield!('0', "baab"), &subfield!('0', "abba")];
+    assert!(matcher.is_match(subfields, &options));
 
-    assert!(!matcher.is_match(
-        [&subfield!('0', "def"), &subfield!('1', "abc"),],
-        &options
-    ));
+    let subfields = [&subfield!('0', "abc"), &subfield!('1', "abba")];
+    assert!(!matcher.is_match(subfields, &options));
 }
 
 #[test]
@@ -214,15 +252,39 @@ fn relational_matcher_ends_with() {
     let matcher = RelationMatcher::new("0 =$ 'ab'");
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(
-        [&subfield!('0', "baba"), &subfield!('0', "abab")],
-        &options
-    ));
+    let subfields = [&subfield!('0', "baba"), &subfield!('0', "abab")];
+    assert!(matcher.is_match(subfields, &options));
 
-    assert!(!matcher.is_match(
-        [&subfield!('0', "def"), &subfield!('1', "aab")],
-        &options
-    ));
+    let subfields = [&subfield!('0', "def"), &subfield!('1', "aab")];
+    assert!(!matcher.is_match(subfields, &options));
+}
+
+#[test]
+fn relational_matcher_ends_not_with() {
+    // case sensitive
+    let matcher = RelationMatcher::new("0 !$ 'ab'");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('0', "abab"), &options));
+    assert!(matcher.is_match(&subfield!('0', "abba"), &options));
+
+    // case insensitive
+    let matcher = RelationMatcher::new("0 !$ 'ab'");
+    let options = MatcherOptions::new().case_ignore(true);
+
+    assert!(!matcher.is_match(&subfield!('0', "abab"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "abAB"), &options));
+    assert!(matcher.is_match(&subfield!('0', "abbba"), &options));
+
+    // multiple subfields
+    let matcher = RelationMatcher::new("0 !$ 'ab'");
+    let options = MatcherOptions::default();
+
+    let subfields = [&subfield!('0', "baba"), &subfield!('0', "abab")];
+    assert!(matcher.is_match(subfields, &options));
+
+    let subfields = [&subfield!('0', "abab"), &subfield!('1', "ab")];
+    assert!(!matcher.is_match(subfields, &options));
 }
 
 #[test]
@@ -251,10 +313,9 @@ fn relational_matcher_similar() {
     let matcher = RelationMatcher::new("a =* 'Heike'");
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(
-        vec![&subfield!('a', "Heiko"), &subfield!('a', "Heike")],
-        &options
-    ));
+    let subfields =
+        [&subfield!('a', "Heiko"), &subfield!('a', "Heike")];
+    assert!(matcher.is_match(subfields, &options));
 }
 
 #[test]
@@ -279,15 +340,14 @@ fn relational_matcher_contains() {
     let matcher = RelationMatcher::new("a =? 'aba'");
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(
-        vec![&subfield!('a', "XabbaX"), &subfield!('a', "YabaY")],
-        &options
-    ));
+    let subfields =
+        [&subfield!('a', "XabbaX"), &subfield!('a', "YabaY")];
+    assert!(matcher.is_match(subfields, &options));
 }
 
 #[test]
 fn regex_matcher_new() {
-    let _matcher = RegexMatcher::new(vec!['0'], "^T[gpsu][1z]$", false);
+    let _ = RegexMatcher::new(vec!['0'], "^T[gpsu][1z]$", false);
 }
 
 #[test]
@@ -309,9 +369,21 @@ fn regex_matcher_try_from() {
 }
 
 #[test]
-fn regex_matcher_is_match() {
+fn regex_matcher_from_str() {
+    assert!(RegexMatcher::from_str("0 =~ '^T[gpsu][1z]$'").is_ok());
+
+    let error = RegexMatcher::from_str("0 =~ '^Tp[[1z]$'").unwrap_err();
+
+    assert!(matches!(
+        error,
+        ParseMatcherError::InvalidSubfieldMatcher(_)
+    ));
+}
+
+#[test]
+fn regex_matcher_is_match() -> TestResult {
     // case sensitive
-    let matcher = RegexMatcher::new(vec!['0'], "^ab", false);
+    let matcher = RegexMatcher::from_str("0 =~ '^ab'")?;
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(&subfield!('0', "abba"), &options));
@@ -319,499 +391,525 @@ fn regex_matcher_is_match() {
     assert!(!matcher.is_match(&subfield!('a', "abba"), &options));
 
     // case insensitive
-    let matcher = RegexMatcher::new(vec!['0'], "^ab", false);
+    let matcher = RegexMatcher::from_str("0 =~ '^ab'")?;
     let options = MatcherOptions::new().case_ignore(true);
 
     assert!(matcher.is_match(&subfield!('0', "abba"), &options));
     assert!(matcher.is_match(&subfield!('0', "abba"), &options));
 
     // invert match
-    let matcher = RegexMatcher::new(vec!['0'], "^ab", true);
+    let matcher = RegexMatcher::from_str("0 !~ '^ab'")?;
     let options = MatcherOptions::default();
 
     assert!(matcher.is_match(&subfield!('0', "baba"), &options));
     assert!(!matcher.is_match(&subfield!('0', "abba"), &options));
 
     // multiple subfields
-    let matcher = RegexMatcher::new(vec!['0'], "^ab", false);
+    let matcher = RegexMatcher::from_str("0 =~ '^ab'")?;
     let options = MatcherOptions::default();
 
-    assert!(matcher.is_match(
-        vec![&subfield!('0', "foobar"), &subfield!('0', "abba")],
-        &options
-    ));
+    let subfields =
+        [&subfield!('0', "foobar"), &subfield!('0', "abba")];
+    assert!(matcher.is_match(subfields, &options));
 
-    assert!(!matcher.is_match(
-        vec![&subfield!('0', "foo"), &subfield!('0', "bar")],
-        &options
-    ));
+    let subfields = [&subfield!('0', "foo"), &subfield!('0', "bar")];
+    assert!(!matcher.is_match(subfields, &options));
+
+    Ok(())
 }
 
-// #[test]
-// fn in_matcher() -> anyhow::Result<()> {
-//     // case sensitive
-//     let matcher = InMatcher::new("0 in ['abc', 'def']");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1f0abc")?, &options));
-//     assert!(matcher
-//         .is_match(&subfield!('0', "def")?, &options));
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1f0hij")?, &options));
-//     assert!(!matcher
-//         .is_match(&subfield!('0', "def")?, &options));
-
-//     // case insensitive
-//     let matcher = InMatcher::new("0 in ['abc', 'def']");
-//     let options = MatcherOptions::new().case_ignore(true);
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1f0abc")?, &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1f0ABC")?, &options));
-
-//     // multiple subfields
-//     let matcher = InMatcher::new("0 in ['abc', 'def']");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0hij")?,
-//             &subfield!(b"\x1f0abc")?,
-//         ],
-//         &options
-//     ));
-
-//     let matcher = InMatcher::new("a in ['000', '999']");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1fa000")?,
-//             &subfield!(b"\x1fzxyz")?,
-//         ],
-//         &options
-//     ));
-
-//     let matcher = InMatcher::new("a not in ['000', '999']");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1fa000")?,
-//             &subfield!(b"\x1fzxyz")?,
-//         ],
-//         &options
-//     ));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn cardinality_matcher_eq() -> anyhow::Result<()> {
-//     let matcher = CardinalityMatcher::new("#0 == 2");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fXabc"), &options));
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1f0abc"), &options));
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//         ],
-//         &options
-//     ));
-//     assert!(!matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//             &subfield!(b"\x1f0hij")?,
-//         ],
-//         &options
-//     ));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn cardinality_matcher_ne() -> anyhow::Result<()> {
-//     let matcher = CardinalityMatcher::new("#0 != 2");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fXabc"), &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1f0abc"), &options));
-//     assert!(!matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//         ],
-//         &options
-//     ));
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//             &subfield!(b"\x1f0hij")?,
-//         ],
-//         &options
-//     ));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn cardinality_matcher_ge() -> anyhow::Result<()> {
-//     let matcher = CardinalityMatcher::new("#0 >= 2");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fXabc"), &options));
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1f0abc"), &options));
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//         ],
-//         &options
-//     ));
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//             &subfield!(b"\x1f0hij")?,
-//         ],
-//         &options
-//     ));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn cardinality_matcher_gt() -> anyhow::Result<()> {
-//     let matcher = CardinalityMatcher::new("#0 > 2");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fXabc"), &options));
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1f0abc"), &options));
-//     assert!(!matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//         ],
-//         &options
-//     ));
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//             &subfield!(b"\x1f0hij")?,
-//         ],
-//         &options
-//     ));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn cardinality_matcher_le() -> anyhow::Result<()> {
-//     let matcher = CardinalityMatcher::new("#0 <= 2");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fXabc"), &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1f0abc"), &options));
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//         ],
-//         &options
-//     ));
-//     assert!(!matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//             &subfield!(b"\x1f0hij")?,
-//         ],
-//         &options
-//     ));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn cardinality_matcher_lt() -> anyhow::Result<()> {
-//     let matcher = CardinalityMatcher::new("#0 < 2");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fXabc"), &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1f0abc"), &options));
-//     assert!(!matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//         ],
-//         &options
-//     ));
-//     assert!(!matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1f0abc")?,
-//             &subfield!('0', "def")?,
-//             &subfield!(b"\x1f0hij")?,
-//         ],
-//         &options
-//     ));
-//     Ok(())
-// }
-
-// #[test]
-// fn subfield_matcher_not() -> anyhow::Result<()> {
-//     // group
-//     let matcher = SubfieldMatcher::new("!(a == 'bcd')");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fabcd")?, &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fbcde")?, &options));
-
-//     // exists
-//     let matcher = SubfieldMatcher::new("!a?");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fabcd")?, &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fbcde")?, &options));
-
-//     // not
-//     let matcher = SubfieldMatcher::new("!!!(a == 'bcd')");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fabcd")?, &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fbcde")?, &options));
-// }
-
-// #[test]
-// fn subfield_matcher_group() -> anyhow::Result<()> {
-//     // and
-//     let matcher = SubfieldMatcher::new("(a =^ 'ab' && a =$ 'ba')");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabba")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fbcde")?, &options));
-
-//     // or
-//     let matcher = SubfieldMatcher::new("(a =^ 'ab' || a =^ 'ba')");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabba")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1fababa")?,
-// &options));
-
-//     // singleton
-//     let matcher = SubfieldMatcher::new("(a == 'bcd')");
-//     let options = MatcherOptions::default();
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fabcd")?, &options));
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fbcde")?, &options));
-
-//     // nested group
-//     let matcher = SubfieldMatcher::new("(((a == 'bcd')))");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fabcd")?, &options));
-
-//     // not
-//     let matcher = SubfieldMatcher::new("(!(a == 'bcd'))");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fhijk")?, &options));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn subfield_matcher_or() -> anyhow::Result<()> {
-//     // singleton
-//     let matcher =
-//         SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' || a =^ 'cd'");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabab")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1fabcbc")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1facdcd")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fadede")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fbabab")?,
-// &options));
-
-//     // group
-//     let matcher =
-//         SubfieldMatcher::new("a =^ 'ab' || (a =^ 'bc' && a =$
-// 'cd')");     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabab")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1fabccd")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fabcbc")?,
-// &options));
-
-//     // and
-//     let matcher =
-//         SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' && a =$ 'cd'");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabab")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabcd")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1fabccd")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fabcbc")?,
-// &options));
-
-//     // or
-//     let matcher = SubfieldMatcher::new("!a? || b == 'x'");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1faabab")?,
-// &options));
-
-//     assert!(matcher.is_match(
-//         vec![
-//             &subfield!(b"\x1fabccd")?,
-//             &subfield!(b"\x1fbx")?
-//         ],
-//         &options
-//     ));
-
-//     // not
-//     let matcher = SubfieldMatcher::new("a == 'bcd' || !(a !=
-// 'def')");     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fabcd")?, &options));
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1fadef")?, &options));
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fahij")?, &options));
-
-//     // boolean op precedence
-//     let matcher =
-//         SubfieldMatcher::new("(a =^ 'ab' || a =^ 'bc') && a =$
-// 'cd'");     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1faabab")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabcd")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1fabccd")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fabcbc")?,
-// &options));
-
-//     // multiple subfields
-//     let matcher = SubfieldMatcher::new("#a == 2 || a =^ 'ab'");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher.is_match(
-//         [
-//             &subfield!(b"\x1fadef")?,
-//             &subfield!(b"\x1fahij")?,
-//         ],
-//         &options
-//     ));
-
-//     assert!(matcher.is_match(
-//         [
-//             &subfield!(b"\x1fadef")?,
-//             &subfield!(b"\x1fahij")?,
-//             &subfield!(b"\x1faabc")?,
-//         ],
-//         &options
-//     ));
-
-//     Ok(())
-// }
-
-// #[test]
-// fn subfield_matcher_and() -> anyhow::Result<()> {
-//     // singleton
-//     let matcher =
-//         SubfieldMatcher::new("#a == 1 && a =^ 'ab' && a =$ 'ba'");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabba")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fababa")?,
-// &options));     assert!(!matcher.is_match(
-//         [
-//             &subfield!(b"\x1faabba")?,
-//             &subfield!(b"\x1fababa")?,
-//         ],
-//         &options
-//     ));
-
-//     // group
-//     let matcher =
-//         SubfieldMatcher::new("#a == 1 && (a =^ 'ab' || a =^ 'ba')");
-//     let options = MatcherOptions::default();
-
-//     assert!(matcher
-//         .is_match(&subfield!(b"\x1faabba")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1fababa")?,
-// &options));     assert!(!matcher.is_match(
-//         [
-//             &subfield!(b"\x1faabba")?,
-//             &subfield!(b"\x1fababa")?,
-//         ],
-//         &options
-//     ));
-
-//     // not
-//     let matcher =
-//         SubfieldMatcher::new("#a == 1 && !(a =^ 'ab' || a =^ 'ba')");
-//     let options = MatcherOptions::default();
-
-//     assert!(!matcher
-//         .is_match(&subfield!(b"\x1faabba")?,
-// &options));     assert!(!matcher
-//         .is_match(&subfield!(b"\x1fababa")?,
-// &options));     assert!(matcher
-//         .is_match(&subfield!(b"\x1facbcb")?,
-// &options));
-
-//     Ok(())
-// }
+#[test]
+fn in_matcher_new() {
+    assert!(InMatcher::new(vec!['0'], vec!["abc", "def"], false)
+        .is_match(&subfield!('0', "abc"), &MatcherOptions::default()));
+}
+
+#[test]
+#[should_panic]
+fn in_matcher_new_panic() {
+    let _ = InMatcher::new(vec!['!'], vec!["abc", "def"], false);
+}
+
+#[test]
+fn in_matcher_try_from() -> TestResult {
+    let matcher = InMatcher::try_from(B("0 in ['abc', 'def']"))?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+
+    Ok(())
+}
+
+#[test]
+fn in_matcher_from_str() -> TestResult {
+    let matcher = InMatcher::from_str("0 in ['abc', 'def']")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+
+    Ok(())
+}
+
+#[test]
+fn in_matcher_is_match() -> TestResult {
+    // case sensitive
+    let matcher = InMatcher::from_str("0 in ['abc', 'def']")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "ABC"), &options));
+    assert!(matcher.is_match(&subfield!('0', "def"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "DEF"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "hij"), &options));
+
+    // case insensitive
+    let matcher = InMatcher::from_str("0 in ['abc', 'def']")?;
+    let options = MatcherOptions::new().case_ignore(true);
+
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+    assert!(matcher.is_match(&subfield!('0', "ABC"), &options));
+
+    // multiple subfields
+    let matcher = InMatcher::from_str("0 in ['abc', 'def']")?;
+    let options = MatcherOptions::default();
+
+    let subfields = [&subfield!('0', "hij"), &subfield!('0', "abc")];
+    assert!(matcher.is_match(subfields, &options));
+
+    let matcher = InMatcher::from_str("a in ['000', '999']")?;
+    let options = MatcherOptions::default();
+
+    let subfields = [&subfield!('a', "000"), &subfield!('z', "xyz")];
+    assert!(matcher.is_match(subfields, &options));
+
+    // invert
+    let matcher = InMatcher::from_str("a not in ['000', '999']")?;
+    let options = MatcherOptions::default();
+
+    let subfields = [&subfield!('a', "000"), &subfield!('a', "222")];
+    assert!(matcher.is_match(subfields, &options));
+
+    let matcher = InMatcher::from_str("a not in ['000', '999']")?;
+    let options = MatcherOptions::default();
+
+    let subfields = [&subfield!('a', "000"), &subfield!('z', "xyz")];
+    assert!(!matcher.is_match(subfields, &options));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_new() {
+    let matcher = CardinalityMatcher::new('0', RelationalOp::Eq, 2);
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('X', "abc"), &options));
+}
+
+#[test]
+#[should_panic]
+fn cardinality_matcher_new_panic1() {
+    let _ = CardinalityMatcher::new('!', RelationalOp::Eq, 2);
+}
+
+#[test]
+#[should_panic]
+fn cardinality_matcher_new_panic2() {
+    let _ = CardinalityMatcher::new('!', RelationalOp::StartsWith, 2);
+}
+
+#[test]
+fn cardinality_matcher_try_from() -> TestResult {
+    let matcher = CardinalityMatcher::try_from(B("#0 == 2"))?;
+    assert!(!matcher
+        .is_match(&subfield!('X', "abc"), &MatcherOptions::default()));
+
+    assert!(matches!(
+        CardinalityMatcher::try_from(B("#0 =~ 2")).unwrap_err(),
+        ParseMatcherError::InvalidSubfieldMatcher(_)
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_try_str() -> TestResult {
+    let matcher = CardinalityMatcher::from_str("#0 == 2")?;
+    assert!(!matcher
+        .is_match(&subfield!('X', "abc"), &MatcherOptions::default()));
+
+    assert!(matches!(
+        CardinalityMatcher::from_str("#0 =~ 2").unwrap_err(),
+        ParseMatcherError::InvalidSubfieldMatcher(_)
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_equal() -> TestResult {
+    let matcher = CardinalityMatcher::from_str("#0 == 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('X', "abc"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "abc"), &options));
+
+    let subfields = [&subfield!('0', "abc"), &subfield!('0', "def")];
+    assert!(matcher.is_match(subfields, &options));
+
+    let subfields = [
+        &subfield!('0', "abc"),
+        &subfield!('0', "def"),
+        &subfield!('0', "hij"),
+    ];
+    assert!(!matcher.is_match(subfields, &options));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_not_equal() -> TestResult {
+    let matcher = CardinalityMatcher::from_str("#0 != 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('X', "abc"), &options));
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+
+    let subfields = [&subfield!('0', "abc"), &subfield!('0', "def")];
+    assert!(!matcher.is_match(subfields, &options));
+
+    let subfields = [
+        &subfield!('0', "abc"),
+        &subfield!('0', "def"),
+        &subfield!('0', "hij"),
+    ];
+    assert!(matcher.is_match(subfields, &options));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_greater_than_or_equal() -> TestResult {
+    let matcher = CardinalityMatcher::from_str("#0 >= 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('X', "abc"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "abc"), &options));
+
+    let subfields = [&subfield!('0', "abc"), &subfield!('0', "def")];
+    assert!(matcher.is_match(subfields, &options));
+
+    let subfields = [
+        &subfield!('0', "abc"),
+        &subfield!('0', "def"),
+        &subfield!('0', "hij"),
+    ];
+    assert!(matcher.is_match(subfields, &options));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_greater_than() -> TestResult {
+    let matcher = CardinalityMatcher::from_str("#0 > 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('X', "abc"), &options));
+    assert!(!matcher.is_match(&subfield!('0', "abc"), &options));
+
+    let subfields = [&subfield!('0', "abc"), &subfield!('0', "def")];
+    assert!(!matcher.is_match(subfields, &options));
+
+    let subfields = [
+        &subfield!('0', "abc"),
+        &subfield!('0', "def"),
+        &subfield!('0', "hij"),
+    ];
+    assert!(matcher.is_match(subfields, &options));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_less_than_or_equal() -> TestResult {
+    let matcher = CardinalityMatcher::from_str("#0 <= 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('X', "abc"), &options));
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+
+    let subfields = [&subfield!('0', "abc"), &subfield!('0', "def")];
+    assert!(matcher.is_match(subfields, &options));
+
+    let subfields = [
+        &subfield!('0', "abc"),
+        &subfield!('0', "def"),
+        &subfield!('0', "hij"),
+    ];
+    assert!(!matcher.is_match(subfields, &options));
+
+    Ok(())
+}
+
+#[test]
+fn cardinality_matcher_less_than() -> TestResult {
+    let matcher = CardinalityMatcher::from_str("#0 < 2")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('X', "abc"), &options));
+    assert!(matcher.is_match(&subfield!('0', "abc"), &options));
+
+    let subfields = [&subfield!('0', "abc"), &subfield!('0', "def")];
+    assert!(!matcher.is_match(subfields, &options));
+
+    let subfields = [
+        &subfield!('0', "abc"),
+        &subfield!('0', "def"),
+        &subfield!('0', "hij"),
+    ];
+    assert!(!matcher.is_match(subfields, &options));
+    Ok(())
+}
+
+#[test]
+fn subfield_matcher_new() {
+    let matcher = SubfieldMatcher::new("a == 'bcd'");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "bcd"), &options));
+}
+
+#[test]
+#[should_panic]
+fn subfield_matcher_new_panic() {
+    let _ = SubfieldMatcher::new("a == 'bcd");
+}
+
+#[test]
+fn subfield_matcher_try_from() -> TestResult {
+    let matcher = SubfieldMatcher::try_from(B("a == 'bcd'"))?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "bcd"), &options));
+
+    assert!(matches!(
+        SubfieldMatcher::try_from(B("a == 'bcd")).unwrap_err(),
+        ParseMatcherError::InvalidSubfieldMatcher(_)
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn subfield_matcher_from_str() -> TestResult {
+    let matcher = SubfieldMatcher::from_str("a == 'bcd'")?;
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "bcd"), &options));
+
+    assert!(matches!(
+        SubfieldMatcher::from_str("a == 'bcd").unwrap_err(),
+        ParseMatcherError::InvalidSubfieldMatcher(_)
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn subfield_matcher_bit_and() -> TestResult {
+    let lhs = SubfieldMatcher::from_str("a =^ 'D'")?;
+    let rhs = SubfieldMatcher::from_str("a =$ 'NB'")?;
+    let matcher = lhs & rhs;
+
+    assert!(matcher
+        .is_match(&subfield!('a', "DNB"), &MatcherOptions::default()));
+
+    Ok(())
+}
+
+#[test]
+fn subfield_matcher_bit_or() -> TestResult {
+    let lhs = SubfieldMatcher::from_str("a =^ 'f'")?;
+    let rhs = SubfieldMatcher::from_str("a =^ 'b'")?;
+    let matcher = lhs | rhs;
+
+    assert!(matcher
+        .is_match(&subfield!('a', "foo"), &MatcherOptions::default()));
+    assert!(matcher
+        .is_match(&subfield!('a', "bar"), &MatcherOptions::default()));
+
+    Ok(())
+}
+
+#[test]
+fn subfield_matcher_not() -> TestResult {
+    // group
+    let matcher = SubfieldMatcher::from_str("!(a == 'bcd')")?;
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('a', "bcd"), &options));
+    assert!(matcher.is_match(&subfield!('b', "cde"), &options));
+
+    // exists
+    let matcher = SubfieldMatcher::new("!a?");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('a', "bcd"), &options));
+    assert!(matcher.is_match(&subfield!('b', "cde"), &options));
+
+    // not
+    let matcher = SubfieldMatcher::new("!!!(a == 'bcd')");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('a', "bcd"), &options));
+    assert!(matcher.is_match(&subfield!('b', "cde"), &options));
+
+    Ok(())
+}
+
+#[test]
+fn subfield_matcher_group() {
+    // and
+    let matcher = SubfieldMatcher::new("(a =^ 'ab' && a =$ 'ba')");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "abba"), &options));
+    assert!(!matcher.is_match(&subfield!('b', "cde"), &options));
+
+    // or
+    let matcher = SubfieldMatcher::new("(a =^ 'ab' || a =^ 'ba')");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "abba"), &options));
+    assert!(matcher.is_match(&subfield!('a', "baba"), &options));
+
+    // singleton
+    let matcher = SubfieldMatcher::new("(a == 'bcd')");
+    let options = MatcherOptions::default();
+    assert!(matcher.is_match(&subfield!('a', "bcd"), &options));
+    assert!(!matcher.is_match(&subfield!('b', "cde"), &options));
+
+    // nested group
+    let matcher = SubfieldMatcher::new("(((a == 'bcd')))");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "bcd"), &options));
+
+    // not
+    let matcher = SubfieldMatcher::new("(!(a == 'bcd'))");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('h', "ijk"), &options));
+}
+
+#[test]
+fn subfield_matcher_or() -> TestResult {
+    // singleton
+    let matcher =
+        SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' || a =^ 'cd'");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "abab"), &options));
+    assert!(matcher.is_match(&subfield!('a', "bcbc"), &options));
+    assert!(matcher.is_match(&subfield!('a', "cdcd"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "dede"), &options));
+    assert!(!matcher.is_match(&subfield!('b', "abab"), &options));
+
+    // group
+    let matcher =
+        SubfieldMatcher::new("a =^ 'ab' || (a =^ 'bc' && a =$ 'cd')");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "abab"), &options));
+    assert!(matcher.is_match(&subfield!('a', "bccd"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "bcbc"), &options));
+
+    // and
+    let matcher =
+        SubfieldMatcher::new("a =^ 'ab' || a =^ 'bc' && a =$ 'cd'");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "abab"), &options));
+    assert!(matcher.is_match(&subfield!('a', "abcd"), &options));
+    assert!(matcher.is_match(&subfield!('a', "bccd"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "bcbc"), &options));
+
+    // or
+    let matcher = SubfieldMatcher::new("!a? || b == 'x'");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('a', "abab"), &options));
+
+    let subfields = [&subfield!('a', "bccd"), &subfield!('b', "x")];
+    assert!(matcher.is_match(subfields, &options));
+
+    // not
+    let matcher = SubfieldMatcher::new("a == 'bcd' || !(a != 'def')");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "bcd"), &options));
+    assert!(matcher.is_match(&subfield!('a', "def"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "hij"), &options));
+
+    // boolean op precedence
+    let matcher =
+        SubfieldMatcher::new("(a =^ 'ab' || a =^ 'bc') && a =$ 'cd'");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('a', "abab"), &options));
+    assert!(matcher.is_match(&subfield!('a', "abcd"), &options));
+    assert!(matcher.is_match(&subfield!('a', "bccd"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "bcbc"), &options));
+
+    // multiple subfields
+    let matcher = SubfieldMatcher::new("#a == 2 || a =^ 'ab'");
+    let options = MatcherOptions::default();
+
+    let subfields = [&subfield!('a', "def"), &subfield!('a', "hij")];
+    assert!(matcher.is_match(subfields, &options));
+
+    let subfields = [
+        &subfield!('a', "def"),
+        &subfield!('a', "hij"),
+        &subfield!('a', "abc"),
+    ];
+    assert!(matcher.is_match(subfields, &options));
+
+    Ok(())
+}
+
+#[test]
+fn subfield_matcher_and() -> anyhow::Result<()> {
+    // singleton
+    let matcher =
+        SubfieldMatcher::new("#a == 1 && a =^ 'ab' && a =$ 'ba'");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "abba"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "baba"), &options));
+
+    let subfields = [&subfield!('a', "abba"), &subfield!('a', "baba")];
+    assert!(!matcher.is_match(subfields, &options));
+
+    // group
+    let matcher =
+        SubfieldMatcher::new("#a == 1 && (a =^ 'ab' || a =^ 'ba')");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&subfield!('a', "abba"), &options));
+    assert!(matcher.is_match(&subfield!('a', "baba"), &options));
+
+    let subfields = [&subfield!('a', "abba"), &subfield!('a', "baba")];
+    assert!(!matcher.is_match(subfields, &options));
+
+    // not
+    let matcher =
+        SubfieldMatcher::new("#a == 1 && !(a =^ 'ab' || a =^ 'ba')");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('a', "abba"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "baba"), &options));
+    assert!(matcher.is_match(&subfield!('a', "cbcb"), &options));
+
+    Ok(())
+}
