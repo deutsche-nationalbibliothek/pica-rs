@@ -15,7 +15,7 @@ use winnow::combinator::{
 use winnow::error::{ContextError, ParserError};
 use winnow::prelude::*;
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
-use winnow::token::take_till1;
+use winnow::token::take_till;
 
 #[derive(Debug, Error)]
 #[error("invalid selector, got `{0}`")]
@@ -126,8 +126,8 @@ where
     E: ParserError<I>,
 {
     match quotes {
-        Quotes::Single => take_till1(['\'', '\\']),
-        Quotes::Double => take_till1(['"', '\\']),
+        Quotes::Single => take_till(1.., ['\'', '\\']),
+        Quotes::Double => take_till(1.., ['"', '\\']),
     }
 }
 
