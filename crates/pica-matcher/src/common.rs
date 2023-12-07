@@ -4,7 +4,7 @@ use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{alt, delimited, fold_repeat, preceded};
 use winnow::error::{ContextError, ParserError};
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
-use winnow::token::{tag, take_till1};
+use winnow::token::{tag, take_till};
 use winnow::{PResult, Parser};
 
 /// Boolean Operators.
@@ -117,8 +117,8 @@ where
     E: ParserError<I>,
 {
     match quotes {
-        Quotes::Single => take_till1(['\'', '\\']),
-        Quotes::Double => take_till1(['"', '\\']),
+        Quotes::Single => take_till(1.., ['\'', '\\']),
+        Quotes::Double => take_till(1.., ['"', '\\']),
     }
 }
 

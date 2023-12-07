@@ -4,7 +4,7 @@ use std::str::Utf8Error;
 
 use bstr::{BStr, BString, ByteSlice};
 use winnow::combinator::preceded;
-use winnow::token::{one_of, take_till0};
+use winnow::token::{one_of, take_till};
 use winnow::{PResult, Parser};
 
 use crate::error::ParsePicaError;
@@ -33,7 +33,7 @@ pub fn parse_subfield_code(i: &mut &[u8]) -> PResult<char> {
 /// Parse a PICA+ subfield value.
 #[inline]
 fn parse_subfield_value<'a>(i: &mut &'a [u8]) -> PResult<&'a BStr> {
-    take_till0(|c| c == b'\x1f' || c == b'\x1e')
+    take_till(0.., |c| c == b'\x1f' || c == b'\x1e')
         .map(ByteSlice::as_bstr)
         .parse_next(i)
 }
