@@ -1,5 +1,6 @@
 //! Matcher that works on PICA+ [Subfields](pica_record::Subfield).
 
+use std::cell::RefCell;
 use std::ops::{BitAnd, BitOr};
 use std::str::FromStr;
 
@@ -12,6 +13,7 @@ use winnow::ascii::digit1;
 use winnow::combinator::{
     alt, delimited, opt, preceded, repeat, separated, terminated,
 };
+use winnow::error::ParserError;
 use winnow::{PResult, Parser};
 
 use crate::common::{
@@ -863,17 +865,41 @@ fn parse_not_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
     .parse_next(i)
 }
 
+thread_local! {
+    pub static GROUP_LEVEL: RefCell<u32> = RefCell::new(0);
+}
+
+fn increment_group_level(i: &mut &[u8]) -> PResult<()> {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() += 1;
+        if *level.borrow() >= 32 {
+            Err(winnow::error::ErrMode::from_error_kind(
+                i,
+                winnow::error::ErrorKind::Many,
+            ))
+        } else {
+            Ok(())
+        }
+    })
+}
+
+fn decrement_group_level() {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() -= 1;
+    })
+}
+
 #[inline]
 fn parse_group_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
     delimited(
-        ws('('),
+        terminated(ws('('), increment_group_level),
         alt((
             parse_composite_matcher,
             parse_subfield_singleton_matcher,
             parse_not_matcher,
             parse_group_matcher,
         )),
-        ws(')'),
+        ws(')').map(|_| decrement_group_level()),
     )
     .map(|matcher| SubfieldMatcher::Group(Box::new(matcher)))
     .parse_next(i)
