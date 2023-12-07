@@ -1,5 +1,6 @@
 //! Matcher that works on PICA+ [Fields](pica_record::Field).
 
+use std::cell::RefCell;
 use std::ops::{BitAnd, BitOr, Not};
 use std::str::FromStr;
 
@@ -9,6 +10,7 @@ use winnow::ascii::digit1;
 use winnow::combinator::{
     alt, delimited, opt, preceded, repeat, terminated,
 };
+use winnow::error::ParserError;
 use winnow::prelude::*;
 
 use crate::common::{
@@ -552,10 +554,34 @@ fn parse_field_matcher_cardinality(
         .parse_next(i)
 }
 
+thread_local! {
+    pub static GROUP_LEVEL: RefCell<u32> = RefCell::new(0);
+}
+
+fn increment_group_level(i: &mut &[u8]) -> PResult<()> {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() += 1;
+        if *level.borrow() >= 32 {
+            Err(winnow::error::ErrMode::from_error_kind(
+                i,
+                winnow::error::ErrorKind::Many,
+            ))
+        } else {
+            Ok(())
+        }
+    })
+}
+
+fn decrement_group_level() {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() -= 1;
+    })
+}
+
 #[inline]
 fn parse_field_matcher_group(i: &mut &[u8]) -> PResult<FieldMatcher> {
     delimited(
-        ws('('),
+        terminated(ws('('), increment_group_level),
         alt((
             parse_field_matcher_composite,
             parse_field_matcher_singleton,
@@ -563,7 +589,7 @@ fn parse_field_matcher_group(i: &mut &[u8]) -> PResult<FieldMatcher> {
             parse_field_matcher_cardinality,
             parse_field_matcher_group,
         )),
-        ws(')'),
+        ws(')').map(|_| decrement_group_level()),
     )
     .map(|matcher| FieldMatcher::Group(Box::new(matcher)))
     .parse_next(i)
