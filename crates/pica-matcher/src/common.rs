@@ -53,23 +53,27 @@ impl RelationalOp {
     /// Returns true of the operator can be used in combination with the
     /// `usize` type, otherwise false.
     pub fn is_usize_applicable(&self) -> bool {
-        use RelationalOp::*;
-
-        match self {
-            Eq | Ne | Gt | Ge | Lt | Le => true,
-            _ => false,
-        }
+        matches!(
+            self,
+            RelationalOp::Eq
+                | RelationalOp::Ne
+                | RelationalOp::Ge
+                | RelationalOp::Gt
+                | RelationalOp::Lt
+                | RelationalOp::Le
+        )
     }
 
     /// Returns true of the operator can be used in combination with
     /// `str` or byte slices, otherwise false.
     pub fn is_str_applicable(&self) -> bool {
-        use RelationalOp::*;
-
-        match self {
-            Gt | Ge | Lt | Le => false,
-            _ => true,
-        }
+        !matches!(
+            self,
+            RelationalOp::Ge
+                | RelationalOp::Gt
+                | RelationalOp::Lt
+                | RelationalOp::Le
+        )
     }
 }
 
