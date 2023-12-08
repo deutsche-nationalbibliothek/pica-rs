@@ -24,7 +24,7 @@ use winnow::stream::{AsChar, Stream, StreamIsPartial};
 
 #[derive(Debug, Error)]
 #[error("invalid path expression, got `{0}`")]
-pub struct ParsePathError(String);
+pub struct ParsePathError(pub String);
 
 #[derive(Clone, Debug)]
 pub struct Path {
@@ -56,22 +56,53 @@ impl Path {
         Self::try_from(data.as_ref()).expect("valid path expression.")
     }
 
+    /// Returns the list of codes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_path::Path;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let path = Path::new("003@.0");
+    ///     assert_eq!(path.codes(), &[vec!['0']]);
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn codes(&self) -> &Vec<Vec<char>> {
         &self.codes
     }
 
+    /// Returns the flat list of codes.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_path::Path;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let path = Path::new("003@.0");
+    ///     assert_eq!(path.codes_flat(), &['0']);
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn codes_flat(&self) -> Vec<char> {
         self.codes.clone().into_iter().flatten().collect()
     }
 
+    /// Returns the tag matcher of the path.
     pub fn tag_matcher(&self) -> &TagMatcher {
         &self.tag_matcher
     }
 
+    /// Returns the occurrence matcher of the path.
     pub fn occurrence_matcher(&self) -> &OccurrenceMatcher {
         &self.occurrence_matcher
     }
 
+    /// Returns the subfield matcher of the path.
     pub fn subfield_matcher(&self) -> Option<&SubfieldMatcher> {
         self.subfield_matcher.as_ref()
     }
@@ -306,18 +337,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_subfield_code_single() -> anyhow::Result<()> {
+    fn parse_subfield_code_single() {
         use super::parse_subfield_code_single;
+
         assert_eq!(
             parse_subfield_code_single.parse(b"a").unwrap(),
             vec!['a']
         );
-
-        Ok(())
     }
 
     #[test]
-    fn parse_subfield_code_range() -> anyhow::Result<()> {
+    fn parse_subfield_code_range() {
         use super::parse_subfield_code_range;
 
         assert_eq!(
@@ -328,12 +358,10 @@ mod tests {
         assert!(parse_subfield_code_range.parse(b"a-a").is_err());
         assert!(parse_subfield_code_range.parse(b"c-a").is_err());
         assert!(parse_subfield_code_range.parse(b"a").is_err());
-
-        Ok(())
     }
 
     #[test]
-    fn parse_subfield_codes() -> anyhow::Result<()> {
+    fn parse_subfield_codes() {
         use super::parse_subfield_codes;
 
         macro_rules! parse_success {
@@ -345,10 +373,43 @@ mod tests {
             };
         }
 
-        parse_success!(b"a", vec!['a']);
-        parse_success!(b"[a-c]", vec!['a', 'b', 'c']);
         parse_success!(b"[a-cx]", vec!['a', 'b', 'c', 'x']);
+        parse_success!(b"[a-c]", vec!['a', 'b', 'c']);
+        parse_success!(b"a", vec!['a']);
+    }
 
-        Ok(())
+    #[test]
+    fn parse_path_simple() {
+        macro_rules! parse_success {
+            ($input:expr) => {
+                assert!(super::parse_path_simple.parse($input).is_ok())
+            };
+        }
+
+        parse_success!(b"021A/*.[a-cx]");
+        parse_success!(b"021A.[a-cx]");
+        parse_success!(b"021A/*.[a-c]");
+        parse_success!(b"021A.[a-c]");
+        parse_success!(b"021A/*.a");
+        parse_success!(b"021A.a");
+    }
+
+    #[test]
+    fn parse_path_curly() {
+        macro_rules! parse_success {
+            ($input:expr) => {
+                assert!(super::parse_path_curly.parse($input).is_ok())
+            };
+        }
+
+        parse_success!(b"021A/*{ [a-cx] }");
+        parse_success!(b"021A/*{ [a-cx], y }");
+        parse_success!(b"021A/*{ ([a-cx], y) }");
+        parse_success!(b"021A/*{ ([a-cx], y) | y? }");
+        parse_success!(b"021A{ [a-cx] }");
+        parse_success!(b"021A/*{[a-c]}");
+        parse_success!(b"021A{[a-c]}");
+        parse_success!(b"021A/*{a}");
+        parse_success!(b"021A{a}");
     }
 }
