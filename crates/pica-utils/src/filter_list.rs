@@ -8,7 +8,7 @@ use std::sync::Arc;
 use bstr::{BStr, BString};
 use polars::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct FilterList {
     allow: BTreeSet<BString>,
     deny: BTreeSet<BString>,
@@ -31,10 +31,7 @@ pub enum FilterListError {
 
 impl FilterList {
     pub fn new() -> Self {
-        Self {
-            allow: BTreeSet::new(),
-            deny: BTreeSet::new(),
-        }
+        Self::default()
     }
 
     pub fn check(&self, idn: Option<&BStr>) -> bool {
@@ -45,10 +42,8 @@ impl FilterList {
         if let Some(idn) = idn {
             if !self.allow.is_empty() && !self.allow.contains(idn) {
                 false
-            } else if self.deny.contains(idn) {
-                false
             } else {
-                true
+                !self.deny.contains(idn)
             }
         } else {
             false
@@ -136,9 +131,7 @@ impl FilterList {
                     .finish()?)
             }
             _ => {
-                return Err(FilterListError::InvalidFileFormat(
-                    path_str.into(),
-                ))
+                Err(FilterListError::InvalidFileFormat(path_str.into()))
             }
         }
     }
