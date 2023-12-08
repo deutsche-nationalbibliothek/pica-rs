@@ -17,7 +17,6 @@ fn ada_lovelace() -> &'static [u8] {
         let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
         let path = Path::new(&manifest_dir)
             .join("../pica-toolkit/tests/data/119232022.dat");
-        eprintln!("{:?}", path);
         fs::read_to_string(&path).unwrap().as_bytes().to_vec()
     })
 }

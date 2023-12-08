@@ -698,7 +698,7 @@ impl FromStr for CardinalityMatcher {
 ///
 /// This matcher combines all atomic, singleton matcher into a new
 /// matcher.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum SingletonMatcher {
     Cardinality(CardinalityMatcher),
     Exists(ExistsMatcher),
@@ -773,7 +773,7 @@ impl TryFrom<&[u8]> for SingletonMatcher {
 
 /// A matcher that allows grouping, negation and connecting of
 /// singleton matcher.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum SubfieldMatcher {
     Singleton(SingletonMatcher),
     Group(Box<SubfieldMatcher>),

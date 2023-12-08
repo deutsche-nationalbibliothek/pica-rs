@@ -26,7 +26,7 @@ use winnow::stream::{AsChar, Stream, StreamIsPartial};
 #[error("invalid path expression, got `{0}`")]
 pub struct ParsePathError(pub String);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Path {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
