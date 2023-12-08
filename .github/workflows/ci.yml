@@ -124,10 +124,10 @@ jobs:
     strategy:
       matrix:
         item:
-          - { name: record_ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
-          - { name: record_matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 300 }
-          - { name: path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 300 }
-          # - { name: select_query, fuzz-dir: crates/pica-select/fuzz, target: fuzz_query, max-total-time: 300 }
+          - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
+          - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 300 }
+          - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 300 }
+          - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 300 }
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
