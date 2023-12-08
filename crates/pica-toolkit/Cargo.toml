@@ -8,7 +8,6 @@ keywords.workspace = true
 edition.workspace = true
 
 [dependencies]
-arrow2 = { workspace = true, features = ["io_ipc", "io_ipc_compression"] }
 bstr = { workspace = true }
 clap = { workspace = true, features = ["cargo", "derive", "wrap_help"] }
 clap_complete = { workspace = true }

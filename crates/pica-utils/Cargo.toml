@@ -8,5 +8,8 @@ keywords.workspace = true
 edition.workspace = true
 
 [dependencies]
-unicode-normalization = { version =  "0.1.22" }
+bstr = { workspace = true }
+polars = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
+unicode-normalization = { version =  "0.1.22" }
+thiserror = { workspace = true }
