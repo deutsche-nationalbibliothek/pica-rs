@@ -16,9 +16,9 @@ use pica_utils::{FilterList, NormalizationForm};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::error::CliResult;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
-use crate::util::CliResult;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]

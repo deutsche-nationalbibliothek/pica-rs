@@ -5,8 +5,8 @@ use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::error::CliResult;
 use crate::progress::Progress;
-use crate::util::CliResult;
 use crate::{gzip_flag, skip_invalid_flag};
 
 #[derive(Debug, Deserialize, Serialize)]

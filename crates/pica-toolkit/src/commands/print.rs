@@ -13,9 +13,9 @@ use termcolor::{
 };
 
 use crate::config::Config;
+use crate::error::{CliError, CliResult};
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
-use crate::util::{CliError, CliResult};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]

@@ -13,8 +13,8 @@ use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use pica_utils::{FilterList, NormalizationForm};
 use serde::{Deserialize, Serialize};
 
+use crate::error::{CliError, CliResult};
 use crate::progress::Progress;
-use crate::util::{CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag, Config};
 
 #[derive(Debug, Deserialize, Serialize)]

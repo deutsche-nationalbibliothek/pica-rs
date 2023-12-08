@@ -1,5 +1,5 @@
 bin.name = "pica"
 args = "select \"003@.0, 'foo, 002@.0\""
 status = "failed"
-stderr = "Parse Query Error: invalid query, got `003@.0, 'foo, 002@.0`\n"
+stderr = "error: invalid query, got `003@.0, 'foo, 002@.0`\n"
 stdout = ""

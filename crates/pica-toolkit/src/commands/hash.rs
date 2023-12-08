@@ -9,9 +9,9 @@ use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::error::CliResult;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
-use crate::util::CliResult;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
