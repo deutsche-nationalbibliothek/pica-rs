@@ -104,7 +104,6 @@ unlicensed = "deny"
 allow = [
     "Apache-2.0",
     "BSD-3-Clause",
-    "CC-PDDC",
     "CECILL-B",
     "MIT",
     "Unicode-DFS-2016"
