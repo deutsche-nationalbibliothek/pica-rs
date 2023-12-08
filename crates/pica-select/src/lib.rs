@@ -19,7 +19,7 @@ use winnow::token::take_till;
 
 #[derive(Debug, Error)]
 #[error("invalid selector, got `{0}`")]
-pub struct ParseSelectorError(String);
+pub struct ParseSelectorError(pub String);
 
 #[derive(Debug)]
 pub enum QueryFragment {
@@ -44,7 +44,7 @@ pub struct Query(Vec<QueryFragment>);
 
 #[derive(Debug, Error)]
 #[error("invalid query, got `{0}`")]
-pub struct ParseQueryError(String);
+pub struct ParseQueryError(pub String);
 
 impl Query {
     /// Create a new select query from a string slice.
@@ -93,14 +93,6 @@ impl FromStr for Query {
     type Err = ParseQueryError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::try_from(s.as_bytes())
-    }
-}
-
-impl TryFrom<&String> for Query {
-    type Error = ParseQueryError;
-
-    fn try_from(value: &String) -> Result<Self, Self::Error> {
-        Self::try_from(value.as_bytes())
     }
 }
 

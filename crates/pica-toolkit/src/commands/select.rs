@@ -5,6 +5,7 @@ use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use clap::Parser;
 use pica_matcher::{MatcherOptions, RecordMatcher};
@@ -247,7 +248,7 @@ impl Select {
         };
 
         let query = NormalizationForm::translit_opt(&self.query, nf);
-        let query = Query::try_from(&query)?;
+        let query = Query::from_str(&query)?;
 
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
