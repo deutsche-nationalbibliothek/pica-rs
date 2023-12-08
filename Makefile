@@ -12,5 +12,4 @@ clippy:
 
 .PHONY: test
 test:
-	$(CARGO) test --workspace --all-features --no-fail-fast \
-		-- --test-threads=1
+	$(CARGO) test --workspace --all-features --no-fail-fast
