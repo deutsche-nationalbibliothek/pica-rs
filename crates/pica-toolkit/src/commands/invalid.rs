@@ -6,8 +6,8 @@ use pica_record::io::{ReadPicaError, ReaderBuilder, RecordsIterator};
 use pica_record::ParsePicaError;
 
 use crate::config::Config;
+use crate::error::CliResult;
 use crate::progress::Progress;
-use crate::util::CliResult;
 
 /// Write input lines, which can't be decoded as normalized PICA+
 ///

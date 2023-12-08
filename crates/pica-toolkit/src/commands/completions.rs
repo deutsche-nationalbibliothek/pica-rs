@@ -5,7 +5,7 @@ use std::io::{self, Write};
 use clap::{Command, Parser};
 use clap_complete::{generate, Shell};
 
-use crate::util::CliResult;
+use crate::error::CliResult;
 
 #[derive(Parser, Debug)]
 pub(crate) struct Completions {

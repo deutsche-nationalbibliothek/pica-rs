@@ -17,8 +17,8 @@ use self::import::ImportWriter;
 use self::json::JsonWriter;
 use self::plain::PlainWriter;
 use self::xml::XmlWriter;
+use crate::error::CliError;
 use crate::progress::Progress;
-use crate::util::CliError;
 use crate::{skip_invalid_flag, CliResult, Config};
 
 #[derive(Debug, Deserialize, Serialize)]

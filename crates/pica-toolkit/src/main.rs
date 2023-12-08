@@ -6,9 +6,9 @@ extern crate termcolor;
 
 mod commands;
 mod config;
+mod error;
 mod macros;
 mod progress;
-mod util;
 
 use std::path::PathBuf;
 use std::{io, process};
@@ -19,7 +19,7 @@ use commands::{
     Invalid, Partition, Print, Sample, Select, Slice, Split,
 };
 use config::Config;
-use util::{CliError, CliResult};
+use error::{CliError, CliResult};
 
 #[derive(Debug, Parser)]
 #[clap(version, author, infer_subcommands = true, max_term_width = 72)]
@@ -88,27 +88,31 @@ fn main() {
             process::exit(0); // no-coverage
         }
         Err(CliError::ParsePica(err)) => {
-            eprintln!("Parse Pica Error: {err}");
+            eprintln!("error: {err}");
+            process::exit(1);
+        }
+        Err(CliError::ReadPica(err)) => {
+            eprintln!("error: {err}");
             process::exit(1);
         }
         Err(CliError::ParsePath(err)) => {
-            eprintln!("Parse Path Error: {err}");
+            eprintln!("error: {err}");
             process::exit(1);
         }
         Err(CliError::ParseMatcher(err)) => {
-            eprintln!("Parse Matcher Error: {err}");
+            eprintln!("error: {err}");
             process::exit(1);
         }
         Err(CliError::ParseQuery(err)) => {
-            eprintln!("Parse Query Error: {err}");
+            eprintln!("error: {err}");
             process::exit(1);
         }
         Err(CliError::Io(err)) => {
-            eprintln!("IO Error: {err}");
+            eprintln!("error: {err}");
             process::exit(1);
         }
         Err(CliError::Csv(err)) => {
-            eprintln!("CSV Error: {err}");
+            eprintln!("error: {err}");
             process::exit(1);
         }
         Err(CliError::Other(err)) => {
