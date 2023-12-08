@@ -8,11 +8,11 @@ use pica_matcher::{
     MatcherOptions, OccurrenceMatcher, ParseMatcherError,
     RecordMatcher, TagMatcher,
 };
+use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
-use pica_utils::NormalizationForm;
+use pica_utils::{FilterList, NormalizationForm};
 use serde::{Deserialize, Serialize};
 
-use crate::common::FilterList;
 use crate::progress::Progress;
 use crate::util::{CliError, CliResult};
 use crate::{gzip_flag, skip_invalid_flag, Config};
@@ -69,8 +69,8 @@ pub(crate) struct Filter {
     /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
     /// file is automatically interpreted as Apache Arrow;
     /// otherwise the file is read as CSV.
-    #[arg(long, short = 'A')]
-    allow_list: Vec<PathBuf>,
+    #[arg(long = "allow-lists", short = 'A')]
+    allow_lists: Vec<PathBuf>,
 
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
@@ -80,8 +80,8 @@ pub(crate) struct Filter {
     /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
     /// file is automatically interpreted as Apache Arrow;
     /// otherwise the file is read as CSV.
-    #[arg(long, short = 'D')]
-    deny_list: Vec<PathBuf>,
+    #[arg(long = "deny-lists", short = 'D')]
+    deny_lists: Vec<PathBuf>,
 
     /// Limit the result to first <n> records
     ///
@@ -247,17 +247,11 @@ impl Filter {
             }
         }
 
-        let allow_list = if !self.allow_list.is_empty() {
-            FilterList::new(self.allow_list)?
-        } else {
-            FilterList::default()
-        };
-
-        let deny_list = if !self.deny_list.is_empty() {
-            FilterList::new(self.deny_list)?
-        } else {
-            FilterList::default()
-        };
+        let filter_list = FilterList::new()
+            .allow(self.allow_lists)
+            .unwrap()
+            .deny(self.deny_lists)
+            .unwrap();
 
         let mut progress = Progress::new(self.progress);
 
@@ -283,15 +277,7 @@ impl Filter {
                     Ok(mut record) => {
                         progress.record();
 
-                        if !allow_list.is_empty()
-                            && !allow_list.check(&record)
-                        {
-                            continue;
-                        }
-
-                        if !deny_list.is_empty()
-                            && deny_list.check(&record)
-                        {
+                        if !filter_list.check(record.idn()) {
                             continue;
                         }
 

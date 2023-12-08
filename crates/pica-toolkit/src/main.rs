@@ -5,7 +5,6 @@ extern crate serde;
 extern crate termcolor;
 
 mod commands;
-mod common;
 mod config;
 mod macros;
 mod progress;

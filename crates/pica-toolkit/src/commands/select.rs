@@ -9,12 +9,12 @@ use std::str::FromStr;
 
 use clap::Parser;
 use pica_matcher::{MatcherOptions, RecordMatcher};
+use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
-use pica_utils::NormalizationForm;
+use pica_utils::{FilterList, NormalizationForm};
 use serde::{Deserialize, Serialize};
 
-use crate::common::FilterList;
 use crate::config::Config;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
@@ -119,8 +119,8 @@ pub(crate) struct Select {
     /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
     /// file is automatically interpreted as Apache Arrow;
     /// otherwise the file is read as CSV.
-    #[arg(long, short = 'A')]
-    allow_list: Vec<PathBuf>,
+    #[arg(long = "allow-lists", short = 'A')]
+    allow_lists: Vec<PathBuf>,
 
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
@@ -130,8 +130,8 @@ pub(crate) struct Select {
     /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
     /// file is automatically interpreted as Apache Arrow;
     /// otherwise the file is read as CSV.
-    #[arg(long, short = 'D')]
-    deny_list: Vec<PathBuf>,
+    #[arg(long = "deny-lists", short = 'D')]
+    deny_lists: Vec<PathBuf>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -235,17 +235,11 @@ impl Select {
             None
         };
 
-        let allow_list = if !self.allow_list.is_empty() {
-            FilterList::new(self.allow_list)?
-        } else {
-            FilterList::default()
-        };
-
-        let deny_list = if !self.deny_list.is_empty() {
-            FilterList::new(self.deny_list)?
-        } else {
-            FilterList::default()
-        };
+        let filter_list = FilterList::new()
+            .allow(self.allow_lists)
+            .unwrap()
+            .deny(self.deny_lists)
+            .unwrap();
 
         let query = NormalizationForm::translit_opt(&self.query, nf);
         let query = Query::from_str(&query)?;
@@ -277,15 +271,7 @@ impl Select {
                     Ok(record) => {
                         progess.record();
 
-                        if !allow_list.is_empty()
-                            && !allow_list.check(&record)
-                        {
-                            continue;
-                        }
-
-                        if !deny_list.is_empty()
-                            && deny_list.check(&record)
-                        {
+                        if !filter_list.check(record.idn()) {
                             continue;
                         }
 
