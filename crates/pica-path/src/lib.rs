@@ -87,6 +87,7 @@ impl TryFrom<&[u8]> for Path {
         })
     }
 }
+
 impl FromStr for Path {
     type Err = ParsePathError;
 
