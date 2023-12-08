@@ -58,7 +58,6 @@ impl Invalid {
 
         progress.finish();
         writer.flush()?;
-
         Ok(())
     }
 }

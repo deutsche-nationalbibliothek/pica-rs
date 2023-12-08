@@ -112,61 +112,55 @@ impl Partition {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
-                    Ok(record) => {
-                        progress.record();
+                }
 
-                        let mut values =
-                            record.path(&path, &Default::default());
-                        values.sort_unstable();
-                        values.dedup();
+                let record = result.unwrap();
+                progress.record();
 
-                        for value in values {
-                            let mut entry = writers
-                                .entry(value.as_bytes().to_vec());
-                            let writer = match entry {
-                                Entry::Vacant(vacant) => {
-                                    let filename = filename_template
-                                        .replace(
-                                            "{}",
-                                            &value.to_str_lossy(),
-                                        );
+                let mut values =
+                    record.path(&path, &Default::default());
+                values.sort_unstable();
+                values.dedup();
 
-                                    let path = self
-                                        .outdir
-                                        .join(filename)
-                                        .to_str()
-                                        .unwrap()
-                                        .to_owned();
+                for value in values {
+                    let mut entry =
+                        writers.entry(value.as_bytes().to_vec());
+                    let writer = match entry {
+                        Entry::Vacant(vacant) => {
+                            let filename = filename_template
+                                .replace("{}", &value.to_str_lossy());
 
-                                    let writer = WriterBuilder::new()
-                                        .gzip(gzip_compression)
-                                        .from_path(path)?;
+                            let path = self
+                                .outdir
+                                .join(filename)
+                                .to_str()
+                                .unwrap()
+                                .to_owned();
 
-                                    vacant.insert(writer)
-                                }
-                                Entry::Occupied(ref mut occupied) => {
-                                    occupied.get_mut()
-                                }
-                            };
+                            let writer = WriterBuilder::new()
+                                .gzip(gzip_compression)
+                                .from_path(path)?;
 
-                            writer.write_byte_record(&record)?;
+                            vacant.insert(writer)
                         }
-                    }
+                        Entry::Occupied(ref mut occupied) => {
+                            occupied.get_mut()
+                        }
+                    };
+
+                    writer.write_byte_record(&record)?;
                 }
             }
         }
 
         progress.finish();
-
         for (_, mut writer) in writers {
             writer.finish()?;
         }

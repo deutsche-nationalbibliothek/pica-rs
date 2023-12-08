@@ -183,8 +183,8 @@ impl Filter {
         let mut filenames = self.filenames;
         let filter_str = if let Some(filename) = self.expr_file {
             // This "hack" is necessary, because it's not possible to
-            // distinguish between filter and filenames. If a expression
-            // file is given, it makes no sense to provide
+            // distinguish between filter and filenames. If
+            // a expression file is given, it makes no sense to provide
             // an filter expression as CLI argument.
             if !self.filter.is_empty() {
                 if filenames != ["-"] {
@@ -265,81 +265,76 @@ impl Filter {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
-                    Ok(mut record) => {
-                        progress.record();
+                }
 
-                        if !filter_list.check(record.idn()) {
-                            continue;
-                        }
+                let mut record = result.unwrap();
+                progress.record();
 
-                        let mut is_match =
-                            filter.is_match(&record, &options);
+                if !filter_list.check(record.idn()) {
+                    continue;
+                }
 
-                        if self.invert_match {
-                            is_match = !is_match;
-                        }
+                let mut is_match = filter.is_match(&record, &options);
+                if self.invert_match {
+                    is_match = !is_match;
+                }
 
-                        if is_match {
-                            if !keep_predicates.is_empty() {
-                                record.retain(|field| {
-                                    for (t, o) in keep_predicates.iter()
-                                    {
-                                        if t.is_match(field.tag())
-                                            && *o == field.occurrence()
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    false
-                                });
+                if !is_match {
+                    continue;
+                }
+
+                if !keep_predicates.is_empty() {
+                    record.retain(|field| {
+                        for (t, o) in keep_predicates.iter() {
+                            if t.is_match(field.tag())
+                                && *o == field.occurrence()
+                            {
+                                return true;
                             }
-
-                            if !discard_predicates.is_empty() {
-                                record.retain(|field| {
-                                    for (t, o) in
-                                        discard_predicates.iter()
-                                    {
-                                        if t.is_match(field.tag())
-                                            && *o == field.occurrence()
-                                        {
-                                            return false;
-                                        }
-                                    }
-                                    true
-                                });
-                            }
-
-                            writer.write_byte_record(&record)?;
-                            if let Some(ref mut writer) = tee_writer {
-                                writer.write_byte_record(&record)?;
-                            }
-
-                            count += 1;
                         }
+                        false
+                    });
+                }
 
-                        if self.limit > 0 && count >= self.limit {
-                            break 'outer;
+                if !discard_predicates.is_empty() {
+                    record.retain(|field| {
+                        for (t, o) in discard_predicates.iter() {
+                            if t.is_match(field.tag())
+                                && *o == field.occurrence()
+                            {
+                                return false;
+                            }
                         }
-                    }
+                        true
+                    });
+                }
+
+                writer.write_byte_record(&record)?;
+                if let Some(ref mut writer) = tee_writer {
+                    writer.write_byte_record(&record)?;
+                }
+
+                count += 1;
+
+                if self.limit > 0 && count >= self.limit {
+                    break 'outer;
                 }
             }
         }
 
-        progress.finish();
-        writer.finish()?;
         if let Some(ref mut writer) = tee_writer {
             writer.finish()?;
         }
 
+        progress.finish();
+        writer.finish()?;
         Ok(())
     }
 }

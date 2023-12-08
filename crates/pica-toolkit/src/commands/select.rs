@@ -259,62 +259,59 @@ impl Select {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progess.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progess.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
-                    Ok(record) => {
-                        progess.record();
+                }
 
-                        if !filter_list.check(record.idn()) {
+                let record = result.unwrap();
+                progess.record();
+
+                if !filter_list.check(record.idn()) {
+                    continue;
+                }
+
+                if let Some(ref matcher) = matcher {
+                    if !matcher.is_match(
+                        &record,
+                        &MatcherOptions::from(&options),
+                    ) {
+                        continue;
+                    }
+                }
+
+                let outcome = record.query(&query, &options);
+                for row in outcome.iter() {
+                    if self.no_empty_columns
+                        && row.iter().any(String::is_empty)
+                    {
+                        continue;
+                    }
+
+                    if self.unique {
+                        let mut hasher = DefaultHasher::new();
+                        row.hash(&mut hasher);
+                        let hash = hasher.finish();
+
+                        if seen.contains(&hash) {
                             continue;
                         }
 
-                        if let Some(ref matcher) = matcher {
-                            if !matcher.is_match(
-                                &record,
-                                &MatcherOptions::from(&options),
-                            ) {
-                                continue;
-                            }
-                        }
+                        seen.insert(hash);
+                    }
 
-                        let outcome = record.query(&query, &options);
-                        for row in outcome.iter() {
-                            if self.no_empty_columns
-                                && row.iter().any(String::is_empty)
-                            {
-                                continue;
-                            }
-
-                            if self.unique {
-                                let mut hasher = DefaultHasher::new();
-                                row.hash(&mut hasher);
-                                let hash = hasher.finish();
-
-                                if seen.contains(&hash) {
-                                    continue;
-                                }
-
-                                seen.insert(hash);
-                            }
-
-                            if !row.iter().all(String::is_empty) {
-                                if let Some(nf) = self.nf {
-                                    writer.write_record(
-                                        row.iter()
-                                            .map(|s| nf.translit(s)),
-                                    )?;
-                                } else {
-                                    writer.write_record(row)?;
-                                };
-                            }
-                        }
+                    if !row.iter().all(String::is_empty) {
+                        if let Some(nf) = self.nf {
+                            writer.write_record(
+                                row.iter().map(|s| nf.translit(s)),
+                            )?;
+                        } else {
+                            writer.write_record(row)?;
+                        };
                     }
                 }
             }
