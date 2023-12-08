@@ -308,31 +308,28 @@ impl Explode {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
-                    }
-                    Ok(record) => {
-                        progress.record();
-                        process_record(
-                            &record,
-                            matcher.as_ref(),
-                            &options,
-                            &mut writer,
-                        )?;
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
                 }
+
+                let record = result.unwrap();
+                progress.record();
+                process_record(
+                    &record,
+                    matcher.as_ref(),
+                    &options,
+                    &mut writer,
+                )?;
             }
         }
 
         progress.record();
         writer.finish()?;
-
         Ok(())
     }
 }

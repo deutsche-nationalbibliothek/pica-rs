@@ -157,33 +157,30 @@ impl Cat {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
-                    Ok(record) => {
-                        progress.record();
+                }
 
-                        if self.unique {
-                            let k = key(&record);
+                let record = result.unwrap();
+                progress.record();
 
-                            if k.is_empty() || seen.contains(&k) {
-                                continue;
-                            }
-
-                            seen.insert(k);
-                        }
-
-                        writer.write_byte_record(&record)?;
-                        if let Some(ref mut writer) = tee_writer {
-                            writer.write_byte_record(&record)?;
-                        }
+                if self.unique {
+                    let k = key(&record);
+                    if k.is_empty() || seen.contains(&k) {
+                        continue;
                     }
+
+                    seen.insert(k);
+                }
+
+                writer.write_byte_record(&record)?;
+                if let Some(ref mut writer) = tee_writer {
+                    writer.write_byte_record(&record)?;
                 }
             }
         }

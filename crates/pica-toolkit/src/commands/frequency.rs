@@ -143,24 +143,22 @@ impl Frequency {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
-                    Ok(record) => {
-                        progress.record();
+                }
 
-                        let outcome = record.query(&query, &options);
-                        for key in outcome.clone().into_iter() {
-                            if key.iter().any(|e| !e.is_empty()) {
-                                *ftable.entry(key).or_insert(0) += 1;
-                            }
-                        }
+                let record = result.unwrap();
+                progress.record();
+
+                let outcome = record.query(&query, &options);
+                for key in outcome.clone().into_iter() {
+                    if key.iter().any(|e| !e.is_empty()) {
+                        *ftable.entry(key).or_insert(0) += 1;
                     }
                 }
             }
@@ -185,13 +183,12 @@ impl Frequency {
             });
         }
 
-        for (i, (values, frequency)) in ftable_sorted.iter().enumerate()
-        {
+        for (i, (values, freq)) in ftable_sorted.iter().enumerate() {
             if self.limit > 0 && i >= self.limit {
                 break;
             }
 
-            if **frequency < self.threshold {
+            if **freq < self.threshold {
                 break;
             }
 
@@ -200,7 +197,7 @@ impl Frequency {
                 .map(|s| NormalizationForm::translit_opt(s, self.nf))
                 .collect::<Vec<_>>();
 
-            record.push(frequency.to_string());
+            record.push(freq.to_string());
             writer.write_record(record)?;
         }
 

@@ -100,26 +100,24 @@ impl Count {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
-                    }
-                    Ok(record) => {
-                        progress.record();
-
-                        records += 1;
-                        fields += record.iter().len();
-                        subfields += record
-                            .iter()
-                            .map(|field| field.subfields().len())
-                            .sum::<usize>();
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
                 }
+
+                let record = result.unwrap();
+                progress.record();
+
+                records += 1;
+                fields += record.iter().len();
+                subfields += record
+                    .iter()
+                    .map(|field| field.subfields().len())
+                    .sum::<usize>();
             }
         }
 

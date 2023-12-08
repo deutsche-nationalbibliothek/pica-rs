@@ -58,6 +58,7 @@ struct Row {
 
 impl Hash {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+        let mut progress = Progress::new(self.progress);
         let skip_invalid = skip_invalid_flag!(
             self.skip_invalid,
             config.hash,
@@ -75,47 +76,39 @@ impl Hash {
 
         writer.write_record(self.header.split(',').map(str::trim))?;
 
-        let mut progress = Progress::new(self.progress);
-
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
-                    Ok(record) => {
-                        progress.record();
+                }
 
-                        if let Some(idn) = record.idn() {
-                            let hash = record.sha256().iter().fold(
-                                String::new(),
-                                |mut out, b| {
-                                    let _ = write!(out, "{b:02x}");
-                                    out
-                                },
-                            );
+                let record = result.unwrap();
+                progress.record();
 
-                            writer.write_record(&[
-                                idn.to_string(),
-                                hash,
-                            ])?;
-                        }
-                    }
+                if let Some(idn) = record.idn() {
+                    let hash = record.sha256().iter().fold(
+                        String::new(),
+                        |mut out, b| {
+                            let _ = write!(out, "{b:02x}");
+                            out
+                        },
+                    );
+
+                    writer.write_record(&[idn.to_string(), hash])?;
                 }
             }
         }
 
         progress.finish();
         writer.flush()?;
-
         Ok(())
     }
 }

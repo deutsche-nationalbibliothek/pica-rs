@@ -169,60 +169,55 @@ impl Print {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
-                    Ok(record) => {
-                        progress.record();
+                }
 
-                        for field in record.iter() {
-                            writer.set_color(&tag_color)?;
-                            write!(writer, "{}", field.tag())?;
+                let record = result.unwrap();
+                progress.record();
 
-                            if let Some(occurrence) = field.occurrence()
-                            {
-                                writer.set_color(&occurrence_color)?;
-                                occurrence.write_to(&mut writer)?;
-                            }
+                for field in record.iter() {
+                    writer.set_color(&tag_color)?;
+                    write!(writer, "{}", field.tag())?;
 
-                            for subfield in field.subfields() {
-                                let code = subfield.code();
-                                writer.set_color(&code_color)?;
-                                write!(writer, " ${code}")?;
-
-                                let value =
-                                    NormalizationForm::translit_opt(
-                                        subfield.value().to_str_lossy(),
-                                        self.nf,
-                                    );
-
-                                writer.set_color(&value_color)?;
-                                write!(writer, " {value}")?;
-                            }
-
-                            writeln!(writer)?;
-                        }
-
-                        writeln!(writer)?;
-                        count += 1;
-
-                        if self.limit > 0 && count >= self.limit {
-                            break 'outer;
-                        }
+                    if let Some(occurrence) = field.occurrence() {
+                        writer.set_color(&occurrence_color)?;
+                        occurrence.write_to(&mut writer)?;
                     }
+
+                    for subfield in field.subfields() {
+                        let code = subfield.code();
+                        writer.set_color(&code_color)?;
+                        write!(writer, " ${code}")?;
+
+                        let value = NormalizationForm::translit_opt(
+                            subfield.value().to_str_lossy(),
+                            self.nf,
+                        );
+
+                        writer.set_color(&value_color)?;
+                        write!(writer, " {value}")?;
+                    }
+
+                    writeln!(writer)?;
+                }
+
+                writeln!(writer)?;
+                count += 1;
+
+                if self.limit > 0 && count >= self.limit {
+                    break 'outer;
                 }
             }
         }
 
         progress.finish();
         writer.flush()?;
-
         Ok(())
     }
 }

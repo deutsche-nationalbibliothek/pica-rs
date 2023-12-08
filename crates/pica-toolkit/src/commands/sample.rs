@@ -85,33 +85,31 @@ impl Sample {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
-                    }
-                    Ok(record) => {
-                        progress.record();
-
-                        let mut data = Vec::<u8>::new();
-                        record.write_to(&mut data)?;
-
-                        if i < sample_size {
-                            reservoir.push(data);
-                        } else {
-                            let j = rng.gen_range(0..i);
-                            if j < sample_size {
-                                reservoir[j] = data;
-                            }
-                        }
-
-                        i += 1;
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
                 }
+
+                let record = result.unwrap();
+                progress.record();
+
+                let mut data = Vec::<u8>::new();
+                record.write_to(&mut data)?;
+
+                if i < sample_size {
+                    reservoir.push(data);
+                } else {
+                    let j = rng.gen_range(0..i);
+                    if j < sample_size {
+                        reservoir[j] = data;
+                    }
+                }
+
+                i += 1;
             }
         }
 
@@ -122,7 +120,6 @@ impl Sample {
 
         progress.finish();
         writer.finish()?;
-
         Ok(())
     }
 }

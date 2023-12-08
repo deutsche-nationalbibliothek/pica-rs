@@ -101,49 +101,43 @@ impl Split {
                 ReaderBuilder::new().from_path(filename)?;
 
             while let Some(result) = reader.next() {
-                match result {
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-                            continue;
-                        } else {
-                            return Err(e.into());
-                        }
-                    }
-                    Ok(record) => {
-                        progress.record();
-
-                        if count > 0
-                            && count as u32 % self.chunk_size == 0
-                        {
-                            writer.finish()?;
-                            chunks += 1;
-
-                            writer = WriterBuilder::new()
-                                .gzip(gzip_compression)
-                                .from_path(
-                                    self.outdir
-                                        .join(
-                                            filename_template.replace(
-                                                "{}",
-                                                &chunks.to_string(),
-                                            ),
-                                        )
-                                        .to_str()
-                                        .unwrap(),
-                                )?;
-                        }
-
-                        writer.write_byte_record(&record)?;
-                        count += 1;
+                if let Err(e) = result {
+                    if e.is_invalid_record() && skip_invalid {
+                        progress.invalid();
+                        continue;
+                    } else {
+                        return Err(e.into());
                     }
                 }
+
+                let record = result.unwrap();
+                progress.record();
+
+                if count > 0 && count as u32 % self.chunk_size == 0 {
+                    writer.finish()?;
+                    chunks += 1;
+
+                    writer =
+                        WriterBuilder::new()
+                            .gzip(gzip_compression)
+                            .from_path(
+                                self.outdir
+                                    .join(filename_template.replace(
+                                        "{}",
+                                        &chunks.to_string(),
+                                    ))
+                                    .to_str()
+                                    .unwrap(),
+                            )?;
+                }
+
+                writer.write_byte_record(&record)?;
+                count += 1;
             }
         }
 
         progress.finish();
         writer.finish()?;
-
         Ok(())
     }
 }
