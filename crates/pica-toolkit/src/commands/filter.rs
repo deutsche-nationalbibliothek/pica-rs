@@ -64,23 +64,23 @@ pub(crate) struct Filter {
     /// Ignore records which are *not* explicitly listed in one of the
     /// given allow-lists.
     ///
-    /// An allow-list must be an CSV, whereby the first column contains
-    /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
-    /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
-    /// file is automatically interpreted as Apache Arrow;
-    /// otherwise the file is read as CSV.
-    #[arg(long = "allow-lists", short = 'A')]
+    /// A allow-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "allow-list", short = 'A')]
     allow_lists: Vec<PathBuf>,
 
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
     ///
-    /// An allow-list must be an CSV, whereby the first column contains
-    /// the IDN (003@.0) or an Apache Arrow file with an `idn` column.
-    /// If the file extension is `.feather`, `.arrow`, or `.ipc` the
-    /// file is automatically interpreted as Apache Arrow;
-    /// otherwise the file is read as CSV.
-    #[arg(long = "deny-lists", short = 'D')]
+    /// A deny-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "deny-list", short = 'D')]
     deny_lists: Vec<PathBuf>,
 
     /// Limit the result to first <n> records
