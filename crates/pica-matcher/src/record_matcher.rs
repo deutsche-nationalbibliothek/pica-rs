@@ -1,4 +1,4 @@
-use std::ops::{BitAnd, BitOr, Not};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not};
 use std::str::FromStr;
 
 use bstr::ByteSlice;
@@ -97,6 +97,16 @@ impl BitAnd for RecordMatcher {
     }
 }
 
+impl BitAndAssign for RecordMatcher {
+    fn bitand_assign(&mut self, rhs: Self) {
+        self.field_matcher = FieldMatcher::Composite {
+            lhs: Box::new(self.field_matcher.clone()),
+            op: BooleanOp::And,
+            rhs: Box::new(rhs.field_matcher),
+        };
+    }
+}
+
 impl BitOr for RecordMatcher {
     type Output = Self;
 
@@ -108,6 +118,16 @@ impl BitOr for RecordMatcher {
                 rhs: Box::new(rhs.field_matcher),
             },
         }
+    }
+}
+
+impl BitOrAssign for RecordMatcher {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.field_matcher = FieldMatcher::Composite {
+            lhs: Box::new(self.field_matcher.clone()),
+            op: BooleanOp::Or,
+            rhs: Box::new(rhs.field_matcher),
+        };
     }
 }
 

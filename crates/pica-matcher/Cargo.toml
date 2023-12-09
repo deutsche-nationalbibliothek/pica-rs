@@ -10,6 +10,7 @@ edition.workspace = true
 [dependencies]
 bstr = { workspace = true }
 pica-record = { workspace = true }
+pica-utils = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true, optional = true }
 strsim = "0.10"

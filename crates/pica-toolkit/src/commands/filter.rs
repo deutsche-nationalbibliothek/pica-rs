@@ -5,15 +5,15 @@ use std::str::FromStr;
 
 use clap::{value_parser, Parser};
 use pica_matcher::{
-    MatcherOptions, OccurrenceMatcher, ParseMatcherError,
-    RecordMatcher, TagMatcher,
+    MatcherBuilder, MatcherOptions, OccurrenceMatcher,
+    ParseMatcherError, TagMatcher,
 };
 use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
-use pica_utils::{FilterList, NormalizationForm};
+use pica_utils::FilterList;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{CliError, CliResult};
+use crate::error::CliResult;
 use crate::progress::Progress;
 use crate::{gzip_flag, skip_invalid_flag, Config};
 
@@ -199,53 +199,11 @@ impl Filter {
             self.filter
         };
 
-        let filter_str =
-            NormalizationForm::translit_opt(filter_str, nf);
-
-        let mut filter = match RecordMatcher::try_from(&filter_str) {
-            Ok(f) => f,
-            _ => {
-                return Err(CliError::Other(format!(
-                    "invalid filter: \"{filter_str}\""
-                )))
-            }
-        };
-
-        let and: Vec<_> = self
-            .and
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        if !and.is_empty() {
-            for predicate in and.iter() {
-                filter = filter & RecordMatcher::try_from(predicate)?;
-            }
-        }
-
-        let not: Vec<_> = self
-            .not
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        if !not.is_empty() {
-            for predicate in not.iter() {
-                filter = filter & !RecordMatcher::try_from(predicate)?;
-            }
-        }
-
-        let or: Vec<_> = self
-            .or
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        if !or.is_empty() {
-            for predicate in or.iter() {
-                filter = filter | RecordMatcher::try_from(predicate)?;
-            }
-        }
+        let filter = MatcherBuilder::new(filter_str, nf)?
+            .and(self.and)?
+            .or(self.or)?
+            .not(self.not)?
+            .build();
 
         let filter_list = FilterList::new()
             .allow(self.allow_lists)

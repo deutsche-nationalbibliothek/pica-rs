@@ -4,6 +4,7 @@
 mod common;
 mod error;
 pub mod field_matcher;
+mod matcher_builder;
 mod occurrence_matcher;
 mod options;
 mod record_matcher;
@@ -13,6 +14,7 @@ mod tag_matcher;
 pub use common::RelationalOp;
 pub use error::ParseMatcherError;
 pub use field_matcher::FieldMatcher;
+pub use matcher_builder::MatcherBuilder;
 pub use occurrence_matcher::OccurrenceMatcher;
 pub use options::MatcherOptions;
 pub use record_matcher::RecordMatcher;
