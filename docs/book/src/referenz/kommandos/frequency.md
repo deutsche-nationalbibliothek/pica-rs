@@ -33,6 +33,8 @@ Ts1,1
   ignoriert.
 * `--strsim-threshold <value>` — Festlegen des Schwellenwerts beim
   Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
+* `--unique`, `-u`  — Doppelte Werte eines Datensatzes werden
+  ignorieren.
 * `--reverse` — Ergebnisse werden in aufsteigender Reihenfolge
   ausgegeben.
 * `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten
