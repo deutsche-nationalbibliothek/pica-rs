@@ -2,12 +2,11 @@ use std::ffi::OsString;
 use std::io;
 
 use clap::{value_parser, Parser};
-use pica_matcher::{MatcherOptions, RecordMatcher};
+use pica_matcher::{MatcherBuilder, MatcherOptions, RecordMatcher};
 use pica_record::io::{
     ByteRecordWrite, ReaderBuilder, RecordsIterator, WriterBuilder,
 };
 use pica_record::{ByteRecord, Level};
-use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -246,47 +245,14 @@ impl Explode {
             None
         };
 
-        let filter = self
-            .filter
-            .map(|value| NormalizationForm::translit_opt(value, nf));
-
-        let not: Vec<_> = self
-            .not
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        let and: Vec<_> = self
-            .and
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        let or: Vec<_> = self
-            .or
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        let matcher = if let Some(ref matcher_str) = filter {
-            let mut matcher = RecordMatcher::try_from(matcher_str)?;
-
-            for matcher_str in and.iter() {
-                matcher =
-                    matcher & RecordMatcher::try_from(matcher_str)?;
-            }
-
-            for matcher_str in or.iter() {
-                matcher =
-                    matcher | RecordMatcher::try_from(matcher_str)?;
-            }
-
-            for matcher_str in not.iter() {
-                matcher =
-                    matcher & !RecordMatcher::try_from(matcher_str)?;
-            }
-
-            Some(matcher)
+        let matcher = if let Some(matcher) = self.filter {
+            Some(
+                MatcherBuilder::new(matcher, nf)?
+                    .and(self.and)?
+                    .not(self.not)?
+                    .or(self.or)?
+                    .build(),
+            )
         } else {
             None
         };

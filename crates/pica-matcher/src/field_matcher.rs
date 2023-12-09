@@ -27,7 +27,7 @@ use crate::{
 };
 
 /// A field matcher that checks if a field exists.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExistsMatcher {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
@@ -111,7 +111,7 @@ impl FromStr for ExistsMatcher {
 
 /// A field matcher that checks for fields satisfies subfield
 /// criterion.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SubfieldsMatcher {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
@@ -226,7 +226,7 @@ impl FromStr for SubfieldsMatcher {
 }
 
 /// A field matcher that checks for the singleton matcher.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SingletonMatcher {
     Exists(ExistsMatcher),
     Subfields(SubfieldsMatcher),
@@ -303,7 +303,7 @@ impl FromStr for SingletonMatcher {
 }
 
 /// A field matcher that checks the number of occurrences of a field.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CardinalityMatcher {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
@@ -421,7 +421,7 @@ impl FromStr for CardinalityMatcher {
 
 /// A field matcher that allows grouping, negation and connecting of
 /// singleton matcher.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FieldMatcher {
     Singleton(SingletonMatcher),
     Cardinality(CardinalityMatcher),

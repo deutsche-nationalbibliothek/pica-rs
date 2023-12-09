@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use clap::Parser;
-use pica_matcher::{MatcherOptions, RecordMatcher};
+use pica_matcher::{MatcherBuilder, MatcherOptions};
 use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
@@ -190,47 +190,14 @@ impl Select {
             .squash(self.squash)
             .merge(self.merge);
 
-        let filter = self
-            .filter
-            .map(|value| NormalizationForm::translit_opt(value, nf));
-
-        let and: Vec<String> = self
-            .and
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        let or: Vec<String> = self
-            .or
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        let not: Vec<String> = self
-            .not
-            .iter()
-            .map(|value| NormalizationForm::translit_opt(value, nf))
-            .collect();
-
-        let matcher = if let Some(ref matcher_str) = filter {
-            let mut matcher = RecordMatcher::try_from(matcher_str)?;
-
-            for matcher_str in and.iter() {
-                matcher =
-                    matcher & RecordMatcher::try_from(matcher_str)?;
-            }
-
-            for matcher_str in or.iter() {
-                matcher =
-                    matcher | RecordMatcher::try_from(matcher_str)?;
-            }
-
-            for matcher_str in not.iter() {
-                matcher =
-                    matcher & !RecordMatcher::try_from(matcher_str)?;
-            }
-
-            Some(matcher)
+        let matcher = if let Some(matcher) = self.filter {
+            Some(
+                MatcherBuilder::new(matcher, nf)?
+                    .and(self.and)?
+                    .not(self.not)?
+                    .or(self.or)?
+                    .build(),
+            )
         } else {
             None
         };
