@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{self, Write};
@@ -50,6 +50,10 @@ pub(crate) struct Frequency {
     #[arg(long, value_parser = value_parser!(u8).range(0..100),
           default_value = "75")]
     strsim_threshold: u8,
+
+    /// Skip duplicate rows (of a record).
+    #[arg(long, short)]
+    unique: bool,
 
     /// Sort results in reverse order.
     #[arg(long, short)]
@@ -137,6 +141,7 @@ impl Frequency {
             .from_writer(writer);
 
         let mut progress = Progress::new(self.progress);
+        let mut seen = BTreeSet::new();
 
         for filename in self.filenames {
             let mut reader =
@@ -154,10 +159,19 @@ impl Frequency {
 
                 let record = result.unwrap();
                 progress.record();
+                seen.clear();
 
                 let outcome = record.query(&query, &options);
                 for key in outcome.clone().into_iter() {
                     if key.iter().any(|e| !e.is_empty()) {
+                        if self.unique {
+                            if seen.contains(&key) {
+                                continue;
+                            }
+
+                            seen.insert(key.clone());
+                        }
+
                         *ftable.entry(key).or_insert(0) += 1;
                     }
                 }
