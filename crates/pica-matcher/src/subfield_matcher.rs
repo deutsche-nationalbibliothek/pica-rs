@@ -11,7 +11,8 @@ use regex::bytes::{Regex, RegexBuilder};
 use strsim::normalized_levenshtein;
 use winnow::ascii::digit1;
 use winnow::combinator::{
-    alt, delimited, opt, preceded, repeat, separated, terminated,
+    alt, delimited, fold_repeat, opt, preceded, repeat, separated,
+    separated_pair, terminated,
 };
 use winnow::error::ParserError;
 use winnow::{PResult, Parser};
@@ -35,12 +36,51 @@ pub struct ExistsMatcher {
 const SUBFIELD_CODES: &str =
     "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+#[inline]
+fn parse_subfield_code_range(i: &mut &[u8]) -> PResult<Vec<char>> {
+    separated_pair(parse_subfield_code, '-', parse_subfield_code)
+        .verify(|(min, max)| min < max)
+        .map(|(min, max)| (min..=max).collect())
+        .parse_next(i)
+}
+
+#[inline]
+fn parse_subfield_code_single(i: &mut &[u8]) -> PResult<Vec<char>> {
+    parse_subfield_code.map(|code| vec![code]).parse_next(i)
+}
+
+#[inline]
+fn parse_subfield_code_list(i: &mut &[u8]) -> PResult<Vec<char>> {
+    delimited(
+        '[',
+        fold_repeat(
+            1..,
+            alt((
+                parse_subfield_code_range,
+                parse_subfield_code_single,
+            )),
+            Vec::new,
+            |mut acc: Vec<_>, item| {
+                acc.extend_from_slice(&item);
+                acc
+            },
+        ),
+        ']',
+    )
+    .parse_next(i)
+}
+
+#[inline]
+fn parse_subfield_code_wildcard(i: &mut &[u8]) -> PResult<Vec<char>> {
+    '*'.value(SUBFIELD_CODES.chars().collect()).parse_next(i)
+}
+
 /// Parse a list of subfield codes
 fn parse_subfield_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
     alt((
-        delimited('[', repeat(1.., parse_subfield_code), ']'),
-        parse_subfield_code.map(|code| vec![code]),
-        '*'.value(SUBFIELD_CODES.chars().collect()),
+        parse_subfield_code_list,
+        parse_subfield_code_single,
+        parse_subfield_code_wildcard,
     ))
     .parse_next(i)
 }
@@ -1043,12 +1083,18 @@ mod tests {
             parse_success!(code.to_string().as_bytes(), vec![*code]);
         }
 
-        parse_success!(b"[12]", vec!['1', '2']);
         parse_success!(b"*", codes);
+        parse_success!(b"[12]", vec!['1', '2']);
+        parse_success!(b"[1-3]", vec!['1', '2', '3']);
+        parse_success!(
+            b"[1-3a-cx]",
+            vec!['1', '2', '3', 'a', 'b', 'c', 'x']
+        );
 
         assert!(super::parse_subfield_codes.parse(b"!").is_err());
         assert!(super::parse_subfield_codes.parse(b"12").is_err());
         assert!(super::parse_subfield_codes.parse(b"[a1!]").is_err());
+        assert!(super::parse_subfield_codes.parse(b"[2-2]").is_err());
     }
 
     #[test]
@@ -1063,10 +1109,11 @@ mod tests {
         }
 
         parse_success!(b"*?", SUBFIELD_CODES.chars().collect());
+        parse_success!(b"[a-f]?", vec!['a', 'b', 'c', 'd', 'e', 'f']);
+        parse_success!(b"[a-cf]?", vec!['a', 'b', 'c', 'f']);
         parse_success!(b"[ab]?", vec!['a', 'b']);
         parse_success!(b"a?", vec!['a']);
 
-        assert!(super::parse_exists_matcher.parse(b"[a-f]?").is_err());
         assert!(super::parse_exists_matcher.parse(b"a ?").is_err());
     }
 
