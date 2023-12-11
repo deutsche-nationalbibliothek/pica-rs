@@ -22,6 +22,9 @@ use winnow::error::ParserError;
 use winnow::prelude::*;
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
 
+const SUBFIELD_CODES: &str =
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 #[derive(Debug, Error)]
 #[error("invalid path expression, got `{0}`")]
 pub struct ParsePathError(pub String);
@@ -181,8 +184,12 @@ fn parse_subfield_code_list(i: &mut &[u8]) -> PResult<Vec<char>> {
 
 #[inline]
 fn parse_subfield_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
-    alt((parse_subfield_code_list, parse_subfield_code_single))
-        .parse_next(i)
+    alt((
+        parse_subfield_code_list,
+        parse_subfield_code_single,
+        '*'.value(SUBFIELD_CODES.chars().collect()),
+    ))
+    .parse_next(i)
 }
 
 fn parse_path_simple(i: &mut &[u8]) -> PResult<Path> {
@@ -362,7 +369,7 @@ mod tests {
 
     #[test]
     fn parse_subfield_codes() {
-        use super::parse_subfield_codes;
+        use super::{parse_subfield_codes, SUBFIELD_CODES};
 
         macro_rules! parse_success {
             ($input:expr, $expected:expr) => {
@@ -376,6 +383,10 @@ mod tests {
         parse_success!(b"[a-cx]", vec!['a', 'b', 'c', 'x']);
         parse_success!(b"[a-c]", vec!['a', 'b', 'c']);
         parse_success!(b"a", vec!['a']);
+        parse_success!(
+            b"*",
+            SUBFIELD_CODES.chars().collect::<Vec<_>>()
+        );
     }
 
     #[test]
@@ -391,7 +402,9 @@ mod tests {
         parse_success!(b"021A/*.[a-c]");
         parse_success!(b"021A.[a-c]");
         parse_success!(b"021A/*.a");
+        parse_success!(b"..../*.*");
         parse_success!(b"021A.a");
+        parse_success!(b"021A.*");
     }
 
     #[test]
@@ -406,10 +419,12 @@ mod tests {
         parse_success!(b"021A/*{ [a-cx], y }");
         parse_success!(b"021A/*{ ([a-cx], y) }");
         parse_success!(b"021A/*{ ([a-cx], y) | y? }");
+        parse_success!(b"021A/*{ * | y? }");
         parse_success!(b"021A{ [a-cx] }");
         parse_success!(b"021A/*{[a-c]}");
         parse_success!(b"021A{[a-c]}");
         parse_success!(b"021A/*{a}");
         parse_success!(b"021A{a}");
+        parse_success!(b"021A{*}");
     }
 }
