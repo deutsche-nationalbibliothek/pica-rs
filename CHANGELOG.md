@@ -8,6 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.22.0] - 2023-12-15
+
+### Changed
+
+* #734 Improve release flags
+* #716 Strip symbols in release builds
+* #725 Move `FilterList` into `pica-utils` crate
+* #719 Cleanup `pica-matcher` API and tests
+* #724 Cleanup `pica-select` API and tests
+* #722 Cleanup `pica-path` API and tests
+* #709 Remove `$`-notation in a field matcher expression
+* #707 Migrate parser code to winnow
+
+### Added
+
+* #733 Allow subfield code ranges in subfield matcher
+* #732 Add subfield wildcard in path expressions
+* #731 Add `--unique` flag to `frequency` command
+* #728 Simplify matcher composite (`MatcherBuilder`)
+* #720 Restrict level of group expressions
+
+
 ## [0.21.0] - 2023-11-15
 
 ### Changed
