@@ -15,7 +15,7 @@ clap = { workspace = true, features = ["cargo", "derive", "wrap_help"] }
 csv = { workspace = true }
 flate2 = { workspace = true }
 indicatif = { version = "0.17" }
-once_cell = { version = "1.18" }
+once_cell = { version = "1.19" }
 pica-matcher = { workspace = true, features = ["serde"] }
 pica-path = { workspace = true, features = ["serde"] }
 pica-record = { workspace = true }
