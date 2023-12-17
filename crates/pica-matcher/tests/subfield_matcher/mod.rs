@@ -2,7 +2,9 @@ use std::str::FromStr;
 
 use bstr::B;
 use pica_matcher::subfield_matcher::*;
-use pica_matcher::{MatcherOptions, ParseMatcherError, RelationalOp};
+use pica_matcher::{
+    MatcherOptions, ParseMatcherError, Quantifier, RelationalOp,
+};
 use pica_record::SubfieldRef;
 
 use crate::TestResult;
@@ -347,13 +349,23 @@ fn relational_matcher_contains() {
 
 #[test]
 fn regex_matcher_new() {
-    let _ = RegexMatcher::new(vec!['0'], "^T[gpsu][1z]$", false);
+    let _ = RegexMatcher::new(
+        vec!['0'],
+        "^T[gpsu][1z]$",
+        Quantifier::All,
+        false,
+    );
 }
 
 #[test]
 #[should_panic]
 fn regex_matcher_new_panic1() {
-    RegexMatcher::new(vec!['0'], "^T[[gpsu][1z]$", false);
+    RegexMatcher::new(
+        vec!['0'],
+        "^T[[gpsu][1z]$",
+        Quantifier::Any,
+        false,
+    );
 }
 
 #[test]
@@ -420,14 +432,24 @@ fn regex_matcher_is_match() -> TestResult {
 
 #[test]
 fn in_matcher_new() {
-    assert!(InMatcher::new(vec!['0'], vec!["abc", "def"], false)
-        .is_match(&subfield!('0', "abc"), &MatcherOptions::default()));
+    assert!(InMatcher::new(
+        vec!['0'],
+        vec!["abc", "def"],
+        Quantifier::All,
+        false
+    )
+    .is_match(&subfield!('0', "abc"), &MatcherOptions::default()));
 }
 
 #[test]
 #[should_panic]
 fn in_matcher_new_panic() {
-    let _ = InMatcher::new(vec!['!'], vec!["abc", "def"], false);
+    let _ = InMatcher::new(
+        vec!['!'],
+        vec!["abc", "def"],
+        Quantifier::Any,
+        false,
+    );
 }
 
 #[test]

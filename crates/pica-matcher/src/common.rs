@@ -130,6 +130,24 @@ pub(crate) fn parse_relational_op_usize(
     .parse_next(i)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum Quantifier {
+    All,
+    #[default]
+    Any,
+}
+
+#[inline]
+pub(crate) fn parse_quantifier(i: &mut &[u8]) -> PResult<Quantifier> {
+    alt((
+        "ALL".value(Quantifier::All),
+        "∀".value(Quantifier::All),
+        "ANY".value(Quantifier::Any),
+        "∃".value(Quantifier::Any),
+    ))
+    .parse_next(i)
+}
+
 #[derive(Debug, Copy, Clone)]
 enum Quotes {
     Single,

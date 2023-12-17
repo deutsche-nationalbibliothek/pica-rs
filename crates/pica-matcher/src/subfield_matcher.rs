@@ -18,8 +18,9 @@ use winnow::error::ParserError;
 use winnow::{PResult, Parser};
 
 use crate::common::{
-    parse_relational_op_str, parse_relational_op_usize, parse_string,
-    ws, BooleanOp, RelationalOp,
+    parse_quantifier, parse_relational_op_str,
+    parse_relational_op_usize, parse_string, ws, BooleanOp, Quantifier,
+    RelationalOp,
 };
 use crate::{MatcherOptions, ParseMatcherError};
 
@@ -189,6 +190,7 @@ impl FromStr for ExistsMatcher {
 /// A matcher that checks relations between (string) values.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RelationMatcher {
+    quantifier: Quantifier,
     codes: Vec<char>,
     op: RelationalOp,
     value: Vec<u8>,
@@ -232,27 +234,29 @@ impl RelationMatcher {
     ) -> bool {
         use RelationalOp::*;
 
-        subfields
+        let mut subfields = subfields
             .into_iter()
-            .filter(|s| self.codes.contains(&s.code()))
-            .any(|subfield| {
-                let value = subfield.value().as_ref();
-                match self.op {
-                    Eq => self.compare(value, options),
-                    Ne => !self.compare(value, options),
-                    StartsWith => {
-                        self.starts_with(value, options, false)
-                    }
-                    StartsNotWith => {
-                        self.starts_with(value, options, true)
-                    }
-                    EndsWith => self.ends_with(value, options, false),
-                    EndsNotWith => self.ends_with(value, options, true),
-                    Similar => self.is_similar(value, options),
-                    Contains => self.contains(value, options),
-                    _ => unreachable!(),
-                }
-            })
+            .filter(|s| self.codes.contains(&s.code()));
+
+        let check = |subfield: &SubfieldRef| -> bool {
+            let value = subfield.value().as_ref();
+            match self.op {
+                Eq => self.compare(value, options),
+                Ne => !self.compare(value, options),
+                StartsWith => self.starts_with(value, options, false),
+                StartsNotWith => self.starts_with(value, options, true),
+                EndsWith => self.ends_with(value, options, false),
+                EndsNotWith => self.ends_with(value, options, true),
+                Similar => self.is_similar(value, options),
+                Contains => self.contains(value, options),
+                _ => unreachable!(),
+            }
+        };
+
+        match self.quantifier {
+            Quantifier::Any => subfields.any(check),
+            Quantifier::All => subfields.all(check),
+        }
     }
 
     /// Returns `true` if the given value is equal to the matcher's
@@ -350,11 +354,17 @@ impl RelationMatcher {
 #[inline]
 fn parse_relation_matcher(i: &mut &[u8]) -> PResult<RelationMatcher> {
     (
+        opt(ws(parse_quantifier)).map(|q| q.unwrap_or_default()),
         ws(parse_subfield_codes),
         ws(parse_relational_op_str),
         ws(parse_string),
     )
-        .map(|(codes, op, value)| RelationMatcher { codes, op, value })
+        .map(|(quantifier, codes, op, value)| RelationMatcher {
+            quantifier,
+            codes,
+            op,
+            value,
+        })
         .parse_next(i)
 }
 
@@ -382,6 +392,7 @@ impl FromStr for RelationMatcher {
 /// A matcher that checks a subfield value against a regex.
 #[derive(PartialEq, Clone, Debug)]
 pub struct RegexMatcher {
+    quantifier: Quantifier,
     codes: Vec<char>,
     re: String,
     invert: bool,
@@ -394,6 +405,7 @@ impl RegexMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::RegexMatcher;
+    /// use pica_matcher::Quantifier;
     /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
@@ -401,17 +413,24 @@ impl RegexMatcher {
     ///     let options = Default::default();
     ///
     ///     let subfield = SubfieldRef::new('0', "Oa");
-    ///     let matcher = RegexMatcher::new(vec!['0'], "^Oa", false);
+    ///     let matcher =
+    ///         RegexMatcher::new(vec!['0'], "^Oa", Quantifier::Any, false);
     ///     assert!(matcher.is_match(&subfield, &options));
     ///
     ///     let subfield = SubfieldRef::new('0', "Ob");
-    ///     let matcher = RegexMatcher::new(vec!['0'], "^Oa", true);
+    ///     let matcher =
+    ///         RegexMatcher::new(vec!['0'], "^Oa", Quantifier::Any, true);
     ///     assert!(matcher.is_match(&subfield, &options));
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<S, T>(codes: T, re: S, invert: bool) -> Self
+    pub fn new<S, T>(
+        codes: T,
+        re: S,
+        quantifier: Quantifier,
+        invert: bool,
+    ) -> Self
     where
         S: Into<String>,
         T: Into<Vec<char>>,
@@ -422,7 +441,12 @@ impl RegexMatcher {
         let re = re.into();
         assert!(RegexBuilder::new(&re).build().is_ok());
 
-        RegexMatcher { codes, re, invert }
+        RegexMatcher {
+            quantifier,
+            codes,
+            re,
+            invert,
+        }
     }
 
     /// Returns true if at least one subfield value is found, that
@@ -437,30 +461,42 @@ impl RegexMatcher {
             .build()
             .unwrap();
 
-        subfields
+        let mut subfields = subfields
             .into_iter()
-            .filter(|s| self.codes.contains(&s.code()))
-            .any(|subfield| {
-                let mut result = re.is_match(subfield.value().as_ref());
-                if self.invert {
-                    result = !result;
-                }
+            .filter(|s| self.codes.contains(&s.code()));
 
-                result
-            })
+        let check_fn = |subfield: &SubfieldRef| -> bool {
+            let mut result = re.is_match(subfield.value().as_ref());
+            if self.invert {
+                result = !result;
+            }
+
+            result
+        };
+
+        match self.quantifier {
+            Quantifier::Any => subfields.any(check_fn),
+            Quantifier::All => subfields.all(check_fn),
+        }
     }
 }
 
 /// Parse a regex matcher expression
 fn parse_regex_matcher(i: &mut &[u8]) -> PResult<RegexMatcher> {
     (
+        opt(ws(parse_quantifier)).map(|q| q.unwrap_or_default()),
         ws(parse_subfield_codes),
         ws(alt(("=~".value(false), "!~".value(true)))),
         parse_string
             .verify_map(|re| String::from_utf8(re).ok())
             .verify(|re| Regex::new(re).is_ok()),
     )
-        .map(|(codes, invert, re)| RegexMatcher { codes, invert, re })
+        .map(|(quantifier, codes, invert, re)| RegexMatcher {
+            quantifier,
+            codes,
+            invert,
+            re,
+        })
         .parse_next(i)
 }
 
@@ -488,6 +524,7 @@ impl FromStr for RegexMatcher {
 /// A matcher that checks if a subfield value is in a predefined list.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InMatcher {
+    quantifier: Quantifier,
     codes: Vec<char>,
     values: Vec<Vec<u8>>,
     invert: bool,
@@ -500,19 +537,28 @@ impl InMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::InMatcher;
+    /// use pica_matcher::Quantifier;
     /// use pica_record::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
-    ///     let matcher =
-    ///         InMatcher::new(vec!['0'], vec!["abc", "def"], false);
+    ///     let matcher = InMatcher::new(
+    ///         vec!['0'],
+    ///         vec!["abc", "def"],
+    ///         Quantifier::Any,
+    ///         false,
+    ///     );
     ///     let options = Default::default();
     ///     assert!(
     ///         matcher.is_match(&SubfieldRef::new('0', "def"), &options)
     ///     );
     ///
-    ///     let matcher =
-    ///         InMatcher::new(vec!['0'], vec!["abc", "def"], true);
+    ///     let matcher = InMatcher::new(
+    ///         vec!['0'],
+    ///         vec!["abc", "def"],
+    ///         Quantifier::Any,
+    ///         true,
+    ///     );
     ///     let options = Default::default();
     ///     assert!(
     ///         matcher.is_match(&SubfieldRef::new('0', "hij"), &options)
@@ -521,7 +567,12 @@ impl InMatcher {
     ///     Ok(())
     /// }
     /// ```
-    pub fn new<T, U, V>(codes: T, values: U, invert: bool) -> Self
+    pub fn new<T, U, V>(
+        codes: T,
+        values: U,
+        quantifier: Quantifier,
+        invert: bool,
+    ) -> Self
     where
         T: Into<Vec<char>>,
         U: Into<Vec<V>>,
@@ -537,6 +588,7 @@ impl InMatcher {
         assert!(codes.iter().all(char::is_ascii_alphanumeric));
 
         Self {
+            quantifier,
             codes,
             values,
             invert,
@@ -550,31 +602,38 @@ impl InMatcher {
         subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
-        subfields
+        let mut subfields = subfields
             .into_iter()
-            .filter(|s| self.codes.contains(&s.code()))
-            .any(|subfield| {
-                let mut result = self.values.iter().any(|rhs| {
-                    if options.case_ignore {
-                        subfield.value().to_lowercase()
-                            == rhs.to_lowercase()
-                    } else {
-                        subfield.value() == rhs
-                    }
-                });
+            .filter(|s| self.codes.contains(&s.code()));
 
-                if self.invert {
-                    result = !result;
+        let check_fn = |subfield: &SubfieldRef| -> bool {
+            let mut result = self.values.iter().any(|rhs| {
+                if options.case_ignore {
+                    subfield.value().to_lowercase()
+                        == rhs.to_lowercase()
+                } else {
+                    subfield.value() == rhs
                 }
+            });
 
-                result
-            })
+            if self.invert {
+                result = !result;
+            }
+
+            result
+        };
+
+        match self.quantifier {
+            Quantifier::Any => subfields.any(check_fn),
+            Quantifier::All => subfields.all(check_fn),
+        }
     }
 }
 
 /// Parse a in matcher expression.
 fn parse_in_matcher(i: &mut &[u8]) -> PResult<InMatcher> {
     (
+        opt(ws(parse_quantifier)).map(|s| s.unwrap_or_default()),
         ws(parse_subfield_codes),
         opt(ws("not")).map(|x| x.is_some()),
         preceded(
@@ -586,7 +645,8 @@ fn parse_in_matcher(i: &mut &[u8]) -> PResult<InMatcher> {
             ),
         ),
     )
-        .map(|(codes, invert, values)| InMatcher {
+        .map(|(quantifier, codes, invert, values)| InMatcher {
+            quantifier,
             codes,
             invert,
             values,
@@ -1119,15 +1179,17 @@ mod tests {
 
     #[test]
     fn parse_relation_matcher() {
+        use Quantifier::*;
         use RelationalOp::*;
 
         use super::parse_relation_matcher;
 
         macro_rules! parse_success {
-            ($input:expr, $codes:expr, $op:expr, $value:expr) => {
+            ($input:expr, $quantifier:expr, $codes:expr, $op:expr, $value:expr) => {
                 assert_eq!(
                     parse_relation_matcher.parse($input).unwrap(),
                     RelationMatcher {
+                        quantifier: $quantifier,
                         codes: $codes,
                         op: $op,
                         value: $value.to_vec()
@@ -1136,14 +1198,122 @@ mod tests {
             };
         }
 
-        parse_success!(b"0 == 'abc'", vec!['0'], Eq, b"abc");
-        parse_success!(b"0 != 'abc'", vec!['0'], Ne, b"abc");
-        parse_success!(b"0 =^ 'abc'", vec!['0'], StartsWith, b"abc");
-        parse_success!(b"0 !^ 'abc'", vec!['0'], StartsNotWith, b"abc");
-        parse_success!(b"0 =$ 'abc'", vec!['0'], EndsWith, b"abc");
-        parse_success!(b"0 !$ 'abc'", vec!['0'], EndsNotWith, b"abc");
-        parse_success!(b"0 =* 'abc'", vec!['0'], Similar, b"abc");
-        parse_success!(b"0 =? 'abc'", vec!['0'], Contains, b"abc");
+        parse_success!(b"0 == 'abc'", Any, vec!['0'], Eq, b"abc");
+        parse_success!(b"0 != 'abc'", Any, vec!['0'], Ne, b"abc");
+        parse_success!(
+            b"0 =^ 'abc'",
+            Any,
+            vec!['0'],
+            StartsWith,
+            b"abc"
+        );
+        parse_success!(
+            b"0 !^ 'abc'",
+            Any,
+            vec!['0'],
+            StartsNotWith,
+            b"abc"
+        );
+        parse_success!(b"0 =$ 'abc'", Any, vec!['0'], EndsWith, b"abc");
+        parse_success!(
+            b"0 !$ 'abc'",
+            Any,
+            vec!['0'],
+            EndsNotWith,
+            b"abc"
+        );
+        parse_success!(b"0 =* 'abc'", Any, vec!['0'], Similar, b"abc");
+        parse_success!(b"0 =? 'abc'", Any, vec!['0'], Contains, b"abc");
+
+        parse_success!(b"ANY 0 == 'abc'", Any, vec!['0'], Eq, b"abc");
+        parse_success!(b"ANY 0 != 'abc'", Any, vec!['0'], Ne, b"abc");
+        parse_success!(
+            b"ANY 0 =^ 'abc'",
+            Any,
+            vec!['0'],
+            StartsWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ANY 0 !^ 'abc'",
+            Any,
+            vec!['0'],
+            StartsNotWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ANY 0 =$ 'abc'",
+            Any,
+            vec!['0'],
+            EndsWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ANY 0 !$ 'abc'",
+            Any,
+            vec!['0'],
+            EndsNotWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ANY 0 =* 'abc'",
+            Any,
+            vec!['0'],
+            Similar,
+            b"abc"
+        );
+        parse_success!(
+            b"ANY 0 =? 'abc'",
+            Any,
+            vec!['0'],
+            Contains,
+            b"abc"
+        );
+
+        parse_success!(b"ALL 0 == 'abc'", All, vec!['0'], Eq, b"abc");
+        parse_success!(b"ALL 0 != 'abc'", All, vec!['0'], Ne, b"abc");
+        parse_success!(
+            b"ALL 0 =^ 'abc'",
+            All,
+            vec!['0'],
+            StartsWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ALL 0 !^ 'abc'",
+            All,
+            vec!['0'],
+            StartsNotWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ALL 0 =$ 'abc'",
+            All,
+            vec!['0'],
+            EndsWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ALL 0 !$ 'abc'",
+            All,
+            vec!['0'],
+            EndsNotWith,
+            b"abc"
+        );
+        parse_success!(
+            b"ALL 0 =* 'abc'",
+            All,
+            vec!['0'],
+            Similar,
+            b"abc"
+        );
+        parse_success!(
+            b"ALL 0 =? 'abc'",
+            All,
+            vec!['0'],
+            Contains,
+            b"abc"
+        );
 
         assert!(parse_relation_matcher.parse(b"0 >= 'abc'").is_err());
         assert!(parse_relation_matcher.parse(b"0 > 'abc'").is_err());
@@ -1160,6 +1330,7 @@ mod tests {
                 assert_eq!(
                     parse_regex_matcher.parse($input).unwrap(),
                     RegexMatcher {
+                        quantifier: Quantifier::Any,
                         codes: $codes,
                         invert: $invert,
                         re: $re.to_string()
