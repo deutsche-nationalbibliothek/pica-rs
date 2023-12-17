@@ -352,7 +352,7 @@ fn regex_matcher_new() {
     let _ = RegexMatcher::new(
         vec!['0'],
         "^T[gpsu][1z]$",
-        Quantifier::All,
+        Quantifier::Forall,
         false,
     );
 }
@@ -363,7 +363,7 @@ fn regex_matcher_new_panic1() {
     RegexMatcher::new(
         vec!['0'],
         "^T[[gpsu][1z]$",
-        Quantifier::Any,
+        Quantifier::Exists,
         false,
     );
 }
@@ -435,7 +435,7 @@ fn in_matcher_new() {
     assert!(InMatcher::new(
         vec!['0'],
         vec!["abc", "def"],
-        Quantifier::All,
+        Quantifier::Forall,
         false
     )
     .is_match(&subfield!('0', "abc"), &MatcherOptions::default()));
@@ -447,7 +447,7 @@ fn in_matcher_new_panic() {
     let _ = InMatcher::new(
         vec!['!'],
         vec!["abc", "def"],
-        Quantifier::Any,
+        Quantifier::Exists,
         false,
     );
 }

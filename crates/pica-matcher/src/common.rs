@@ -132,18 +132,18 @@ pub(crate) fn parse_relational_op_usize(
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Quantifier {
-    All,
+    Forall,
     #[default]
-    Any,
+    Exists,
 }
 
 #[inline]
 pub(crate) fn parse_quantifier(i: &mut &[u8]) -> PResult<Quantifier> {
     alt((
-        "ALL".value(Quantifier::All),
-        "∀".value(Quantifier::All),
-        "ANY".value(Quantifier::Any),
-        "∃".value(Quantifier::Any),
+        "∀".value(Quantifier::Forall),
+        "ForAll".value(Quantifier::Forall),
+        "∃".value(Quantifier::Exists),
+        "Exists".value(Quantifier::Exists),
     ))
     .parse_next(i)
 }

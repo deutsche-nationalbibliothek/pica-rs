@@ -254,8 +254,8 @@ impl RelationMatcher {
         };
 
         match self.quantifier {
-            Quantifier::Any => subfields.any(check),
-            Quantifier::All => subfields.all(check),
+            Quantifier::Forall => subfields.all(check),
+            Quantifier::Exists => subfields.any(check),
         }
     }
 
@@ -413,13 +413,21 @@ impl RegexMatcher {
     ///     let options = Default::default();
     ///
     ///     let subfield = SubfieldRef::new('0', "Oa");
-    ///     let matcher =
-    ///         RegexMatcher::new(vec!['0'], "^Oa", Quantifier::Any, false);
+    ///     let matcher = RegexMatcher::new(
+    ///         vec!['0'],
+    ///         "^Oa",
+    ///         Quantifier::Exists,
+    ///         false,
+    ///     );
     ///     assert!(matcher.is_match(&subfield, &options));
     ///
     ///     let subfield = SubfieldRef::new('0', "Ob");
-    ///     let matcher =
-    ///         RegexMatcher::new(vec!['0'], "^Oa", Quantifier::Any, true);
+    ///     let matcher = RegexMatcher::new(
+    ///         vec!['0'],
+    ///         "^Oa",
+    ///         Quantifier::Exists,
+    ///         true,
+    ///     );
     ///     assert!(matcher.is_match(&subfield, &options));
     ///
     ///     Ok(())
@@ -475,8 +483,8 @@ impl RegexMatcher {
         };
 
         match self.quantifier {
-            Quantifier::Any => subfields.any(check_fn),
-            Quantifier::All => subfields.all(check_fn),
+            Quantifier::Forall => subfields.all(check_fn),
+            Quantifier::Exists => subfields.any(check_fn),
         }
     }
 }
@@ -545,7 +553,7 @@ impl InMatcher {
     ///     let matcher = InMatcher::new(
     ///         vec!['0'],
     ///         vec!["abc", "def"],
-    ///         Quantifier::Any,
+    ///         Quantifier::Exists,
     ///         false,
     ///     );
     ///     let options = Default::default();
@@ -556,7 +564,7 @@ impl InMatcher {
     ///     let matcher = InMatcher::new(
     ///         vec!['0'],
     ///         vec!["abc", "def"],
-    ///         Quantifier::Any,
+    ///         Quantifier::Exists,
     ///         true,
     ///     );
     ///     let options = Default::default();
@@ -624,8 +632,8 @@ impl InMatcher {
         };
 
         match self.quantifier {
-            Quantifier::Any => subfields.any(check_fn),
-            Quantifier::All => subfields.all(check_fn),
+            Quantifier::Forall => subfields.all(check_fn),
+            Quantifier::Exists => subfields.any(check_fn),
         }
     }
 }
@@ -686,7 +694,7 @@ impl CardinalityMatcher {
     ///
     /// # Panics
     ///
-    /// This function panics on any invalid input. The cardinality
+    /// This function panics on ∀ invalid input. The cardinality
     /// matcher uses only a subset of all relational operators; the
     /// caller must ensure that the operator is applicable on
     /// `usize`.
@@ -1198,118 +1206,46 @@ mod tests {
             };
         }
 
-        parse_success!(b"0 == 'abc'", Any, vec!['0'], Eq, b"abc");
-        parse_success!(b"0 != 'abc'", Any, vec!['0'], Ne, b"abc");
+        parse_success!(b"0 == 'abc'", Exists, vec!['0'], Eq, b"abc");
+        parse_success!(b"0 != 'abc'", Exists, vec!['0'], Ne, b"abc");
         parse_success!(
             b"0 =^ 'abc'",
-            Any,
+            Exists,
             vec!['0'],
             StartsWith,
             b"abc"
         );
         parse_success!(
             b"0 !^ 'abc'",
-            Any,
+            Exists,
             vec!['0'],
             StartsNotWith,
             b"abc"
         );
-        parse_success!(b"0 =$ 'abc'", Any, vec!['0'], EndsWith, b"abc");
+        parse_success!(
+            b"0 =$ 'abc'",
+            Exists,
+            vec!['0'],
+            EndsWith,
+            b"abc"
+        );
         parse_success!(
             b"0 !$ 'abc'",
-            Any,
-            vec!['0'],
-            EndsNotWith,
-            b"abc"
-        );
-        parse_success!(b"0 =* 'abc'", Any, vec!['0'], Similar, b"abc");
-        parse_success!(b"0 =? 'abc'", Any, vec!['0'], Contains, b"abc");
-
-        parse_success!(b"ANY 0 == 'abc'", Any, vec!['0'], Eq, b"abc");
-        parse_success!(b"ANY 0 != 'abc'", Any, vec!['0'], Ne, b"abc");
-        parse_success!(
-            b"ANY 0 =^ 'abc'",
-            Any,
-            vec!['0'],
-            StartsWith,
-            b"abc"
-        );
-        parse_success!(
-            b"ANY 0 !^ 'abc'",
-            Any,
-            vec!['0'],
-            StartsNotWith,
-            b"abc"
-        );
-        parse_success!(
-            b"ANY 0 =$ 'abc'",
-            Any,
-            vec!['0'],
-            EndsWith,
-            b"abc"
-        );
-        parse_success!(
-            b"ANY 0 !$ 'abc'",
-            Any,
+            Exists,
             vec!['0'],
             EndsNotWith,
             b"abc"
         );
         parse_success!(
-            b"ANY 0 =* 'abc'",
-            Any,
+            b"0 =* 'abc'",
+            Exists,
             vec!['0'],
             Similar,
             b"abc"
         );
         parse_success!(
-            b"ANY 0 =? 'abc'",
-            Any,
-            vec!['0'],
-            Contains,
-            b"abc"
-        );
-
-        parse_success!(b"ALL 0 == 'abc'", All, vec!['0'], Eq, b"abc");
-        parse_success!(b"ALL 0 != 'abc'", All, vec!['0'], Ne, b"abc");
-        parse_success!(
-            b"ALL 0 =^ 'abc'",
-            All,
-            vec!['0'],
-            StartsWith,
-            b"abc"
-        );
-        parse_success!(
-            b"ALL 0 !^ 'abc'",
-            All,
-            vec!['0'],
-            StartsNotWith,
-            b"abc"
-        );
-        parse_success!(
-            b"ALL 0 =$ 'abc'",
-            All,
-            vec!['0'],
-            EndsWith,
-            b"abc"
-        );
-        parse_success!(
-            b"ALL 0 !$ 'abc'",
-            All,
-            vec!['0'],
-            EndsNotWith,
-            b"abc"
-        );
-        parse_success!(
-            b"ALL 0 =* 'abc'",
-            All,
-            vec!['0'],
-            Similar,
-            b"abc"
-        );
-        parse_success!(
-            b"ALL 0 =? 'abc'",
-            All,
+            b"0 =? 'abc'",
+            Exists,
             vec!['0'],
             Contains,
             b"abc"
@@ -1330,7 +1266,7 @@ mod tests {
                 assert_eq!(
                     parse_regex_matcher.parse($input).unwrap(),
                     RegexMatcher {
-                        quantifier: Quantifier::Any,
+                        quantifier: Quantifier::Exists,
                         codes: $codes,
                         invert: $invert,
                         re: $re.to_string()
