@@ -149,7 +149,7 @@ impl<'de> Deserialize<'de> for RecordMatcher {
     where
         D: serde::Deserializer<'de>,
     {
-        let s: &'de str = Deserialize::deserialize(deserializer)?;
+        let s: String = Deserialize::deserialize(deserializer)?;
         RecordMatcher::try_from(s.as_bytes())
             .map_err(serde::de::Error::custom)
     }
