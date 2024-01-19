@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter 'ANY 041[@AP].a =? \"Algebra\"'"
+status = "success"
+stderr = ""
