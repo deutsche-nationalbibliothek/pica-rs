@@ -67,10 +67,6 @@ jobs:
       - name: "Run prepare tests"
         run: ci/prepare-tests.sh
       - run: make release
-      - name: "Strip release binary"
-        run: |
-          # strip target/release/pica-lint
-          strip target/release/pica
       - name: "Build release archive"
         id: build-archive
         shell: bash
@@ -161,10 +157,6 @@ jobs:
       - name: "Run prepare tests"
         run: ci/prepare-tests.sh
       - run: make release
-      - name: "Strip release binary"
-        run: |
-          strip target/release/pica-lint
-          strip target/release/pica
       - name: "Build release archive"
         shell: bash
         run: |
