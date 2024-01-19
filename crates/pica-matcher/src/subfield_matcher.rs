@@ -354,7 +354,7 @@ impl RelationMatcher {
 #[inline]
 fn parse_relation_matcher(i: &mut &[u8]) -> PResult<RelationMatcher> {
     (
-        opt(ws(parse_quantifier)).map(|q| q.unwrap_or_default()),
+        opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         ws(parse_subfield_codes),
         ws(parse_relational_op_str),
         ws(parse_string),
@@ -484,7 +484,7 @@ impl RegexMatcher {
 /// Parse a regex matcher expression
 fn parse_regex_matcher(i: &mut &[u8]) -> PResult<RegexMatcher> {
     (
-        opt(ws(parse_quantifier)).map(|q| q.unwrap_or_default()),
+        opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         ws(parse_subfield_codes),
         ws(alt(("=~".value(false), "!~".value(true)))),
         parse_string
@@ -633,7 +633,7 @@ impl InMatcher {
 /// Parse a in matcher expression.
 fn parse_in_matcher(i: &mut &[u8]) -> PResult<InMatcher> {
     (
-        opt(ws(parse_quantifier)).map(|s| s.unwrap_or_default()),
+        opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         ws(parse_subfield_codes),
         opt(ws("not")).map(|x| x.is_some()),
         preceded(
