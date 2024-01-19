@@ -17,7 +17,7 @@ impl Lint for Iri {
             .path(&self.path, &Default::default())
             .iter()
             .map(ToString::to_string)
-            .any(|value| sophia::iri::Iri::new(&value).is_err())
+            .any(|value| sophia::iri::Iri::new(value).is_err())
             .into()
     }
 }

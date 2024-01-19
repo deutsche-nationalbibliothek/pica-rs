@@ -13,7 +13,7 @@ pica-record = { workspace = true }
 pica-utils = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true, optional = true }
-strsim = "0.10"
+strsim = { workspace = true }
 thiserror = { workspace = true }
 winnow = { workspace = true, features = ["simd"] }
 

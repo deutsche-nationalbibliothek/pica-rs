@@ -59,8 +59,8 @@ impl FilterList {
                 self.read_df(path)?
                     .column("idn")
                     .map_err(|_| FilterListError::MissingColumn)?
-                    .cast(&DataType::Utf8)?
-                    .utf8()?
+                    .cast(&DataType::String)?
+                    .str()?
                     .into_iter()
                     .filter_map(|idn| idn.map(BString::from)),
             );
@@ -78,8 +78,8 @@ impl FilterList {
                 self.read_df(path)?
                     .column("idn")
                     .map_err(|_| FilterListError::MissingColumn)?
-                    .cast(&DataType::Utf8)?
-                    .utf8()?
+                    .cast(&DataType::String)?
+                    .str()?
                     .into_iter()
                     .filter_map(|idn| idn.map(BString::from)),
             );
@@ -96,7 +96,7 @@ impl FilterList {
         let path_str = path.to_str().unwrap_or_default();
 
         let mut schema = Schema::new();
-        schema.with_column("idn".into(), DataType::Utf8);
+        schema.with_column("idn".into(), DataType::String);
 
         match extension {
             Some("ipc" | "arrow" | "feather") => {

@@ -966,7 +966,7 @@ fn parse_not_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
 }
 
 thread_local! {
-    pub static GROUP_LEVEL: RefCell<u32> = RefCell::new(0);
+    pub static GROUP_LEVEL: RefCell<u32> = const { RefCell::new(0) };
 }
 
 fn increment_group_level(i: &mut &[u8]) -> PResult<()> {
