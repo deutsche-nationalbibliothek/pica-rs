@@ -169,8 +169,8 @@ impl SubfieldsMatcher {
         };
 
         match self.quantifier {
-            Quantifier::Forall => fields.all(check_fn),
-            Quantifier::Exists => fields.any(check_fn),
+            Quantifier::All => fields.all(check_fn),
+            Quantifier::Any => fields.any(check_fn),
         }
     }
 }

@@ -254,8 +254,8 @@ impl RelationMatcher {
         };
 
         match self.quantifier {
-            Quantifier::Forall => subfields.all(check),
-            Quantifier::Exists => subfields.any(check),
+            Quantifier::All => subfields.all(check),
+            Quantifier::Any => subfields.any(check),
         }
     }
 
@@ -413,21 +413,13 @@ impl RegexMatcher {
     ///     let options = Default::default();
     ///
     ///     let subfield = SubfieldRef::new('0', "Oa");
-    ///     let matcher = RegexMatcher::new(
-    ///         vec!['0'],
-    ///         "^Oa",
-    ///         Quantifier::Exists,
-    ///         false,
-    ///     );
+    ///     let matcher =
+    ///         RegexMatcher::new(vec!['0'], "^Oa", Quantifier::Any, false);
     ///     assert!(matcher.is_match(&subfield, &options));
     ///
     ///     let subfield = SubfieldRef::new('0', "Ob");
-    ///     let matcher = RegexMatcher::new(
-    ///         vec!['0'],
-    ///         "^Oa",
-    ///         Quantifier::Exists,
-    ///         true,
-    ///     );
+    ///     let matcher =
+    ///         RegexMatcher::new(vec!['0'], "^Oa", Quantifier::Any, true);
     ///     assert!(matcher.is_match(&subfield, &options));
     ///
     ///     Ok(())
@@ -483,8 +475,8 @@ impl RegexMatcher {
         };
 
         match self.quantifier {
-            Quantifier::Forall => subfields.all(check_fn),
-            Quantifier::Exists => subfields.any(check_fn),
+            Quantifier::All => subfields.all(check_fn),
+            Quantifier::Any => subfields.any(check_fn),
         }
     }
 }
@@ -553,7 +545,7 @@ impl InMatcher {
     ///     let matcher = InMatcher::new(
     ///         vec!['0'],
     ///         vec!["abc", "def"],
-    ///         Quantifier::Exists,
+    ///         Quantifier::Any,
     ///         false,
     ///     );
     ///     let options = Default::default();
@@ -564,7 +556,7 @@ impl InMatcher {
     ///     let matcher = InMatcher::new(
     ///         vec!['0'],
     ///         vec!["abc", "def"],
-    ///         Quantifier::Exists,
+    ///         Quantifier::Any,
     ///         true,
     ///     );
     ///     let options = Default::default();
@@ -632,8 +624,8 @@ impl InMatcher {
         };
 
         match self.quantifier {
-            Quantifier::Forall => subfields.all(check_fn),
-            Quantifier::Exists => subfields.any(check_fn),
+            Quantifier::All => subfields.all(check_fn),
+            Quantifier::Any => subfields.any(check_fn),
         }
     }
 }
@@ -1206,50 +1198,32 @@ mod tests {
             };
         }
 
-        parse_success!(b"0 == 'abc'", Exists, vec!['0'], Eq, b"abc");
-        parse_success!(b"0 != 'abc'", Exists, vec!['0'], Ne, b"abc");
+        parse_success!(b"0 == 'abc'", Any, vec!['0'], Eq, b"abc");
+        parse_success!(b"0 != 'abc'", Any, vec!['0'], Ne, b"abc");
         parse_success!(
             b"0 =^ 'abc'",
-            Exists,
+            Any,
             vec!['0'],
             StartsWith,
             b"abc"
         );
         parse_success!(
             b"0 !^ 'abc'",
-            Exists,
+            Any,
             vec!['0'],
             StartsNotWith,
             b"abc"
         );
-        parse_success!(
-            b"0 =$ 'abc'",
-            Exists,
-            vec!['0'],
-            EndsWith,
-            b"abc"
-        );
+        parse_success!(b"0 =$ 'abc'", Any, vec!['0'], EndsWith, b"abc");
         parse_success!(
             b"0 !$ 'abc'",
-            Exists,
+            Any,
             vec!['0'],
             EndsNotWith,
             b"abc"
         );
-        parse_success!(
-            b"0 =* 'abc'",
-            Exists,
-            vec!['0'],
-            Similar,
-            b"abc"
-        );
-        parse_success!(
-            b"0 =? 'abc'",
-            Exists,
-            vec!['0'],
-            Contains,
-            b"abc"
-        );
+        parse_success!(b"0 =* 'abc'", Any, vec!['0'], Similar, b"abc");
+        parse_success!(b"0 =? 'abc'", Any, vec!['0'], Contains, b"abc");
 
         assert!(parse_relation_matcher.parse(b"0 >= 'abc'").is_err());
         assert!(parse_relation_matcher.parse(b"0 > 'abc'").is_err());
@@ -1266,7 +1240,7 @@ mod tests {
                 assert_eq!(
                     parse_regex_matcher.parse($input).unwrap(),
                     RegexMatcher {
-                        quantifier: Quantifier::Exists,
+                        quantifier: Quantifier::Any,
                         codes: $codes,
                         invert: $invert,
                         re: $re.to_string()
