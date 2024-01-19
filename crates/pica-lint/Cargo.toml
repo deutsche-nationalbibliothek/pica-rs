@@ -20,6 +20,6 @@ pica-matcher = { workspace = true, features = ["serde"] }
 pica-path = { workspace = true, features = ["serde"] }
 pica-record = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-sophia = { version = "0.7" }
+sophia = { version = "0.8" }
 toml = { workspace = true }
 
