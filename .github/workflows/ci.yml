@@ -165,8 +165,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
-      - run: |
-          cargo fmt --all -- --check
+      - run: make fmt
 
   clippy:
     runs-on: ubuntu-latest
