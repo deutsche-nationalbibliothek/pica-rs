@@ -14,7 +14,8 @@ use winnow::error::ParserError;
 use winnow::prelude::*;
 
 use crate::common::{
-    parse_relational_op_usize, ws, BooleanOp, RelationalOp,
+    parse_quantifier, parse_relational_op_usize, ws, BooleanOp,
+    RelationalOp,
 };
 use crate::occurrence_matcher::parse_occurrence_matcher;
 use crate::subfield_matcher::{
@@ -22,7 +23,7 @@ use crate::subfield_matcher::{
 };
 use crate::tag_matcher::parse_tag_matcher;
 use crate::{
-    MatcherOptions, OccurrenceMatcher, ParseMatcherError,
+    MatcherOptions, OccurrenceMatcher, ParseMatcherError, Quantifier,
     SubfieldMatcher, TagMatcher,
 };
 
@@ -113,6 +114,7 @@ impl FromStr for ExistsMatcher {
 /// criterion.
 #[derive(Debug, Clone)]
 pub struct SubfieldsMatcher {
+    quantifier: Quantifier,
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
     subfield_matcher: SubfieldMatcher,
@@ -157,13 +159,19 @@ impl SubfieldsMatcher {
         fields: impl IntoIterator<Item = &'a FieldRef<'a>>,
         options: &MatcherOptions,
     ) -> bool {
-        fields.into_iter().any(|field| {
+        let mut fields = fields.into_iter().filter(|field| {
             self.tag_matcher == field.tag()
                 && self.occurrence_matcher == field.occurrence()
-                && self
-                    .subfield_matcher
-                    .is_match(field.subfields(), options)
-        })
+        });
+
+        let check_fn = |field: &FieldRef| -> bool {
+            self.subfield_matcher.is_match(field.subfields(), options)
+        };
+
+        match self.quantifier {
+            Quantifier::All => fields.all(check_fn),
+            Quantifier::Any => fields.any(check_fn),
+        }
     }
 }
 
@@ -171,11 +179,13 @@ fn parse_subfields_matcher_dot(
     i: &mut &[u8],
 ) -> PResult<SubfieldsMatcher> {
     (
+        opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         parse_tag_matcher,
         parse_occurrence_matcher,
         preceded('.', parse_subfield_singleton_matcher),
     )
-        .map(|(t, o, s)| SubfieldsMatcher {
+        .map(|(q, t, o, s)| SubfieldsMatcher {
+            quantifier: q,
             tag_matcher: t,
             occurrence_matcher: o,
             subfield_matcher: s,
@@ -187,11 +197,13 @@ fn parse_subfields_matcher_bracket(
     i: &mut &[u8],
 ) -> PResult<SubfieldsMatcher> {
     (
+        opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         parse_tag_matcher,
         parse_occurrence_matcher,
         delimited(ws('{'), parse_subfield_matcher, ws('}')),
     )
-        .map(|(t, o, s)| SubfieldsMatcher {
+        .map(|(q, t, o, s)| SubfieldsMatcher {
+            quantifier: q,
             tag_matcher: t,
             occurrence_matcher: o,
             subfield_matcher: s,
@@ -523,13 +535,15 @@ fn parse_field_matcher_exists(i: &mut &[u8]) -> PResult<FieldMatcher> {
             FieldMatcher::Singleton(SingletonMatcher::Exists(matcher))
         }),
         (
+            opt(parse_quantifier).map(Option::unwrap_or_default),
             parse_tag_matcher,
             parse_occurrence_matcher,
             preceded(ws('.'), subfield_matcher::parse_exists_matcher),
         )
-            .map(|(t, o, s)| {
+            .map(|(q, t, o, s)| {
                 FieldMatcher::Singleton(SingletonMatcher::Subfields(
                     SubfieldsMatcher {
+                        quantifier: q,
                         tag_matcher: t,
                         occurrence_matcher: o,
                         subfield_matcher: SubfieldMatcher::Singleton(

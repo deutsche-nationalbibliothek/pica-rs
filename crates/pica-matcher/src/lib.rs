@@ -11,7 +11,7 @@ mod record_matcher;
 pub mod subfield_matcher;
 mod tag_matcher;
 
-pub use common::RelationalOp;
+pub use common::{Quantifier, RelationalOp};
 pub use error::ParseMatcherError;
 pub use field_matcher::FieldMatcher;
 pub use matcher_builder::MatcherBuilder;

@@ -1,7 +1,9 @@
 use std::fmt::{self, Display};
 
 use winnow::ascii::{multispace0, multispace1};
-use winnow::combinator::{alt, delimited, fold_repeat, preceded};
+use winnow::combinator::{
+    alt, delimited, fold_repeat, preceded, terminated,
+};
 use winnow::error::{ContextError, ParserError};
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
 use winnow::token::{tag, take_till};
@@ -126,6 +128,24 @@ pub(crate) fn parse_relational_op_usize(
         tag(">").value(RelationalOp::Gt),
         tag("<=").value(RelationalOp::Le),
         tag("<").value(RelationalOp::Lt),
+    ))
+    .parse_next(i)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum Quantifier {
+    All,
+    #[default]
+    Any,
+}
+
+#[inline]
+pub(crate) fn parse_quantifier(i: &mut &[u8]) -> PResult<Quantifier> {
+    alt((
+        terminated("ALL".value(Quantifier::All), multispace1),
+        terminated("ANY".value(Quantifier::Any), multispace1),
+        "∀".value(Quantifier::All),
+        "∃".value(Quantifier::Any),
     ))
     .parse_next(i)
 }

@@ -1,0 +1,4 @@
+bin.name = "pica"
+args = "filter '008B{ ANY a == \"z\" }'"
+status = "success"
+stderr = ""
