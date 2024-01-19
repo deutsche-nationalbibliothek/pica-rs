@@ -1,15 +1,39 @@
-CARGO ?= cargo
+.DEFAULT_GOAL := build
 
-.PHONY: check
+# Don't use implicit rules or variables.
+MAKEFLAGS += -rR
+
+DESTDIR=
+CARGO ?= cargo
+PREFIX=/usr/local
+BINDIR=$(PREFIX)/bin
+
 check:
 	$(CARGO) check --workspace --all-features
 
-.PHONY: clippy
-clippy:
-	$(CARGO) clippy --workspace --all-features -- \
-		-D warnings -D rust-2021-compatibility -D future-incompatible \
-		-W unreachable-pub
+build:
+	$(CARGO) build --workspace --all-features
 
-.PHONY: test
+clippy:
+	$(CARGO) clippy --workspace --all-features
+
 test:
 	$(CARGO) test --workspace --all-features --no-fail-fast
+
+fmt:
+	$(CARGO) fmt --all -- --check
+
+doc:
+	$(CARGO) doc --no-deps
+
+release:
+	$(CARGO) build --workspace --all-features --release
+	$(CARGO) test --workspace --all-features --release
+
+install: release
+	sudo install -Dm755 target/release/pica $(DESTDIR)$(BINDIR)
+
+clean:
+	$(CARGO) clean
+
+.PHONY: build clean check clippy test fmt doc release install
