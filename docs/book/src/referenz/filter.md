@@ -2,6 +2,8 @@
 
 ## Operatoren
 
+### Vergleichsoperatoren
+
 | Operator       | Beschreibung                                                   | Beispiele                                     |
 | -------------- | -------------------------------------------------------------- | --------------------------------------------- |
 | `==`, `!=`     | Testet auf Gleichheit bzw. Ungleichheit                         | `002@.0 == 'Tp'`, `008A.a != 's'`             |
@@ -13,6 +15,10 @@
 | `=*`           | Testet, ob ein Wert eine Zeichenkette ähnlich ist[^1]           | `028A.d =* 'Heike'`                           |
 | `#`            | Testet, ob die Anzahl der Felder/Unterfelder einer bestimmten Anzahl entspricht[^2] | `#203@/* > 10`                | `
 
+### Boolsche Verknüpfungen
+
+| Operator | Beschreibung |
+| -------- | ------------ |
 
 [^1]: Der zulässige Schwellenwertkann über die Option `--strsim-threshold` gesetzt werden.
 [^2]: Beim `#`-Operator konnen die Vergleichsoperatren `>`, `>=`, `==`, `!=`, `<` und `<=` verwendet werden. Der Vergleichswert muss 
