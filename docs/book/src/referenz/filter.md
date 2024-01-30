@@ -2,5 +2,6 @@
 
 ## Operatoren
 
-| Bezeichnung | Operator | Beispiel |
+| Bezeichnung               | Operator    | Beispiel          |
+| ------------------------- | ----------- | ----------------- |
 | Gleichheit / Ungleichheit | `==` / `!=` | `002@.0 == 'Tp1'` |
