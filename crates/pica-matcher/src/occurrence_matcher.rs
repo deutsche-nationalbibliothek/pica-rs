@@ -3,7 +3,7 @@ use std::str::FromStr;
 use bstr::{BStr, ByteSlice};
 use pica_record::parser::parse_occurrence_digits;
 use pica_record::{Occurrence, OccurrenceRef};
-use winnow::combinator::{alt, preceded, separated_pair, success};
+use winnow::combinator::{alt, empty, preceded, separated_pair};
 use winnow::{PResult, Parser};
 
 use crate::ParseMatcherError;
@@ -126,7 +126,7 @@ pub fn parse_occurrence_matcher(
                 '*'.value(OccurrenceMatcher::Any),
             )),
         ),
-        success(OccurrenceMatcher::None),
+        empty.value(OccurrenceMatcher::None),
     ))
     .parse_next(i)
 }
