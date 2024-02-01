@@ -117,7 +117,9 @@ jobs:
           cross build --target ${{ matrix.target.triple }}
 
   fuzz:
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+    # if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+    # see https://github.com/deutsche-nationalbibliothek/pica-rs/actions/runs/7736509249/job/21094015127
+    if: false
     name: fuzz ${{ matrix.item.name }}
     runs-on: ubuntu-latest
     needs: check

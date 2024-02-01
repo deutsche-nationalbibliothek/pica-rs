@@ -44,7 +44,7 @@ sha2 = "0.10"
 strsim = "0.11"
 thiserror = "1.0"
 toml = "0.8"
-winnow = "0.5"
+winnow = "0.5.36"
 
 [profile.release]
 codegen-units = 1
