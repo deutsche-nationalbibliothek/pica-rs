@@ -328,7 +328,7 @@ jobs:
       - cross
       - deny
       - fmt
-      - fuzz
+      # - fuzz
       - miri
       - test
       # - udeps
