@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::iter::repeat;
 use std::ops::{Add, Deref, Mul};
 use std::str::FromStr;
 
@@ -9,9 +8,7 @@ use pica_path::{parse_path, Path};
 use pica_record::RecordRef;
 use thiserror::Error;
 use winnow::ascii::{multispace0, multispace1};
-use winnow::combinator::{
-    alt, delimited, fold_repeat, preceded, separated,
-};
+use winnow::combinator::{alt, delimited, preceded, repeat, separated};
 use winnow::error::{ContextError, ParserError};
 use winnow::prelude::*;
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
@@ -176,19 +173,18 @@ where
 {
     use StringFragment::*;
 
-    let string_builder = fold_repeat(
+    let string_builder = repeat(
         0..,
         parse_quoted_fragment::<E>(quotes),
-        Vec::new,
-        |mut acc, fragment| {
-            match fragment {
-                Literal(s) => acc.extend_from_slice(s),
-                EscapedChar(c) => acc.push(c as u8),
-                EscapedWs => {}
-            }
-            acc
-        },
-    );
+    )
+    .fold(Vec::new, |mut acc, fragment| {
+        match fragment {
+            Literal(s) => acc.extend_from_slice(s),
+            EscapedChar(c) => acc.push(c as u8),
+            EscapedWs => {}
+        }
+        acc
+    });
 
     match quotes {
         Quotes::Single => delimited('\'', string_builder, '\''),
@@ -240,7 +236,7 @@ impl Outcome {
     }
 
     pub fn ones(n: usize) -> Self {
-        Self(vec![repeat("".to_string()).take(n).collect()])
+        Self(vec![std::iter::repeat("".to_string()).take(n).collect()])
     }
 
     pub fn squash(self, sep: &str) -> Self {

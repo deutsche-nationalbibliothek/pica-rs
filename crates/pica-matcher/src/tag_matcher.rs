@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use pica_record::parser::parse_tag;
 use pica_record::{Tag, TagRef};
-use winnow::combinator::{alt, delimited, fold_repeat, separated_pair};
+use winnow::combinator::{alt, delimited, repeat, separated_pair};
 use winnow::token::one_of;
 use winnow::{PResult, Parser};
 
@@ -21,7 +21,7 @@ fn parse_fragment(allowed: &[u8], i: &mut &[u8]) -> PResult<Vec<u8>> {
         '.'.value(allowed.to_vec()),
         delimited(
             '[',
-            fold_repeat(
+            repeat(
                 1..,
                 alt((
                     separated_pair(
@@ -33,12 +33,11 @@ fn parse_fragment(allowed: &[u8], i: &mut &[u8]) -> PResult<Vec<u8>> {
                     .map(|(min, max)| (min..=max).collect()),
                     one_of(|c| allowed.contains(&c)).map(|c| vec![c]),
                 )),
-                Vec::new,
-                |mut acc, item| {
-                    acc.extend(&item);
-                    acc
-                },
-            ),
+            )
+            .fold(Vec::new, |mut acc, item| {
+                acc.extend(&item);
+                acc
+            }),
             ']',
         ),
     ))
