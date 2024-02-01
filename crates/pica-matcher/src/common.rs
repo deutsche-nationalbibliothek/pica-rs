@@ -2,7 +2,7 @@ use std::fmt::{self, Display};
 
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{
-    alt, delimited, fold_repeat, preceded, terminated,
+    alt, delimited, preceded, repeat, terminated,
 };
 use winnow::error::{ContextError, ParserError};
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
@@ -29,7 +29,6 @@ where
         let _ = multispace0.parse_next(i)?;
         let o = inner.parse_next(i);
         let _ = multispace0.parse_next(i)?;
-
         o
     }
 }
@@ -223,19 +222,18 @@ where
 {
     use StringFragment::*;
 
-    let string_builder = fold_repeat(
+    let string_builder = repeat(
         0..,
         parse_quoted_fragment::<E>(quotes),
-        Vec::new,
-        |mut acc, fragment| {
-            match fragment {
-                Literal(s) => acc.extend_from_slice(s),
-                EscapedChar(c) => acc.push(c as u8),
-                EscapedWs => {}
-            }
-            acc
-        },
-    );
+    )
+    .fold(Vec::new, |mut acc, fragment| {
+        match fragment {
+            Literal(s) => acc.extend_from_slice(s),
+            EscapedChar(c) => acc.push(c as u8),
+            EscapedWs => {}
+        }
+        acc
+    });
 
     match quotes {
         Quotes::Single => delimited('\'', string_builder, '\''),

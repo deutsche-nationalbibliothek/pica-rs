@@ -15,8 +15,7 @@ use serde::Deserialize;
 use thiserror::Error;
 use winnow::ascii::multispace0;
 use winnow::combinator::{
-    alt, delimited, fold_repeat, opt, preceded, separated,
-    separated_pair,
+    alt, delimited, opt, preceded, repeat, separated, separated_pair,
 };
 use winnow::error::ParserError;
 use winnow::prelude::*;
@@ -165,18 +164,17 @@ fn parse_subfield_code_single(i: &mut &[u8]) -> PResult<Vec<char>> {
 fn parse_subfield_code_list(i: &mut &[u8]) -> PResult<Vec<char>> {
     delimited(
         '[',
-        fold_repeat(
+        repeat(
             1..,
             alt((
                 parse_subfield_code_range,
                 parse_subfield_code_single,
             )),
-            Vec::new,
-            |mut acc: Vec<_>, item| {
-                acc.extend_from_slice(&item);
-                acc
-            },
-        ),
+        )
+        .fold(Vec::new, |mut acc: Vec<_>, item| {
+            acc.extend_from_slice(&item);
+            acc
+        }),
         ']',
     )
     .parse_next(i)
