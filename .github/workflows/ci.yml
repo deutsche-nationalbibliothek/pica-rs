@@ -209,6 +209,8 @@ jobs:
       - name: "Install `cargo-careful`"
         run: |
           cargo install -f cargo-careful
+      - name: "Run prepare tests"
+        run: ci/prepare-tests.sh
       - run: |
           make careful
 
