@@ -86,6 +86,12 @@ pub(crate) struct Select {
     #[arg(long)]
     append: bool,
 
+    /// Limit the result to first <n> records (not rows!)
+    ///
+    /// Note: A limit value `0` means no limit.
+    #[arg(long, short, value_name = "n", default_value = "0")]
+    limit: usize,
+
     /// A filter expression used for searching
     #[arg(long = "where")]
     filter: Option<String>,
@@ -178,6 +184,8 @@ impl Select {
         );
 
         let mut seen = BTreeSet::new();
+        let mut count = 0;
+
         let nf = if let Some(ref global) = config.global {
             global.translit
         } else {
@@ -221,7 +229,7 @@ impl Select {
 
         let mut progess = Progress::new(self.progress);
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -280,6 +288,11 @@ impl Select {
                             writer.write_record(row)?;
                         };
                     }
+                }
+
+                count += 1;
+                if self.limit > 0 && count >= self.limit {
+                    break 'outer;
                 }
             }
         }
