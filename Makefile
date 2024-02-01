@@ -20,6 +20,9 @@ clippy:
 test:
 	$(CARGO) test --workspace --all-features --no-fail-fast
 
+careful:
+	$(CARGO) +nightly careful test --workspace --all-features
+
 fmt:
 	$(CARGO) fmt --all -- --check
 
