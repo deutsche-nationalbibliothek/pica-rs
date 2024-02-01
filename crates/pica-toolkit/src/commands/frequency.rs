@@ -6,6 +6,7 @@ use std::io::{self, Write};
 use std::str::FromStr;
 
 use clap::{value_parser, Parser};
+use pica_matcher::{MatcherBuilder, MatcherOptions};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
 use pica_utils::NormalizationForm;
@@ -78,6 +79,31 @@ pub(crate) struct Frequency {
     )]
     threshold: u64,
 
+    /// A filter expression used for searching
+    #[arg(long = "where")]
+    filter: Option<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical AND-operator (conjunction)
+    ///
+    /// This option can't be combined with `--or` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    and: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical OR-operator (disjunction)
+    ///
+    /// This option can't be combined with `--and` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
+    or: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical NOT-operator (negation)
+    ///
+    /// This option can't be combined with `--and` or `--or`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    not: Vec<String>,
+
     /// Comma-separated list of column names.
     #[arg(long, short = 'H')]
     header: Option<String>,
@@ -126,6 +152,24 @@ impl Frequency {
 
         let query = Query::from_str(&query)?;
 
+        let nf = if let Some(ref global) = config.global {
+            global.translit
+        } else {
+            None
+        };
+
+        let matcher = if let Some(matcher) = self.filter {
+            Some(
+                MatcherBuilder::new(matcher, nf)?
+                    .and(self.and)?
+                    .not(self.not)?
+                    .or(self.or)?
+                    .build(),
+            )
+        } else {
+            None
+        };
+
         let mut ftable: HashMap<Vec<String>, u64> = HashMap::new();
         let options = QueryOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
@@ -158,6 +202,16 @@ impl Frequency {
                 }
 
                 let record = result.unwrap();
+
+                if let Some(ref matcher) = matcher {
+                    if !matcher.is_match(
+                        &record,
+                        &MatcherOptions::from(&options),
+                    ) {
+                        continue;
+                    }
+                }
+
                 progress.record();
                 seen.clear();
 
