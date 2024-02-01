@@ -42,7 +42,7 @@ jobs:
       - name: "Print glibc version"
         run: ldd --version
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-cargo-stable-${{ matrix.target.triple }}-glibc${{ matrix.target.glibc }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -98,7 +98,7 @@ jobs:
           - { triple: x86_64-pc-windows-gnu, variant: "GNU" }
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-cargo-stable-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -141,7 +141,7 @@ jobs:
           - { triple: x86_64-apple-darwin }
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-cargo-stable-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
