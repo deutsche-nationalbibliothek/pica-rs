@@ -40,6 +40,17 @@ Ts1,1
 * `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten
   `<n>` Unterfeldwerte.
 * `--threshold` `<n>` — Zeilen mit einer Häufigkeit < `<n>` ignorieren.
+* `--where` `<filter>` — Angabe eines Filters, der auf die erzeugten
+  Datensätze angewandt wird.
+* `--and` `<expr>` — Hinzufügen eines zusätzlichen Filters mittels der
+  booleschen `&&`-Verknüpfung. Der ursprüngliche Filterausdruck
+  `<filter>` wird zum Ausdruck `<filter> && <expr>`.
+* `--or` `<expr>` — Hinzufügen eines zusätzlichen Filters mittels der
+  booleschen `||`-Verknüpfung. Der ursprüngliche Filterausdruck
+  `<filter>` wird zum Ausdruck `<filter> || <expr>`.
+* `--not` `<expr>` — Hinzufügen eines zusätzlichen Filters. Der
+  ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck `<filter> &&
+  !(<expr>)`.
 * `-H`, `--header` `<header>` — Kopfzeile, die den Ergebnissen
   vorangestellt wird.
 * `-t`, `--tsv` — Ausgabe erfolgt im TSV-Format.
