@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "select -s -l2 \"003@.0\" dump.dat.gz"
+status = "success"
+stderr = ""
+stdout = "040011569\n118515551\n"
