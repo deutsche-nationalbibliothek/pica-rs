@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
         if: ${{ matrix.target.os == 'ubuntu-latest' }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-cargo-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -98,7 +98,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
         if: ${{ matrix.target.os == 'ubuntu-latest' }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-cargo-cross-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -133,7 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -155,7 +155,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -175,7 +175,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -197,7 +197,7 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v4
   #     - uses: abbbi/github-actions-tune@v1
-  #     - uses: actions/cache@v3
+  #     - uses: actions/cache@v4
   #       with:
   #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
   #         path: |
@@ -220,7 +220,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -241,7 +241,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -263,7 +263,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -301,7 +301,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
@@ -337,7 +337,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
           path: |
