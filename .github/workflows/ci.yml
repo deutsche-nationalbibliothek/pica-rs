@@ -120,19 +120,17 @@ jobs:
           cross build --target ${{ matrix.target.triple }}
 
   fuzz:
-    # if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    # see https://github.com/deutsche-nationalbibliothek/pica-rs/actions/runs/7736509249/job/21094015127
-    if: false
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     name: fuzz ${{ matrix.item.name }}
     runs-on: ubuntu-latest
     needs: check
     strategy:
       matrix:
         item:
-          - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
-          - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 300 }
-          - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 300 }
-          - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 300 }
+          - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 240 }
+          - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 240 }
+          - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 240 }
+          - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 240 }
     steps:
       - uses: actions/checkout@v4
       - uses: abbbi/github-actions-tune@v1
@@ -356,7 +354,7 @@ jobs:
       - cross
       - deny
       - fmt
-      # - fuzz
+      - fuzz
       - miri
       - test
       # - udeps

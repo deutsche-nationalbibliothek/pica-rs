@@ -12,11 +12,12 @@ use pica_matcher::{MatcherBuilder, MatcherOptions};
 use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
-use pica_utils::{FilterList, NormalizationForm};
+use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::error::CliResult;
+use crate::filter_list::FilterList;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
 

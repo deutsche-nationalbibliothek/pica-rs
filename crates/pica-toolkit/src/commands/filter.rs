@@ -10,10 +10,10 @@ use pica_matcher::{
 };
 use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
-use pica_utils::FilterList;
 use serde::{Deserialize, Serialize};
 
 use crate::error::CliResult;
+use crate::filter_list::FilterList;
 use crate::progress::Progress;
 use crate::{gzip_flag, skip_invalid_flag, Config};
 

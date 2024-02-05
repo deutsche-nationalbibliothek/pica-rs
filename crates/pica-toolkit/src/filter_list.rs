@@ -8,13 +8,13 @@ use bstr::{BStr, BString};
 use polars::prelude::*;
 
 #[derive(Debug, Default)]
-pub struct FilterList {
+pub(crate) struct FilterList {
     allow: BTreeSet<BString>,
     deny: BTreeSet<BString>,
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum FilterListError {
+pub(crate) enum FilterListError {
     #[error("invalid file format (path = '{0}')")]
     InvalidFileFormat(String),
 
@@ -29,11 +29,11 @@ pub enum FilterListError {
 }
 
 impl FilterList {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
 
-    pub fn check(&self, idn: Option<&BStr>) -> bool {
+    pub(crate) fn check(&self, idn: Option<&BStr>) -> bool {
         if self.allow.is_empty() && self.deny.is_empty() {
             return true;
         }
@@ -49,7 +49,7 @@ impl FilterList {
         }
     }
 
-    pub fn allow(
+    pub(crate) fn allow(
         mut self,
         filenames: Vec<PathBuf>,
     ) -> Result<Self, FilterListError> {
@@ -68,7 +68,7 @@ impl FilterList {
         Ok(self)
     }
 
-    pub fn deny(
+    pub(crate) fn deny(
         mut self,
         filenames: Vec<PathBuf>,
     ) -> Result<Self, FilterListError> {
