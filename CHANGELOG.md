@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.24.0] - 2023-02-05
+
+### Added
+
+* #753 select: add `--limit` (`-l`) option
+* #750 frequency: add filter options
+
+### Fixed
+
+* #755 Fix processing of tsv/csv filter-lists
+
+### Changed
+
+* #756 msrv: bump to Rust 1.74.1
+
+
 ## [0.23.0] - 2023-01-19
 
 * #736 Add existential and universal quantifier
