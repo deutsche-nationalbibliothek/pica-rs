@@ -3,7 +3,6 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use bstr::{BStr, BString};
 use polars::prelude::*;
@@ -95,9 +94,6 @@ impl FilterList {
         let extension = path.extension().and_then(OsStr::to_str);
         let path_str = path.to_str().unwrap_or_default();
 
-        let mut schema = Schema::new();
-        schema.with_column("idn".into(), DataType::String);
-
         match extension {
             Some("ipc" | "arrow" | "feather") => {
                 Ok(IpcReader::new(File::open(path)?)
@@ -105,28 +101,24 @@ impl FilterList {
                     .finish()?)
             }
             Some("csv") => Ok(CsvReader::from_path(path)?
-                .with_schema(Some(Arc::new(schema)))
-                .truncate_ragged_lines(true)
+                .infer_schema(Some(0))
                 .has_header(true)
                 .finish()?),
             Some("gz") if path_str.ends_with(".csv.gz") => {
                 Ok(CsvReader::from_path(path)?
-                    .with_schema(Some(Arc::new(schema)))
-                    .truncate_ragged_lines(true)
+                    .infer_schema(Some(0))
                     .has_header(true)
                     .finish()?)
             }
             Some("tsv") => Ok(CsvReader::from_path(path)?
                 .with_separator(b'\t')
-                .with_schema(Some(Arc::new(schema)))
-                .truncate_ragged_lines(true)
                 .has_header(true)
+                .infer_schema(Some(0))
                 .finish()?),
             Some("gz") if path_str.ends_with(".tsv.gz") => {
                 Ok(CsvReader::from_path(path)?
                     .with_separator(b'\t')
-                    .with_schema(Some(Arc::new(schema)))
-                    .truncate_ragged_lines(true)
+                    .infer_schema(Some(0))
                     .has_header(true)
                     .finish()?)
             }
