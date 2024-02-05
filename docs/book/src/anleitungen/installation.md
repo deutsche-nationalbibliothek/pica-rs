@@ -12,7 +12,7 @@ bereit. Diese können mit folgendem Kommando heruntergeladen und
 installiert werden:
 
 ```bash
-$ dpkg -i pica_0.23.0-glibc2.35-1_amd64.deb
+$ dpkg -i pica_0.24.0-glibc2.35-1_amd64.deb
 ```
 
 ## RedHat & SUSE & CentOS
@@ -22,7 +22,7 @@ Für [RedHat](https://www.redhat.com/), [SUSE](https://www.suse.com/) und
 Download bereit. Diese können mit folgendem Kommando installiert werden:
 
 ```bash
-$ rpm -i pica-0.23.0-glibc2.35-1.x86_64.rpm
+$ rpm -i pica-0.24.0-glibc2.35-1.x86_64.rpm
 ```
 
 ## Binary-Releases
@@ -45,7 +45,7 @@ Folgende Architekturen werden unterstützt:
 
 Das Projekt lässt sich auch direkt aus den Quellen kompilieren. Hierfür
 wird eine aktuelle [Rust](https://www.rust-lang.org/)-Version (`>=
-1.70.0`) mit dem Paketmanager `cargo` benötigt.
+1.74.1`) mit dem Paketmanager `cargo` benötigt.
 
 Der aktuelle Entwicklungsstand lässt sich wie folgt installieren:
 
@@ -63,9 +63,9 @@ den Paketmanager `cargo` installiert werden:
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
      --branch main pica-toolkit
 
-# Installation der Version 0.23.0
+# Installation der Version 0.24.0
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
-      --tag v0.23.0 pica-toolkit
+      --tag v0.24.0 pica-toolkit
 
 # Installation des Entwicklungszweigs "feat1"
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
