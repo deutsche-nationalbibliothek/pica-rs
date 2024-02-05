@@ -7,6 +7,7 @@ extern crate termcolor;
 mod commands;
 mod config;
 mod error;
+mod filter_list;
 mod macros;
 mod progress;
 
