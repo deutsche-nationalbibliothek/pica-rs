@@ -6,6 +6,7 @@ license.workspace = true
 readme.workspace = true
 keywords.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 bstr = { workspace = true }
