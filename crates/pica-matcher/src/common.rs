@@ -6,7 +6,7 @@ use winnow::combinator::{
 };
 use winnow::error::{ContextError, ParserError};
 use winnow::stream::{AsChar, Stream, StreamIsPartial};
-use winnow::token::{tag, take_till};
+use winnow::token::take_till;
 use winnow::{PResult, Parser};
 
 /// Boolean Operators.
@@ -103,14 +103,14 @@ pub(crate) fn parse_relational_op_str(
     i: &mut &[u8],
 ) -> PResult<RelationalOp> {
     alt((
-        tag("==").value(RelationalOp::Eq),
-        tag("!=").value(RelationalOp::Ne),
-        tag("=^").value(RelationalOp::StartsWith),
-        tag("!^").value(RelationalOp::StartsNotWith),
-        tag("=$").value(RelationalOp::EndsWith),
-        tag("!$").value(RelationalOp::EndsNotWith),
-        tag("=*").value(RelationalOp::Similar),
-        tag("=?").value(RelationalOp::Contains),
+        "==".value(RelationalOp::Eq),
+        "!=".value(RelationalOp::Ne),
+        "=^".value(RelationalOp::StartsWith),
+        "!^".value(RelationalOp::StartsNotWith),
+        "=$".value(RelationalOp::EndsWith),
+        "!$".value(RelationalOp::EndsNotWith),
+        "=*".value(RelationalOp::Similar),
+        "=?".value(RelationalOp::Contains),
     ))
     .parse_next(i)
 }
@@ -121,12 +121,12 @@ pub(crate) fn parse_relational_op_usize(
     i: &mut &[u8],
 ) -> PResult<RelationalOp> {
     alt((
-        tag("==").value(RelationalOp::Eq),
-        tag("!=").value(RelationalOp::Ne),
-        tag(">=").value(RelationalOp::Ge),
-        tag(">").value(RelationalOp::Gt),
-        tag("<=").value(RelationalOp::Le),
-        tag("<").value(RelationalOp::Lt),
+        "==".value(RelationalOp::Eq),
+        "!=".value(RelationalOp::Ne),
+        ">=".value(RelationalOp::Ge),
+        ">".value(RelationalOp::Gt),
+        "<=".value(RelationalOp::Le),
+        "<".value(RelationalOp::Lt),
     ))
     .parse_next(i)
 }
