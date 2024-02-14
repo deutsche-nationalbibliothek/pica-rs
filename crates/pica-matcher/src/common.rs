@@ -5,7 +5,7 @@ use winnow::combinator::{
     alt, delimited, preceded, repeat, terminated,
 };
 use winnow::error::{ContextError, ParserError};
-use winnow::stream::{AsChar, Stream, StreamIsPartial};
+use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
 use winnow::token::take_till;
 use winnow::{PResult, Parser};
 
@@ -171,7 +171,7 @@ where
 
 fn parse_escaped_char<I, E>(quotes: Quotes) -> impl Parser<I, char, E>
 where
-    I: Stream + StreamIsPartial,
+    I: Stream + StreamIsPartial + Compare<char>,
     <I as Stream>::Token: AsChar + Clone,
     E: ParserError<I>,
 {

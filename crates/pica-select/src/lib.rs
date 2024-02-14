@@ -11,7 +11,7 @@ use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{alt, delimited, preceded, repeat, separated};
 use winnow::error::{ContextError, ParserError};
 use winnow::prelude::*;
-use winnow::stream::{AsChar, Stream, StreamIsPartial};
+use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
 use winnow::token::take_till;
 
 #[derive(Debug, Error)]
@@ -122,7 +122,7 @@ where
 
 fn parse_escaped_char<I, E>(quotes: Quotes) -> impl Parser<I, char, E>
 where
-    I: Stream + StreamIsPartial,
+    I: Stream + StreamIsPartial + Compare<char>,
     <I as Stream>::Token: AsChar + Clone,
     E: ParserError<I>,
 {
