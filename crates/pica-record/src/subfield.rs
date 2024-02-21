@@ -340,8 +340,6 @@ impl quickcheck::Arbitrary for Subfield {
 
 #[cfg(test)]
 mod tests {
-    use bstr::ByteSlice;
-
     use super::*;
 
     #[test]
