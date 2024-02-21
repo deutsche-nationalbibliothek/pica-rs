@@ -243,8 +243,6 @@ impl quickcheck::Arbitrary for Occurrence {
 
 #[cfg(test)]
 mod tests {
-    use bstr::ByteSlice;
-
     use super::*;
 
     #[quickcheck_macros::quickcheck]
