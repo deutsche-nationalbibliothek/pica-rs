@@ -38,6 +38,8 @@ docs:
 		> target/docs/api/index.html
 	echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' \
 		> target/docs/index.html
+	# https://www.eff.org/deeplinks/2023/12/no-robotstxt-how-ask-chatgpt-and-google-bard-not-use-your-website-training
+	echo "User-agent: GPTBot\n Disallow: /\n\nUser-agent: Google-Extended\n Disallow: /\n" > target/docs/robots.txt
 
 release:
 	$(CARGO) build --workspace --all-features --release

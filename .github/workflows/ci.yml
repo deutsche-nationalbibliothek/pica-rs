@@ -341,9 +341,9 @@ jobs:
           hugo --minify
 
   gh-pages:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    # if: ${{ github.ref == 'refs/heads/main' }}
     needs:
-      - audit
+      # - audit
       - book
       - careful
       - check
@@ -355,7 +355,7 @@ jobs:
       - miri
       - test
       # - udeps
-      - upgrades
+      # - upgrades
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
