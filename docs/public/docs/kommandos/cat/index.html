@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="de-DE" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="cat # Das cat-Kommando liest Datensätze direkt von der Standardeingabe (stdin) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe kann entweder in eine Datei oder in die Standardausgabe (stdout) geschrieben werden.
+Beschreibung # Der wichtigste Anwendungsfall des Kommandos besteht in Kombination mit den Kommandos partition oder split, da mittels cat das Ergebnis von partition oder split (teil-)rückgängig gemacht werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere Dateien anhand eines Kriteriums zu teilen und anschließend eine Teilmenge wieder zusammenzufügen.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:title" content="" />
+<meta property="og:description" content="cat # Das cat-Kommando liest Datensätze direkt von der Standardeingabe (stdin) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe kann entweder in eine Datei oder in die Standardausgabe (stdout) geschrieben werden.
+Beschreibung # Der wichtigste Anwendungsfall des Kommandos besteht in Kombination mit den Kommandos partition oder split, da mittels cat das Ergebnis von partition oder split (teil-)rückgängig gemacht werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere Dateien anhand eines Kriteriums zu teilen und anschließend eine Teilmenge wieder zusammenzufügen." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/cat/" /><meta property="article:section" content="docs" />
+
+<meta property="article:modified_time" content="2024-02-24T07:15:37+01:00" />
+
+<title>Cat | pica-rs</title>
+<link rel="manifest" href="/pica-rs/book/manifest.json">
+<link rel="icon" href="/pica-rs/book/favicon.png" >
+<link rel="canonical" href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/cat/">
+<link rel="stylesheet" href="/pica-rs/book/book.min.33a48f5432973b8ff9a82679d9e45d67f2c15d4399bd2829269455cfe390b5e8.css" integrity="sha256-M6SPVDKXO4/5qCZ52eRdZ/LBXUOZvSgpJpRVz&#43;OQteg=" crossorigin="anonymous"><!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/pica-rs/book/"><span>pica-rs</span>
+  </a>
+</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <ul>
+    
+      
+        <li class="book-section-flat" >
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/anleitungen/" class="">Anleitungen</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/installation/" class="">Installation</a>
+  
+
+        </li>
+      
+    
+      
+        <li class="book-section-flat" >
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/" class="">Kommandos</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/cat/" class="active">Cat</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/completions/" class="">Completions</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/convert/" class="">Convert</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/count/" class="">Count</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/explode/" class="">Explode</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/filter/" class="">Filter</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/frequency/" class="">Frequency</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/hash/" class="">Hash</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/invalid/" class="">Invalid</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/partition/" class="">Partition</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/print/" class="">Print</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/slice/" class="">Slice</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/split/" class="">Split</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/pica-rs/book/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Cat</strong>
+
+  <label for="toc-control">
+    
+  </label>
+</div>
+
+
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="cat">
+  cat
+  <a class="anchor" href="#cat">#</a>
+</h1>
+<p>Das <code>cat</code>-Kommando liest Datensätze direkt von der Standardeingabe
+(<code>stdin</code>) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe
+kann entweder in eine Datei oder in die Standardausgabe (<code>stdout</code>)
+geschrieben werden.</p>
+<h2 id="beschreibung">
+  Beschreibung
+  <a class="anchor" href="#beschreibung">#</a>
+</h2>
+<p>Der wichtigste Anwendungsfall des Kommandos besteht in Kombination mit
+den Kommandos <em><a href="/pica-rs/book/docs/kommandos/partition/">partition</a></em> oder <em><a href="/pica-rs/book/docs/kommandos/split/">split</a></em>, da mittels <code>cat</code> das
+Ergebnis von <em><a href="/pica-rs/book/docs/kommandos/partition/">partition</a></em> oder <em><a href="/pica-rs/book/docs/kommandos/split/">split</a></em> (teil-)rückgängig gemacht
+werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere
+Dateien anhand eines Kriteriums zu teilen und anschließend eine
+Teilmenge wieder zusammenzufügen.</p>
+<p>Das folgende Beispiel fügt die zwei Partitionen <code>ger.dat</code> und <code>eng.dat</code>
+zu einer Datei zusammen:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ pica cat ger.dat eng.dat -o ger_eng.dat
+</span></span></code></pre></div><h2 id="optionen">
+  Optionen
+  <a class="anchor" href="#optionen">#</a>
+</h2>
+<ul>
+<li><code>-s</code>, <code>--skip-invalid</code> — überspringt jene Zeilen aus der Eingabe, die
+nicht dekodiert werden konnten.</li>
+<li><code>-u</code>, <code>--unique</code> — es werden keine Duplikate in die Ausgabe
+geschrieben. Die Strategie zur Erkennung von Duplikaten wird mittels
+der Option <code>--unique-strategy</code> festgelegt.</li>
+<li><code>--unique-strategy &lt;strategy&gt;</code> — festlegen, wie Duplikate erkannt
+werden sollen. Standardmäßig ist der Wert <code>idn</code> gesetzt und es werden
+Duplikate durch Vergleichen der PPN/IDN (Feld <code>003@.0</code>) eines
+Datensatzes erkannt. Alternativ kann die Strategie <code>hash</code> gewählt
+werden. Der Vergleich erfolgt dann über die SHA-256 Prüfsumme der
+Datensätze.</li>
+<li><code>--append</code> — Wenn die Ausgabedatei bereits existiert, wird die
+Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
+bestehende Datei standardmäßig überschrieben.</li>
+<li><code>--tee &lt;filename&gt;</code> — Abzweigen der Ausgabe in eine zusätzliche Datei.</li>
+<li><code>-g</code>, <code>--gzip</code> — Komprimieren der Ausgabe im <a href="https://de.wikipedia.org/wiki/Gzip">Gzip</a>-Format.</li>
+<li><code>-p</code>, <code>--progress</code> — Anzeige des Fortschritts, der die Anzahl der
+eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
+Aktivieren der Option erfordert das Schreiben der Datensätze in eine
+Datei mittels <code>-o</code> bzw. <code>--output</code>.</li>
+<li><code>-o</code>, <code>--output</code> — Angabe, in welche Datei die Ausgabe geschrieben
+werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
+<code>stdout</code> geschrieben. Endet der Dateiname mit dem Suffix <code>.gz</code>, wird
+die Ausgabe automatisch im <a href="https://de.wikipedia.org/wiki/Gzip">Gzip</a>-Format komprimiert.</li>
+</ul>
+<h2 id="konfiguration">
+  Konfiguration
+  <a class="anchor" href="#konfiguration">#</a>
+</h2>
+<!-- TODO: Link zum allgemeinen Kapitel über die Konfigurationsdatei -->
+<p>Die Optionen zum Ignorieren invalider Datensätze sowie das Komprimieren
+der Ausgabe lassen sich in der <code>Pica.toml</code> konfigurieren:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">cat</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">skip-invalid</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">unique-strategy</span> = <span style="color:#e6db74">&#34;hash&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gzip</span> = <span style="color:#66d9ef">false</span>
+</span></span></code></pre></div><p>Die Werte der Kommandozeilen-Optionen haben Vorrang vor den Werten aus
+der Konfiguration.</p>
+<h2 id="beispiele">
+  Beispiele
+  <a class="anchor" href="#beispiele">#</a>
+</h2>
+<h3 id="überspringen-ungültiger-datensätze">
+  Überspringen ungültiger Datensätze
+  <a class="anchor" href="#%c3%bcberspringen-ung%c3%bcltiger-datens%c3%a4tze">#</a>
+</h3>
+<p>Der eingangs verwendete Befehl geht davon aus, dass die zwei Partitionen
+ausschließlich gültige Datensätze enthalten. Gültig in diesem
+Zusammenhang bedeutet, dass es sich um valide Datensätze im Format PICA+
+handelt und nicht ob ein Datensatz einem bestimmten Regelwerk
+entspricht.</p>
+<p>Das Ausschließen von ungültigen Datensätzen wird mit der Option
+<code>--skip-invalid</code> oder <code>-s</code> erreicht:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ pica cat --skip-invalid DUMP.dat.gz -o dump_valid.dat
+</span></span><span style="display:flex;"><span>$ pica cat -s DUMP.dat.gz --output dump_valid.dat.gz
+</span></span></code></pre></div><h3 id="lesen-von-der-standardeingabe">
+  Lesen von der Standardeingabe
+  <a class="anchor" href="#lesen-von-der-standardeingabe">#</a>
+</h3>
+<p>Das Kommando kann auch direkt von der Standardeingabe (<code>stdin</code>) lesen.
+Das ist bspw. dann hilfreich, wenn die Ausgabe aus einem vorhergehenden
+Pipeline-Schritt mit dem Inhalt einer oder mehrerer Dateien konkateniert
+werden soll.</p>
+<p>Das folgende Beispiel liest im ersten Pipeline-Schritt die Datei
+<code>dump1.dat</code> ein, entfernt ungültige Datensätze und gibt die Ausgabe nach
+<code>stdout</code> aus. Der zweite Pipeline-Schritt liest diese Datensätze ein
+(<code>-</code>) und konkateniert diese mit den Datensätzen aus der Datei
+<code>dump2.dat</code>. Das Ergebnis wird in die Datei <code>out.dat</code> geschrieben.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ pica cat -s dump1.dat | pica cat - dump2.dat -o out.dat
+</span></span></code></pre></div><p>Der Dateiname <code>-</code> steht für die Standardeingabe (<code>stdin</code>). Wären die
+zwei Argumente vertauscht (<code>pica cat dump2.dat -</code>), dann würden erst die
+gültigen Datensätze aus der Datei <code>dump1.dat</code> und anschließend die
+Datensätze aus dem ersten Pipeline-Schritt geschrieben.</p>
+<h3 id="hinzufügen-von-datensätzen">
+  Hinzufügen von Datensätzen
+  <a class="anchor" href="#hinzuf%c3%bcgen-von-datens%c3%a4tzen">#</a>
+</h3>
+<p>Wenn eine Ausgabedatei bereits existiert, wird diese standardmäßig neu
+angelegt und überschrieben. Soll das Verhalten dahingehend geändert
+werden, dass an die bestehenden Dateien angehangen wird, kann dies mit
+der <code>--append</code>-Option erreicht werden. Diese Option ändert das Verhalten
+von <code>--output</code> und <code>--tee</code>. Die Option hat auf das Verhalten beim
+Schreiben in die Standardausgabe keine Auswirkung.</p>
+<p>Im folgenden Beispiel erzeugt der erste Befehl eine neue Datei
+<code>gnd.dat</code>. Sollte die Datei bereits existieren, wird der Datei-Inhalt
+überschrieben. Die darauffolgenden Kommandos hängen jeweils an das Ende
+der Datei <code>gnd.dat</code> an.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ pica cat Tp*.dat -o gnd.dat
+</span></span><span style="display:flex;"><span>$ pica cat --append Ts*.dat -o gnd.dat
+</span></span><span style="display:flex;"><span>$ pica cat --append Tu*.dat -o gnd.dat
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><h3 id="abzweigen-der-ausgabe">
+  Abzweigen der Ausgabe
+  <a class="anchor" href="#abzweigen-der-ausgabe">#</a>
+</h3>
+<p>Gelegenlich kann es nützlich sein, die Ausgabe des <code>cat</code>-Kommandos in
+eine Datei zu schreiben und gleichzeitig die Ausgabe an einen weiteren
+Pipeline-Schritt weiterzureichen. Dies hat den Vorteil, dass zwei
+CPU-Kerne gleichzeitig genutzt werden können. Mit der <code>--tee</code>-Option
+lässt sich dieses Verhalten erzielen. Der Name der Option leitet sich
+von dem T-Stück (engl. tee connector) ab, mit dem ein Klempner eine
+Abzeigung in eine Leitung einbaut.</p>
+<p>Im folgenden Beispiel werden alle <code>Tp*.dat</code> zusammengefügt und in eine
+Datei <code>Tp.dat</code> geschrieben. Gleichzeitig werden alle Datensätze mit dem
+[<em>filter</em>]-Kommando nach der Satzart <code>Tp2</code> im Feld <code>002@.0</code> gefiltert.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ pica cat partitions/Tp*.dat --tee gnd_person.dat | <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>      pica filter <span style="color:#e6db74">&#34;002@.0 =^ &#39;Tp2&#39;&#34;</span> -o Tp2.dat
+</span></span></code></pre></div><h3 id="komprimierte-ein--und-ausgabe">
+  Komprimierte Ein- und Ausgabe
+  <a class="anchor" href="#komprimierte-ein--und-ausgabe">#</a>
+</h3>
+<p>Das vorhergehende Beispiel zeigt auch, dass das <code>cat</code>-Kommando sowohl
+unkomprimierte als auch komprimierte Dateien verarbeiten kann. Endet
+eine Datei mit dem Suffix <code>.gz</code>, wird die Datei automatisch
+dekomprimiert (als Eingabedatei) bzw. komprimiert (als Ausgabedatei).</p>
+<p>Mittels der Option <code>-g</code>/<code>--gzip</code> erfolgt eine Komprimierung der Ausgabe
+unabhängig von der Dateiendung:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ pica cat --gzip ger.dat eng.dat -o eng_ger_compressed.dat
+</span></span><span style="display:flex;"><span>$ pica cat ger.dat eng.dat -o eng_ger.dat.gz
+</span></span></code></pre></div></article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="de-DE" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="invalid # Das invalid-Kommando findet Zeilen in der Eingabe, die nicht als normalisiertes PICA&#43; dekodiert werden konnten und somit ungültig sind.
+Beschreibung # Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in der Eingabe nicht dekodiert werden können. Diese ungültigen Zeilen lassen sich bei vielen Kommandos mit der Option --skip-invalid (bzw. -s) überspringen, wobei die Anzahl der übersprungenen Zeilen nicht angezeigt wird. Es kann aber empfehlenswert oder notwendig sein, die Anzahl invalider Datensätze zu kontrollieren und einer Prüfung zu unterziehen, um diese ggf.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:title" content="" />
+<meta property="og:description" content="invalid # Das invalid-Kommando findet Zeilen in der Eingabe, die nicht als normalisiertes PICA&#43; dekodiert werden konnten und somit ungültig sind.
+Beschreibung # Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in der Eingabe nicht dekodiert werden können. Diese ungültigen Zeilen lassen sich bei vielen Kommandos mit der Option --skip-invalid (bzw. -s) überspringen, wobei die Anzahl der übersprungenen Zeilen nicht angezeigt wird. Es kann aber empfehlenswert oder notwendig sein, die Anzahl invalider Datensätze zu kontrollieren und einer Prüfung zu unterziehen, um diese ggf." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/invalid/" /><meta property="article:section" content="docs" />
+
+<meta property="article:modified_time" content="2024-02-24T07:15:37+01:00" />
+
+<title>Invalid | pica-rs</title>
+<link rel="manifest" href="/pica-rs/book/manifest.json">
+<link rel="icon" href="/pica-rs/book/favicon.png" >
+<link rel="canonical" href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/invalid/">
+<link rel="stylesheet" href="/pica-rs/book/book.min.33a48f5432973b8ff9a82679d9e45d67f2c15d4399bd2829269455cfe390b5e8.css" integrity="sha256-M6SPVDKXO4/5qCZ52eRdZ/LBXUOZvSgpJpRVz&#43;OQteg=" crossorigin="anonymous"><!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/pica-rs/book/"><span>pica-rs</span>
+  </a>
+</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <ul>
+    
+      
+        <li class="book-section-flat" >
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/anleitungen/" class="">Anleitungen</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/installation/" class="">Installation</a>
+  
+
+        </li>
+      
+    
+      
+        <li class="book-section-flat" >
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/" class="">Kommandos</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/cat/" class="">Cat</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/completions/" class="">Completions</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/convert/" class="">Convert</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/count/" class="">Count</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/explode/" class="">Explode</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/filter/" class="">Filter</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/frequency/" class="">Frequency</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/hash/" class="">Hash</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/invalid/" class="active">Invalid</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/partition/" class="">Partition</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/print/" class="">Print</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/slice/" class="">Slice</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/split/" class="">Split</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/pica-rs/book/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Invalid</strong>
+
+  <label for="toc-control">
+    
+  </label>
+</div>
+
+
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="invalid">
+  invalid
+  <a class="anchor" href="#invalid">#</a>
+</h1>
+<p>Das <code>invalid</code>-Kommando findet Zeilen in der Eingabe, die nicht als
+normalisiertes PICA+ dekodiert werden konnten und somit ungültig sind.</p>
+<h2 id="beschreibung">
+  Beschreibung
+  <a class="anchor" href="#beschreibung">#</a>
+</h2>
+<p>Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in
+der Eingabe nicht dekodiert werden können. Diese ungültigen Zeilen
+lassen sich bei vielen Kommandos mit der Option <code>--skip-invalid</code> (bzw.
+<code>-s</code>) überspringen, wobei die Anzahl der übersprungenen Zeilen nicht
+angezeigt wird. Es kann aber empfehlenswert oder notwendig sein, die
+Anzahl invalider Datensätze zu kontrollieren und einer Prüfung zu
+unterziehen, um diese ggf. zu korrigieren.</p>
+<p>Der folgende Befehl findet alle ungültigen Datensätze aus der Datei
+<code>DUMP.dat.gz</code> und schreibt diese Zeile in die Datei <code>invalid.dat</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ pica invalid DUMP.dat.gz -o invalid.dat
+</span></span></code></pre></div><h2 id="optionen">
+  Optionen
+  <a class="anchor" href="#optionen">#</a>
+</h2>
+<ul>
+<li><code>-p</code>, <code>--progress</code> — Anzeige des Fortschritts, der die Anzahl der
+eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
+Aktivieren der Option erfordert das Schreiben der Datensätze in eine
+Datei mittels <code>-o</code> bzw. <code>--output</code>.</li>
+<li><code>-o</code>, <code>--output</code> — Angabe, in welche Datei die Ausgabe geschrieben
+werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
+<code>stdout</code> geschrieben.</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

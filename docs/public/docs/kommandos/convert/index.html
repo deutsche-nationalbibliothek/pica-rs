@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="de-DE" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="convert # Das convert-Kommando wird für die Konvertierung von und in andere Datenformate verwendet.
+Hinweis: Das convert-Kommando befindet sich in der aktiven Entwicklung. Funktionalitäten können unvollständig oder fehlerhaft sein. Änderungen am command-line interface (CLI) sind nicht ausgeschlossen. Beschreibung # Das PICA-Format kann in verschiedene Datenformate serialisiert werden. Das convert-Kommando ermöglicht es, Datensätze von einem Format in ein anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit, Datensätze, die nicht in normalisiertem PICA&#43; vorliegen, nach PICA&#43; zu konvertieren, um sie durch andere Kommandos verarbeiten zu können.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:title" content="" />
+<meta property="og:description" content="convert # Das convert-Kommando wird für die Konvertierung von und in andere Datenformate verwendet.
+Hinweis: Das convert-Kommando befindet sich in der aktiven Entwicklung. Funktionalitäten können unvollständig oder fehlerhaft sein. Änderungen am command-line interface (CLI) sind nicht ausgeschlossen. Beschreibung # Das PICA-Format kann in verschiedene Datenformate serialisiert werden. Das convert-Kommando ermöglicht es, Datensätze von einem Format in ein anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit, Datensätze, die nicht in normalisiertem PICA&#43; vorliegen, nach PICA&#43; zu konvertieren, um sie durch andere Kommandos verarbeiten zu können." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/convert/" /><meta property="article:section" content="docs" />
+
+<meta property="article:modified_time" content="2024-02-24T07:15:37+01:00" />
+
+<title>Convert | pica-rs</title>
+<link rel="manifest" href="/pica-rs/book/manifest.json">
+<link rel="icon" href="/pica-rs/book/favicon.png" >
+<link rel="canonical" href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/convert/">
+<link rel="stylesheet" href="/pica-rs/book/book.min.33a48f5432973b8ff9a82679d9e45d67f2c15d4399bd2829269455cfe390b5e8.css" integrity="sha256-M6SPVDKXO4/5qCZ52eRdZ/LBXUOZvSgpJpRVz&#43;OQteg=" crossorigin="anonymous"><!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/pica-rs/book/"><span>pica-rs</span>
+  </a>
+</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <ul>
+    
+      
+        <li class="book-section-flat" >
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/anleitungen/" class="">Anleitungen</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/installation/" class="">Installation</a>
+  
+
+        </li>
+      
+    
+      
+        <li class="book-section-flat" >
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/" class="">Kommandos</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/cat/" class="">Cat</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/completions/" class="">Completions</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/convert/" class="active">Convert</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/count/" class="">Count</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/explode/" class="">Explode</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/filter/" class="">Filter</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/frequency/" class="">Frequency</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/hash/" class="">Hash</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/invalid/" class="">Invalid</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/partition/" class="">Partition</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/print/" class="">Print</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/slice/" class="">Slice</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/pica-rs/book/docs/kommandos/split/" class="">Split</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/pica-rs/book/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Convert</strong>
+
+  <label for="toc-control">
+    
+  </label>
+</div>
+
+
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="convert">
+  convert
+  <a class="anchor" href="#convert">#</a>
+</h1>
+<p>Das <code>convert</code>-Kommando wird für die Konvertierung von und in andere
+Datenformate verwendet.</p>
+<blockquote class="book-hint danger">
+  <strong>Hinweis:</strong>
+Das <code>convert</code>-Kommando befindet sich in der aktiven Entwicklung.
+Funktionalitäten können unvollständig oder fehlerhaft sein. Änderungen
+am <em>command-line interface</em> (CLI) sind nicht ausgeschlossen.
+</blockquote>
+
+<h2 id="beschreibung">
+  Beschreibung
+  <a class="anchor" href="#beschreibung">#</a>
+</h2>
+<p>Das PICA-Format kann in verschiedene Datenformate serialisiert werden.
+Das <code>convert</code>-Kommando ermöglicht es, Datensätze von einem Format in ein
+anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit,
+Datensätze, die nicht in normalisiertem PICA+ vorliegen, nach PICA+ zu
+konvertieren, um sie durch andere Kommandos verarbeiten zu können.</p>
+<p>Folgende Formate werden unterstützt:</p>
+<ul>
+<li>normalisiertes PICA+ (<code>plus</code>),</li>
+<li>binäres PICA (<code>binary</code>),</li>
+<li>PICA-Importformat (<code>import</code>),</li>
+<li>PICA-Plain (<code>plain</code>),</li>
+<li>PICA-JSON (<code>json</code>),</li>
+<li>und PICA-XML (<code>xml</code>).</li>
+</ul>
+<p>Die Angabe der Datenformate erfolgt über die Optionen <code>--from</code>/<code>-f</code> und
+<code>--to</code>/<code>-t</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ pica convert --from plus --to binary DUMP.dat.gz -o dump.bin
+</span></span><span style="display:flex;"><span>$ pica convert --from plus --to json DUMP.dat.gz -o dump.json
+</span></span><span style="display:flex;"><span>$ pica convert --from plus --to plain DUMP.dat.gz -o dump.plain
+</span></span><span style="display:flex;"><span>$ pica convert --from plus --to plus DUMP.dat.gz -o dump.dat
+</span></span><span style="display:flex;"><span>$ pica convert --from plus --to xml DUMP.dat.gz -o dump.xml
+</span></span></code></pre></div><h2 id="optionen">
+  Optionen
+  <a class="anchor" href="#optionen">#</a>
+</h2>
+<ul>
+<li><code>-s</code>, <code>--skip-invalid</code> — überspringt jene Zeilen aus der Eingabe, die nicht
+dekodiert werden konnten.</li>
+<li><code>-f</code>, <code>--from</code> — Auswahl des Datenformats der Eingabe.</li>
+<li><code>-t</code>, <code>--to</code> — Auswahl des Datenformats der Ausgabe.</li>
+<li><code>-p</code>, <code>--progress</code> — Anzeige des Fortschritts, der die Anzahl der
+eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
+Aktivieren der Option erfordert das Schreiben der Datensätze in eine
+Datei mittels <code>-o</code> bzw. <code>--output</code>.</li>
+<li><code>-o</code>, <code>--output</code> — Angabe, in welche Datei die Ausgabe geschrieben
+werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
+<code>stdout</code> geschrieben.</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
