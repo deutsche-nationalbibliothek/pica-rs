@@ -341,9 +341,9 @@ jobs:
           hugo --minify
 
   gh-pages:
-    # if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     needs:
-      # - audit
+      - audit
       - book
       - careful
       - check
@@ -355,7 +355,7 @@ jobs:
       - miri
       - test
       # - udeps
-      # - upgrades
+      - upgrades
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -378,9 +378,7 @@ jobs:
       - run: |
           mkdir -p target/docs
           cargo doc --all --no-deps --workspace --target-dir target/docs/api
-          pushd docs
-          hugo --minify --gc --destination ../target/docs/book
-          popd
+          hugo --minify --gc --source docs --destination ../target/docs/book
           echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' >> target/docs/api/index.html
           echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
       - uses: peaceiris/actions-gh-pages@v3
