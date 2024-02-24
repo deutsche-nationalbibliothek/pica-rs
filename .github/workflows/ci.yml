@@ -334,13 +334,14 @@ jobs:
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: 'latest'
+          extended: true
       - name: Build
         run: |
           cd docs
           hugo --minify
 
   gh-pages:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    # if: ${{ github.ref == 'refs/heads/main' }}
     needs:
       - audit
       - book
@@ -369,13 +370,17 @@ jobs:
             ~/.cargo/registry/index/
             target/
       - uses: dtolnay/rust-toolchain@nightly
-      - name: "Install `mdbook`"
-        run: |
-          cargo install -f mdbook
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+          extended: true
       - run: |
           mkdir -p target/docs
           cargo doc --all --no-deps --workspace --target-dir target/docs/api
-          mdbook build docs/book --dest-dir ../../target/docs/book
+          pushd docs
+          hugo --minify --gc --destination ../target/docs/book
+          popd
           echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' >> target/docs/api/index.html
           echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
       - uses: peaceiris/actions-gh-pages@v3
