@@ -1,14 +1,14 @@
-# `convert`
-
-![stability-badge](https://img.shields.io/badge/stability-unstable-red?style=flat-square)
+# convert
 
 Das `convert`-Kommando wird für die Konvertierung von und in andere
 Datenformate verwendet.
 
-> **Hinweis:** Das `convert`-Kommando befindet sich in der aktiven
-> Entwicklung. Funktionalitäten können unvollständig oder fehlerhaft
-> sein. Änderungen am _command-line interface_ (CLI) sind nicht
-> ausgeschlossen.
+{{< hint danger >}}
+**Hinweis:**
+Das `convert`-Kommando befindet sich in der aktiven Entwicklung.
+Funktionalitäten können unvollständig oder fehlerhaft sein. Änderungen
+am _command-line interface_ (CLI) sind nicht ausgeschlossen.
+{{< /hint >}}
 
 ## Beschreibung
 
@@ -16,7 +16,7 @@ Das PICA-Format kann in verschiedene Datenformate serialisiert werden.
 Das `convert`-Kommando ermöglicht es, Datensätze von einem Format in ein
 anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit,
 Datensätze, die nicht in normalisiertem PICA+ vorliegen, nach PICA+ zu
-konvertieren, um sie durch andere [_Kommandos_] verarbeiten zu können.
+konvertieren, um sie durch andere Kommandos verarbeiten zu können.
 
 Folgende Formate werden unterstützt:
 
@@ -27,8 +27,8 @@ Folgende Formate werden unterstützt:
 * PICA-JSON (`json`),
 * und PICA-XML (`xml`).
 
-Die Angabe der Datenformate erfolgt über die Optionen `--from` und
-`--to`:
+Die Angabe der Datenformate erfolgt über die Optionen `--from`/`-f` und
+`--to`/`-t`:
 
 ```bash
 $ pica convert --from plus --to binary DUMP.dat.gz -o dump.bin
@@ -53,5 +53,18 @@ $ pica convert --from plus --to xml DUMP.dat.gz -o dump.xml
   `stdout` geschrieben.
 
 
-[_Kommandos_]: ./index.md
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
+[Gzip]: https://de.wikipedia.org/wiki/Gzip

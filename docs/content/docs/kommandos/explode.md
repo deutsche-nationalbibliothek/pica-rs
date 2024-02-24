@@ -1,14 +1,14 @@
 # `explode`
 
-![stability-badge](https://img.shields.io/badge/stability-unstable-red?style=flat-square)
-
 Mithilfe des `explode`-Kommandos lassen sich Datensätze in Lokal- bzw.
 Exemplardatensätze aufteilen.
 
-> **Hinweis:** Das `explode`-Kommando befindet sich in der aktiven
-> Entwicklung. Funktionalitäten können unvollständig oder fehlerhaft
-> sein. Änderungen am _command-line interface_ (CLI) sind nicht
-> ausgeschlossen.
+{{< hint danger >}}
+**Hinweis:**
+Das `explode`-Kommando befindet sich in der aktiven Entwicklung.
+Funktionalitäten können unvollständig oder fehlerhaft sein. Änderungen
+am _command-line interface_ (CLI) sind nicht ausgeschlossen.
+{{< /hint >}}
 
 ## Beschreibung
 
@@ -132,7 +132,7 @@ $ pica print copy.dat
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben. Endet der Dateiname mit dem Suffix `.gz`, wird
-  die Ausgabe automatisch im gzip-Format komprimiert.
+  die Ausgabe automatisch im [Gzip]-Format komprimiert.
 
 
 ## Konfiguration
@@ -176,5 +176,18 @@ $ pica print copy.dat
 
 ```
 
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
 [Gzip]: https://de.wikipedia.org/wiki/Gzip

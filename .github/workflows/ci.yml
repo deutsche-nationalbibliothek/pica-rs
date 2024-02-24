@@ -326,23 +326,19 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
         with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: dtolnay/rust-toolchain@nightly
-      - name: "Install `mdbook`"
+          submodules: true
+          fetch-depth: 0
+      - uses: abbbi/github-actions-tune@v1
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+          extended: true
+      - name: Build
         run: |
-          cargo install -f mdbook
-      - run: |
-          mdbook build docs/book
-          mdbook test docs/book
+          cd docs
+          hugo --minify
 
   gh-pages:
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -374,15 +370,13 @@ jobs:
             ~/.cargo/registry/index/
             target/
       - uses: dtolnay/rust-toolchain@nightly
-      - name: "Install `mdbook`"
-        run: |
-          cargo install -f mdbook
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+          extended: true
       - run: |
-          mkdir -p target/docs
-          cargo doc --all --no-deps --workspace --target-dir target/docs/api
-          mdbook build docs/book --dest-dir ../../target/docs/book
-          echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' >> target/docs/api/index.html
-          echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' >> target/docs/index.html
+          make docs
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

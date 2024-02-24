@@ -1,7 +1,5 @@
 # frequency
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Mithilfe des Kommandos `frequency` lässt sich die Häufigkeitsverteilung
 aller Werte eines oder mehrerer Unterfelder bestimmen.
 
@@ -191,7 +189,7 @@ vbal,4
 ### Änderung der Sortierreihenfolge (Limit)
 
 Standardmäßig wird die Häufigkeitsverteilung absteigend ausgegeben,
-d.h., der häufigste Wert steht in der Ausgabe oben[^fn1]. Soll das
+d.h., der häufigste Wert steht in der Ausgabe oben[^1]. Soll das
 Verhalten so geändert werden, dass die Ausgabe aufsteigend sortiert wird,
 kann dies mit der Option `--reverse` bzw. `-r` erfolgen. Das folgende
 Kommando sucht nach den vier Satzarten, die am wenigsten vorkommen:
@@ -217,6 +215,20 @@ Tsz	2
 ...
 ```
 
-[^fn1]: Alle Werte mit gleicher Häufigkeit werden immer in lexikographisch
+[^1]: Alle Werte mit gleicher Häufigkeit werden immer in lexikographisch
     aufsteigender Reihenfolge sortiert. Dies erfolgt unabhängig vom
     Parameter `--reverse`.
+
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}

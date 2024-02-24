@@ -1,7 +1,5 @@
 # print
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Das `print`-Kommando gibt Datensätze in einer menschenlesbaren Form aus.
 
 
@@ -141,7 +139,20 @@ $ pica print -s -l1 --translit nfc DUMP.dat.gz
 ...
 ```
 
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
-[_Ansi256-Farbcode_]: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797#256-colors
-[_Escaping_]: https://de.wikipedia.org/wiki/Escape-Sequenz
-[_Unicode-Normalform_]: https://de.wikipedia.org/wiki/Normalisierung_(Unicode)
+[Ansi256-Farbcode]: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797#256-colors
+[Escaping]: https://de.wikipedia.org/wiki/Escape-Sequenz
+[Unicode-Normalform]: https://de.wikipedia.org/wiki/Normalisierung_(Unicode)

@@ -1,11 +1,12 @@
-<p align="center"><img  height="250" width="250" src="images/pica-rs_logo.png"></p>
+---
+title: Einführung
+type: docs
+---
 
 <center>
-
-[![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/ci.yml)
-[![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/)
-[![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs)
-
+    <a href="/">
+        <img  height="250" width="250" src="/pica-rs/book/images/logo.png" />
+    </a>
 </center>
 
 Das Toolkit _pica-rs_ ermöglicht eine effiziente Verarbeitung von
@@ -31,11 +32,7 @@ mögliche Fehler, Fragen und neue Ideen als [GitHub-Issues][Issues]
 anzulegen. Diese werden wir dann intern beraten und möglichst zeitnah
 ein Feedback geben.
 
-## Verwandte Projekte
-
-- [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) — Catmandu modules for working with PICA+ data
-- [Metafacture](https://github.com/metafacture) — Tool suite for metadata processing
-
+[Kommandos]: {{< relref "docs/kommandos/" >}}
 
 [AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
 [DNB]: https://www.dnb.de/
@@ -43,7 +40,6 @@ ein Feedback geben.
 [Installation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/anleitungen/installation.html
 [Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
 [KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
-[Kommandos]: referenz/kommandos/index.md
 [OCLC]: https://www.oclc.org/
 [Pandas]: https://pandas.pydata.org/
 [Polars]: https://www.pola.rs/

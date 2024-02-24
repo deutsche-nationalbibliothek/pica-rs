@@ -5,6 +5,7 @@ MAKEFLAGS += -rR
 
 DESTDIR=
 CARGO ?= cargo
+HUGO ?= hugo
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 
@@ -29,6 +30,15 @@ fmt:
 doc:
 	$(CARGO) doc --no-deps
 
+docs:
+	mkdir -p target/docs
+	$(CARGO) doc --all --no-deps --workspace --target-dir target/docs/api
+	$(HUGO) --minify --gc --source docs --destination ../target/docs/book
+	echo '<meta http-equiv="refresh" content="0; url=doc/pica/index.html"><a href=doc/pica/index.html">Redirect</a>' \
+		> target/docs/api/index.html
+	echo '<meta http-equiv="refresh" content="0; url=book/index.html"><a href=book/index.html">Redirect</a>' \
+		> target/docs/index.html
+
 release:
 	$(CARGO) build --workspace --all-features --release
 	$(CARGO) test --workspace --all-features --release
@@ -39,4 +49,4 @@ install: release
 clean:
 	$(CARGO) clean
 
-.PHONY: build clean check clippy test fmt doc release install
+.PHONY: build clean check clippy test fmt doc docs release install

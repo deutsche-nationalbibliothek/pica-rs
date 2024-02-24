@@ -1,4 +1,5 @@
 # Installation
+
 Das Toolkit _pica-rs_ kann unter Linux, macOS und Windows verwendet
 werden. Für diese Betriebssysteme stehen unterschiedliche Pakete zum
 [Download auf GitHub](https://github.com/deutsche-nationalbibliothek/pica-rs/releases)
