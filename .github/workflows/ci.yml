@@ -326,23 +326,18 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
         with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: dtolnay/rust-toolchain@nightly
-      - name: "Install `mdbook`"
+          submodules: true
+          fetch-depth: 0
+      - uses: abbbi/github-actions-tune@v1
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+      - name: Build
         run: |
-          cargo install -f mdbook
-      - run: |
-          mdbook build docs/book
-          mdbook test docs/book
+          cd docs
+          hugo --minify
 
   gh-pages:
     if: ${{ github.ref == 'refs/heads/main' }}
