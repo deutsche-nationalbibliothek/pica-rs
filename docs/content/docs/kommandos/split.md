@@ -1,7 +1,5 @@
 # split
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Das `split`-Kommando teilt eine Menge an Datensätzen in mehrere Dateien
 mit einer maximalen Anzahl pro Datei auf.
 
@@ -89,7 +87,6 @@ $ pica count --records CHUNK_1.dat.gz
 
 ```
 
-
 ### Komprimierte Ausgabe
 
 Mittels der Option `-g`/`--gzip` erfolgt eine Komprimierung der Ausgabe:
@@ -110,6 +107,19 @@ $ pica count --records 1.dat.gz
 
 ```
 
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
 [Stapelverarbeitung]: https://de.wikipedia.org/wiki/Stapelverarbeitung
 [Gzip]: https://de.wikipedia.org/wiki/Gzip

@@ -1,11 +1,8 @@
 # hash
 
-![stability-badge](https://img.shields.io/badge/stability-unstable-red?style=flat-square)
-
 Mithilfe des Kommandos `hash` lässt sich eine Tabelle erzeugen, die in
 der ersten Spalte die IDN (Feld `003@.0`) eines Datensatzes und in der
 zweiten Spalte den [_SHA-256_] Hashwert enthält.
-
 
 ## Beschreibung
 
@@ -109,6 +106,20 @@ idn,sha256
 $ sha256sum 1.dat
 762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
 ```
+
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
 [_SHA-256_]: https://de.wikipedia.org/wiki/SHA-2
 [_sha256sum_]: https://manpages.ubuntu.com/manpages/trusty/de/man1/sha256sum.1.html

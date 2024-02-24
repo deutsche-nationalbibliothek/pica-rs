@@ -1,7 +1,5 @@
 # count
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Mithilfe des `count`-Kommandos lässt sich die Anzahl an Datensätzen
 (_records_), Feldern (_fields_) sowie Unterfeldern (_subfields_)
 ermitteln.
@@ -48,6 +46,7 @@ subfields: 3973
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben.
+
 
 ## Konfiguration
 
@@ -133,7 +132,7 @@ Soll die Veränderung (Anzahl Datensätze, Felder, Unterfelder) eines
 PICA-Abzugs über die Zeit verfolgt werden, könnte dies wie folgt
 erreicht werden:
 
-```console,ignore
+```sh
 $ echo "date,records,fields,subfields" > count.csv # Kopfzeile
 $ pica count -s dump_20220222.dat.gz --append -o count.csv # Initialer Aufruf
 $ pica count -s dump_20220223.dat.gz --append -o count.csv # Aufruf nach x Tagen
@@ -147,7 +146,7 @@ $ records,fields,subfields
 Soll auch das aktuelle Datum vor die Zeile geschrieben werden, könnten
 bspw. folgende Unix-Kommandos genutzt werden:
 
-```console,ignore
+```sh
 # Schreiben der Kopfzeile
 $ echo "date,records,fields,subfields" > count.csv
 
@@ -164,3 +163,20 @@ $ date,records,fields,subfields
 2022-02-22,7,247,549
 2022-02-23,9,347,1022
 ```
+
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
+
+[Gzip]: https://de.wikipedia.org/wiki/Gzip
+

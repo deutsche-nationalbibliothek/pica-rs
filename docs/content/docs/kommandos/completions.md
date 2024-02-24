@@ -1,17 +1,18 @@
 # completions
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Das `completions`-Kommando erzeugt Dateien, die Anweisungen enthalten,
-welche Argumente und Optionen des Toolkits für eine
-[Shell](https://de.wikipedia.org/wiki/Shell_(Betriebssystem)) zur
+welche Argumente und Optionen des Toolkits für eine [Shell] zur
 Befehlszeilenergänzung verfügbar sind.
 
 ## Beschreibung
 
-> **Hinweis:** Mit jeder neuen `pica`-Version können sich die Argumente
-> und Optionen des _command-line interface_ (CLI) ändern. Daher ist ein
-> regelmäßiges Updaten der Skripte zu empfehlen.
+{{< hint info >}}
+**Hinweis**
+
+Mit jeder neuen `pica`-Version können sich die Argumente und Optionen
+des _command-line interface_ (CLI) ändern. Daher ist ein regelmäßiges
+Updaten der Skripte zu empfehlen.
+{{< /hint >}}
 
 Nachfolgend werden exemplarisch die Befehle gezeigt, die für die
 Einbindung in die jeweilige Shell nötig sind. Die Schritte sind vom
@@ -72,3 +73,20 @@ die Funktion `compinit` aufgerufen wird.
 ```bash
 $ pica completions zsh -o ~/.zfunc/_pica
 ```
+
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
+
+[Gzip]: https://de.wikipedia.org/wiki/Gzip
+[Shell]: https://de.wikipedia.org/wiki/Shell_(Betriebssystem)

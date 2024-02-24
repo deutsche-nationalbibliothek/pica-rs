@@ -1,7 +1,5 @@
 # filter
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Mithilfe des `filter`-Kommandos können Datensätze anhand eines Kriterums
 aus der Eingabe gefiltert werden.
 
@@ -188,11 +186,25 @@ $ pica print out2.dat
 
 
 [^1]: Eine Positiv- oder Negativliste muss entweder als [CSV]-Datei
-    vorliegen, die in der **ersten Spalte** die IDN/PPN des Datensatzes
-    enthält, oder als eine [Arrow]-Datei, die eine `idn`-Spalte enthält.
+    vorliegen oder als eine [Arrow]-Datei, die eine `idn`-Spalte enthält.
     Alle Dateien werden automatisch als [CSV]-Datei interpretiert, es
     sei denn, die Datei endet mit `.ipc`, `.arrow` oder `.feather`, dann
-    erfolgt die Interpretation im [Arrow]-Format.
+    erfolgt die Interpretation im [Arrow]-Format. CSV- bzw. TSV-Dateien
+    mit der Ending `.csv.gz` bzw. `.tsv.gz` werden automatisch entpackt.
+
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
 [Arrow]: https://arrow.apache.org/
 [CSV]: https://de.wikipedia.org/wiki/CSV_(Dateiformat)

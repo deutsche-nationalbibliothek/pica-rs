@@ -1,6 +1,4 @@
-# `cat`
-
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
+# cat
 
 Das `cat`-Kommando liest Datensätze direkt von der Standardeingabe
 (`stdin`) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe
@@ -10,8 +8,8 @@ geschrieben werden.
 ## Beschreibung
 
 Der wichtigste Anwendungsfall des Kommandos besteht in Kombination mit
-den Kommandos [_partition_] oder [_split_], da mittels `cat` das
-Ergebnis von [_partition_] oder [_split_] (teil-)rückgängig gemacht
+den Kommandos _[partition]_ oder _[split]_, da mittels `cat` das
+Ergebnis von _[partition]_ oder _[split]_ (teil-)rückgängig gemacht
 werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere
 Dateien anhand eines Kriteriums zu teilen und anschließend eine
 Teilmenge wieder zusammenzufügen.
@@ -40,8 +38,7 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
   Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
   bestehende Datei standardmäßig überschrieben.
 * `--tee <filename>` — Abzweigen der Ausgabe in eine zusätzliche Datei.
-* `-g`, `--gzip` — Komprimieren der Ausgabe im
-  [gzip](https://de.wikipedia.org/wiki/Gzip)-Format.
+* `-g`, `--gzip` — Komprimieren der Ausgabe im [Gzip]-Format.
 * `-p`, `--progress` — Anzeige des Fortschritts, der die Anzahl der
   eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
   Aktivieren der Option erfordert das Schreiben der Datensätze in eine
@@ -49,7 +46,7 @@ $ pica cat ger.dat eng.dat -o ger_eng.dat
 * `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
   werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
   `stdout` geschrieben. Endet der Dateiname mit dem Suffix `.gz`, wird
-  die Ausgabe automatisch im gzip-Format komprimiert.
+  die Ausgabe automatisch im [Gzip]-Format komprimiert.
 
 ## Konfiguration
 
@@ -86,7 +83,6 @@ Das Ausschließen von ungültigen Datensätzen wird mit der Option
 $ pica cat --skip-invalid DUMP.dat.gz -o dump_valid.dat
 $ pica cat -s DUMP.dat.gz --output dump_valid.dat.gz
 ```
-
 
 ### Lesen von der Standardeingabe
 
@@ -132,7 +128,6 @@ $ pica cat --append Tu*.dat -o gnd.dat
 ...
 ```
 
-
 ### Abzweigen der Ausgabe
 
 Gelegenlich kann es nützlich sein, die Ausgabe des `cat`-Kommandos in
@@ -167,7 +162,18 @@ $ pica cat --gzip ger.dat eng.dat -o eng_ger_compressed.dat
 $ pica cat ger.dat eng.dat -o eng_ger.dat.gz
 ```
 
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
-[_filter_]: filter.md
-[_partition_]: partition.md
-[_split_]: split.md
+[Gzip]: https://de.wikipedia.org/wiki/Gzip

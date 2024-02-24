@@ -1,7 +1,5 @@
 # slice
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Das `slice`-Kommando schneidet einen zusammenhängenden Teilbereich aus
 der Eingabe aus.
 
@@ -18,7 +16,6 @@ bis 999 durchnummeriert.
 
 Das folgende Beispiel extrahiert alle (gültigen) Datensätze aus den
 Positionen 2 bis 4:
-
 
 ```console
 $ pica slice -s --start 2 --end 5 DUMP.dat.gz -o slice.dat
@@ -89,5 +86,18 @@ $ pica count --records slice.dat
 
 ```
 
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
 [Gzip]: https://de.wikipedia.org/wiki/Gzip

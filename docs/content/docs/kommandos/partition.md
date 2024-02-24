@@ -1,7 +1,5 @@
 # partition
 
-![stability-badge](https://img.shields.io/badge/stability-stable-green?style=flat-square)
-
 Mittels des `partition`-Kommandos lassen sich Datensätze anhand eines
 Unterfelds in Partitionen einteilen.
 
@@ -113,5 +111,18 @@ out
 
 ```
 
+[cat]: {{< relref "cat.md" >}}
+[completions]: {{< relref "completions.md" >}}
+[convert]: {{< relref "convert.md" >}}
+[count]: {{< relref "count.md" >}}
+[explode]: {{< relref "explode.md" >}}
+[filter]: {{< relref "filter.md" >}}
+[frequency]: {{< relref "frequency.md" >}}
+[hash]: {{< relref "hash.md" >}}
+[invalid]: {{< relref "invalid.md" >}}
+[partition]: {{< relref "partition.md" >}}
+[print]: {{< relref "print.md" >}}
+[slice]: {{< relref "slice.md" >}}
+[split]: {{< relref "split.md" >}}
 
 [Gzip]: https://de.wikipedia.org/wiki/Gzip
