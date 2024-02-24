@@ -1,4 +1,4 @@
-# `explode`
+# explode
 
 Mithilfe des `explode`-Kommandos lassen sich Datensätze in Lokal- bzw.
 Exemplardatensätze aufteilen.
