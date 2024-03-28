@@ -91,3 +91,9 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 [print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/print.html
 [slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/slice.html
 [split]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/split.html
+
+## Lizenz
+
+Das Projekt ist unter der Lizenz [EUPL-1.2] veröffentlicht.
+
+[EUPL v1.2]: ./LICENSE
