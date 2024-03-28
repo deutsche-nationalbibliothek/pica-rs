@@ -5,8 +5,6 @@
 [![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/ci.yml)
 [![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/)
 [![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 
 </div>
 
@@ -91,3 +89,7 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 [print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/print.html
 [slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/slice.html
 [split]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/split.html
+
+## Lizenz
+
+Der Quellcode sowie die Releases sind lizenziert unter der [EUPL-1.2](./LICENSE).
