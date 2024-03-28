@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["parse_path"],"struct":["ParsePathError","Path"],"trait":["PathExt"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["QueryFragment"],"struct":["Outcome","ParseQueryError","ParseSelectorError","Query","QueryOptions"],"trait":["QueryExt"]};

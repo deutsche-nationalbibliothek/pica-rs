@@ -1,0 +1,20 @@
+error[E0433]: failed to resolve: use of undeclared crate or module `alloc`
+ --> <anon>:1:18
+  |
+1 | pub trait Probe: alloc::alloc::Allocator + Sized {}
+  |                  ^^^^^ use of undeclared crate or module `alloc`
+  |
+  = help: add `extern crate alloc` to use the `alloc` crate
+help: consider importing this module
+  |
+1 + use std::alloc;
+  |
+help: if you import `alloc`, refer to it directly
+  |
+1 - pub trait Probe: alloc::alloc::Allocator + Sized {}
+1 + pub trait Probe: alloc::Allocator + Sized {}
+  |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0433`.
