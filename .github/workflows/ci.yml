@@ -85,8 +85,9 @@ jobs:
           toolchain: ${{ matrix.target.toolchain }}
           targets: ${{ matrix.target.triple }}
       - uses: Swatinem/rust-cache@v2
-      - uses: dtolnay/install@cross
-      - run: cross build --target ${{ matrix.target.triple }}
+      - run: cargo install cross
+      - run: |
+          cross build --target ${{ matrix.target.triple }}
 
 #   fuzz:
 #     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
