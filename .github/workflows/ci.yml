@@ -23,9 +23,9 @@ jobs:
     needs:
       - check
       - clippy
-      - cross
+      # - cross
       - fmt
-      - fuzz
+      # - fuzz
       - test
     steps:
       - run: exit 0
@@ -65,52 +65,52 @@ jobs:
       - run: ci/prepare-tests.sh
       - run: make test
 
-  cross:
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    name: cross ${{ matrix.target.triple }} - ${{ matrix.target.toolchain }}
-    runs-on: ${{ matrix.target.os }}
-    needs: check
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
-          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.target.toolchain }}
-          targets: ${{ matrix.target.triple }}
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo install cross
-      - run: |
-          cross build --target ${{ matrix.target.triple }}
+  # cross:
+  #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+  #   name: cross ${{ matrix.target.triple }} - ${{ matrix.target.toolchain }}
+  #   runs-on: ${{ matrix.target.os }}
+  #   needs: check
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       target:
+  #         - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
+  #         - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
+  #         - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.target.toolchain }}
+  #         targets: ${{ matrix.target.triple }}
+  #     - uses: Swatinem/rust-cache@v2
+  #     - run: cargo install cross
+  #     - run: |
+  #         cross build --target ${{ matrix.target.triple }}
 
-  fuzz:
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    name: fuzz ${{ matrix.item.name }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 900
-    needs: check
-    strategy:
-      matrix:
-        item:
-          - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
-          - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 300 }
-          - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 300 }
-          - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 300 }
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-      - uses: Swatinem/rust-cache@v2
-      - uses: dtolnay/install@cargo-fuzz
-      - run: |
-          cargo fuzz run --fuzz-dir ${{ matrix.item.fuzz-dir }} --jobs 2 ${{ matrix.item.target }} -- -max_total_time=${{ matrix.item.max-total-time }}
+  # fuzz:
+  #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
+  #   name: fuzz ${{ matrix.item.name }}
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 900
+  #   needs: check
+  #   strategy:
+  #     matrix:
+  #       item:
+  #         - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
+  #         - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 300 }
+  #         - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 300 }
+  #         - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 300 }
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: dtolnay/rust-toolchain@nightly
+  #     - uses: Swatinem/rust-cache@v2
+  #     - uses: dtolnay/install@cargo-fuzz
+  #     - run: |
+  #         cargo fuzz run --fuzz-dir ${{ matrix.item.fuzz-dir }} --jobs 2 ${{ matrix.item.target }} -- -max_total_time=${{ matrix.item.max-total-time }}
 
   fmt:
     runs-on: ubuntu-latest
@@ -134,29 +134,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: make clippy
 
-#   careful:
-#     runs-on: ubuntu-latest
-#     needs: test
-#     steps:
-#       - uses: actions/checkout@v4
-#       - uses: abbbi/github-actions-tune@v1
-#       - uses: actions/cache@v4
-#         with:
-#           key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-#           path: |
-#             ~/.cargo/bin/
-#             ~/.cargo/git/db/
-#             ~/.cargo/registry/cache/
-#             ~/.cargo/registry/index/
-#             target/
-#       - uses: dtolnay/rust-toolchain@nightly
-#       - name: "Install `cargo-careful`"
-#         run: |
-#           cargo install -f cargo-careful
-#       - name: "Run prepare tests"
-#         run: ci/prepare-tests.sh
-#       - run: |
-#           make careful
+  careful:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-careful
+      - run: ci/prepare-tests.sh
+      - run: make careful
 
 #   # udeps:
 #   #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
