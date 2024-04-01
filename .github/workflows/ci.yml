@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - check
+      - careful
       - clippy
       # - cross
       - fmt
