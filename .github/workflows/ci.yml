@@ -22,9 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - check
-      - test
+      - clippy
       - cross
+      - fmt
       - fuzz
+      - test
     steps:
       - run: exit 0
 
