@@ -18,25 +18,6 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    needs:
-      - audit
-      - careful
-      - check
-      - clippy
-      - cross
-      - deny
-      - docs
-      - fmt
-      - fuzz
-      - miri
-      - outdated
-      - test
-      - udeps
-    steps:
-      - run: exit 0
-
   check:
     runs-on: ubuntu-latest
     steps:
@@ -223,9 +204,18 @@ jobs:
     permissions:
       contents: write
     needs:
-      - test
+      - audit
+      - careful
+      - check
+      - clippy
       - cross
+      - deny
+      - fmt
       - fuzz
+      - miri
+      - outdated
+      - test
+      - udeps
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
