@@ -233,8 +233,10 @@ jobs:
           extended: true
       - run: make docs
       - name: gh-pages
-        if: ${{ github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        permissions:
+          contents: write
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: target/docs
