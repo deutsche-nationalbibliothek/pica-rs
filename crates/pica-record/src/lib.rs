@@ -1,7 +1,7 @@
 //! This crate provides the low-level primitives to work with
 //! bibliographic records encoded in PICA+.
 //!
-//! There exists an immutable and a mutable variant for each primitve.
+//! There exists an immutable and a mutable variant for each primitive.
 //! The immutable variant is used to parse the corresponding component
 //! of a record, without owning the data. This type is mostly a wrapper
 //! of the underlying data (byte slices). On the other hand there is

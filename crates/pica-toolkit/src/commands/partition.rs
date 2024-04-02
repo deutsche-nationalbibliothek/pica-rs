@@ -38,10 +38,10 @@ pub(crate) struct PartitionConfig {
 /// <PATH> expression.
 ///
 /// If a record doesn't have the field/subfield, the record won't be
-/// writte to a partition. A record with multiple values will be written
-/// to each partition; thus the partitions may not be disjoint. In order
-/// to prevent duplicate records in a partition , all duplicate values
-/// of a record will be removed.
+/// written to a partition. A record with multiple values will be
+/// written to each partition; thus the partitions may not be disjoint.
+/// In order to prevent duplicate records in a partition , all duplicate
+/// values of a record will be removed.
 #[derive(Parser, Debug)]
 pub(crate) struct Partition {
     /// Skip invalid records that can't be decoded as normalized PICA+

@@ -38,9 +38,9 @@ impl ByteRecordWrite for JsonWriter {
                 field.tag().to_string(),
             ));
 
-            if let Some(occurence) = field.occurrence() {
+            if let Some(occurrence) = field.occurrence() {
                 data.push(serde_json::Value::String(
-                    occurence.to_string(),
+                    occurrence.to_string(),
                 ));
             } else {
                 data.push(serde_json::Value::Null);

@@ -228,7 +228,7 @@ impl Select {
             writer.write_record(header.split(',').map(str::trim))?;
         }
 
-        let mut progess = Progress::new(self.progress);
+        let mut progress = Progress::new(self.progress);
 
         'outer: for filename in self.filenames {
             let mut reader =
@@ -237,7 +237,7 @@ impl Select {
             while let Some(result) = reader.next() {
                 if let Err(e) = result {
                     if e.is_invalid_record() && skip_invalid {
-                        progess.invalid();
+                        progress.invalid();
                         continue;
                     } else {
                         return Err(e.into());
@@ -245,7 +245,7 @@ impl Select {
                 }
 
                 let record = result.unwrap();
-                progess.record();
+                progress.record();
 
                 if !filter_list.check(record.idn()) {
                     continue;
@@ -298,7 +298,7 @@ impl Select {
             }
         }
 
-        progess.finish();
+        progress.finish();
         writer.flush()?;
         Ok(())
     }
