@@ -56,8 +56,8 @@ fn occurrence_ref_from_unchecked() {
 #[test]
 fn occurrence_ref_write_to() {
     let mut writer = Cursor::new(Vec::<u8>::new());
-    let ocurrence = OccurrenceRef::new("001");
-    let _ = ocurrence.write_to(&mut writer);
+    let occurrence = OccurrenceRef::new("001");
+    let _ = occurrence.write_to(&mut writer);
     assert_eq!(writer.into_inner(), b"/001");
 }
 
@@ -90,7 +90,7 @@ fn occurrence_as_bytes() {
 #[test]
 fn occurrence_write_to() {
     let mut writer = Cursor::new(Vec::<u8>::new());
-    let ocurrence: Occurrence = OccurrenceRef::new("001").into();
-    let _ = ocurrence.write_to(&mut writer);
+    let occurrence: Occurrence = OccurrenceRef::new("001").into();
+    let _ = occurrence.write_to(&mut writer);
     assert_eq!(writer.into_inner(), b"/001");
 }
