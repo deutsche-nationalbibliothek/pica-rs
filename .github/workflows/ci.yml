@@ -227,12 +227,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
       - uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: 'latest'
           extended: true
       - run: make docs
-      - name: gh-pages
+      - name: deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         permissions:
