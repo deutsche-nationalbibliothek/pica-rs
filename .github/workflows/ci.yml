@@ -31,6 +31,8 @@ jobs:
       - test
       - udeps
       - deny
+      - outdated
+      - miri
     steps:
       - run: exit 0
 
@@ -200,21 +202,20 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo outdated --exit-code 1
 
-
-#   miri:
-#     name: miri
-#     runs-on: ubuntu-latest
-#     needs: test
-#     steps:
-#     - name: Checkout repository
-#       uses: actions/checkout@v4
-#     - uses: dtolnay/rust-toolchain@miri
-#     - run: cargo miri test --workspace --lib --verbose
-#       env:
-#         MIRIFLAGS: -Zmiri-strict-provenance
-#     - run: cargo miri test --workspace --doc --verbose
-#       env:
-#         MIRIFLAGS: -Zmiri-strict-provenance
+  miri:
+    name: miri
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@miri
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo miri test --workspace --lib --verbose
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance
+      - run: cargo miri test --workspace --doc --verbose
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance
 
 #   book:
 #     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
