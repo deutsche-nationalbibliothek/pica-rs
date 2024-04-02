@@ -33,6 +33,7 @@ jobs:
       - deny
       - outdated
       - miri
+      - book
     steps:
       - run: exit 0
 
@@ -217,25 +218,19 @@ jobs:
         env:
           MIRIFLAGS: -Zmiri-strict-provenance
 
-#   book:
-#     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-#     runs-on: ubuntu-latest
-#     needs: test
-#     steps:
-#       - uses: actions/checkout@v4
-#         with:
-#           submodules: true
-#           fetch-depth: 0
-#       - uses: abbbi/github-actions-tune@v1
-#       - name: Setup Hugo
-#         uses: peaceiris/actions-hugo@v2
-#         with:
-#           hugo-version: 'latest'
-#           extended: true
-#       - name: Build
-#         run: |
-#           cd docs
-#           hugo --minify
+  book:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      - uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+          extended: true
+        run: cd docs && hugo --minify
 
 #   gh-pages:
 #     if: ${{ github.ref == 'refs/heads/main' }}
