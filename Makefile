@@ -24,7 +24,7 @@ test:
 careful:
 	$(CARGO) +nightly careful test --workspace --all-features
 
-fmt:
+check-fmt:
 	$(CARGO) fmt --all -- --check
 
 doc:

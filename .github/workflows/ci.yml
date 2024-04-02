@@ -2,49 +2,32 @@ name: CI
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - ready_for_review
-      - reopened
-    paths-ignore:
-      - '**/CHANGELOG.md'
-      - '**/README.md'
   push:
     branches:
-      - main
+      - 'main'
 
 defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+
 env:
-  CARGO_INCREMENTAL: 0
-  CACHE_KEY: Linux-cargo-nightly-x86_64-unknown-linux-gnu
-  RUSTFLAGS: -D warnings -W unreachable-pub -W rust-2021-compatibility
   RUSTUP_MAX_RETRIES: 10
+  CARGO_INCREMENTAL: 0
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: |
-          make check
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: make check
 
   test:
-    name: test ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
+    name: test ${{ matrix.target.triple }} - ${{ matrix.target.toolchain }}
     needs: check
     strategy:
       matrix:
@@ -55,37 +38,24 @@ jobs:
           - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
           - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
           - { os: macos-latest, toolchain: 1.74.1, triple: x86_64-apple-darwin }
-          - { os: macos-latest, toolchain: beta, triple: x86_64-apple-darwin }
-          - { os: macos-latest, toolchain: nightly, triple: x86_64-apple-darwin }
           - { os: windows-latest, toolchain: stable, triple: x86_64-pc-windows-gnu }
           - { os: windows-latest, toolchain: 1.74.1, triple: x86_64-pc-windows-gnu }
           - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc }
+          - { os: windows-latest, toolchain: 1.74.1, triple: i686-pc-windows-msvc }
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-        if: ${{ matrix.target.os == 'ubuntu-latest' }}
-      - uses: actions/cache@v4
-        with:
-          key: ${{ runner.os }}-cargo-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.target.toolchain }}
           targets: ${{ matrix.target.triple }}
-      - name: "Run prepare tests"
-        run: ci/prepare-tests.sh
-      - run: |
-          make test
+      - uses: Swatinem/rust-cache@v2
+      - run: ci/prepare-tests.sh
+      - run: make test
 
   cross:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    name: cross ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
+    name: cross ${{ matrix.target.triple }} - ${{ matrix.target.toolchain }}
     runs-on: ${{ matrix.target.os }}
     needs: check
     strategy:
@@ -100,23 +70,12 @@ jobs:
           - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-        if: ${{ matrix.target.os == 'ubuntu-latest' }}
-      - uses: actions/cache@v4
-        with:
-          key: ${{ runner.os }}-cargo-cross-${{ matrix.target.toolchain }}-${{ matrix.target.triple }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.target.toolchain }}
           targets: ${{ matrix.target.triple }}
-      - name: "Install cross"
-        run: cargo install -f cross
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cross
       - run: |
           cross build --target ${{ matrix.target.triple }}
 
@@ -124,30 +83,20 @@ jobs:
     if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
     name: fuzz ${{ matrix.item.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 900
     needs: check
     strategy:
       matrix:
         item:
-          - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 240 }
-          - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 240 }
-          - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 240 }
-          - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 240 }
+          - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
+          - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 300 }
+          - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 300 }
+          - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 300 }
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@nightly
-      - name: "Install cargo-fuzz"
-        run: |
-          cargo install -f cargo-fuzz
+      - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/install@cargo-fuzz
       - run: |
           cargo fuzz run --fuzz-dir ${{ matrix.item.fuzz-dir }} --jobs 2 ${{ matrix.item.target }} -- -max_total_time=${{ matrix.item.max-total-time }}
 
@@ -156,132 +105,43 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
-      - run: make fmt
+      - uses: Swatinem/rust-cache@v2
+      - run: make check-fmt
 
   clippy:
     runs-on: ubuntu-latest
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy
-      - run: |
-          make clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: make clippy
 
   careful:
     runs-on: ubuntu-latest
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@nightly
-      - name: "Install `cargo-careful`"
-        run: |
-          cargo install -f cargo-careful
-      - name: "Run prepare tests"
-        run: ci/prepare-tests.sh
-      - run: |
-          make careful
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-careful
+      - run: ci/prepare-tests.sh
+      - run: make careful
 
-  # udeps:
-  #   if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-  #   runs-on: ubuntu-latest
-  #   needs: test
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: abbbi/github-actions-tune@v1
-  #     - uses: actions/cache@v4
-  #       with:
-  #         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-  #         path: |
-  #           ~/.cargo/bin/
-  #           ~/.cargo/git/db/
-  #           ~/.cargo/registry/cache/
-  #           ~/.cargo/registry/index/
-  #           target/
-  #     - uses: dtolnay/rust-toolchain@nightly
-  #     - name: "Install `cargo-udeps`"
-  #       run: |
-  #         cargo install -f cargo-udeps
-  #     - run: |
-  #         cargo udeps --workspace
-
-  audit:
-    if: ${{ github.ref == 'refs/heads/main' }}
+  udeps:
     runs-on: ubuntu-latest
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@nightly
-      - uses: rustsec/audit-check@v1.4.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  upgrades:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: dtolnay/rust-toolchain@nightly
-      - name: "Install `cargo-upgrades`"
-        run: |
-          cargo install -f cargo-upgrades
-      - run: |
-          cargo upgrades
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-udeps
+      - run: cargo udeps --workspace
 
   deny:
     runs-on: ubuntu-latest
@@ -299,46 +159,52 @@ jobs:
         command: check ${{ matrix.checks }}
         rust-version: stable
 
+  audit:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      checks: write
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v1.4.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  outdated:
+    continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/install@cargo-outdated
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo outdated --exit-code 1
+
   miri:
     name: miri
     runs-on: ubuntu-latest
     needs: test
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - uses: dtolnay/rust-toolchain@miri
-    - run: cargo miri test --workspace --lib --verbose
-      env:
-        MIRIFLAGS: -Zmiri-strict-provenance
-    - run: cargo miri test --workspace --doc --verbose
-      env:
-        MIRIFLAGS: -Zmiri-strict-provenance
-
-  book:
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.draft }}
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
-      - uses: abbbi/github-actions-tune@v1
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
-        with:
-          hugo-version: 'latest'
-          extended: true
-      - name: Build
-        run: |
-          cd docs
-          hugo --minify
+      - uses: dtolnay/rust-toolchain@miri
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo miri test --workspace --lib --verbose
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance
+      - run: cargo miri test --workspace --doc --verbose
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance
 
-  gh-pages:
-    if: ${{ github.ref == 'refs/heads/main' }}
+  docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs:
       - audit
-      - book
       - careful
       - check
       - clippy
@@ -347,31 +213,21 @@ jobs:
       - fmt
       - fuzz
       - miri
+      - outdated
       - test
-      # - udeps
-      - upgrades
-    runs-on: ubuntu-latest
+      - udeps
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v4
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@nightly
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+      - uses: Swatinem/rust-cache@v2
+      - uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: 'latest'
           extended: true
-      - run: |
-          make docs
-      - uses: peaceiris/actions-gh-pages@v3
+      - run: make docs
+      - name: deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: target/docs

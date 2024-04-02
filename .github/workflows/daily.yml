@@ -8,40 +8,21 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
-        with:
-          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
-      - uses: dtolnay/rust-toolchain@stable
       - uses: rustsec/audit-check@v1.4.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  upgrades:
+  outdated:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: abbbi/github-actions-tune@v1
-      - uses: actions/cache@v3
-        with:
-          key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.toml') }}
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/git/db/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/index/
-            target/
       - uses: dtolnay/rust-toolchain@stable
-      - name: "Install `cargo-upgrades`"
-        run: |
-          cargo install -f cargo-upgrades
-      - run: |
-          cargo upgrades
+      - uses: dtolnay/install@cargo-outdated
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo outdated --exit-code 1
