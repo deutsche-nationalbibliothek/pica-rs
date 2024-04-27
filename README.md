@@ -67,7 +67,7 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 [AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
 [DNB]: https://www.dnb.de/
 [Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/
-[Installation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/anleitungen/installation.html
+[Installation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/installation/
 [Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
 [KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
 [Kommandos]: #kommandos
@@ -76,19 +76,19 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 [Polars]: https://www.pola.rs/
 [R]: https://www.r-project.org/
 
-[cat]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/cat.html
-[completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/completions.html
-[convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/convert.html
-[count]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/count.html
-[explode]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/explode.html
-[filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/filter.html
-[frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/frequency.html
-[hash]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/hash.html
-[invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/invalid.html
-[partition]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/partition.html
-[print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/print.html
-[slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/slice.html
-[split]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/referenz/kommandos/split.html
+[cat]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/cat/
+[completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/completions/
+[convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/convert/
+[count]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/count/
+[explode]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/explode/
+[filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/filter/
+[frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/frequency/
+[hash]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/hash/
+[invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/invalid/
+[partition]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/partition/
+[print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/print/
+[slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/slice/
+[split]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/split/
 
 ## Lizenz
 
