@@ -110,7 +110,7 @@ impl Slice {
         } else if self.length > 0 {
             self.start..(self.start + self.length)
         } else {
-            self.start..::std::usize::MAX
+            self.start..usize::MAX
         };
 
         let mut progress = Progress::new(self.progress);
@@ -138,8 +138,7 @@ impl Slice {
                         if e.is_invalid_record() && skip_invalid {
                             progress.invalid();
 
-                            if self.length > 0
-                                && range.end < std::usize::MAX
+                            if self.length > 0 && range.end < usize::MAX
                             {
                                 range.end += 1;
                             }
