@@ -43,8 +43,8 @@ release:
 	$(CARGO) build --workspace --all-features --release
 	$(CARGO) test --workspace --all-features --release
 
-install: release
-	sudo install -Dm755 target/release/pica $(DESTDIR)$(BINDIR)
+install:
+	install -Dm755 target/release/pica $(DESTDIR)$(BINDIR)
 
 clean:
 	$(CARGO) clean
