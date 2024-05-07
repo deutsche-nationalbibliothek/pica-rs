@@ -202,6 +202,7 @@ impl Frequency {
                 }
 
                 let record = result.unwrap();
+                progress.record();
 
                 if let Some(ref matcher) = matcher {
                     if !matcher.is_match(
@@ -212,7 +213,6 @@ impl Frequency {
                     }
                 }
 
-                progress.record();
                 seen.clear();
 
                 let outcome = record.query(&query, &options);
