@@ -2,7 +2,8 @@ use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 
-use clap::Parser;
+use clap::{value_parser, Parser};
+use pica_matcher::{MatcherBuilder, MatcherOptions};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 
@@ -43,6 +44,42 @@ pub(crate) struct Count {
     #[arg(long,
           conflicts_with_all = ["records", "fields", "csv", "tsv", "no_header"])]
     subfields: bool,
+
+    /// When this flag is set, comparison operations will be search
+    /// case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+          default_value = "75")]
+    strsim_threshold: u8,
+
+    /// A filter expression used for searching
+    #[arg(long = "where")]
+    filter: Option<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical AND-operator (conjunction)
+    ///
+    /// This option can't be combined with `--or` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    and: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical OR-operator (disjunction)
+    ///
+    /// This option can't be combined with `--and` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
+    or: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical NOT-operator (negation)
+    ///
+    /// This option can't be combined with `--and` or `--or`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    not: Vec<String>,
 
     /// Write output comma-separated (CSV)
     #[arg(long, conflicts_with = "tsv")]
@@ -89,6 +126,28 @@ impl Count {
             None => Box::new(io::stdout()),
         };
 
+        let nf = if let Some(ref global) = config.global {
+            global.translit
+        } else {
+            None
+        };
+
+        let matcher = if let Some(matcher) = self.filter {
+            Some(
+                MatcherBuilder::new(matcher, nf)?
+                    .and(self.and)?
+                    .not(self.not)?
+                    .or(self.or)?
+                    .build(),
+            )
+        } else {
+            None
+        };
+
+        let options = MatcherOptions::new()
+            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
+            .case_ignore(self.ignore_case);
+
         let mut records = 0;
         let mut fields = 0;
         let mut subfields = 0;
@@ -111,6 +170,12 @@ impl Count {
 
                 let record = result.unwrap();
                 progress.record();
+
+                if let Some(ref matcher) = matcher {
+                    if !matcher.is_match(&record, &options) {
+                        continue;
+                    }
+                }
 
                 records += 1;
                 fields += record.iter().len();
