@@ -24,6 +24,10 @@ subfields: 3973
 
 * `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
   nicht dekodiert werden konnten.
+* `-i`, `--ignore-case` — Groß- und Kleinschreibung wird bei Vergleichen
+  ignoriert.
+* `--strsim-threshold <value>` — Festlegen des Schwellenwerts beim
+  Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
 * `--append` — Wenn die Ausgabedatei bereits existiert, wird die
   Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
   bestehende Datei standardmäßig überschrieben.
@@ -39,6 +43,17 @@ subfields: 3973
 * `--csv` — die Ausgabe erfolgt im CSV-Format.
 * `--tsv` — die Ausgabe erfolgt im TSV-Format.
 * `--no-header` — es wird keine Kopfzeile in die Ausgabe geschrieben.
+* `--where` `<filter>` — Angabe eines Filters, der auf die erzeugten
+  Datensätze angewandt wird.
+* `--and` `<expr>` — Hinzufügen eines zusätzlichen Filters mittels der
+  booleschen `&&`-Verknüpfung. Der ursprüngliche Filterausdruck
+  `<filter>` wird zum Ausdruck `<filter> && <expr>`.
+* `--or` `<expr>` — Hinzufügen eines zusätzlichen Filters mittels der
+  booleschen `||`-Verknüpfung. Der ursprüngliche Filterausdruck
+  `<filter>` wird zum Ausdruck `<filter> || <expr>`.
+* `--not` `<expr>` — Hinzufügen eines zusätzlichen Filters. Der
+  ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck `<filter> &&
+  !(<expr>)`.
 * `-p`, `--progress` — Anzeige des Fortschritts, der die Anzahl der
   eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
   Aktivieren der Option erfordert das Schreiben der Datensätze in eine
