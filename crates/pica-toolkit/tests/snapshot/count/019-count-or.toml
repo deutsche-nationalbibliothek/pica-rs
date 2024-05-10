@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "count -s --records --where '002@.0 =^ \"Ts\"' --or '002@.0 == \"Tp1\"' dump.dat.gz"
+status = "success"
+stderr = ""
+stdout = "4\n"
