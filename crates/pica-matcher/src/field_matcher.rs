@@ -1,7 +1,7 @@
 //! Matcher that works on PICA+ [Fields](pica_record::Field).
 
 use std::cell::RefCell;
-use std::ops::{BitAnd, BitOr, Not};
+use std::ops::{BitAnd, BitOr, BitXor, Not};
 use std::str::FromStr;
 
 use bstr::ByteSlice;
@@ -484,15 +484,20 @@ impl FieldMatcher {
             Self::Group(m) => m.is_match(fields, options),
             Self::Not(m) => !m.is_match(fields, options),
             Self::Cardinality(m) => m.is_match(fields, options),
-            Self::Composite { lhs, op, rhs } => {
-                if *op == BooleanOp::And {
+            Self::Composite { lhs, op, rhs } => match op {
+                BooleanOp::And => {
                     lhs.is_match(fields.clone(), options)
                         && rhs.is_match(fields, options)
-                } else {
+                }
+                BooleanOp::Or => {
                     lhs.is_match(fields.clone(), options)
                         || rhs.is_match(fields, options)
                 }
-            }
+                BooleanOp::Xor => {
+                    lhs.is_match(fields.clone(), options)
+                        != rhs.is_match(fields, options)
+                }
+            },
         }
     }
 }
@@ -625,7 +630,7 @@ fn parse_field_matcher_not(i: &mut &[u8]) -> PResult<FieldMatcher> {
 }
 
 #[inline]
-fn parse_field_matcher_and(i: &mut &[u8]) -> PResult<FieldMatcher> {
+fn parse_field_matcher_xor(i: &mut &[u8]) -> PResult<FieldMatcher> {
     (
         ws(alt((
             parse_field_matcher_group,
@@ -637,9 +642,41 @@ fn parse_field_matcher_and(i: &mut &[u8]) -> PResult<FieldMatcher> {
         repeat(
             1..,
             preceded(
+                ws(alt(("^", "XOR"))),
+                ws(alt((
+                    parse_field_matcher_group,
+                    parse_field_matcher_cardinality,
+                    parse_field_matcher_singleton,
+                    parse_field_matcher_not,
+                    parse_field_matcher_exists,
+                ))),
+            ),
+        ),
+    )
+        .map(|(head, remainder): (_, Vec<_>)| {
+            remainder.into_iter().fold(head, |prev, next| prev ^ next)
+        })
+        .parse_next(i)
+}
+
+#[inline]
+fn parse_field_matcher_and(i: &mut &[u8]) -> PResult<FieldMatcher> {
+    (
+        ws(alt((
+            parse_field_matcher_group,
+            parse_field_matcher_xor,
+            parse_field_matcher_cardinality,
+            parse_field_matcher_singleton,
+            parse_field_matcher_not,
+            parse_field_matcher_exists,
+        ))),
+        repeat(
+            1..,
+            preceded(
                 ws("&&"),
                 ws(alt((
                     parse_field_matcher_group,
+                    parse_field_matcher_xor,
                     parse_field_matcher_cardinality,
                     parse_field_matcher_singleton,
                     parse_field_matcher_not,
@@ -660,6 +697,7 @@ fn parse_field_matcher_or(i: &mut &[u8]) -> PResult<FieldMatcher> {
         ws(alt((
             parse_field_matcher_group,
             parse_field_matcher_and,
+            parse_field_matcher_xor,
             parse_field_matcher_cardinality,
             parse_field_matcher_singleton,
             parse_field_matcher_not,
@@ -672,6 +710,7 @@ fn parse_field_matcher_or(i: &mut &[u8]) -> PResult<FieldMatcher> {
                 ws(alt((
                     parse_field_matcher_group,
                     parse_field_matcher_and,
+                    parse_field_matcher_xor,
                     parse_field_matcher_cardinality,
                     parse_field_matcher_singleton,
                     parse_field_matcher_not,
@@ -689,7 +728,12 @@ fn parse_field_matcher_or(i: &mut &[u8]) -> PResult<FieldMatcher> {
 fn parse_field_matcher_composite(
     i: &mut &[u8],
 ) -> PResult<FieldMatcher> {
-    alt((parse_field_matcher_or, parse_field_matcher_and)).parse_next(i)
+    alt((
+        parse_field_matcher_or,
+        parse_field_matcher_and,
+        parse_field_matcher_xor,
+    ))
+    .parse_next(i)
 }
 
 pub fn parse_field_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
@@ -745,6 +789,19 @@ impl BitOr for FieldMatcher {
         Self::Composite {
             lhs: Box::new(self),
             op: BooleanOp::Or,
+            rhs: Box::new(rhs),
+        }
+    }
+}
+
+impl BitXor for FieldMatcher {
+    type Output = Self;
+
+    #[inline]
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Self::Composite {
+            lhs: Box::new(self),
+            op: BooleanOp::Xor,
             rhs: Box::new(rhs),
         }
     }

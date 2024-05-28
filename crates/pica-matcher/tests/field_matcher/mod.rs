@@ -467,6 +467,17 @@ fn field_matcher_bit_or() {
 }
 
 #[test]
+fn field_matcher_bit_xor() {
+    let lhs = FieldMatcher::new("044K.b?");
+    let rhs = FieldMatcher::new("044K.9?");
+    let matcher = lhs ^ rhs;
+
+    let field =
+        FieldRef::new("044K", None, vec![('9', "123"), ('b', "kasw")]);
+    assert!(!matcher.is_match(&field, &MatcherOptions::default()));
+}
+
+#[test]
 fn field_matcher_negate() {
     let inner = FieldMatcher::new("044H.9?");
     let matcher = !inner;
@@ -620,6 +631,204 @@ fn field_matcher_composite_or() {
         vec![
             &FieldRef::new("012A", None, vec![('0', "abc")]),
             &FieldRef::new("013A", None, vec![('a', "1"), ('a', "2")]),
+        ],
+        &options
+    ));
+}
+
+#[test]
+fn field_matcher_composite_xor() {
+    let matcher = FieldMatcher::new("012A? ^ 012B?");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&field!("012A", '0', "abc"), &options));
+    assert!(!matcher.is_match(
+        vec![&field!("012C", '0', ""), &field!("012D", '0', ""),],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![&field!("012C", '0', ""), &field!("012A", '0', ""),],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![&field!("012A", '0', ""), &field!("012C", '0', ""),],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![&field!("012A", '0', ""), &field!("012B", '0', ""),],
+        &options
+    ));
+
+    // XOR
+    let matcher = FieldMatcher::new("012A? XOR 012B?");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&field!("012A", '0', "abc"), &options));
+    assert!(!matcher.is_match(
+        vec![&field!("012C", '0', ""), &field!("012D", '0', ""),],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![&field!("012C", '0', ""), &field!("012A", '0', ""),],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![&field!("012A", '0', ""), &field!("012C", '0', ""),],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![&field!("012A", '0', ""), &field!("012B", '0', ""),],
+        &options
+    ));
+
+    // list
+    let matcher = FieldMatcher::new("012A? ^ 012B? ^ 012C?");
+    let options = MatcherOptions::default();
+
+    assert!(matcher.is_match(&field!("012A", '0', "abc"), &options));
+    assert!(matcher.is_match(
+        vec![
+            &field!("012C", '0', ""),
+            &field!("012D", '0', ""),
+            &field!("013D", '0', "")
+        ],
+        &options
+    ));
+
+    // precedence OR
+    let matcher = FieldMatcher::new("012A? ^ 012B? || 012C?");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("012C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("012C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("012C", '0', "")
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("012C", '0', "")
+        ],
+        &options
+    ));
+
+    // precedence AND
+    let matcher = FieldMatcher::new("012A? ^ 012B? && 012C?");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("012C", '0', "")
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("013A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("012C", '0', "")
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("013B", '0', ""),
+            &field!("012C", '0', "")
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("013C", '0', "")
+        ],
+        &options
+    ));
+    assert!(!matcher.is_match(
+        vec![
+            &field!("012A", '0', ""),
+            &field!("012B", '0', ""),
+            &field!("012C", '0', "")
         ],
         &options
     ));
