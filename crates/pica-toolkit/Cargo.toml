@@ -34,11 +34,8 @@ toml = { workspace = true }
 unicode-normalization = { version = "0.1" }
 
 [dev-dependencies]
-assert_cmd = "2.0"
-predicates = "3.0"
 quickcheck = "1.0"
 quickcheck_macros = "1.0"
-tempfile = "3.8"
 trycmd = "0.15"
 
 [[bin]]
