@@ -93,35 +93,36 @@ impl FilterList {
     ) -> Result<DataFrame, FilterListError> {
         let extension = path.extension().and_then(OsStr::to_str);
         let path_str = path.to_str().unwrap_or_default();
+        let path = path.to_owned();
+
+        let options = CsvReadOptions::default()
+            .with_has_header(true)
+            .with_infer_schema_length(Some(0));
 
         match extension {
             Some("ipc" | "arrow" | "feather") => {
                 Ok(IpcReader::new(File::open(path)?)
-                    .memory_mapped(false)
+                    .memory_mapped(None)
                     .finish()?)
             }
-            Some("csv") => Ok(CsvReader::from_path(path)?
-                .infer_schema(Some(0))
-                .has_header(true)
+            Some("csv") => Ok(options
+                .try_into_reader_with_file_path(Some(path))?
                 .finish()?),
-            Some("gz") if path_str.ends_with(".csv.gz") => {
-                Ok(CsvReader::from_path(path)?
-                    .infer_schema(Some(0))
-                    .has_header(true)
-                    .finish()?)
-            }
-            Some("tsv") => Ok(CsvReader::from_path(path)?
-                .with_separator(b'\t')
-                .has_header(true)
-                .infer_schema(Some(0))
+            Some("gz") if path_str.ends_with(".csv.gz") => Ok(options
+                .try_into_reader_with_file_path(Some(path))?
                 .finish()?),
-            Some("gz") if path_str.ends_with(".tsv.gz") => {
-                Ok(CsvReader::from_path(path)?
-                    .with_separator(b'\t')
-                    .infer_schema(Some(0))
-                    .has_header(true)
-                    .finish()?)
-            }
+            Some("tsv") => Ok(options
+                .with_parse_options(
+                    CsvParseOptions::default().with_separator(b'\t'),
+                )
+                .try_into_reader_with_file_path(Some(path))?
+                .finish()?),
+            Some("gz") if path_str.ends_with(".tsv.gz") => Ok(options
+                .with_parse_options(
+                    CsvParseOptions::default().with_separator(b'\t'),
+                )
+                .try_into_reader_with_file_path(Some(path))?
+                .finish()?),
             _ => {
                 Err(FilterListError::InvalidFileFormat(path_str.into()))
             }
