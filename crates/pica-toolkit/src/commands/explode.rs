@@ -34,6 +34,12 @@ pub(crate) struct Explode {
     #[arg(long, short)]
     gzip: bool,
 
+    /// Limit the result to first <n> records
+    ///
+    /// Note: A limit value `0` means no limit.
+    #[arg(long, short, value_name = "n", default_value = "0")]
+    limit: usize,
+
     /// A filter expression used for searching
     #[arg(long = "where")]
     filter: Option<String>,
@@ -128,14 +134,22 @@ fn process_main(
     matcher: Option<&RecordMatcher>,
     options: &MatcherOptions,
     writer: &mut Box<dyn ByteRecordWrite>,
-) -> io::Result<()> {
+    limit: &mut usize,
+) -> io::Result<bool> {
+    if *limit == 0 {
+        return Ok(false);
+    }
+
     if let Some(matcher) = matcher {
         if !matcher.is_match(record, options) {
-            return Ok(());
+            return Ok(true);
         }
     }
 
-    writer.write_byte_record(record)
+    writer.write_byte_record(record)?;
+    *limit -= 1;
+
+    Ok(true)
 }
 
 fn process_copy(
@@ -143,7 +157,10 @@ fn process_copy(
     matcher: Option<&RecordMatcher>,
     options: &MatcherOptions,
     writer: &mut Box<dyn ByteRecordWrite>,
-) -> io::Result<()> {
+    limit: &mut usize,
+) -> io::Result<bool> {
+    debug_assert!(*limit > 0);
+
     let mut last = Level::Main;
     let mut records = vec![];
     let mut main = vec![];
@@ -190,9 +207,14 @@ fn process_copy(
         }
 
         writer.write_byte_record(&record)?;
+        *limit -= 1;
+
+        if *limit == 0 {
+            return Ok(false);
+        }
     }
 
-    Ok(())
+    Ok(*limit == 0)
 }
 
 fn process_local(
@@ -200,7 +222,10 @@ fn process_local(
     matcher: Option<&RecordMatcher>,
     options: &MatcherOptions,
     writer: &mut Box<dyn ByteRecordWrite>,
-) -> io::Result<()> {
+    limit: &mut usize,
+) -> io::Result<bool> {
+    debug_assert!(*limit > 0);
+
     let mut main = vec![];
     let mut acc = vec![];
     let mut records = vec![];
@@ -235,9 +260,14 @@ fn process_local(
         }
 
         writer.write_byte_record(&record)?;
+        *limit -= 1;
+
+        if *limit == 0 {
+            return Ok(false);
+        }
     }
 
-    Ok(())
+    Ok(*limit == 0)
 }
 
 impl Explode {
@@ -273,6 +303,12 @@ impl Explode {
 
         let mut progress = Progress::new(self.progress);
 
+        let mut limit = if self.limit == 0 {
+            usize::MAX
+        } else {
+            self.limit
+        };
+
         let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .from_path_or_stdout(self.output)?;
@@ -283,7 +319,7 @@ impl Explode {
             Level::Local => process_local,
         };
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -299,12 +335,17 @@ impl Explode {
 
                 let record = result.unwrap();
                 progress.record();
-                process_record(
+                let stop = process_record(
                     &record,
                     matcher.as_ref(),
                     &options,
                     &mut writer,
+                    &mut limit,
                 )?;
+
+                if stop {
+                    break 'outer;
+                }
             }
         }
 
