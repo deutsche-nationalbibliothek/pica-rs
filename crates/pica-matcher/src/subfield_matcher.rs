@@ -1,7 +1,7 @@
 //! Matcher that works on PICA+ [Subfields](pica_record::Subfield).
 
 use std::cell::RefCell;
-use std::ops::{BitAnd, BitOr};
+use std::ops::{BitAnd, BitOr, BitXor};
 use std::str::FromStr;
 
 use bstr::ByteSlice;
@@ -918,15 +918,20 @@ impl SubfieldMatcher {
             Self::Singleton(m) => m.is_match(subfields, options),
             Self::Group(m) => m.is_match(subfields, options),
             Self::Not(m) => !m.is_match(subfields, options),
-            Self::Composite { lhs, op, rhs } => {
-                if *op == BooleanOp::And {
+            Self::Composite { lhs, op, rhs } => match op {
+                BooleanOp::And => {
                     lhs.is_match(subfields.clone(), options)
                         && rhs.is_match(subfields, options)
-                } else {
+                }
+                BooleanOp::Or => {
                     lhs.is_match(subfields.clone(), options)
                         || rhs.is_match(subfields, options)
                 }
-            }
+                BooleanOp::Xor => {
+                    lhs.is_match(subfields.clone(), options)
+                        != rhs.is_match(subfields, options)
+                }
+            },
         }
     }
 }
@@ -1009,6 +1014,7 @@ fn parse_or_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
     (
         alt((
             ws(parse_group_matcher),
+            ws(parse_xor_matcher),
             ws(parse_and_matcher),
             ws(parse_subfield_singleton_matcher),
             ws(parse_not_matcher),
@@ -1019,6 +1025,7 @@ fn parse_or_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
                 ws("||"),
                 alt((
                     ws(parse_group_matcher),
+                    ws(parse_xor_matcher),
                     ws(parse_and_matcher),
                     ws(parse_subfield_singleton_matcher),
                     ws(parse_not_matcher),
@@ -1060,8 +1067,38 @@ fn parse_and_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
 }
 
 #[inline]
+fn parse_xor_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
+    (
+        ws(alt((
+            parse_group_matcher,
+            parse_and_matcher,
+            parse_singleton_matcher.map(SubfieldMatcher::Singleton),
+            parse_not_matcher,
+        ))),
+        repeat(
+            1..,
+            preceded(
+                ws(alt(("^", "XOR"))),
+                ws(alt((
+                    parse_group_matcher,
+                    parse_and_matcher,
+                    parse_singleton_matcher
+                        .map(SubfieldMatcher::Singleton),
+                    parse_not_matcher,
+                ))),
+            ),
+        ),
+    )
+        .map(|(head, remainder): (_, Vec<_>)| {
+            remainder.into_iter().fold(head, |prev, next| prev ^ next)
+        })
+        .parse_next(i)
+}
+
+#[inline]
 fn parse_composite_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
-    alt((parse_or_matcher, parse_and_matcher)).parse_next(i)
+    alt((parse_or_matcher, parse_xor_matcher, parse_and_matcher))
+        .parse_next(i)
 }
 
 pub fn parse_subfield_matcher(
@@ -1116,6 +1153,18 @@ impl BitOr for SubfieldMatcher {
         Self::Composite {
             lhs: Box::new(self),
             op: BooleanOp::Or,
+            rhs: Box::new(rhs),
+        }
+    }
+}
+
+impl BitXor for SubfieldMatcher {
+    type Output = Self;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Self::Composite {
+            lhs: Box::new(self),
+            op: BooleanOp::Xor,
             rhs: Box::new(rhs),
         }
     }

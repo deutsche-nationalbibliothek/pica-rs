@@ -14,6 +14,7 @@ use winnow::{PResult, Parser};
 pub enum BooleanOp {
     And, // and, "&&"
     Or,  // or, "||"
+    Xor, // xor, "^"
 }
 
 /// Strip whitespaces from the beginning and end.
