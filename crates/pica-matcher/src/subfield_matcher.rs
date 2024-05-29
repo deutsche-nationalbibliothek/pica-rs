@@ -1014,8 +1014,8 @@ fn parse_or_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
     (
         alt((
             ws(parse_group_matcher),
-            ws(parse_and_matcher),
             ws(parse_xor_matcher),
+            ws(parse_and_matcher),
             ws(parse_subfield_singleton_matcher),
             ws(parse_not_matcher),
         )),
@@ -1025,8 +1025,8 @@ fn parse_or_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
                 ws("||"),
                 alt((
                     ws(parse_group_matcher),
-                    ws(parse_and_matcher),
                     ws(parse_xor_matcher),
+                    ws(parse_and_matcher),
                     ws(parse_subfield_singleton_matcher),
                     ws(parse_not_matcher),
                 )),
@@ -1044,7 +1044,6 @@ fn parse_and_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
     (
         ws(alt((
             parse_group_matcher,
-            parse_xor_matcher,
             parse_singleton_matcher.map(SubfieldMatcher::Singleton),
             parse_not_matcher,
         ))),
@@ -1054,7 +1053,6 @@ fn parse_and_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
                 ws("&&"),
                 ws(alt((
                     parse_group_matcher,
-                    parse_xor_matcher,
                     parse_singleton_matcher
                         .map(SubfieldMatcher::Singleton),
                     parse_not_matcher,
@@ -1073,6 +1071,7 @@ fn parse_xor_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
     (
         ws(alt((
             parse_group_matcher,
+            parse_and_matcher,
             parse_singleton_matcher.map(SubfieldMatcher::Singleton),
             parse_not_matcher,
         ))),
@@ -1082,6 +1081,7 @@ fn parse_xor_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
                 ws(alt(("^", "XOR"))),
                 ws(alt((
                     parse_group_matcher,
+                    parse_and_matcher,
                     parse_singleton_matcher
                         .map(SubfieldMatcher::Singleton),
                     parse_not_matcher,
@@ -1097,7 +1097,7 @@ fn parse_xor_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
 
 #[inline]
 fn parse_composite_matcher(i: &mut &[u8]) -> PResult<SubfieldMatcher> {
-    alt((parse_or_matcher, parse_and_matcher, parse_xor_matcher))
+    alt((parse_or_matcher, parse_xor_matcher, parse_and_matcher))
         .parse_next(i)
 }
 

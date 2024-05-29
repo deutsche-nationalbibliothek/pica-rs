@@ -1041,13 +1041,26 @@ fn subfield_matcher_xor() -> anyhow::Result<()> {
     assert!(!matcher.is_match(&subfield!('a', "dcd"), &options));
     assert!(!matcher.is_match(&subfield!('a', "ddb"), &options));
     assert!(matcher.is_match(&subfield!('a', "dcb"), &options));
-    assert!(!matcher.is_match(&subfield!('a', "add"), &options));
+    assert!(matcher.is_match(&subfield!('a', "add"), &options));
     assert!(matcher.is_match(&subfield!('a', "acd"), &options));
-    assert!(!matcher.is_match(&subfield!('a', "adb"), &options));
+    assert!(matcher.is_match(&subfield!('a', "adb"), &options));
     assert!(!matcher.is_match(&subfield!('a', "acb"), &options));
 
     let matcher =
         SubfieldMatcher::new("a =? 'c' && a =^ 'a' ^ a =$ 'b'");
+    let options = MatcherOptions::default();
+
+    assert!(!matcher.is_match(&subfield!('a', "ddd"), &options));
+    assert!(matcher.is_match(&subfield!('a', "ddb"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "add"), &options));
+    assert!(matcher.is_match(&subfield!('a', "adb"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "dcd"), &options));
+    assert!(matcher.is_match(&subfield!('a', "dcb"), &options));
+    assert!(matcher.is_match(&subfield!('a', "acd"), &options));
+    assert!(!matcher.is_match(&subfield!('a', "acb"), &options));
+
+    let matcher =
+        SubfieldMatcher::new("a =? 'c' && (a =^ 'a' ^ a =$ 'b')");
     let options = MatcherOptions::default();
 
     assert!(!matcher.is_match(&subfield!('a', "ddd"), &options));

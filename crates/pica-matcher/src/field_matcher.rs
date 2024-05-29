@@ -634,6 +634,7 @@ fn parse_field_matcher_xor(i: &mut &[u8]) -> PResult<FieldMatcher> {
     (
         ws(alt((
             parse_field_matcher_group,
+            parse_field_matcher_and,
             parse_field_matcher_cardinality,
             parse_field_matcher_singleton,
             parse_field_matcher_not,
@@ -645,6 +646,7 @@ fn parse_field_matcher_xor(i: &mut &[u8]) -> PResult<FieldMatcher> {
                 ws(alt(("^", "XOR"))),
                 ws(alt((
                     parse_field_matcher_group,
+                    parse_field_matcher_and,
                     parse_field_matcher_cardinality,
                     parse_field_matcher_singleton,
                     parse_field_matcher_not,
@@ -664,7 +666,6 @@ fn parse_field_matcher_and(i: &mut &[u8]) -> PResult<FieldMatcher> {
     (
         ws(alt((
             parse_field_matcher_group,
-            parse_field_matcher_xor,
             parse_field_matcher_cardinality,
             parse_field_matcher_singleton,
             parse_field_matcher_not,
@@ -676,7 +677,6 @@ fn parse_field_matcher_and(i: &mut &[u8]) -> PResult<FieldMatcher> {
                 ws("&&"),
                 ws(alt((
                     parse_field_matcher_group,
-                    parse_field_matcher_xor,
                     parse_field_matcher_cardinality,
                     parse_field_matcher_singleton,
                     parse_field_matcher_not,
@@ -730,8 +730,8 @@ fn parse_field_matcher_composite(
 ) -> PResult<FieldMatcher> {
     alt((
         parse_field_matcher_or,
-        parse_field_matcher_and,
         parse_field_matcher_xor,
+        parse_field_matcher_and,
     ))
     .parse_next(i)
 }
