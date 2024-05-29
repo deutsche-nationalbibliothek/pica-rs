@@ -103,8 +103,8 @@ macro_rules! push_record {
     ($records:expr, $main:expr, $local:expr, $acc:expr) => {
         if !$acc.is_empty() {
             let mut record = $main.clone();
-            if let Some(local) = $local {
-                record.push(local);
+            if !$local.is_empty() {
+                record.extend_from_slice(&$local);
             }
             record.extend_from_slice(&$acc);
 
@@ -144,32 +144,40 @@ fn process_copy(
     options: &MatcherOptions,
     writer: &mut Box<dyn ByteRecordWrite>,
 ) -> io::Result<()> {
-    let mut main = vec![];
-    let mut acc = vec![];
+    let mut last = Level::Main;
     let mut records = vec![];
-    let mut local = None;
+    let mut main = vec![];
+    let mut local = vec![];
+    let mut copy = vec![];
     let mut count = None;
 
     for field in record.iter() {
         match field.level() {
             Level::Main => main.push(field),
             Level::Local => {
-                push_record!(records, main, local, acc);
-                local = Some(field);
-                count = None;
+                if last == Level::Copy {
+                    push_record!(records, main, local, copy);
+                    local.clear();
+                    count = None;
+                }
+
+                local.push(field);
             }
             Level::Copy => {
                 if count != field.occurrence() {
-                    push_record!(records, main, local, acc);
+                    push_record!(records, main, local, copy);
                     count = field.occurrence();
                 }
 
-                acc.push(field);
+                copy.push(field);
             }
         }
+
+        last = field.level();
     }
 
-    push_record!(records, main, local, acc);
+    push_record!(records, main, local, copy);
+
     for fields in records {
         let data = record_bytes!(fields);
         let record =
@@ -196,16 +204,22 @@ fn process_local(
     let mut main = vec![];
     let mut acc = vec![];
     let mut records = vec![];
+    let mut last = Level::Main;
 
     for field in record.iter() {
         match field.level() {
             Level::Main => main.push(field),
             Level::Copy => acc.push(field),
             Level::Local => {
-                push_record!(records, main, acc);
+                if last == Level::Copy {
+                    push_record!(records, main, acc);
+                }
+
                 acc.push(field)
             }
         }
+
+        last = field.level();
     }
 
     push_record!(records, main, acc);
