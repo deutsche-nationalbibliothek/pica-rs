@@ -113,6 +113,10 @@ $ pica print copy.dat
   ignoriert.
 * `--strsim-threshold <value>` — Festlegen des Schwellenwerts beim
   Ähnlichkeitsvergleich von Zeichenketten mittels `=*`.
+* `-k`, `--keep` — Es werden nur die Felder eines Datensatzes
+  beibehalten, die in der Liste aufgeführt werden.
+* `-d`, `--discard` — Es werden die Felder eines Datensatzes verworfen,
+    die in der Liste aufgeführt werden.
 * `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die ersten `<n>`
   (gültigen) Datensätze.
 * `--where` `<filter>` — Angabe eines Filters, der auf die erzeugten

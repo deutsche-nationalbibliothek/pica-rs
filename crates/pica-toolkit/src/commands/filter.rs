@@ -297,7 +297,7 @@ impl Filter {
     }
 }
 
-fn parse_predicates(
+pub(crate) fn parse_predicates(
     s: &str,
 ) -> Result<Vec<(TagMatcher, OccurrenceMatcher)>, ParseMatcherError> {
     let items = s.split(',').map(str::trim).filter(|s| !s.is_empty());

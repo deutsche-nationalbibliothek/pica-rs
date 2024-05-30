@@ -6,6 +6,7 @@ use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
 use pica_record::{ByteRecord, FieldRef, Level};
 use serde::{Deserialize, Serialize};
 
+use super::filter::parse_predicates;
 use crate::config::Config;
 use crate::error::CliResult;
 use crate::progress::Progress;
@@ -36,14 +37,6 @@ pub(crate) struct Explode {
     /// Note: A limit value `0` means no limit.
     #[arg(long, short, value_name = "n", default_value = "0")]
     limit: usize,
-
-    /// Keep only fields specified by a list of predicates.
-    #[arg(long, short)]
-    keep: Option<String>,
-
-    /// Discard fields specified by a list of predicates.
-    #[arg(long, short)]
-    discard: Option<String>,
 
     /// A filter expression used for searching
     #[arg(long = "where")]
@@ -80,6 +73,14 @@ pub(crate) struct Explode {
     #[arg(long, value_parser = value_parser!(u8).range(0..100),
         default_value = "75")]
     strsim_threshold: u8,
+
+    /// Keep only fields specified by a list of predicates.
+    #[arg(long, short)]
+    keep: Option<String>,
+
+    /// Discard fields specified by a list of predicates.
+    #[arg(long, short)]
+    discard: Option<String>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -228,6 +229,12 @@ impl Explode {
             None
         };
 
+        let discard = self.discard.unwrap_or_default();
+        let discard_predicates = parse_predicates(&discard)?;
+
+        let keep = self.keep.unwrap_or_default();
+        let keep_predicates = parse_predicates(&keep)?;
+
         let mut progress = Progress::new(self.progress);
         let mut count = 0;
 
@@ -265,13 +272,39 @@ impl Explode {
                     }
                     data.push(b'\n');
 
-                    let record = ByteRecord::from_bytes(&data)
+                    let mut record = ByteRecord::from_bytes(&data)
                         .expect("valid record");
 
                     if let Some(ref matcher) = matcher {
                         if !matcher.is_match(&record, &options) {
                             continue;
                         }
+                    }
+
+                    if !keep_predicates.is_empty() {
+                        record.retain(|field| {
+                            for (t, o) in keep_predicates.iter() {
+                                if t.is_match(field.tag())
+                                    && *o == field.occurrence()
+                                {
+                                    return true;
+                                }
+                            }
+                            false
+                        });
+                    }
+
+                    if !discard_predicates.is_empty() {
+                        record.retain(|field| {
+                            for (t, o) in discard_predicates.iter() {
+                                if t.is_match(field.tag())
+                                    && *o == field.occurrence()
+                                {
+                                    return false;
+                                }
+                            }
+                            true
+                        });
                     }
 
                     writer.write_byte_record(&record)?;
