@@ -3,13 +3,6 @@
 Mithilfe des `explode`-Kommandos lassen sich Datensätze in Lokal- bzw.
 Exemplardatensätze aufteilen.
 
-{{< hint danger >}}
-**Hinweis:**
-Das `explode`-Kommando befindet sich in der aktiven Entwicklung.
-Funktionalitäten können unvollständig oder fehlerhaft sein. Änderungen
-am _command-line interface_ (CLI) sind nicht ausgeschlossen.
-{{< /hint >}}
-
 ## Beschreibung
 
 <!-- TODO: Separate Seite über den Aufbau eines PICA+-Datensatzes erstellen. Untenstehende Notizen dazu stammen aus https://wiki.k10plus.de/download/attachments/203128864/K10plusKatalogisierungsschulung-mit-Notizen-Teil1.pdf?version=3&modificationDate=1606824839604&api=v2 -->

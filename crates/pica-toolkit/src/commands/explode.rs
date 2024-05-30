@@ -22,6 +22,7 @@ pub(crate) struct ExplodeConfig {
     pub(crate) gzip: Option<bool>,
 }
 
+/// Split records at main, local or copy level.
 #[derive(Parser, Debug)]
 pub(crate) struct Explode {
     /// Skip invalid records that can't be decoded.
