@@ -1,12 +1,9 @@
 use std::ffi::OsString;
-use std::io;
 
 use clap::{value_parser, Parser};
-use pica_matcher::{MatcherBuilder, MatcherOptions, RecordMatcher};
-use pica_record::io::{
-    ByteRecordWrite, ReaderBuilder, RecordsIterator, WriterBuilder,
-};
-use pica_record::{ByteRecord, Level};
+use pica_matcher::{MatcherBuilder, MatcherOptions};
+use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
+use pica_record::{ByteRecord, FieldRef, Level};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -39,6 +36,14 @@ pub(crate) struct Explode {
     /// Note: A limit value `0` means no limit.
     #[arg(long, short, value_name = "n", default_value = "0")]
     limit: usize,
+
+    /// Keep only fields specified by a list of predicates.
+    #[arg(long, short)]
+    keep: Option<String>,
+
+    /// Discard fields specified by a list of predicates.
+    #[arg(long, short)]
+    discard: Option<String>,
 
     /// A filter expression used for searching
     #[arg(long = "where")]
@@ -94,17 +99,6 @@ pub(crate) struct Explode {
     filenames: Vec<OsString>,
 }
 
-macro_rules! record_bytes {
-    ($fields:expr) => {{
-        let mut buffer = Vec::<u8>::new();
-        for field in $fields.iter() {
-            let _ = field.write_to(&mut buffer);
-        }
-        buffer.push(b'\n');
-        buffer
-    }};
-}
-
 macro_rules! push_record {
     ($records:expr, $main:expr, $local:expr, $acc:expr) => {
         if !$acc.is_empty() {
@@ -113,9 +107,7 @@ macro_rules! push_record {
                 record.extend_from_slice(&$local);
             }
             record.extend_from_slice(&$acc);
-
             $records.push(record);
-            $acc.clear();
         }
     };
 
@@ -124,150 +116,85 @@ macro_rules! push_record {
             let mut record = $main.clone();
             record.extend_from_slice(&$acc);
             $records.push(record);
-            $acc.clear();
         }
     };
 }
 
-fn process_main(
-    record: &ByteRecord,
-    matcher: Option<&RecordMatcher>,
-    options: &MatcherOptions,
-    writer: &mut Box<dyn ByteRecordWrite>,
-    limit: &mut usize,
-) -> io::Result<bool> {
-    if *limit == 0 {
-        return Ok(false);
-    }
+#[inline]
+fn process_main<'a>(
+    record: &'a ByteRecord<'a>,
+) -> Vec<Vec<&'a FieldRef<'a>>> {
+    vec![record.iter().collect()]
+}
 
-    if let Some(matcher) = matcher {
-        if !matcher.is_match(record, options) {
-            return Ok(true);
+fn process_local<'a>(
+    record: &'a ByteRecord<'a>,
+) -> Vec<Vec<&FieldRef<'a>>> {
+    let mut iter = record.iter().peekable();
+    let mut records = vec![];
+    let mut main = vec![];
+    let mut acc = vec![];
+
+    while let Some(cur) = iter.next() {
+        match cur.level() {
+            Level::Main => main.push(cur),
+            Level::Local => acc.push(cur),
+            Level::Copy => {
+                acc.push(cur);
+
+                if let Some(next) = iter.peek() {
+                    if next.level() == Level::Local {
+                        push_record!(records, main, acc);
+                        acc.clear();
+                    }
+                }
+            }
         }
     }
 
-    writer.write_byte_record(record)?;
-    *limit -= 1;
-
-    Ok(true)
+    push_record!(records, main, acc);
+    records
 }
 
-fn process_copy(
-    record: &ByteRecord,
-    matcher: Option<&RecordMatcher>,
-    options: &MatcherOptions,
-    writer: &mut Box<dyn ByteRecordWrite>,
-    limit: &mut usize,
-) -> io::Result<bool> {
-    debug_assert!(*limit > 0);
-
-    let mut last = Level::Main;
+fn process_copy<'a>(
+    record: &'a ByteRecord<'a>,
+) -> Vec<Vec<&FieldRef<'a>>> {
+    let mut iter = record.iter().peekable();
     let mut records = vec![];
     let mut main = vec![];
     let mut local = vec![];
     let mut copy = vec![];
     let mut count = None;
 
-    for field in record.iter() {
-        match field.level() {
-            Level::Main => main.push(field),
+    while let Some(cur) = iter.next() {
+        match cur.level() {
+            Level::Main => main.push(cur),
             Level::Local => {
-                if last == Level::Copy {
-                    push_record!(records, main, local, copy);
-                    local.clear();
-                    count = None;
-                }
-
-                local.push(field);
+                local.push(cur);
             }
             Level::Copy => {
-                if count != field.occurrence() {
+                if count != cur.occurrence() {
                     push_record!(records, main, local, copy);
-                    count = field.occurrence();
+                    count = cur.occurrence();
+                    copy.clear();
                 }
 
-                copy.push(field);
+                copy.push(cur);
+
+                if let Some(next) = iter.peek() {
+                    if next.level() == Level::Local {
+                        push_record!(records, main, local, copy);
+                        count = None;
+                        local.clear();
+                        copy.clear();
+                    }
+                }
             }
         }
-
-        last = field.level();
     }
 
     push_record!(records, main, local, copy);
-
-    for fields in records {
-        let data = record_bytes!(fields);
-        let record =
-            ByteRecord::from_bytes(&data).expect("valid record");
-
-        if let Some(matcher) = matcher {
-            if !matcher.is_match(&record, options) {
-                continue;
-            }
-        }
-
-        writer.write_byte_record(&record)?;
-        *limit -= 1;
-
-        if *limit == 0 {
-            return Ok(false);
-        }
-    }
-
-    Ok(*limit == 0)
-}
-
-fn process_local(
-    record: &ByteRecord,
-    matcher: Option<&RecordMatcher>,
-    options: &MatcherOptions,
-    writer: &mut Box<dyn ByteRecordWrite>,
-    limit: &mut usize,
-) -> io::Result<bool> {
-    debug_assert!(*limit > 0);
-
-    let mut main = vec![];
-    let mut acc = vec![];
-    let mut records = vec![];
-    let mut last = Level::Main;
-
-    for field in record.iter() {
-        match field.level() {
-            Level::Main => main.push(field),
-            Level::Copy => acc.push(field),
-            Level::Local => {
-                if last == Level::Copy {
-                    push_record!(records, main, acc);
-                }
-
-                acc.push(field)
-            }
-        }
-
-        last = field.level();
-    }
-
-    push_record!(records, main, acc);
-
-    for fields in records.iter() {
-        let data = record_bytes!(fields);
-        let record = ByteRecord::from_bytes(&data).unwrap();
-
-        if let Some(matcher) = matcher {
-            if !matcher.is_match(&record, options) {
-                continue;
-            }
-        }
-
-        writer.write_byte_record(&record)?;
-        *limit -= 1;
-
-        if *limit == 0 {
-            return Ok(false);
-        }
-    }
-
-    Ok(*limit == 0)
+    records
 }
 
 impl Explode {
@@ -302,21 +229,16 @@ impl Explode {
         };
 
         let mut progress = Progress::new(self.progress);
-
-        let mut limit = if self.limit == 0 {
-            usize::MAX
-        } else {
-            self.limit
-        };
+        let mut count = 0;
 
         let mut writer = WriterBuilder::new()
             .gzip(gzip_compression)
             .from_path_or_stdout(self.output)?;
 
-        let process_record = match self.level {
+        let process = match self.level {
             Level::Main => process_main,
-            Level::Copy => process_copy,
             Level::Local => process_local,
+            Level::Copy => process_copy,
         };
 
         'outer: for filename in self.filenames {
@@ -335,16 +257,29 @@ impl Explode {
 
                 let record = result.unwrap();
                 progress.record();
-                let stop = process_record(
-                    &record,
-                    matcher.as_ref(),
-                    &options,
-                    &mut writer,
-                    &mut limit,
-                )?;
 
-                if stop {
-                    break 'outer;
+                for record in process(&record) {
+                    let mut data = Vec::<u8>::new();
+                    for field in record.iter() {
+                        let _ = field.write_to(&mut data);
+                    }
+                    data.push(b'\n');
+
+                    let record = ByteRecord::from_bytes(&data)
+                        .expect("valid record");
+
+                    if let Some(ref matcher) = matcher {
+                        if !matcher.is_match(&record, &options) {
+                            continue;
+                        }
+                    }
+
+                    writer.write_byte_record(&record)?;
+                    count += 1;
+
+                    if self.limit > 0 && count >= self.limit {
+                        break 'outer;
+                    }
                 }
             }
         }
