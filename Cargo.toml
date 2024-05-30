@@ -13,7 +13,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.24.0"
+version = "0.25.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "EUPL-1.2"
 readme = "./README.md"
@@ -22,11 +22,11 @@ edition = "2021"
 rust-version = "1.76"
 
 [workspace.dependencies]
-pica-matcher = { version = "0.24", path = "./crates/pica-matcher" }
-pica-path = { version = "0.24", path = "./crates/pica-path" }
-pica-record = { version = "0.24", path = "./crates/pica-record" }
-pica-select = { version = "0.24", path = "./crates/pica-select" }
-pica-utils = { version = "0.24", path = "./crates/pica-utils" }
+pica-matcher = { version = "0.25", path = "./crates/pica-matcher" }
+pica-path = { version = "0.25", path = "./crates/pica-path" }
+pica-record = { version = "0.25", path = "./crates/pica-record" }
+pica-select = { version = "0.25", path = "./crates/pica-select" }
+pica-utils = { version = "0.25", path = "./crates/pica-utils" }
 
 anyhow = "1.0"
 bstr = "1.9"

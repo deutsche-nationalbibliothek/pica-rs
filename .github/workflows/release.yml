@@ -73,7 +73,7 @@ jobs:
         run: |
           staging="pica-${{ needs.version.outputs.VERSION }}-${{ matrix.target.triple }}-glibc${{ matrix.target.glibc }}"
           mkdir "$staging"
-          cp README.md LICENSE UNLICENSE "$staging/"
+          cp README.md LICENSE "$staging/"
           cp "target/release/pica" "$staging/"
           ./target/release/pica completions bash > "$staging/pica.bash"
           ./target/release/pica completions fish > "$staging/pica.fish"
@@ -120,7 +120,7 @@ jobs:
         run: |
           staging="pica-${{ needs.version.outputs.VERSION }}-${{ matrix.target.triple }}"
           mkdir "$staging"
-          cp README.md LICENSE UNLICENSE "$staging/"
+          cp README.md LICENSE "$staging/"
           cp "target/release/pica.exe" "$staging/"
           cp "target/release/pica-lint.exe" "$staging/"
           7z a "$staging.zip" "$staging/"
@@ -162,7 +162,7 @@ jobs:
         run: |
           staging="pica-${{ needs.version.outputs.VERSION }}-${{ matrix.target.triple }}"
           mkdir "$staging"
-          cp README.md LICENSE UNLICENSE "$staging/"
+          cp README.md LICENSE "$staging/"
           cp "target/release/pica-lint" "$staging/"
           cp "target/release/pica" "$staging/"
           tar cfvz "$staging.tar.gz" "$staging/"

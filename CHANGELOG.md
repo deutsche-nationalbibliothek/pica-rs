@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.25.0] - 2023-05-30
+
+### Added
+
+* #783 Add filter options (`count`)
+* #793 Add `--keep`/`--discard` option (`explode`)
+* #791 Add `--limit`/`-l` option (`explode`)
+* #790 Add XOR operator
+
+### Fixed
+
+* #776 Fix glibc error (cross builds)
+* #779 Fix use of legacy numeric constants
+* #781 Fix progress bar update (`frequency`)
+* #784 Fix explode on copy level
+* #778 Fix broken links
+
+### Changed
+
+* #772 Change license to EUPL-1.2
+* #764 Migrate from `mdbook` to `hugo`
+* #773 Refactor CI and daily workflow
+* #794 Stabilize `explode` command
+* #788 Bump MSRV to `1.76.0`
+
+
 ## [0.24.0] - 2023-02-05
 
 ### Added
