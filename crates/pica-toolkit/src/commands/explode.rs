@@ -127,7 +127,6 @@ fn process_main<'a>(
     vec![record.iter().collect()]
 }
 
-#[inline]
 fn process_local<'a>(
     record: &'a ByteRecord<'a>,
 ) -> Vec<Vec<&FieldRef<'a>>> {
@@ -157,7 +156,6 @@ fn process_local<'a>(
     records
 }
 
-#[inline]
 fn process_copy<'a>(
     record: &'a ByteRecord<'a>,
 ) -> Vec<Vec<&FieldRef<'a>>> {
