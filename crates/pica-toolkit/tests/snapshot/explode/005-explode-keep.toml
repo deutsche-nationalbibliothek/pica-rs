@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "explode local -k '003@,101@,203@/*' COPY.dat.gz -o local.dat"
+status = "success"
+stdout = ""
+stderr = ""
