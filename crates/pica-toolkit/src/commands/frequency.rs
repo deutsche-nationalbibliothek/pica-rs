@@ -3,10 +3,12 @@ use std::collections::{BTreeSet, HashMap};
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{self, Write};
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use clap::{value_parser, Parser};
 use pica_matcher::{MatcherBuilder, MatcherOptions};
+use pica_path::PathExt;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
 use pica_utils::NormalizationForm;
@@ -14,6 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::error::CliResult;
+use crate::filter_list::FilterList;
 use crate::progress::Progress;
 use crate::skip_invalid_flag;
 
@@ -59,6 +62,28 @@ pub(crate) struct Frequency {
     /// Sort results in reverse order.
     #[arg(long, short)]
     reverse: bool,
+
+    /// Ignore records which are *not* explicitly listed in one of the
+    /// given allow-lists.
+    ///
+    /// A allow-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "allow-list", short = 'A')]
+    allow_lists: Vec<PathBuf>,
+
+    /// Ignore records which are explicitly listed in one of the
+    /// given deny-lists.
+    ///
+    /// A deny-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "deny-list", short = 'D')]
+    deny_lists: Vec<PathBuf>,
 
     /// Limit result to the <n> most frequent subfield values.
     #[arg(
@@ -170,6 +195,12 @@ impl Frequency {
             None
         };
 
+        let filter_list = FilterList::new()
+            .allow(self.allow_lists)
+            .unwrap()
+            .deny(self.deny_lists)
+            .unwrap();
+
         let mut ftable: HashMap<Vec<String>, u64> = HashMap::new();
         let options = QueryOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
@@ -203,6 +234,10 @@ impl Frequency {
 
                 let record = result.unwrap();
                 progress.record();
+
+                if !filter_list.check(record.idn()) {
+                    continue;
+                }
 
                 if let Some(ref matcher) = matcher {
                     if !matcher.is_match(

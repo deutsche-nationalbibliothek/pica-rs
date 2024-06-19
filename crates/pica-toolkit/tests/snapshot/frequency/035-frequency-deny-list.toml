@@ -1,0 +1,5 @@
+bin.name = "pica"
+args = "frequency -s \"002@.0\" -D deny.csv dump.dat.gz"
+status = "success"
+stdout = "Tp1,1\nTsz,1\n"
+stderr = ""
