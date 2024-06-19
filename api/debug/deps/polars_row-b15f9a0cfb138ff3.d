@@ -1,0 +1,11 @@
+/home/runner/work/pica-rs/pica-rs/target/docs/api/debug/deps/libpolars_row-b15f9a0cfb138ff3.rmeta: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/decode.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/encode.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/fixed.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/row.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/utils.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/variable.rs
+
+/home/runner/work/pica-rs/pica-rs/target/docs/api/debug/deps/polars_row-b15f9a0cfb138ff3.d: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/decode.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/encode.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/fixed.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/row.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/utils.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/variable.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/decode.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/encode.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/fixed.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/row.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/utils.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/polars-row-0.40.0/src/variable.rs:

@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"pica_record":[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"pica_record/struct.ByteRecord.html\" title=\"struct pica_record::ByteRecord\">ByteRecord</a>&lt;'a&gt;"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["codes"],"static":["ISO639_CODES"],"struct":["Iso639"]};

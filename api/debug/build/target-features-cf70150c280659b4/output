@@ -1,0 +1,4 @@
+cargo:rerun-if-changed=rustc-version.txt
+cargo:rerun-if-changed=target-features.txt
+cargo:rerun-if-changed=target-cpus.txt
+cargo:rerun-if-changed=build.rs

@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["pica","pica_lint","pica_matcher","pica_path","pica_record","pica_select","pica_utils"];
