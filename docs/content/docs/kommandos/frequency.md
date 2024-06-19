@@ -35,6 +35,13 @@ Ts1,1
   ignorieren.
 * `--reverse` — Ergebnisse werden in aufsteigender Reihenfolge
   ausgegeben.
+* `-A`, `--allow-list` `<file>` — Es werden alle Datensätze ignoriert,
+  die nicht explizit in der Positivliste[^1] auftauchen. Werden mehrere
+  Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen
+  gebildet.
+* `-D`, `--deny-list` `<file>` — Es werden alle Datensätze ignoriert,
+  die in der Negativliste[^1] auftauchen. Werden mehrere Negativlisten
+  angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
 * `-l`, `--limit` `<n>` — Eingrenzung der Ausgabe auf die häufigsten
   `<n>` Unterfeldwerte.
 * `--threshold` `<n>` — Zeilen mit einer Häufigkeit < `<n>` ignorieren.
