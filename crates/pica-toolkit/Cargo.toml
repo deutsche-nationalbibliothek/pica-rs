@@ -22,7 +22,7 @@ pica-record = { workspace = true }
 pica-select = { workspace = true }
 pica-utils = { workspace = true }
 polars = { workspace = true }
-quick-xml = { version = "0.32" }
+quick-xml = { version = "0.36.0" }
 rand = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
