@@ -20,7 +20,7 @@ impl JsonWriter {
                 BufWriter::new(Box::new(stdout()))
             };
 
-        writer.write_all(&[b'['])?;
+        writer.write_all(b"[")?;
         Ok(Self { writer, count: 0 })
     }
 }
@@ -71,7 +71,7 @@ impl ByteRecordWrite for JsonWriter {
     }
 
     fn finish(&mut self) -> io::Result<()> {
-        self.writer.write_all(&[b']'])?;
+        self.writer.write_all(b"]")?;
         self.writer.flush()
     }
 }

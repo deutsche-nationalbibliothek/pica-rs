@@ -27,22 +27,22 @@ impl ByteRecordWrite for ImportWriter {
         &mut self,
         record: &ByteRecord,
     ) -> std::io::Result<()> {
-        self.writer.write_all(&[b'\x1d', b'\x0a'])?;
+        self.writer.write_all(b"'\x1d\x0a")?;
 
         for field in record.iter() {
-            self.writer.write_all(&[b'\x1e'])?;
+            self.writer.write_all(b"\x1e")?;
 
             self.writer.write_all(field.tag())?;
             if let Some(occurrence) = field.occurrence() {
                 occurrence.write_to(&mut self.writer)?;
             }
 
-            self.writer.write_all(&[b' '])?;
+            self.writer.write_all(b" ")?;
             for subfield in field.subfields() {
                 subfield.write_to(&mut self.writer)?;
             }
 
-            self.writer.write_all(&[b'\x0a'])?;
+            self.writer.write_all(b"\x0a")?;
         }
 
         Ok(())

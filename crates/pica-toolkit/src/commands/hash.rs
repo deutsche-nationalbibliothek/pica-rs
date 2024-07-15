@@ -50,12 +50,6 @@ pub(crate) struct Hash {
     filenames: Vec<OsString>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Row {
-    idn: Option<String>,
-    hash: String,
-}
-
 impl Hash {
     pub(crate) fn run(self, config: &Config) -> CliResult<()> {
         let mut progress = Progress::new(self.progress);

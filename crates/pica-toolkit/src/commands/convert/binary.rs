@@ -33,15 +33,15 @@ impl ByteRecordWrite for BinaryWriter {
                 occurrence.write_to(&mut self.writer)?;
             }
 
-            self.writer.write_all(&[b' '])?;
+            self.writer.write_all(b" ")?;
             for subfield in field.subfields() {
                 subfield.write_to(&mut self.writer)?;
             }
 
-            self.writer.write_all(&[b'\x1e'])?;
+            self.writer.write_all(b"\x1e")?;
         }
 
-        self.writer.write_all(&[b'\x1d'])?;
+        self.writer.write_all(b"\x1d")?;
         Ok(())
     }
 
