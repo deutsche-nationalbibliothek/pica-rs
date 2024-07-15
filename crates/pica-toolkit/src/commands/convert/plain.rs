@@ -34,7 +34,7 @@ impl ByteRecordWrite for PlainWriter {
                 occurrence.write_to(&mut self.writer)?;
             }
 
-            self.writer.write_all(&[b' '])?;
+            self.writer.write_all(b" ")?;
 
             for subfield in field.subfields() {
                 self.writer
@@ -44,7 +44,7 @@ impl ByteRecordWrite for PlainWriter {
                 )?;
             }
 
-            self.writer.write_all(&[b'\n'])?;
+            self.writer.write_all(b"\n")?;
         }
 
         Ok(())
