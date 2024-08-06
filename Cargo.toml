@@ -29,7 +29,7 @@ pica-select = { version = "0.25", path = "./crates/pica-select" }
 pica-utils = { version = "0.25", path = "./crates/pica-utils" }
 
 anyhow = "1.0"
-bstr = "1.9"
+bstr = "1.10"
 chrono = { version = "0.4", default-features = false }
 clap = "4.5"
 clap_complete = "4.5"
