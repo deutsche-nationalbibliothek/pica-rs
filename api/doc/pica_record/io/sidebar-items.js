@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ReadPicaError"],"struct":["GzipWriter","PlainWriter","Reader","ReaderBuilder","WriterBuilder"],"trait":["BufReadExt","ByteRecordWrite","RecordsIterator"]};

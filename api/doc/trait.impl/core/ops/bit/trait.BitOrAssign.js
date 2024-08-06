@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"pica_matcher":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/bit/trait.BitOrAssign.html\" title=\"trait core::ops::bit::BitOrAssign\">BitOrAssign</a> for <a class=\"struct\" href=\"pica_matcher/struct.RecordMatcher.html\" title=\"struct pica_matcher::RecordMatcher\">RecordMatcher</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

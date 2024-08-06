@@ -1,0 +1,15 @@
+{
+  "name": "pica-rs",
+  "short_name": "pica-rs",
+  "start_url": "/pica-rs/book/",
+  "scope": "/pica-rs/book/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/pica-rs/book/favicon.svg",
+      "sizes": "512x512"
+    }
+  ]
+}

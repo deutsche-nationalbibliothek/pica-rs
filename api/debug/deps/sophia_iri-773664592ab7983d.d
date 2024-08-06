@@ -1,0 +1,12 @@
+/home/runner/work/pica-rs/pica-rs/target/docs/api/debug/deps/libsophia_iri-773664592ab7983d.rmeta: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_wrap_macro.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_error.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_regex.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_trait.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_wrapper.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_serde.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/resolve.rs
+
+/home/runner/work/pica-rs/pica-rs/target/docs/api/debug/deps/sophia_iri-773664592ab7983d.d: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_wrap_macro.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_error.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_regex.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_trait.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_wrapper.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_serde.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/resolve.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_wrap_macro.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_error.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_regex.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_trait.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_wrapper.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/_serde.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_iri-0.8.0/src/resolve.rs:

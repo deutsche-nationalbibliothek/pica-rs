@@ -1,0 +1,10 @@
+/home/runner/work/pica-rs/pica-rs/target/docs/api/debug/deps/libsophia_inmem-1b057fccf3128ed0.rmeta: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/dataset.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/dataset/_iter.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/graph.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/graph/_iter.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/index.rs
+
+/home/runner/work/pica-rs/pica-rs/target/docs/api/debug/deps/sophia_inmem-1b057fccf3128ed0.d: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/dataset.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/dataset/_iter.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/graph.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/graph/_iter.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/index.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/dataset.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/dataset/_iter.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/graph.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/graph/_iter.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/sophia_inmem-0.8.0/src/index.rs:
