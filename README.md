@@ -31,7 +31,8 @@ Datenanalysen in der DNB eingesetzt.
 Die Mitwirkung an _pica-rs_ ist sehr erwünscht. Wir würden Sie bitten,
 mögliche Fehler, Fragen und neue Ideen als [GitHub-Issues][Issues]
 anzulegen. Diese werden wir dann intern beraten und möglichst zeitnah
-ein Feedback geben.
+ein Feedback geben. Ferner kann das Forum [metadaten.community] zur
+Diskussion genutzt werden.
 
 Die [Installation] des Toolkits und alle Kommandos sind in der
 [Dokumentation] beschrieben.
@@ -70,6 +71,7 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 [Installation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/installation/
 [Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
 [KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
+[metadaten.community]: https://metadaten.community/c/software-und-tools/pica-rs/31
 [Kommandos]: #kommandos
 [OCLC]: https://www.oclc.org/
 [Pandas]: https://pandas.pydata.org/
