@@ -123,7 +123,7 @@ pub fn parse_tag<'a>(i: &mut &'a [u8]) -> PResult<TagRef<'a>> {
         one_of(|c: u8| c.is_ascii_digit()),
         one_of(|c: u8| c.is_ascii_uppercase() || c == b'@'),
     )
-        .recognize()
+        .take()
         .map(|tag| TagRef(ByteSlice::as_bstr(tag)))
         .parse_next(i)
 }
