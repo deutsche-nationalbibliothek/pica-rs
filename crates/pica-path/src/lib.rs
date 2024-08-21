@@ -267,6 +267,36 @@ pub trait PathExt {
             .first()
             .copied()
     }
+
+    /// Returns the first value (converted to string) of the path
+    /// expression.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use bstr::ByteSlice;
+    /// use pica_path::{Path, PathExt};
+    /// use pica_record::ByteRecord;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let record =
+    ///         ByteRecord::from_bytes(b"003@ \x1f0123456789X\x1e\n")?;
+    ///     assert_eq!(
+    ///         record.first("003@.0"),
+    ///         Some("123456789X".to_string())
+    ///     );
+    ///
+    ///     let record = ByteRecord::from_bytes(b"002@ \x1f0Olfo\x1e\n")?;
+    ///     assert_eq!(record.first("003@.0"), None);
+    ///     Ok(())
+    /// }
+    /// ```
+    fn first<P: AsRef<[u8]>>(&self, path: P) -> Option<String> {
+        self.path(&Path::new(&path), &Default::default())
+            .first()
+            .map(ToString::to_string)
+    }
 }
 
 impl<'a> PathExt for RecordRef<'a> {
