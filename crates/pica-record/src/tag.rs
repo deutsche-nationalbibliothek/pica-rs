@@ -91,6 +91,25 @@ impl<'a, T: AsRef<[u8]>> PartialEq<T> for TagRef<'a> {
     }
 }
 
+impl<'a> PartialEq<str> for TagRef<'a> {
+    /// Compare a `TagRef` with a string slice.
+    ///
+    /// ```rust
+    /// use pica_record::{Level, TagRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     assert_eq!(&TagRef::new("003@"), "003@");
+    ///     assert_eq!(TagRef::new("003@"), "003@");
+    ///     Ok(())
+    /// }
+    /// ```
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
 impl<'a> Deref for TagRef<'a> {
     type Target = BStr;
 
