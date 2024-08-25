@@ -152,6 +152,30 @@ impl<'a> FieldRef<'a> {
         self.subfields.as_ref()
     }
 
+    /// Returns `true` if the field contains a subfield with the given
+    /// code.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field =
+    ///         FieldRef::from_bytes(b"003@ \x1f0123456789X\x1e").unwrap();
+    ///     assert!(field.contains('0'));
+    ///     assert!(!field.contains('a'));
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn contains(&self, code: char) -> bool {
+        self.subfields
+            .iter()
+            .any(|subfield| subfield.code() == code)
+    }
+
     /// Returns an [`std::str::Utf8Error`](Utf8Error) if the field
     /// contains invalid UTF-8 data, otherwise the unit.
     ///
