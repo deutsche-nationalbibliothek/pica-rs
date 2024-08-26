@@ -64,6 +64,18 @@ fn field_ref_subfields() {
 }
 
 #[test]
+fn field_ref_find() {
+    let subfield = SubfieldRef::try_from(('9', "040269019")).unwrap();
+    let field = FieldRef::new("041A", None, vec![('9', "040269019")]);
+
+    assert!(field.find(|subfield| subfield.code() == '8').is_none());
+    assert_eq!(
+        field.find(|subfield| subfield.code() == '9').unwrap(),
+        &subfield
+    );
+}
+
+#[test]
 fn field_ref_validate() {
     let field = FieldRef::from_bytes(b"019@ \x1fXA-DE-BE\x1e").unwrap();
     assert!(field.validate().is_ok());
