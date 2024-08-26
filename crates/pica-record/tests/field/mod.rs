@@ -64,6 +64,24 @@ fn field_ref_subfields() {
 }
 
 #[test]
+fn field_ref_contains() {
+    let field = FieldRef::new(
+        "041A",
+        None,
+        vec![
+            ('9', "040269019"),
+            ('a', "abc"),
+            ('a', "def"),
+            ('a', "xyz"),
+        ],
+    );
+
+    assert!(!field.contains('y'));
+    assert!(field.contains('9'));
+    assert!(field.contains('a'));
+}
+
+#[test]
 fn field_ref_validate() {
     let field = FieldRef::from_bytes(b"019@ \x1fXA-DE-BE\x1e").unwrap();
     assert!(field.validate().is_ok());
