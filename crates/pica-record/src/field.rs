@@ -176,6 +176,41 @@ impl<'a> FieldRef<'a> {
             .any(|subfield| subfield.code() == code)
     }
 
+    /// Searches for the first subfield that satisfies the given
+    /// predicate.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, SubfieldRef};
+    ///
+    /// # fn main() { example().unwrap(); }
+    /// fn example() -> anyhow::Result<()> {
+    ///     let field = FieldRef::new(
+    ///         "012A",
+    ///         Some("01"),
+    ///         vec![('a', "b"), ('c', "d")],
+    ///     );
+    ///
+    ///     assert_eq!(
+    ///         field.find(|subfield| subfield.code() == 'a').unwrap(),
+    ///         &SubfieldRef::new('a', "b")
+    ///     );
+    ///
+    ///     assert!(field
+    ///         .find(|subfield| subfield.code() == 'b')
+    ///         .is_none());
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn find<F>(&self, predicate: F) -> Option<&SubfieldRef>
+    where
+        F: Fn(&&SubfieldRef) -> bool,
+    {
+        self.subfields().iter().find(predicate)
+    }
+
     /// Returns an [`std::str::Utf8Error`](Utf8Error) if the field
     /// contains invalid UTF-8 data, otherwise the unit.
     ///
