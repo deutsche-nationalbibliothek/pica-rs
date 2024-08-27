@@ -173,8 +173,8 @@ fn parse_group(i: &mut &str) -> PResult<Group> {
 /// Parses a format fragment.
 fn parse_fragment(i: &mut &str) -> PResult<Fragment> {
     alt((
-        ws(parse_group).map(Fragment::Group),
         ws(parse_atom).map(Fragment::Atom),
+        ws(parse_group).map(Fragment::Group),
     ))
     .parse_next(i)
 }
@@ -189,6 +189,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_parse_subfield_code() {
         for c in '\0'..=char::MAX {
             if c.is_ascii_alphanumeric() {
