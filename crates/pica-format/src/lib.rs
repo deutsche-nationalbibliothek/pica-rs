@@ -89,11 +89,9 @@ impl Value {
         field: &FieldRef,
         options: &FormatOptions,
     ) -> Option<String> {
-        let Some(subfield) = self.codes.iter().find_map(|code| {
+        let subfield = self.codes.iter().find_map(|code| {
             field.find(|subfield| subfield.code() == *code)
-        }) else {
-            return None;
-        };
+        })?;
 
         let mut value = subfield.value().to_string();
         if value.is_empty() {
@@ -258,3 +256,4 @@ mod tests {
         Ok(())
     }
 }
+
