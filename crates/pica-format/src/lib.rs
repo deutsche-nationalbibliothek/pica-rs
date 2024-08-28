@@ -1,91 +1,161 @@
-use parse::parse_format;
-use pica_record::{FieldRef, SubfieldRef};
+use std::str::FromStr;
+
+use pica_matcher::{OccurrenceMatcher, SubfieldMatcher, TagMatcher};
+use pica_record::{ByteRecord, FieldRef};
 use thiserror::Error;
-use winnow::Parser;
+use winnow::prelude::*;
 
 mod parse;
 
+pub use parse::parse_format;
+
+#[derive(Error, Debug, Clone, PartialEq)]
+#[error("{0} is not a valid format string")]
+pub struct ParseFormatError(String);
+
+/// A pica format expression.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Format(Vec<Fragment>);
+pub struct Format {
+    tag_matcher: TagMatcher,
+    occurrence_matcher: OccurrenceMatcher,
+    subfield_matcher: Option<SubfieldMatcher>,
+    fragments: Fragments,
+}
 
 impl Format {
-    pub fn fragments(&self) -> impl Iterator<Item = &Fragment> {
-        self.0.iter()
+    /// Create a new format from the given format string.
+    ///
+    /// # Panics
+    ///
+    /// If the give format string is invalid this function panics. To
+    /// catch the parse error use `Format::from_str`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_format::Format;
+    ///
+    /// # fn main() {
+    /// let format = Format::new("041[A@]{ a <$> b | a? }");
+    /// # }
+    /// ```
+    pub fn new(fmt: &str) -> Self {
+        Self::from_str(fmt).expect("valid format expression")
+    }
+
+    /// Returns the tag matcher of the format expression.
+    pub fn tag_matcher(&self) -> &TagMatcher {
+        &self.tag_matcher
+    }
+
+    /// Returns the occurrence matcher of the format expression.
+    pub fn occurrence_matcher(&self) -> &OccurrenceMatcher {
+        &self.occurrence_matcher
+    }
+
+    /// Retruns the subfield matcher of the format expression.
+    pub fn subfield_matcher(&self) -> Option<&SubfieldMatcher> {
+        self.subfield_matcher.as_ref()
+    }
+}
+
+impl FromStr for Format {
+    type Err = ParseFormatError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse_format
+            .parse(s.as_bytes())
+            .map_err(|_| ParseFormatError(s.to_string()))
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Fragment {
-    Atom(Atom),
+enum Fragments {
     Group(Group),
+    Value(Value),
+    List(List),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Atom {
+struct Value {
     codes: Vec<char>,
     prefix: Option<String>,
     suffix: Option<String>,
 }
 
-impl Atom {
-    fn format_subfield(
+impl Value {
+    fn format(
         &self,
-        buf: &mut String,
-        subfield: &SubfieldRef,
+        field: &FieldRef,
         options: &FormatOptions,
-    ) {
-        if !self.codes.contains(&subfield.code()) {
-            return;
-        }
+    ) -> Option<String> {
+        let subfield = self.codes.iter().find_map(|code| {
+            field.find(|subfield| subfield.code() == *code)
+        })?;
 
         let mut value = subfield.value().to_string();
+        if value.is_empty() {
+            return None;
+        }
+
         if options.strip_overread_char {
             value = value.replacen('@', "", 1);
         }
 
-        if !value.is_empty() {
-            if let Some(ref prefix) = self.prefix {
-                buf.push_str(prefix);
-            }
-
-            buf.push_str(&value);
-
-            if let Some(ref suffix) = self.suffix {
-                buf.push_str(suffix);
-            }
+        if let Some(ref prefix) = self.prefix {
+            value.insert_str(0, prefix);
         }
+
+        if let Some(ref suffix) = self.suffix {
+            value.push_str(suffix)
+        }
+
+        Some(value)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Group {
-    atoms: Vec<Atom>,
+struct Group {
+    fragments: Box<Fragments>,
 }
 
-impl Fragment {
+#[derive(Debug, Clone, PartialEq)]
+enum List {
+    AndThen(Vec<Fragments>),
+    Cons(Vec<Fragments>),
+}
+
+impl List {
     fn format(
         &self,
-        buf: &mut String,
         field: &FieldRef,
         options: &FormatOptions,
-    ) {
+    ) -> Option<String> {
+        let mut acc = String::new();
+
         match self {
-            Self::Atom(atom) => {
-                if let Some(subfield) = atom
-                    .codes
-                    .iter()
-                    .find_map(|code| field.find(|s| s.code() == *code))
-                {
-                    atom.format_subfield(buf, subfield, options);
+            Self::AndThen(fragments) => {
+                for f in fragments.iter() {
+                    let Some(value) = f.format(field, options) else {
+                        break;
+                    };
+
+                    acc.push_str(&value);
                 }
             }
-            Self::Group(group) => {
-                field.subfields().iter().for_each(|subfield| {
-                    group.atoms.iter().for_each(|atom| {
-                        atom.format_subfield(buf, subfield, options);
-                    });
-                });
+            Self::Cons(fragments) => {
+                for f in fragments.iter() {
+                    if let Some(value) = f.format(field, options) {
+                        acc.push_str(&value);
+                    };
+                }
             }
+        }
+
+        if !acc.is_empty() {
+            Some(acc)
+        } else {
+            None
         }
     }
 }
@@ -93,14 +163,6 @@ impl Fragment {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FormatOptions {
     strip_overread_char: bool,
-}
-
-impl FormatOptions {
-    pub fn new(strip_overread_char: bool) -> Self {
-        Self {
-            strip_overread_char,
-        }
-    }
 }
 
 impl Default for FormatOptions {
@@ -111,202 +173,84 @@ impl Default for FormatOptions {
     }
 }
 
-#[derive(Error, Debug, Clone, PartialEq)]
-#[error("{0} is not a valid format string")]
-pub struct ParseFormatError(String);
+impl FormatOptions {
+    pub fn new() -> Self {
+        Self::default()
+    }
 
-impl Format {
-    /// Creates a new format from a string slice.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_format::Format;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let _fmt = Format::new("a")?;
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn new<T>(fmt: T) -> Result<Self, ParseFormatError>
-    where
-        T: AsRef<str>,
-    {
-        parse_format
-            .parse(fmt.as_ref())
-            .map_err(|_| ParseFormatError(fmt.as_ref().into()))
+    /// Whether to strip the overread character '@' from a value or not.
+    pub fn strip_overread_char(mut self, yes: bool) -> Self {
+        self.strip_overread_char = yes;
+        self
+    }
+}
+
+impl Fragments {
+    fn format(
+        &self,
+        field: &FieldRef,
+        options: &FormatOptions,
+    ) -> Option<String> {
+        match self {
+            Self::Value(value) => value.format(field, options),
+            Self::List(list) => list.format(field, options),
+            Self::Group(Group { fragments }) => {
+                fragments.format(field, options)
+            }
+        }
     }
 }
 
 pub trait FormatExt {
-    fn format(&self, fmt: &Format, options: &FormatOptions) -> String;
+    fn format(
+        &self,
+        format: &Format,
+        options: &FormatOptions,
+    ) -> Vec<String>;
 }
 
-impl FormatExt for FieldRef<'_> {
-    /// Formats a field reference according to the format string.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_format::{Format, FormatExt};
-    /// use pica_record::FieldRef;
-    ///
-    /// # fn main() { example().unwrap(); }
-    /// fn example() -> anyhow::Result<()> {
-    ///     let field =
-    ///         FieldRef::from_bytes(b"041A \x1faGoethe\x1e").unwrap();
-    ///     let format = Format::new("a")?;
-    ///     let options = Default::default();
-    ///     assert_eq!(field.format(&format, &options), "Goethe");
-    ///     Ok(())
-    /// }
-    /// ```
-    fn format(&self, fmt: &Format, options: &FormatOptions) -> String {
-        let mut buf = String::new();
-        fmt.fragments().for_each(|fragment| {
-            fragment.format(&mut buf, self, options);
-        });
-
-        buf
+impl FormatExt for ByteRecord<'_> {
+    fn format(
+        &self,
+        format: &Format,
+        options: &FormatOptions,
+    ) -> Vec<String> {
+        self.iter()
+            .filter(|field| field.tag() == format.tag_matcher())
+            .filter(|field| {
+                *format.occurrence_matcher() == field.occurrence()
+            })
+            .filter(|field| {
+                if let Some(m) = format.subfield_matcher() {
+                    m.is_match(field.subfields(), &Default::default())
+                } else {
+                    true
+                }
+            })
+            .filter_map(|field| format.fragments.format(field, options))
+            .collect()
     }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     type TestResult = anyhow::Result<()>;
 
     #[test]
-    fn test_format_subject_headings() -> TestResult {
-        let opts = FormatOptions::default();
-        let fmt = Format::new("a (' / ' x <|> ' (' g ')')")?;
+    fn test_parse_format() -> TestResult {
+        let format =
+            Format::new("041A{ (a <*> b) <$> (c <*> d) | a? }");
 
-        let data = "041A \x1faPlymouth\x1fgMarke\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "Plymouth (Marke)");
-
-        let data = "041A \x1faSchlacht um Berlin\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "Schlacht um Berlin");
-
-        let data = "041A \x1faDas @Gute\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "Das Gute");
-
-        let data =
-            "041A \x1faBarletta\x1fxDisfida di Barletta\x1fgMotiv\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
+        assert_eq!(format.tag_matcher(), &TagMatcher::new("041A"));
         assert_eq!(
-            field.format(&fmt, &opts),
-            "Barletta / Disfida di Barletta (Motiv)"
+            format.occurrence_matcher(),
+            &OccurrenceMatcher::None
         );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_format_geographic_names() -> TestResult {
-        let opts = FormatOptions::default();
-        let fmt = Format::new("a (' (' [gz] ')' <|> ' / ' x)")?;
-
-        let data = "065A \x1faArgolis\x1fzNord\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "Argolis (Nord)");
-
-        let data = "065A \x1faUSA\x1fxSüdstaaten\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "USA / Südstaaten");
-
-        let data = "065A \x1faSanta Maria Maggiore\x1fgRom\
-            \x1fxKrippenkapelle\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
         assert_eq!(
-            field.format(&fmt, &opts),
-            "Santa Maria Maggiore (Rom) / Krippenkapelle"
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_format_corporate_bodies() -> TestResult {
-        let opts = FormatOptions::default();
-        let fmt =
-            Format::new("a (' (' g ')' <|> ' / ' [xb] <|> ', ' n)")?;
-
-        let data = "029A \x1faThe @Hitmakers\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "The Hitmakers");
-
-        let data = "029A \x1faDeutschland\x1fgBundesrepublik\
-                    \x1fbAuswärtiges Amt\x1fbBibliothek\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(
-            field.format(&fmt, &opts),
-            "Deutschland (Bundesrepublik) / Auswärtiges Amt / Bibliothek"
-        );
-
-        let data = "029A \x1faTōkai Daigaku\x1fbKōgakubu\x1fn2\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(
-            field.format(&fmt, &opts),
-            "Tōkai Daigaku / Kōgakubu, 2"
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_format_conferences() -> TestResult {
-        let opts = FormatOptions::default();
-        let fmt = Format::new(
-            "(n ' ') a (', ' d <|> ' (' c ')' <|> ' / ' [bx])",
-        )?;
-
-        let data = "030A \x1faInternationale Hofer Filmtage\
-                    \x1fn13.\x1fd1979\x1fcHof (Saale)\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(
-            field.format(&fmt, &opts),
-            "13. Internationale Hofer Filmtage, 1979 (Hof (Saale))"
-        );
-
-        let data = "030A \x1faOECD\x1fb\
-                    Ministerial Meeting on Science of OECD Countries\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(
-            field.format(&fmt, &opts),
-            "OECD / Ministerial Meeting on Science of OECD Countries"
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_format_works() -> TestResult {
-        let opts = FormatOptions::default();
-        let fmt =
-            Format::new("a (' (' [fg] ')' <|> ', ' n <|> '. ' p)")?;
-
-        let data = "022A \x1faVerfassung\x1ff2011\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "Verfassung (2011)");
-
-        let data = "022A \x1faFaust\x1fn1\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "Faust, 1");
-
-        let data = "022A \x1faFaust\x1fgVolksbuch\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(field.format(&fmt, &opts), "Faust (Volksbuch)");
-
-        let data = "022A \x1faBibel\x1fpPetrusbrief\x1fn1.-2.\x1e";
-        let field = FieldRef::from_bytes(data.as_bytes())?;
-        assert_eq!(
-            field.format(&fmt, &opts),
-            "Bibel. Petrusbrief, 1.-2."
+            format.subfield_matcher().unwrap(),
+            &SubfieldMatcher::new("a?")
         );
 
         Ok(())
