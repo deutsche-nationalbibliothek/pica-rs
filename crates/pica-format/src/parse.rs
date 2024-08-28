@@ -1,3 +1,7 @@
+use bstr::ByteSlice;
+use pica_matcher::parser::{
+    parse_occurrence_matcher, parse_subfield_matcher, parse_tag_matcher,
+};
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{
     alt, delimited, opt, preceded, repeat, separated,
@@ -7,23 +11,111 @@ use winnow::prelude::*;
 use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
 use winnow::token::{one_of, take_till};
 
-use crate::{Atom, Format, Fragment, Group};
+use crate::{Format, Fragments, Group, List, Value};
 
-/// Strip whitespaces from the beginning and end.
-pub(crate) fn ws<I, O, E: ParserError<I>, F>(
-    mut inner: F,
-) -> impl Parser<I, O, E>
-where
-    I: Stream + StreamIsPartial,
-    <I as Stream>::Token: AsChar + Clone,
-    F: Parser<I, O, E>,
-{
-    move |i: &mut I| {
-        let _ = multispace0.parse_next(i)?;
-        let o = inner.parse_next(i);
-        let _ = multispace0.parse_next(i)?;
-        o
-    }
+pub(crate) fn parse_format(i: &mut &[u8]) -> PResult<Format> {
+    (
+        parse_tag_matcher,
+        parse_occurrence_matcher,
+        delimited(
+            ws('{'),
+            (
+                parse_fragments,
+                opt(preceded(ws('|'), parse_subfield_matcher)),
+            ),
+            ws('}'),
+        ),
+    )
+        .map(|(t, o, (f, s))| Format {
+            tag_matcher: t,
+            occurrence_matcher: o,
+            subfield_matcher: s,
+            fragments: f,
+        })
+        .parse_next(i)
+}
+
+fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
+    alt((
+        parse_list.map(Fragments::List),
+        parse_group.map(Fragments::Group),
+        parse_value.map(Fragments::Value),
+    ))
+    .parse_next(i)
+}
+
+fn parse_value(i: &mut &[u8]) -> PResult<Value> {
+    (opt(ws(parse_string)), parse_codes, opt(ws(parse_string)))
+        .map(|(prefix, codes, suffix)| Value {
+            prefix,
+            codes,
+            suffix,
+        })
+        .parse_next(i)
+}
+
+fn parse_group(i: &mut &[u8]) -> PResult<Group> {
+    delimited(ws('('), parse_fragments, ws(')'))
+        .map(|fragments| Group {
+            fragments: Box::new(fragments),
+        })
+        .parse_next(i)
+}
+
+fn parse_list(i: &mut &[u8]) -> PResult<List> {
+    alt((parse_list_cons, parse_list_and_then)).parse_next(i)
+}
+
+fn parse_list_cons(i: &mut &[u8]) -> PResult<List> {
+    separated(
+        2..,
+        alt((
+            parse_list_and_then.map(Fragments::List),
+            parse_group.map(Fragments::Group),
+            parse_value.map(Fragments::Value),
+        )),
+        ws("<*>"),
+    )
+    .map(List::Cons)
+    .parse_next(i)
+}
+
+fn parse_list_and_then(i: &mut &[u8]) -> PResult<List> {
+    separated(
+        2..,
+        alt((
+            parse_group.map(Fragments::Group),
+            parse_value.map(Fragments::Value),
+        )),
+        ws("<$>"),
+    )
+    .map(List::AndThen)
+    .parse_next(i)
+}
+
+/// Parses a subfield code (a single alpha-numeric character)
+fn parse_code(i: &mut &[u8]) -> PResult<char> {
+    one_of(('0'..='9', 'a'..='z', 'A'..='Z'))
+        .map(char::from)
+        .parse_next(i)
+}
+
+/// Parses a sequence of subfield codes.
+fn parse_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
+    alt((
+        parse_code.map(|code| vec![code]),
+        delimited(ws('['), repeat(2.., parse_code), ws(']')),
+    ))
+    .parse_next(i)
+}
+
+fn parse_string(i: &mut &[u8]) -> PResult<String> {
+    alt((
+        parse_quoted_string::<ContextError>(Quotes::Single),
+        parse_quoted_string::<ContextError>(Quotes::Double),
+    ))
+    .map(|s| s.to_str().expect("valid utf8").to_string())
+    .parse_next(i)
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -32,25 +124,51 @@ enum Quotes {
     Double,
 }
 
-/// Parses a subfield code (a single alpha-numeric character)
-fn parse_subfield_code(i: &mut &str) -> PResult<char> {
-    one_of(('0'..='9', 'a'..='z', 'A'..='Z')).parse_next(i)
-}
-
-/// Parses a sequence of subfield codes.
-fn parse_subfield_codes(i: &mut &str) -> PResult<Vec<char>> {
-    alt((
-        parse_subfield_code.map(|code| vec![code]),
-        delimited(ws('['), repeat(1.., parse_subfield_code), ws(']')),
-    ))
-    .parse_next(i)
-}
-
 #[derive(Debug, Clone)]
 enum StringFragment<'a> {
-    Literal(&'a str),
+    Literal(&'a [u8]),
     EscapedChar(char),
     EscapedWs,
+}
+
+fn parse_quoted_string<'a, E>(
+    quotes: Quotes,
+) -> impl Parser<&'a [u8], Vec<u8>, E>
+where
+    E: ParserError<&'a [u8]>,
+{
+    use StringFragment::*;
+
+    let builder = repeat(
+        0..,
+        parse_quoted_string_fragment::<E>(quotes),
+    )
+    .fold(Vec::new, |mut acc, fragment| {
+        match fragment {
+            Literal(s) => acc.extend_from_slice(s),
+            EscapedChar(c) => acc.push(c as u8),
+            EscapedWs => {}
+        }
+
+        acc
+    });
+
+    match quotes {
+        Quotes::Single => delimited('\'', builder, '\''),
+        Quotes::Double => delimited('"', builder, '"'),
+    }
+}
+
+fn parse_quoted_string_fragment<'a, E: ParserError<&'a [u8]>>(
+    quotes: Quotes,
+) -> impl Parser<&'a [u8], StringFragment<'a>, E> {
+    use StringFragment::*;
+
+    alt((
+        parse_literal::<&'a [u8], E>(quotes).map(Literal),
+        parse_escaped_char::<&'a [u8], E>(quotes).map(EscapedChar),
+        preceded('\\', multispace1).value(EscapedWs),
+    ))
 }
 
 fn parse_literal<I, E>(
@@ -93,122 +211,17 @@ where
     )
 }
 
-fn parse_quoted_string_fragment<'a, E: ParserError<&'a str>>(
-    quotes: Quotes,
-) -> impl Parser<&'a str, StringFragment<'a>, E> {
-    use StringFragment::*;
-
-    alt((
-        parse_literal::<&'a str, E>(quotes).map(Literal),
-        parse_escaped_char::<&'a str, E>(quotes).map(EscapedChar),
-        preceded('\\', multispace1).value(EscapedWs),
-    ))
-}
-
-fn parse_quoted_string<'a, E>(
-    quotes: Quotes,
-) -> impl Parser<&'a str, String, E>
+/// Strip whitespaces from the beginning and end.
+fn ws<I, O, E: ParserError<I>, F>(mut inner: F) -> impl Parser<I, O, E>
 where
-    E: ParserError<&'a str>,
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar + Clone,
+    F: Parser<I, O, E>,
 {
-    use StringFragment::*;
-
-    let builder = repeat(
-        0..,
-        parse_quoted_string_fragment::<E>(quotes),
-    )
-    .fold(String::new, |mut acc, fragment| {
-        match fragment {
-            Literal(s) => acc.push_str(s),
-            EscapedChar(c) => acc.push(c),
-            EscapedWs => {}
-        }
-
-        acc
-    });
-
-    match quotes {
-        Quotes::Single => delimited('\'', builder, '\''),
-        Quotes::Double => delimited('"', builder, '"'),
-    }
-}
-
-fn parse_single_quoted_string(i: &mut &str) -> PResult<String> {
-    parse_quoted_string::<ContextError>(Quotes::Single).parse_next(i)
-}
-
-fn parse_double_quoted_string(i: &mut &str) -> PResult<String> {
-    parse_quoted_string::<ContextError>(Quotes::Double).parse_next(i)
-}
-
-fn parse_string(i: &mut &str) -> PResult<String> {
-    alt((parse_single_quoted_string, parse_double_quoted_string))
-        .parse_next(i)
-}
-
-fn parse_atom(i: &mut &str) -> PResult<Atom> {
-    (
-        opt(ws(parse_string)),
-        ws(parse_subfield_codes),
-        opt(ws(parse_string)),
-    )
-        .map(|(prefix, codes, suffix)| Atom {
-            prefix,
-            codes,
-            suffix,
-        })
-        .parse_next(i)
-}
-
-fn parse_group(i: &mut &str) -> PResult<Group> {
-    delimited(
-        ws('('),
-        ws(separated(1.., parse_atom, ws("<|>"))
-            .map(|atoms| Group { atoms })),
-        ws(')'),
-    )
-    .parse_next(i)
-}
-
-/// Parses a format fragment.
-fn parse_fragment(i: &mut &str) -> PResult<Fragment> {
-    alt((
-        ws(parse_atom).map(Fragment::Atom),
-        ws(parse_group).map(Fragment::Group),
-    ))
-    .parse_next(i)
-}
-
-/// Parses a format string.
-pub(crate) fn parse_format(i: &mut &str) -> PResult<Format> {
-    repeat(1.., parse_fragment).map(Format).parse_next(i)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[cfg_attr(miri, ignore)]
-    fn test_parse_subfield_code() {
-        for c in '\0'..=char::MAX {
-            if c.is_ascii_alphanumeric() {
-                assert_eq!(
-                    parse_subfield_codes.parse(&format!("[{c}]")),
-                    Ok(vec![c])
-                );
-                assert_eq!(
-                    parse_subfield_codes.parse(&format!("{c}")),
-                    Ok(vec![c])
-                );
-            } else {
-                assert!(parse_subfield_codes
-                    .parse(&format!("$[{c}]"))
-                    .is_err());
-                assert!(parse_subfield_codes
-                    .parse(&format!("${c}"))
-                    .is_err());
-            }
-        }
+    move |i: &mut I| {
+        let _ = multispace0.parse_next(i)?;
+        let o = inner.parse_next(i);
+        let _ = multispace0.parse_next(i)?;
+        o
     }
 }
