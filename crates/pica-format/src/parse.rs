@@ -1,10 +1,12 @@
+use std::cell::RefCell;
+
 use bstr::ByteSlice;
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_subfield_matcher, parse_tag_matcher,
 };
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{
-    alt, delimited, opt, preceded, repeat, separated,
+    alt, delimited, opt, preceded, repeat, separated, terminated,
 };
 use winnow::error::{ContextError, ParserError};
 use winnow::prelude::*;
@@ -54,12 +56,40 @@ fn parse_value(i: &mut &[u8]) -> PResult<Value> {
         .parse_next(i)
 }
 
+thread_local! {
+    pub static GROUP_LEVEL: RefCell<u32> = const { RefCell::new(0) };
+}
+
+fn increment_group_level(i: &mut &[u8]) -> PResult<()> {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() += 1;
+        if *level.borrow() >= 32 {
+            Err(winnow::error::ErrMode::from_error_kind(
+                i,
+                winnow::error::ErrorKind::Many,
+            ))
+        } else {
+            Ok(())
+        }
+    })
+}
+
+fn decrement_group_level() {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() -= 1;
+    })
+}
+
 fn parse_group(i: &mut &[u8]) -> PResult<Group> {
-    delimited(ws('('), parse_fragments, ws(')'))
-        .map(|fragments| Group {
-            fragments: Box::new(fragments),
-        })
-        .parse_next(i)
+    delimited(
+        terminated(ws('('), increment_group_level),
+        parse_fragments,
+        ws(')').map(|_| decrement_group_level()),
+    )
+    .map(|fragments| Group {
+        fragments: Box::new(fragments),
+    })
+    .parse_next(i)
 }
 
 fn parse_list(i: &mut &[u8]) -> PResult<List> {
