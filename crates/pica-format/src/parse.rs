@@ -13,7 +13,7 @@ use winnow::token::{one_of, take_till};
 
 use crate::{Format, Fragments, Group, List, Value};
 
-pub(crate) fn parse_format(i: &mut &[u8]) -> PResult<Format> {
+pub fn parse_format(i: &mut &[u8]) -> PResult<Format> {
     (
         parse_tag_matcher,
         parse_occurrence_matcher,

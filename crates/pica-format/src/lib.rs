@@ -1,12 +1,13 @@
 use std::str::FromStr;
 
-use parse::parse_format;
 use pica_matcher::{OccurrenceMatcher, SubfieldMatcher, TagMatcher};
 use pica_record::{ByteRecord, FieldRef};
 use thiserror::Error;
 use winnow::prelude::*;
 
 mod parse;
+
+pub use parse::parse_format;
 
 #[derive(Error, Debug, Clone, PartialEq)]
 #[error("{0} is not a valid format string")]
