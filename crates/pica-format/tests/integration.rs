@@ -38,3 +38,28 @@ fn test_format_predicate() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_format_quantifier() -> anyhow::Result<()> {
+    let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
+    let fmt = Format::from_str(
+        "042A{ 'https://d-nb.info/standards/vocab/gnd/gnd-sc#' a }",
+    )?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(
+        result,
+        vec!["https://d-nb.info/standards/vocab/gnd/gnd-sc#28p"
+            .to_string()]
+    );
+
+    let fmt = Format::from_str("042A{ 'GND-SC: ' a.. ' ' }")?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(result, vec!["GND-SC: 28p GND-SC: 9.5p ".to_string()]);
+
+    let fmt =
+        Format::from_str("007[KN]{ ( a '-' <*> 0 <*> '-' v)..2  }")?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(result, vec!["".to_string()]);
+
+    Ok(())
+}

@@ -1,12 +1,13 @@
 use std::cell::RefCell;
+use std::ops::RangeTo;
 
 use bstr::ByteSlice;
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_subfield_matcher, parse_tag_matcher,
 };
-use winnow::ascii::{multispace0, multispace1};
+use winnow::ascii::{digit1, multispace0, multispace1};
 use winnow::combinator::{
-    alt, delimited, opt, preceded, repeat, separated, terminated,
+    alt, delimited, empty, opt, preceded, repeat, separated, terminated,
 };
 use winnow::error::{ContextError, ParserError};
 use winnow::prelude::*;
@@ -38,6 +39,7 @@ pub fn parse_format(i: &mut &[u8]) -> PResult<Format> {
 }
 
 fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
+    eprintln!("parse fragments");
     alt((
         parse_list.map(Fragments::List),
         parse_group.map(Fragments::Group),
@@ -47,11 +49,26 @@ fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
 }
 
 fn parse_value(i: &mut &[u8]) -> PResult<Value> {
-    (opt(ws(parse_string)), parse_codes, opt(ws(parse_string)))
-        .map(|(prefix, codes, suffix)| Value {
+    (
+        opt(ws(parse_string)),
+        parse_codes,
+        alt((
+            preceded(
+                "..",
+                digit1
+                    .verify_map(|s: &[u8]| s.to_str().ok())
+                    .verify_map(|s: &str| s.parse::<usize>().ok()),
+            ),
+            "..".value(usize::MAX),
+            empty.value(1),
+        )),
+        opt(ws(parse_string)),
+    )
+        .map(|(prefix, codes, end, suffix)| Value {
             prefix,
             codes,
             suffix,
+            bounds: RangeTo { end },
         })
         .parse_next(i)
 }
@@ -81,15 +98,26 @@ fn decrement_group_level() {
 }
 
 fn parse_group(i: &mut &[u8]) -> PResult<Group> {
-    delimited(
+    (
         terminated(ws('('), increment_group_level),
         parse_fragments,
         ws(')').map(|_| decrement_group_level()),
+        alt((
+            preceded(
+                "..",
+                digit1
+                    .verify_map(|s: &[u8]| s.to_str().ok())
+                    .verify_map(|s: &str| s.parse::<usize>().ok()),
+            ),
+            "..".value(usize::MAX),
+            empty.value(usize::MAX),
+        )),
     )
-    .map(|fragments| Group {
-        fragments: Box::new(fragments),
-    })
-    .parse_next(i)
+        .map(|(_, fragments, _, end)| Group {
+            fragments: Box::new(fragments),
+            bounds: RangeTo { end },
+        })
+        .parse_next(i)
 }
 
 fn parse_list(i: &mut &[u8]) -> PResult<List> {

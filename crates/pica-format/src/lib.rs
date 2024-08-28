@@ -1,3 +1,4 @@
+use std::ops::RangeTo;
 use std::str::FromStr;
 
 use pica_matcher::{OccurrenceMatcher, SubfieldMatcher, TagMatcher};
@@ -81,6 +82,7 @@ struct Value {
     codes: Vec<char>,
     prefix: Option<String>,
     suffix: Option<String>,
+    bounds: RangeTo<usize>,
 }
 
 impl Value {
@@ -89,34 +91,47 @@ impl Value {
         field: &FieldRef,
         options: &FormatOptions,
     ) -> Option<String> {
-        let subfield = self.codes.iter().find_map(|code| {
-            field.find(|subfield| subfield.code() == *code)
-        })?;
+        let mut buf = String::new();
 
-        let mut value = subfield.value().to_string();
-        if value.is_empty() {
-            return None;
+        let iter = field
+            .subfields()
+            .iter()
+            .filter(|subfield| self.codes.contains(&subfield.code()))
+            .enumerate();
+
+        for (i, subfield) in iter {
+            if !self.bounds.contains(&i) {
+                break;
+            }
+
+            let mut value = subfield.value().to_string();
+            if options.strip_overread_char {
+                value = value.replacen('@', "", 1);
+            }
+
+            if let Some(ref prefix) = self.prefix {
+                buf.push_str(prefix);
+            }
+
+            buf.push_str(&value);
+
+            if let Some(ref suffix) = self.suffix {
+                buf.push_str(suffix)
+            }
         }
 
-        if options.strip_overread_char {
-            value = value.replacen('@', "", 1);
+        if !buf.is_empty() {
+            Some(buf)
+        } else {
+            None
         }
-
-        if let Some(ref prefix) = self.prefix {
-            value.insert_str(0, prefix);
-        }
-
-        if let Some(ref suffix) = self.suffix {
-            value.push_str(suffix)
-        }
-
-        Some(value)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 struct Group {
     fragments: Box<Fragments>,
+    bounds: RangeTo<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -194,7 +209,7 @@ impl Fragments {
         match self {
             Self::Value(value) => value.format(field, options),
             Self::List(list) => list.format(field, options),
-            Self::Group(Group { fragments }) => {
+            Self::Group(Group { fragments, .. }) => {
                 fragments.format(field, options)
             }
         }
@@ -240,8 +255,9 @@ mod tests {
 
     #[test]
     fn test_parse_format() -> TestResult {
-        let format =
-            Format::new("041A{ (a <*> b) <$> (c <*> d) | a? }");
+        let format = Format::new(
+            "041A{ x.. <$> (a <*> b)..2 <$> (c <*> d).. | a? }",
+        );
 
         assert_eq!(format.tag_matcher(), &TagMatcher::new("041A"));
         assert_eq!(
