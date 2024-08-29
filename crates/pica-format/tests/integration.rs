@@ -78,6 +78,47 @@ fn test_format_quantifier() -> TestResult {
 }
 
 #[test]
+fn test_format_modifier_trim() -> TestResult {
+    let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
+    let fmt = Format::from_str("042A{ (?T 'GND-SC: ' a.. ' ') }")?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(result, vec!["GND-SC: 28p GND-SC: 9.5p"]);
+
+    Ok(())
+}
+
+#[test]
+fn test_format_modifier_remove_ws() -> TestResult {
+    let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
+    let fmt = Format::from_str("028A{ (?W d) }")?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(result, vec!["AdaKing"]);
+
+    Ok(())
+}
+
+#[test]
+fn test_format_modifier_uppercase() -> TestResult {
+    let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
+    let fmt =
+        Format::from_str("028A{ (?U a) <$> (?U ', ' d <*> ' ' c) }")?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(result, vec!["LOVELACE, ADA KING OF".to_string()]);
+
+    Ok(())
+}
+
+#[test]
+fn test_format_modifier_lowercase() -> TestResult {
+    let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
+    let fmt = Format::from_str("028A{ a <$> (?L ', ' d <*> ' ' c) }")?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(result, vec!["Lovelace, ada king of".to_string()]);
+
+    Ok(())
+}
+
+#[test]
 fn test_format_conference() -> TestResult {
     let fmt = Format::new(
         "030[A@]{(n ' ') <*> a <$> (', ' d <*> ' (' [cg] ')')}",

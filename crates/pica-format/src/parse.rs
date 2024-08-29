@@ -14,7 +14,7 @@ use winnow::prelude::*;
 use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
 use winnow::token::{one_of, take_till};
 
-use crate::{Format, Fragments, Group, List, Value};
+use crate::{Format, Fragments, Group, List, Modifier, Value};
 
 pub fn parse_format(i: &mut &[u8]) -> PResult<Format> {
     (
@@ -40,9 +40,9 @@ pub fn parse_format(i: &mut &[u8]) -> PResult<Format> {
 
 fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
     alt((
-        parse_list.map(Fragments::List),
-        parse_group.map(Fragments::Group),
-        parse_value.map(Fragments::Value),
+        ws(parse_list).map(Fragments::List),
+        ws(parse_group).map(Fragments::Group),
+        ws(parse_value).map(Fragments::Value),
     ))
     .parse_next(i)
 }
@@ -96,9 +96,37 @@ fn decrement_group_level() {
     })
 }
 
+fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
+    opt(preceded(
+        '?',
+        repeat(1.., alt(('L', 'U', 'T', 'W'))).map(|codes: Vec<_>| {
+            let mut modifier = Modifier::default();
+            if codes.contains(&'L') {
+                modifier.lowercase(true);
+            }
+
+            if codes.contains(&'U') {
+                modifier.uppercase(true);
+            }
+
+            if codes.contains(&'W') {
+                modifier.remove_ws(true);
+            }
+
+            if codes.contains(&'T') {
+                modifier.trim(true);
+            }
+
+            modifier
+        }),
+    ))
+    .parse_next(i)
+}
+
 fn parse_group(i: &mut &[u8]) -> PResult<Group> {
     (
         terminated(ws('('), increment_group_level),
+        parse_modifier,
         parse_fragments,
         ws(')').map(|_| decrement_group_level()),
         alt((
@@ -112,9 +140,10 @@ fn parse_group(i: &mut &[u8]) -> PResult<Group> {
             empty.value(usize::MAX),
         )),
     )
-        .map(|(_, fragments, _, end)| Group {
+        .map(|(_, modifier, fragments, _, end)| Group {
             fragments: Box::new(fragments),
             bounds: RangeTo { end },
+            modifier: modifier.unwrap_or_default(),
         })
         .parse_next(i)
 }

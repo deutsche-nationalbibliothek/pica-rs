@@ -187,6 +187,36 @@ impl Formatter for Value {
 struct Group {
     fragments: Box<Fragments>,
     bounds: RangeTo<usize>,
+    modifier: Modifier,
+}
+
+#[derive(Debug, Default, Clone, PartialEq)]
+struct Modifier {
+    lowercase: bool,
+    uppercase: bool,
+    remove_ws: bool,
+    trim: bool,
+}
+
+impl Modifier {
+    pub(crate) fn lowercase(&mut self, yes: bool) -> &mut Self {
+        self.lowercase = yes;
+        self
+    }
+
+    pub(crate) fn uppercase(&mut self, yes: bool) -> &mut Self {
+        self.uppercase = yes;
+        self
+    }
+
+    pub(crate) fn remove_ws(&mut self, yes: bool) -> &mut Self {
+        self.remove_ws = yes;
+        self
+    }
+    pub(crate) fn trim(&mut self, yes: bool) -> &mut Self {
+        self.trim = yes;
+        self
+    }
 }
 
 impl Formatter for Group {
@@ -216,6 +246,22 @@ impl Formatter for Group {
                 acc.push_str(&value);
                 count += 1;
             }
+        }
+
+        if self.modifier.trim {
+            acc = acc.trim().to_string();
+        }
+
+        if self.modifier.remove_ws {
+            acc = acc.replace(' ', "").to_string();
+        }
+
+        if self.modifier.lowercase {
+            acc = acc.to_lowercase();
+        }
+
+        if self.modifier.uppercase {
+            acc = acc.to_uppercase();
         }
 
         acc
