@@ -1,12 +1,13 @@
 use std::cell::RefCell;
+use std::ops::RangeTo;
 
 use bstr::ByteSlice;
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_subfield_matcher, parse_tag_matcher,
 };
-use winnow::ascii::{multispace0, multispace1};
+use winnow::ascii::{digit1, multispace0, multispace1};
 use winnow::combinator::{
-    alt, delimited, opt, preceded, repeat, separated, terminated,
+    alt, delimited, empty, opt, preceded, repeat, separated, terminated,
 };
 use winnow::error::{ContextError, ParserError};
 use winnow::prelude::*;
@@ -47,11 +48,26 @@ fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
 }
 
 fn parse_value(i: &mut &[u8]) -> PResult<Value> {
-    (opt(ws(parse_string)), parse_codes, opt(ws(parse_string)))
-        .map(|(prefix, codes, suffix)| Value {
+    (
+        opt(ws(parse_string)),
+        parse_codes,
+        alt((
+            preceded(
+                "..",
+                digit1
+                    .verify_map(|s: &[u8]| s.to_str().ok())
+                    .verify_map(|s: &str| s.parse::<usize>().ok()),
+            ),
+            "..".value(usize::MAX),
+            empty.value(1),
+        )),
+        opt(ws(parse_string)),
+    )
+        .map(|(prefix, codes, end, suffix)| Value {
             prefix,
             codes,
             suffix,
+            bounds: RangeTo { end },
         })
         .parse_next(i)
 }
@@ -81,15 +97,26 @@ fn decrement_group_level() {
 }
 
 fn parse_group(i: &mut &[u8]) -> PResult<Group> {
-    delimited(
+    (
         terminated(ws('('), increment_group_level),
         parse_fragments,
         ws(')').map(|_| decrement_group_level()),
+        alt((
+            preceded(
+                "..",
+                digit1
+                    .verify_map(|s: &[u8]| s.to_str().ok())
+                    .verify_map(|s: &str| s.parse::<usize>().ok()),
+            ),
+            "..".value(usize::MAX),
+            empty.value(usize::MAX),
+        )),
     )
-    .map(|fragments| Group {
-        fragments: Box::new(fragments),
-    })
-    .parse_next(i)
+        .map(|(_, fragments, _, end)| Group {
+            fragments: Box::new(fragments),
+            bounds: RangeTo { end },
+        })
+        .parse_next(i)
 }
 
 fn parse_list(i: &mut &[u8]) -> PResult<List> {
@@ -144,7 +171,7 @@ fn parse_string(i: &mut &[u8]) -> PResult<String> {
         parse_quoted_string::<ContextError>(Quotes::Single),
         parse_quoted_string::<ContextError>(Quotes::Double),
     ))
-    .map(|s| s.to_str().expect("valid utf8").to_string())
+    .verify_map(|s| s.to_str().map(ToString::to_string).ok())
     .parse_next(i)
 }
 
@@ -253,5 +280,28 @@ where
         let o = inner.parse_next(i);
         let _ = multispace0.parse_next(i)?;
         o
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod regressions {
+        use super::*;
+
+        /// This bug was found by cargo-fuzz. For the complete data see
+        /// crash-1065da7d802c4cec5ff86325a5629a0e4736191d inside the
+        /// crates/pica-select/fuzz/regressions/ directory.
+        #[test]
+        fn test_parse_invalid_byte_seq() {
+            assert!(parse_string
+                .parse(&[
+                    39, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                    255, 255, 255, 255, 255, 255, 61, 92, 92, 4, 39,
+                ])
+                .is_err());
+        }
     }
 }
