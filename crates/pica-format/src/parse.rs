@@ -284,20 +284,24 @@ where
 }
 
 #[cfg(test)]
-mod regressions {
+mod tests {
     use super::*;
 
-    /// This bug was found by cargo-fuzz. For the complete data see
-    /// crash-1065da7d802c4cec5ff86325a5629a0e4736191d inside the
-    /// crates/pica-select/fuzz/regressions/ directory.
-    #[test]
-    fn test_parse_invalid_byte_seq() {
-        assert!(parse_string
-            .parse(&[
-                39, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 61, 92, 92, 4, 39,
-            ])
-            .is_err());
+    mod regressions {
+        use super::*;
+
+        /// This bug was found by cargo-fuzz. For the complete data see
+        /// crash-1065da7d802c4cec5ff86325a5629a0e4736191d inside the
+        /// crates/pica-select/fuzz/regressions/ directory.
+        #[test]
+        fn test_parse_invalid_byte_seq() {
+            assert!(parse_string
+                .parse(&[
+                    39, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                    255, 255, 255, 255, 255, 255, 61, 92, 92, 4, 39,
+                ])
+                .is_err());
+        }
     }
 }
