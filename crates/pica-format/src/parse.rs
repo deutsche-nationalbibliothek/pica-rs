@@ -99,7 +99,7 @@ fn decrement_group_level() {
 fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
     opt(preceded(
         '?',
-        repeat(1.., alt(('L', 'U', 'T'))).map(|codes: Vec<_>| {
+        repeat(1.., alt(('L', 'U', 'T', 'W'))).map(|codes: Vec<_>| {
             let mut modifier = Modifier::default();
             if codes.contains(&'L') {
                 modifier.lowercase(true);
@@ -107,6 +107,10 @@ fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
 
             if codes.contains(&'U') {
                 modifier.uppercase(true);
+            }
+
+            if codes.contains(&'W') {
+                modifier.remove_ws(true);
             }
 
             if codes.contains(&'T') {

@@ -88,6 +88,16 @@ fn test_format_modifier_trim() -> TestResult {
 }
 
 #[test]
+fn test_format_modifier_remove_ws() -> TestResult {
+    let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
+    let fmt = Format::from_str("028A{ (?W d) }")?;
+    let result = ada.format(&fmt, &Default::default());
+    assert_eq!(result, vec!["AdaKing"]);
+
+    Ok(())
+}
+
+#[test]
 fn test_format_modifier_uppercase() -> TestResult {
     let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
     let fmt =

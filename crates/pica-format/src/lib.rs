@@ -194,6 +194,7 @@ struct Group {
 struct Modifier {
     lowercase: bool,
     uppercase: bool,
+    remove_ws: bool,
     trim: bool,
 }
 
@@ -208,6 +209,10 @@ impl Modifier {
         self
     }
 
+    pub(crate) fn remove_ws(&mut self, yes: bool) -> &mut Self {
+        self.remove_ws = yes;
+        self
+    }
     pub(crate) fn trim(&mut self, yes: bool) -> &mut Self {
         self.trim = yes;
         self
@@ -245,6 +250,10 @@ impl Formatter for Group {
 
         if self.modifier.trim {
             acc = acc.trim().to_string();
+        }
+
+        if self.modifier.remove_ws {
+            acc = acc.replace(' ', "").to_string();
         }
 
         if self.modifier.lowercase {
