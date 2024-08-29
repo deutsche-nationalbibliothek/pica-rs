@@ -2,7 +2,7 @@ use std::ops::RangeTo;
 use std::str::FromStr;
 
 use pica_matcher::{OccurrenceMatcher, SubfieldMatcher, TagMatcher};
-use pica_record::{ByteRecord, FieldRef};
+use pica_record::{FieldRef, RecordRef, SubfieldRef};
 use thiserror::Error;
 use winnow::prelude::*;
 
@@ -70,11 +70,55 @@ impl FromStr for Format {
     }
 }
 
+trait Formatter {
+    fn format_subfield(
+        &self,
+        _subfield: &SubfieldRef,
+        _options: &FormatOptions,
+    ) -> String;
+
+    fn format_field(
+        &self,
+        field: &FieldRef,
+        options: &FormatOptions,
+    ) -> String;
+}
+
 #[derive(Debug, Clone, PartialEq)]
 enum Fragments {
     Group(Group),
     Value(Value),
     List(List),
+}
+
+impl Formatter for Fragments {
+    fn format_subfield(
+        &self,
+        subfield: &SubfieldRef,
+        options: &FormatOptions,
+    ) -> String {
+        match self {
+            Self::Group(group) => {
+                group.format_subfield(subfield, options)
+            }
+            Self::Value(value) => {
+                value.format_subfield(subfield, options)
+            }
+            Self::List(list) => list.format_subfield(subfield, options),
+        }
+    }
+
+    fn format_field(
+        &self,
+        field: &FieldRef,
+        options: &FormatOptions,
+    ) -> String {
+        match self {
+            Self::Group(group) => group.format_field(field, options),
+            Self::Value(value) => value.format_field(field, options),
+            Self::List(list) => list.format_field(field, options),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -85,46 +129,57 @@ struct Value {
     bounds: RangeTo<usize>,
 }
 
-impl Value {
-    fn format(
+impl Formatter for Value {
+    fn format_subfield(
+        &self,
+        subfield: &SubfieldRef,
+        options: &FormatOptions,
+    ) -> String {
+        if !self.codes.contains(&subfield.code()) {
+            return "".into();
+        }
+
+        let mut value = subfield.value().to_string();
+        if options.strip_overread_char {
+            value = value.replacen('@', "", 1);
+        }
+
+        if let Some(ref prefix) = self.prefix {
+            value.insert_str(0, prefix);
+        }
+
+        if let Some(ref suffix) = self.suffix {
+            value.push_str(suffix);
+        }
+
+        value
+    }
+
+    fn format_field(
         &self,
         field: &FieldRef,
         options: &FormatOptions,
-    ) -> Option<String> {
-        let mut buf = String::new();
+    ) -> String {
+        let mut acc = String::new();
+        let mut cnt = 0;
 
-        let iter = field
-            .subfields()
-            .iter()
-            .filter(|subfield| self.codes.contains(&subfield.code()))
-            .enumerate();
+        for subfield in field.subfields().iter() {
+            if !self.codes.contains(&subfield.code()) {
+                continue;
+            }
 
-        for (i, subfield) in iter {
-            if !self.bounds.contains(&i) {
+            if !self.bounds.contains(&cnt) {
                 break;
             }
 
-            let mut value = subfield.value().to_string();
-            if options.strip_overread_char {
-                value = value.replacen('@', "", 1);
-            }
-
-            if let Some(ref prefix) = self.prefix {
-                buf.push_str(prefix);
-            }
-
-            buf.push_str(&value);
-
-            if let Some(ref suffix) = self.suffix {
-                buf.push_str(suffix)
+            let value = self.format_subfield(subfield, options);
+            if !value.is_empty() {
+                acc.push_str(&value);
+                cnt += 1;
             }
         }
 
-        if !buf.is_empty() {
-            Some(buf)
-        } else {
-            None
-        }
+        acc
     }
 }
 
@@ -134,44 +189,99 @@ struct Group {
     bounds: RangeTo<usize>,
 }
 
+impl Formatter for Group {
+    fn format_subfield(
+        &self,
+        subfield: &SubfieldRef,
+        options: &FormatOptions,
+    ) -> String {
+        self.fragments.format_subfield(subfield, options)
+    }
+
+    fn format_field(
+        &self,
+        field: &FieldRef,
+        options: &FormatOptions,
+    ) -> String {
+        let mut acc = String::new();
+        let mut count = 0;
+
+        for subfield in field.subfields().iter() {
+            if !self.bounds.contains(&count) {
+                break;
+            }
+
+            let value = self.format_subfield(subfield, options);
+            if !value.is_empty() {
+                acc.push_str(&value);
+                count += 1;
+            }
+        }
+
+        acc
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 enum List {
     AndThen(Vec<Fragments>),
     Cons(Vec<Fragments>),
 }
 
-impl List {
-    fn format(
+impl Formatter for List {
+    fn format_subfield(
         &self,
-        field: &FieldRef,
+        subfield: &SubfieldRef,
         options: &FormatOptions,
-    ) -> Option<String> {
+    ) -> String {
         let mut acc = String::new();
 
         match self {
             Self::AndThen(fragments) => {
                 for f in fragments.iter() {
-                    let Some(value) = f.format(field, options) else {
+                    let value = f.format_subfield(subfield, options);
+                    if value.is_empty() {
                         break;
-                    };
+                    }
 
                     acc.push_str(&value);
                 }
             }
             Self::Cons(fragments) => {
                 for f in fragments.iter() {
-                    if let Some(value) = f.format(field, options) {
-                        acc.push_str(&value);
-                    };
+                    acc.push_str(&f.format_subfield(subfield, options));
                 }
             }
         }
 
-        if !acc.is_empty() {
-            Some(acc)
-        } else {
-            None
+        acc
+    }
+    fn format_field(
+        &self,
+        field: &FieldRef,
+        options: &FormatOptions,
+    ) -> String {
+        let mut acc = String::new();
+
+        match self {
+            Self::AndThen(fragments) => {
+                for f in fragments.iter() {
+                    let value = f.format_field(field, options);
+                    if value.is_empty() {
+                        break;
+                    }
+
+                    acc.push_str(&value);
+                }
+            }
+            Self::Cons(fragments) => {
+                for f in fragments.iter() {
+                    acc.push_str(&f.format_field(field, options));
+                }
+            }
         }
+
+        acc
     }
 }
 
@@ -200,22 +310,6 @@ impl FormatOptions {
     }
 }
 
-impl Fragments {
-    fn format(
-        &self,
-        field: &FieldRef,
-        options: &FormatOptions,
-    ) -> Option<String> {
-        match self {
-            Self::Value(value) => value.format(field, options),
-            Self::List(list) => list.format(field, options),
-            Self::Group(Group { fragments, .. }) => {
-                fragments.format(field, options)
-            }
-        }
-    }
-}
-
 pub trait FormatExt {
     fn format(
         &self,
@@ -224,26 +318,36 @@ pub trait FormatExt {
     ) -> Vec<String>;
 }
 
-impl FormatExt for ByteRecord<'_> {
+impl FormatExt for RecordRef<'_> {
     fn format(
         &self,
         format: &Format,
         options: &FormatOptions,
     ) -> Vec<String> {
-        self.iter()
-            .filter(|field| field.tag() == format.tag_matcher())
-            .filter(|field| {
-                *format.occurrence_matcher() == field.occurrence()
-            })
-            .filter(|field| {
-                if let Some(m) = format.subfield_matcher() {
-                    m.is_match(field.subfields(), &Default::default())
-                } else {
-                    true
+        let mut acc = Vec::new();
+
+        for field in self.iter() {
+            if !format.tag_matcher().is_match(field.tag())
+                || *format.occurrence_matcher() != field.occurrence()
+            {
+                continue;
+            }
+
+            if let Some(matcher) = format.subfield_matcher() {
+                if !matcher
+                    .is_match(field.subfields(), &Default::default())
+                {
+                    continue;
                 }
-            })
-            .filter_map(|field| format.fragments.format(field, options))
-            .collect()
+            }
+
+            let value = format.fragments.format_field(field, options);
+            if !value.is_empty() {
+                acc.push(value);
+            }
+        }
+
+        acc
     }
 }
 

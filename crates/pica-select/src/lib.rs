@@ -3,6 +3,7 @@ use std::ops::{Add, Deref, Mul};
 use std::str::FromStr;
 
 use bstr::ByteSlice;
+use pica_format::{parse_format, Format, FormatExt};
 use pica_matcher::MatcherOptions;
 use pica_path::{parse_path, Path};
 use pica_record::RecordRef;
@@ -21,12 +22,19 @@ pub struct ParseSelectorError(pub String);
 #[derive(Debug)]
 pub enum QueryFragment {
     Path(Path),
+    Format(Format),
     Const(String),
 }
 
 impl From<Path> for QueryFragment {
     fn from(value: Path) -> Self {
         Self::Path(value)
+    }
+}
+
+impl From<Format> for QueryFragment {
+    fn from(value: Format) -> Self {
+        Self::Format(value)
     }
 }
 
@@ -97,6 +105,13 @@ impl From<Path> for Query {
     #[inline]
     fn from(path: Path) -> Self {
         Self(vec![path.into()])
+    }
+}
+
+impl From<Format> for Query {
+    #[inline]
+    fn from(fmt: Format) -> Self {
+        Self(vec![fmt.into()])
     }
 }
 
@@ -210,6 +225,7 @@ pub(crate) fn parse_string(i: &mut &[u8]) -> PResult<Vec<u8>> {
 fn parse_query_fragment(i: &mut &[u8]) -> PResult<QueryFragment> {
     alt((
         parse_path.map(QueryFragment::Path),
+        parse_format.map(QueryFragment::Format),
         parse_string
             .verify_map(|value| String::from_utf8(value).ok())
             .map(QueryFragment::Const),
@@ -438,6 +454,9 @@ impl QueryExt for RecordRef<'_> {
             let outcome = match fragment {
                 QueryFragment::Const(value) => {
                     Outcome(vec![vec![value.to_owned()]])
+                }
+                QueryFragment::Format(format) => {
+                    self.format(format, &Default::default()).into()
                 }
                 QueryFragment::Path(path) => {
                     let mut outcome = self

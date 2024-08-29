@@ -39,7 +39,6 @@ pub fn parse_format(i: &mut &[u8]) -> PResult<Format> {
 }
 
 fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
-    eprintln!("parse fragments");
     alt((
         parse_list.map(Fragments::List),
         parse_group.map(Fragments::Group),

@@ -2,6 +2,7 @@ use std::str::FromStr;
 use std::sync::OnceLock;
 
 use bstr::B;
+use pica_format::Format;
 use pica_path::Path;
 use pica_record::RecordRef;
 use pica_select::{ParseQueryError, Query, QueryExt, QueryOptions};
@@ -88,6 +89,20 @@ fn query_from_path() -> TestResult {
     assert_eq!(
         record.query(&query, &options).as_ref(),
         [["119232022"]]
+    );
+
+    Ok(())
+}
+
+#[test]
+fn query_from_format() -> TestResult {
+    let record = RecordRef::from_bytes(ada_lovelace())?;
+    let query = Query::from(Format::new("028A{ a <$> (', ' d) }"));
+    let options = QueryOptions::default();
+
+    assert_eq!(
+        record.query(&query, &options).as_ref(),
+        [["Lovelace, Ada King"]]
     );
 
     Ok(())
