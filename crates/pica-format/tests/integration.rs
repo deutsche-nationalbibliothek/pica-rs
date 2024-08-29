@@ -90,9 +90,10 @@ fn test_format_modifier_trim() -> TestResult {
 #[test]
 fn test_format_modifier_uppercase() -> TestResult {
     let ada = ByteRecord::from_bytes(ada_lovelace()).expect("record");
-    let fmt = Format::from_str("028A{ a <$> (?U ', ' d <*> ' ' c) }")?;
+    let fmt =
+        Format::from_str("028A{ (?U a) <$> (?U ', ' d <*> ' ' c) }")?;
     let result = ada.format(&fmt, &Default::default());
-    assert_eq!(result, vec!["Lovelace, ADA KING OF".to_string()]);
+    assert_eq!(result, vec!["LOVELACE, ADA KING OF".to_string()]);
 
     Ok(())
 }

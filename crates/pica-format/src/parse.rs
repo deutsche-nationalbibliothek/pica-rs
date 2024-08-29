@@ -40,9 +40,9 @@ pub fn parse_format(i: &mut &[u8]) -> PResult<Format> {
 
 fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
     alt((
-        parse_list.map(Fragments::List),
-        parse_group.map(Fragments::Group),
-        parse_value.map(Fragments::Value),
+        ws(parse_list).map(Fragments::List),
+        ws(parse_group).map(Fragments::Group),
+        ws(parse_value).map(Fragments::Value),
     ))
     .parse_next(i)
 }
@@ -96,28 +96,25 @@ fn decrement_group_level() {
     })
 }
 
-fn parse_modifier(i: &mut &[u8]) -> PResult<Modifier> {
-    alt((
-        preceded(
-            '?',
-            repeat(1.., alt(('L', 'U', 'T'))).map(|codes: Vec<_>| {
-                let mut modifier = Modifier::default();
-                if codes.contains(&'L') {
-                    modifier.lowercase(true);
-                }
+fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
+    opt(preceded(
+        '?',
+        repeat(1.., alt(('L', 'U', 'T'))).map(|codes: Vec<_>| {
+            let mut modifier = Modifier::default();
+            if codes.contains(&'L') {
+                modifier.lowercase(true);
+            }
 
-                if codes.contains(&'U') {
-                    modifier.uppercase(true);
-                }
+            if codes.contains(&'U') {
+                modifier.uppercase(true);
+            }
 
-                if codes.contains(&'T') {
-                    modifier.trim(true);
-                }
+            if codes.contains(&'T') {
+                modifier.trim(true);
+            }
 
-                modifier
-            }),
-        ),
-        empty.map(|_| Modifier::default()),
+            modifier
+        }),
     ))
     .parse_next(i)
 }
@@ -142,7 +139,7 @@ fn parse_group(i: &mut &[u8]) -> PResult<Group> {
         .map(|(_, modifier, fragments, _, end)| Group {
             fragments: Box::new(fragments),
             bounds: RangeTo { end },
-            modifier,
+            modifier: modifier.unwrap_or_default(),
         })
         .parse_next(i)
 }
