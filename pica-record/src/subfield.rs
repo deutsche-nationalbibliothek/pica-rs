@@ -152,7 +152,7 @@ impl<'a> SubfieldValueRef<'a> {
     /// ```
     pub fn new<T>(value: &'a T) -> Result<Self, PicaError>
     where
-        T: AsRef<[u8]>,
+        T: AsRef<[u8]> + ?Sized,
     {
         let value = value.as_ref();
         if value.find_byteset(b"\x1f\x1e").is_some() {
@@ -187,6 +187,22 @@ impl<'a> SubfieldValueRef<'a> {
         T: AsRef<[u8]> + ?Sized,
     {
         Self(value.as_ref())
+    }
+
+    /// Returns the subfield value as a byte slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldValueRef;
+    ///
+    /// let value = SubfieldValueRef::from_unchecked("abc");
+    /// assert_eq!(value.as_bytes(), b"abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn as_bytes(&self) -> &'a [u8] {
+        self.0
     }
 }
 
@@ -406,6 +422,60 @@ mod tests {
                 assert!(parse_subfield_code.parse(&[c]).is_err());
             }
         }
+    }
+
+    #[test]
+    fn test_subfield_value_ref_new() {
+        let value = SubfieldValueRef::new("abc").unwrap();
+        assert_eq!(value, "abc");
+
+        let value = SubfieldValueRef::new("").unwrap();
+        assert_eq!(value, "");
+
+        assert_eq!(
+            SubfieldValueRef::new("abc\x1e").unwrap_err(),
+            PicaError::InvalidSubfieldValue("abc\x1e".to_string())
+        );
+
+        assert_eq!(
+            SubfieldValueRef::new("abc\x1f").unwrap_err(),
+            PicaError::InvalidSubfieldValue("abc\x1f".to_string())
+        );
+    }
+
+    #[test]
+    fn test_subfield_value_ref_from_unchecked() {
+        let value = SubfieldValueRef::from_unchecked("abc");
+        assert_eq!(value, "abc");
+
+        let value = SubfieldValueRef::from_unchecked("");
+        assert_eq!(value, "");
+    }
+
+    #[test]
+    fn test_subfield_value_ref_as_bytes() {
+        let value = SubfieldValueRef::from_unchecked("abc");
+        assert_eq!(value.as_bytes(), b"abc");
+    }
+
+    #[test]
+    fn test_parse_subfield_value_ref() {
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr, $rest:expr) => {
+                let value = SubfieldValueRef::from_unchecked($expected);
+                assert_eq!(
+                    parse_subfield_value_ref
+                        .parse_peek($input)
+                        .unwrap(),
+                    ($rest.as_bytes(), value)
+                );
+            };
+        }
+
+        parse_success!(b"abc", b"abc", b"");
+        parse_success!(b"a\x1ebc", b"a", b"\x1ebc");
+        parse_success!(b"a\x1fbc", b"a", b"\x1fbc");
+        parse_success!(b"", b"", b"");
     }
 }
 
@@ -735,41 +805,6 @@ impl quickcheck::Arbitrary for Subfield {
 // #[cfg(test)]
 // mod tests {
 //     use super::*;
-
-//     #[test]
-//     fn parse_subfield_code() {
-//         for c in b'0'..=b'z' {
-//             if c.is_ascii_alphanumeric() {
-//                 assert_eq!(
-//                     super::parse_subfield_code.parse(&[c]).unwrap(),
-//                     c as char
-//                 );
-//             } else {
-//                 assert!(super::parse_subfield_code
-//                     .parse(&[c])
-//                     .is_err());
-//             }
-//         }
-//     }
-
-//     #[test]
-//     fn parse_subfield_value() {
-//         macro_rules! parse_success {
-//             ($input:expr, $expected:expr, $rest:expr) => {
-//                 assert_eq!(
-//                     super::parse_subfield_value
-//                         .parse_peek($input)
-//                         .unwrap(),
-//                     ($rest.as_bytes(), $expected.as_bstr())
-//                 );
-//             };
-//         }
-
-//         parse_success!(b"abc", b"abc", b"");
-//         parse_success!(b"a\x1ebc", b"a", b"\x1ebc");
-//         parse_success!(b"a\x1fbc", b"a", b"\x1fbc");
-//         parse_success!(b"", b"", b"");
-//     }
 
 //     #[test]
 //     fn parse_subfield() {
