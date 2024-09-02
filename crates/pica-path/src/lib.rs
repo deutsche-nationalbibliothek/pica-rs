@@ -362,7 +362,7 @@ impl<'a> PathExt for RecordRef<'a> {
             .flat_map(FieldRef::subfields)
             .filter_map(|subfield| {
                 if path.codes_flat().contains(subfield.code()) {
-                    Some(subfield.value())
+                    Some(subfield.value().as_bstr())
                 } else {
                     None
                 }
