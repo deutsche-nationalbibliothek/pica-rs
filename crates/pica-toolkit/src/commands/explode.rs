@@ -130,8 +130,8 @@ fn process_main<'a>(
 }
 
 fn process_local<'a>(
-    record: &'a ByteRecord<'a>,
-) -> Vec<Vec<&FieldRef<'a>>> {
+    record: &'a ByteRecord,
+) -> Vec<Vec<&'a FieldRef<'a>>> {
     let mut iter = record.iter().peekable();
     let mut records = vec![];
     let mut main = vec![];
@@ -160,7 +160,7 @@ fn process_local<'a>(
 
 fn process_copy<'a>(
     record: &'a ByteRecord<'a>,
-) -> Vec<Vec<&FieldRef<'a>>> {
+) -> Vec<Vec<&'a FieldRef<'a>>> {
     let mut iter = record.iter().peekable();
     let mut records = vec![];
     let mut main = vec![];
