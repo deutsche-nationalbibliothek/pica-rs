@@ -1,5 +1,8 @@
 use thiserror::Error;
 
+/// An error that can occur when ceparsing PICA+ records.
+
+/// -----{ TODO }-----------------------------------------
 /// An error that can occur when parsing PICA+ records.
 #[derive(Error, PartialEq, Eq, Debug)]
 pub enum ParsePicaError {

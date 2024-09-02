@@ -1,3 +1,10 @@
+//! This module contains types and functions to work with PICA+
+//! subfields.
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SubfieldCode(char);
+
+/// -----{ TODO }-----------------------------------------
 use std::io::{self, Write};
 use std::iter;
 use std::str::Utf8Error;

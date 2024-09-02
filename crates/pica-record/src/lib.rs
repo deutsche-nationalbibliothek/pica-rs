@@ -23,6 +23,9 @@
 //! parser combinators, which are used in upstream crates (matcher,
 //! select).
 
+pub use subfield::SubfieldCode;
+
+/// -----{ TODO }-----------------------------------------
 mod error;
 mod field;
 pub mod io;
