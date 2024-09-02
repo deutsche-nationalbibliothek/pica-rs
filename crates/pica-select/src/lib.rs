@@ -485,7 +485,7 @@ impl QueryExt for RecordRef<'_> {
                                         .iter()
                                         .filter(|subfield| {
                                             codes.contains(
-                                                &subfield.code(),
+                                                subfield.code(),
                                             )
                                         })
                                         .map(|subfield| {

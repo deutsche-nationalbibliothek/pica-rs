@@ -155,7 +155,7 @@ fn parse_subfield_code_range(
         .verify(|(min, max)| min < max)
         .map(|(min, max)| {
             (min.as_byte()..=max.as_byte())
-                .map(|code| SubfieldCode::from_unchecked(code))
+                .map(SubfieldCode::from_unchecked)
                 .collect()
         })
         .parse_next(i)
@@ -361,7 +361,7 @@ impl<'a> PathExt for RecordRef<'a> {
             })
             .flat_map(FieldRef::subfields)
             .filter_map(|subfield| {
-                if path.codes_flat().contains(&subfield.code()) {
+                if path.codes_flat().contains(subfield.code()) {
                     Some(subfield.value())
                 } else {
                     None

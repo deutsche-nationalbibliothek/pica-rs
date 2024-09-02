@@ -135,7 +135,7 @@ impl Formatter for Value {
         subfield: &SubfieldRef,
         options: &FormatOptions,
     ) -> String {
-        if !self.codes.contains(&subfield.code()) {
+        if !self.codes.contains(subfield.code()) {
             return "".into();
         }
 
@@ -164,7 +164,7 @@ impl Formatter for Value {
         let mut cnt = 0;
 
         for subfield in field.subfields().iter() {
-            if !self.codes.contains(&subfield.code()) {
+            if !self.codes.contains(subfield.code()) {
                 continue;
             }
 

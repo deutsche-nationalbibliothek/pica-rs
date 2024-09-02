@@ -45,7 +45,7 @@ fn parse_subfield_code_range(
         .verify(|(min, max)| min < max)
         .map(|(min, max)| {
             (min.as_byte()..=max.as_byte())
-                .map(|code| SubfieldCode::from_unchecked(code))
+                .map(SubfieldCode::from_unchecked)
                 .collect()
         })
         .parse_next(i)
@@ -181,7 +181,7 @@ impl ExistsMatcher {
     ) -> bool {
         subfields
             .into_iter()
-            .any(|subfield| self.codes.contains(&subfield.code()))
+            .any(|subfield| self.codes.contains(subfield.code()))
     }
 }
 
@@ -255,7 +255,7 @@ impl RelationMatcher {
 
         let mut subfields = subfields
             .into_iter()
-            .filter(|s| self.codes.contains(&s.code()));
+            .filter(|s| self.codes.contains(s.code()));
 
         let check = |subfield: &SubfieldRef| -> bool {
             let value = subfield.value().as_ref();
@@ -485,7 +485,7 @@ impl RegexMatcher {
 
         let mut subfields = subfields
             .into_iter()
-            .filter(|s| self.codes.contains(&s.code()));
+            .filter(|s| self.codes.contains(s.code()));
 
         let check_fn = |subfield: &SubfieldRef| -> bool {
             let mut result = re.is_match(subfield.value().as_ref());
@@ -629,7 +629,7 @@ impl InMatcher {
     ) -> bool {
         let mut subfields = subfields
             .into_iter()
-            .filter(|s| self.codes.contains(&s.code()));
+            .filter(|s| self.codes.contains(s.code()));
 
         let check_fn = |subfield: &SubfieldRef| -> bool {
             let mut result = self.values.iter().any(|rhs| {
