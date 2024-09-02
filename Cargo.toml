@@ -7,7 +7,7 @@ members = [
     "crates/pica-lint",
     "crates/pica-matcher",
     "crates/pica-path",
-    "crates/pica-record",
+    "pica-record",
     "crates/pica-select",
     "crates/pica-toolkit",
     "crates/pica-utils"
@@ -26,7 +26,7 @@ rust-version = "1.76"
 pica-format = { version = "0.1", path = "./crates/pica-format" }
 pica-matcher = { version = "0.25", path = "./crates/pica-matcher" }
 pica-path = { version = "0.25", path = "./crates/pica-path" }
-pica-record = { version = "0.25", path = "./crates/pica-record" }
+pica-record = { version = "0.25", path = "./pica-record" }
 pica-select = { version = "0.25", path = "./crates/pica-select" }
 pica-utils = { version = "0.25", path = "./crates/pica-utils" }
 
