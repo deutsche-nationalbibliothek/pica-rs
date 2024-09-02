@@ -33,15 +33,15 @@ jobs:
       matrix:
         target:
           - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: 1.76, triple: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, toolchain: 1.80.0, triple: x86_64-unknown-linux-gnu }
           - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
           - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
           - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
-          - { os: macos-latest, toolchain: 1.76, triple: x86_64-apple-darwin }
+          - { os: macos-latest, toolchain: 1.80.0, triple: x86_64-apple-darwin }
           - { os: windows-latest, toolchain: stable, triple: x86_64-pc-windows-gnu }
-          - { os: windows-latest, toolchain: 1.76, triple: x86_64-pc-windows-gnu }
+          - { os: windows-latest, toolchain: 1.80.0, triple: x86_64-pc-windows-gnu }
           - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc }
-          - { os: windows-latest, toolchain: 1.76, triple: i686-pc-windows-msvc }
+          - { os: windows-latest, toolchain: 1.80.0, triple: i686-pc-windows-msvc }
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +92,7 @@ jobs:
           - { name: pica-format, fuzz-dir: crates/pica-format/fuzz, target: fuzz-format, max-total-time: 300 }
           - { name: pica-path, fuzz-dir: crates/pica-path/fuzz, target: fuzz-path, max-total-time: 300 }
           - { name: pica-record-matcher, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 300 }
-          - { name: pica-record-ref, fuzz-dir: crates/pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
+          - { name: pica-record-ref, fuzz-dir: pica-record/fuzz, target: fuzz-record-ref, max-total-time: 300 }
           - { name: pica-select-query, fuzz-dir: crates/pica-select/fuzz, target: fuzz-query, max-total-time: 300 }
     steps:
       - uses: actions/checkout@v4

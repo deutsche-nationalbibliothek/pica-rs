@@ -34,7 +34,7 @@ fn reader_builder_from_reader() {
 #[test]
 fn reader_builder_from_path() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/data/DUMP.dat.gz");
+        .join("../tests/data/DUMP.dat.gz");
 
     let mut reader = ReaderBuilder::new().from_path(path).unwrap();
     let mut count = 0;
