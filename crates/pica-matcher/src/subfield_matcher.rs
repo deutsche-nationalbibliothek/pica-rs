@@ -730,8 +730,8 @@ impl CardinalityMatcher {
     ///
     ///     assert!(matcher.is_match(
     ///         vec![
-    ///             &SubfieldRef::new('0', "def"),
-    ///             &SubfieldRef::new('0', "abc")
+    ///             &SubfieldRef::new('0', "def")?,
+    ///             &SubfieldRef::new('0', "abc")?
     ///         ],
     ///         &options
     ///     ));

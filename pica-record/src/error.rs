@@ -5,9 +5,10 @@ use thiserror::Error;
 pub enum PicaError {
     #[error("'{0}' is not a valid subfield code.")]
     InvalidSubfieldCode(char),
-
     #[error("'{0}' is not a valid subfield value.")]
     InvalidSubfieldValue(String),
+    #[error("'{0}' is not a valid subfield.")]
+    InvalidSubfield(String),
 }
 
 /// -----{ TODO }-----------------------------------------

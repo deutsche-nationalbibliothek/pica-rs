@@ -11,7 +11,7 @@ use crate::TestResult;
 
 macro_rules! subfield {
     ($code:expr, $value:expr) => {
-        SubfieldRef::new($code, $value)
+        SubfieldRef::new($code, $value).unwrap()
     };
 }
 
