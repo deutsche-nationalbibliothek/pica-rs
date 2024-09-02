@@ -130,7 +130,7 @@ fn process_main<'a>(
 }
 
 fn process_local<'a>(
-    record: &'a ByteRecord,
+    record: &'a ByteRecord<'a>,
 ) -> Vec<Vec<&'a FieldRef<'a>>> {
     let mut iter = record.iter().peekable();
     let mut records = vec![];
