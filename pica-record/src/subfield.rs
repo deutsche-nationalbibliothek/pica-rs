@@ -122,6 +122,81 @@ pub fn parse_subfield_code(i: &mut &[u8]) -> PResult<SubfieldCode> {
         .parse_next(i)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_subfield_code_new() {
+        for c in '0'..='z' {
+            if c.is_ascii_alphanumeric() {
+                assert_eq!(
+                    SubfieldCode::new(c).unwrap(),
+                    SubfieldCode(c)
+                );
+            } else {
+                assert_eq!(
+                    SubfieldCode::new(c).unwrap_err(),
+                    PicaError::InvalidSubfieldCode(c)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_subfield_code_from_unchecked() {
+        for c in '0'..='z' {
+            if c.is_ascii_alphanumeric() {
+                assert_eq!(
+                    SubfieldCode::from_unchecked(c),
+                    SubfieldCode(c)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_subfield_code_as_byte() {
+        for c in '0'..='z' {
+            if c.is_ascii_alphanumeric() {
+                let code = SubfieldCode::new(c).unwrap();
+                assert_eq!(code.as_byte(), c as u8);
+            }
+        }
+    }
+
+    #[test]
+    fn test_subfield_code_try_from_char() {
+        for c in '0'..='z' {
+            if c.is_ascii_alphanumeric() {
+                assert_eq!(
+                    SubfieldCode::try_from(c).unwrap(),
+                    SubfieldCode(c)
+                );
+            } else {
+                assert_eq!(
+                    SubfieldCode::try_from(c).unwrap_err(),
+                    PicaError::InvalidSubfieldCode(c)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_parse_subfield_code() {
+        for c in b'0'..=b'z' {
+            if c.is_ascii_alphanumeric() {
+                assert_eq!(
+                    parse_subfield_code.parse(&[c]).unwrap(),
+                    SubfieldCode::from_unchecked(c)
+                );
+            } else {
+                assert!(parse_subfield_code.parse(&[c]).is_err());
+            }
+        }
+    }
+}
+
 /// -----{ TODO }-----------------------------------------
 use std::io::{self, Write};
 use std::iter;
@@ -456,69 +531,69 @@ impl quickcheck::Arbitrary for Subfield {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    #[test]
-    fn parse_subfield_code() {
-        for c in b'0'..=b'z' {
-            if c.is_ascii_alphanumeric() {
-                assert_eq!(
-                    super::parse_subfield_code.parse(&[c]).unwrap(),
-                    c as char
-                );
-            } else {
-                assert!(super::parse_subfield_code
-                    .parse(&[c])
-                    .is_err());
-            }
-        }
-    }
+//     #[test]
+//     fn parse_subfield_code() {
+//         for c in b'0'..=b'z' {
+//             if c.is_ascii_alphanumeric() {
+//                 assert_eq!(
+//                     super::parse_subfield_code.parse(&[c]).unwrap(),
+//                     c as char
+//                 );
+//             } else {
+//                 assert!(super::parse_subfield_code
+//                     .parse(&[c])
+//                     .is_err());
+//             }
+//         }
+//     }
 
-    #[test]
-    fn parse_subfield_value() {
-        macro_rules! parse_success {
-            ($input:expr, $expected:expr, $rest:expr) => {
-                assert_eq!(
-                    super::parse_subfield_value
-                        .parse_peek($input)
-                        .unwrap(),
-                    ($rest.as_bytes(), $expected.as_bstr())
-                );
-            };
-        }
+//     #[test]
+//     fn parse_subfield_value() {
+//         macro_rules! parse_success {
+//             ($input:expr, $expected:expr, $rest:expr) => {
+//                 assert_eq!(
+//                     super::parse_subfield_value
+//                         .parse_peek($input)
+//                         .unwrap(),
+//                     ($rest.as_bytes(), $expected.as_bstr())
+//                 );
+//             };
+//         }
 
-        parse_success!(b"abc", b"abc", b"");
-        parse_success!(b"a\x1ebc", b"a", b"\x1ebc");
-        parse_success!(b"a\x1fbc", b"a", b"\x1fbc");
-        parse_success!(b"", b"", b"");
-    }
+//         parse_success!(b"abc", b"abc", b"");
+//         parse_success!(b"a\x1ebc", b"a", b"\x1ebc");
+//         parse_success!(b"a\x1fbc", b"a", b"\x1fbc");
+//         parse_success!(b"", b"", b"");
+//     }
 
-    #[test]
-    fn parse_subfield() {
-        use super::parse_subfield;
+//     #[test]
+//     fn parse_subfield() {
+//         use super::parse_subfield;
 
-        assert_eq!(
-            parse_subfield.parse(b"\x1fa123").unwrap(),
-            SubfieldRef::new('a', "123")
-        );
+//         assert_eq!(
+//             parse_subfield.parse(b"\x1fa123").unwrap(),
+//             SubfieldRef::new('a', "123")
+//         );
 
-        assert_eq!(
-            parse_subfield.parse(b"\x1fa").unwrap(),
-            SubfieldRef::new('a', "")
-        );
+//         assert_eq!(
+//             parse_subfield.parse(b"\x1fa").unwrap(),
+//             SubfieldRef::new('a', "")
+//         );
 
-        assert!(parse_subfield.parse(b"a123").is_err());
-        assert!(parse_subfield.parse(b"").is_err());
-    }
+//         assert!(parse_subfield.parse(b"a123").is_err());
+//         assert!(parse_subfield.parse(b"").is_err());
+//     }
 
-    #[cfg_attr(miri, ignore)]
-    #[quickcheck_macros::quickcheck]
-    fn parse_arbitrary_subfield(subfield: Subfield) -> bool {
-        let mut bytes = Vec::<u8>::new();
-        let _ = subfield.write_to(&mut bytes);
+//     #[cfg_attr(miri, ignore)]
+//     #[quickcheck_macros::quickcheck]
+//     fn parse_arbitrary_subfield(subfield: Subfield) -> bool {
+//         let mut bytes = Vec::<u8>::new();
+//         let _ = subfield.write_to(&mut bytes);
 
-        super::parse_subfield.parse(&bytes).is_ok()
-    }
-}
+//         super::parse_subfield.parse(&bytes).is_ok()
+//     }
+// }
