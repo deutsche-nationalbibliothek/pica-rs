@@ -2,7 +2,7 @@ use std::ops::RangeTo;
 use std::str::FromStr;
 
 use pica_matcher::{OccurrenceMatcher, SubfieldMatcher, TagMatcher};
-use pica_record::{FieldRef, RecordRef, SubfieldRef};
+use pica_record::{FieldRef, RecordRef, SubfieldCode, SubfieldRef};
 use thiserror::Error;
 use winnow::prelude::*;
 
@@ -123,7 +123,7 @@ impl Formatter for Fragments {
 
 #[derive(Debug, Clone, PartialEq)]
 struct Value {
-    codes: Vec<char>,
+    codes: Vec<SubfieldCode>,
     prefix: Option<String>,
     suffix: Option<String>,
     bounds: RangeTo<usize>,

@@ -1,8 +1,126 @@
 //! This module contains types and functions to work with PICA+
 //! subfields.
 
-#[derive(Debug, Clone, PartialEq)]
+use std::fmt::{self, Display};
+
+use crate::PicaError;
+
+/// A PICA+ subfield code.
+///
+/// This type behaves like `char` but guarantees that the subfield code
+/// is an ASCII alpha-numeric character.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash)]
 pub struct SubfieldCode(char);
+
+impl SubfieldCode {
+    /// Creates a new subfield code.
+    ///
+    /// # Error
+    ///
+    /// This functions fails if the given code is not an ASCII
+    /// alpha-numeric character.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldCode;
+    ///
+    /// let code = SubfieldCode::new('a')?;
+    /// assert_eq!(code, 'a');
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new(code: char) -> Result<Self, PicaError> {
+        if !code.is_ascii_alphanumeric() {
+            return Err(PicaError::InvalidSubfieldCode(code));
+        }
+
+        Ok(Self(code))
+    }
+
+    /// Creates a subfied code without checking for validity.
+    ///
+    /// # Safety
+    ///
+    /// The caller *must* ensure that the given subfield code is valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldCode;
+    ///
+    /// let code = SubfieldCode::from_unchecked('a');
+    /// assert_eq!(code, 'a');
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn from_unchecked<T: Into<char>>(code: T) -> Self {
+        Self(code.into())
+    }
+
+    /// Returns the subfield code as a byte (`u8`).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldCode;
+    ///
+    /// let code = SubfieldCode::new('a')?;
+    /// assert_eq!(code.as_byte(), b'a');
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn as_byte(&self) -> u8 {
+        self.0 as u8
+    }
+}
+
+impl Display for SubfieldCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl PartialEq<char> for SubfieldCode {
+    fn eq(&self, code: &char) -> bool {
+        self.0 == *code
+    }
+}
+
+impl PartialEq<char> for &SubfieldCode {
+    fn eq(&self, code: &char) -> bool {
+        self.0 == *code
+    }
+}
+
+impl TryFrom<char> for SubfieldCode {
+    type Error = PicaError;
+
+    fn try_from(code: char) -> Result<Self, Self::Error> {
+        Self::new(code)
+    }
+}
+
+#[cfg(feature = "arbitrary")]
+impl quickcheck::Arbitrary for SubfieldCode {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let code = (1..)
+            .map(|_| char::arbitrary(g))
+            .find(char::is_ascii_alphanumeric)
+            .unwrap();
+
+        Self(code)
+    }
+}
+
+/// Parse a PICA+ subfield code.
+pub fn parse_subfield_code(i: &mut &[u8]) -> PResult<SubfieldCode> {
+    one_of((b'0'..=b'9', b'a'..=b'z', b'A'..=b'Z'))
+        .map(SubfieldCode::from_unchecked)
+        .parse_next(i)
+}
 
 /// -----{ TODO }-----------------------------------------
 use std::io::{self, Write};
@@ -19,22 +137,15 @@ use crate::error::ParsePicaError;
 /// An immutable PICA+ subfield.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubfieldRef<'a> {
-    code: char,
+    code: SubfieldCode,
     value: &'a BStr,
 }
 
 /// A mutable PICA+ subfield.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Subfield {
-    code: char,
+    code: SubfieldCode,
     value: BString,
-}
-
-/// Parse a PICA+ subfield code.
-pub fn parse_subfield_code(i: &mut &[u8]) -> PResult<char> {
-    one_of((b'0'..=b'9', b'a'..=b'z', b'A'..=b'Z'))
-        .map(char::from)
-        .parse_next(i)
 }
 
 /// Parse a PICA+ subfield value.
@@ -124,8 +235,8 @@ impl<'a> SubfieldRef<'a> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn code(&self) -> char {
-        self.code
+    pub fn code(&self) -> &SubfieldCode {
+        &self.code
     }
 
     /// Returns the value of the subfield.
@@ -270,7 +381,10 @@ where
             return Err(ParsePicaError::InvalidSubfield);
         }
 
-        Ok(Self { code, value })
+        Ok(Self {
+            code: SubfieldCode(code),
+            value,
+        })
     }
 }
 
@@ -332,16 +446,13 @@ impl From<SubfieldRef<'_>> for Subfield {
 #[cfg(feature = "arbitrary")]
 impl quickcheck::Arbitrary for Subfield {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
-        let code = (1..)
-            .map(|_| char::arbitrary(g))
-            .filter(char::is_ascii_alphanumeric)
-            .nth(0)
-            .unwrap();
-
         let value =
             String::arbitrary(g).replace(['\x1f', '\x1e'], "").into();
 
-        Self { code, value }
+        Self {
+            code: SubfieldCode::arbitrary(g),
+            value,
+        }
     }
 }
 

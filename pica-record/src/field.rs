@@ -173,7 +173,7 @@ impl<'a> FieldRef<'a> {
     pub fn contains(&self, code: char) -> bool {
         self.subfields
             .iter()
-            .any(|subfield| subfield.code() == code)
+            .any(|subfield| *subfield.code() == code)
     }
 
     /// Searches for the first subfield that satisfies the given
