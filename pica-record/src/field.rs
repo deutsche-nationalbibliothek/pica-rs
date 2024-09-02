@@ -6,7 +6,7 @@ use winnow::combinator::{opt, repeat};
 use winnow::{PResult, Parser};
 
 use crate::occurrence::parse_occurrence;
-use crate::subfield::{parse_subfield, Subfield};
+use crate::subfield::{parse_subfield_ref, Subfield};
 use crate::tag::parse_tag;
 use crate::{
     Level, Occurrence, OccurrenceRef, ParsePicaError, SubfieldRef, Tag,
@@ -194,7 +194,7 @@ impl<'a> FieldRef<'a> {
     ///
     ///     assert_eq!(
     ///         field.find(|subfield| subfield.code() == 'a').unwrap(),
-    ///         &SubfieldRef::new('a', "b")
+    ///         &SubfieldRef::new('a', "b")?
     ///     );
     ///
     ///     assert!(field
@@ -303,7 +303,7 @@ pub(crate) fn parse_field<'a>(
         parse_tag,
         opt(parse_occurrence),
         b' ',
-        repeat(0.., parse_subfield),
+        repeat(0.., parse_subfield_ref),
         b'\x1e',
     )
         .map(|(tag, occurrence, _, subfields, _)| FieldRef {
