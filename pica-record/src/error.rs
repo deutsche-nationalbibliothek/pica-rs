@@ -1,5 +1,13 @@
 use thiserror::Error;
 
+/// An error that can occur when ceparsing PICA+ records.
+#[derive(Error, PartialEq, Eq, Debug)]
+pub enum PicaError {
+    #[error("'{0}' is not a valid subfield code.")]
+    InvalidSubfieldCode(char),
+}
+
+/// -----{ TODO }-----------------------------------------
 /// An error that can occur when parsing PICA+ records.
 #[derive(Error, PartialEq, Eq, Debug)]
 pub enum ParsePicaError {

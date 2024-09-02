@@ -9,7 +9,7 @@ use pica_matcher::{
     MatcherOptions, OccurrenceMatcher, SubfieldMatcher, TagMatcher,
 };
 use pica_record::parser::parse_subfield_code;
-use pica_record::{FieldRef, RecordRef};
+use pica_record::{FieldRef, RecordRef, SubfieldCode};
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 use thiserror::Error;
@@ -33,7 +33,7 @@ pub struct Path {
     tag_matcher: TagMatcher,
     occurrence_matcher: OccurrenceMatcher,
     subfield_matcher: Option<SubfieldMatcher>,
-    codes: Vec<Vec<char>>,
+    codes: Vec<Vec<SubfieldCode>>,
 }
 
 impl Path {
@@ -72,7 +72,7 @@ impl Path {
     ///     Ok(())
     /// }
     /// ```
-    pub fn codes(&self) -> &Vec<Vec<char>> {
+    pub fn codes(&self) -> &Vec<Vec<SubfieldCode>> {
         &self.codes
     }
 
@@ -90,7 +90,7 @@ impl Path {
     ///     Ok(())
     /// }
     /// ```
-    pub fn codes_flat(&self) -> Vec<char> {
+    pub fn codes_flat(&self) -> Vec<SubfieldCode> {
         self.codes.clone().into_iter().flatten().collect()
     }
 
@@ -148,20 +148,30 @@ where
 }
 
 #[inline]
-fn parse_subfield_code_range(i: &mut &[u8]) -> PResult<Vec<char>> {
+fn parse_subfield_code_range(
+    i: &mut &[u8],
+) -> PResult<Vec<SubfieldCode>> {
     separated_pair(parse_subfield_code, '-', parse_subfield_code)
         .verify(|(min, max)| min < max)
-        .map(|(min, max)| (min..=max).collect())
+        .map(|(min, max)| {
+            (min.as_byte()..=max.as_byte())
+                .map(SubfieldCode::from_unchecked)
+                .collect()
+        })
         .parse_next(i)
 }
 
 #[inline]
-fn parse_subfield_code_single(i: &mut &[u8]) -> PResult<Vec<char>> {
+fn parse_subfield_code_single(
+    i: &mut &[u8],
+) -> PResult<Vec<SubfieldCode>> {
     parse_subfield_code.map(|code| vec![code]).parse_next(i)
 }
 
 #[inline]
-fn parse_subfield_code_list(i: &mut &[u8]) -> PResult<Vec<char>> {
+fn parse_subfield_code_list(
+    i: &mut &[u8],
+) -> PResult<Vec<SubfieldCode>> {
     delimited(
         '[',
         repeat(
@@ -181,11 +191,16 @@ fn parse_subfield_code_list(i: &mut &[u8]) -> PResult<Vec<char>> {
 }
 
 #[inline]
-fn parse_subfield_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
+fn parse_subfield_codes(i: &mut &[u8]) -> PResult<Vec<SubfieldCode>> {
     alt((
         parse_subfield_code_list,
         parse_subfield_code_single,
-        '*'.value(SUBFIELD_CODES.chars().collect()),
+        '*'.value(
+            SUBFIELD_CODES
+                .chars()
+                .map(|code| SubfieldCode::new(code).unwrap())
+                .collect(),
+        ),
     ))
     .parse_next(i)
 }
@@ -346,7 +361,7 @@ impl<'a> PathExt for RecordRef<'a> {
             })
             .flat_map(FieldRef::subfields)
             .filter_map(|subfield| {
-                if path.codes_flat().contains(&subfield.code()) {
+                if path.codes_flat().contains(subfield.code()) {
                     Some(subfield.value())
                 } else {
                     None

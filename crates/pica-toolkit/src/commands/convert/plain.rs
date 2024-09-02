@@ -38,7 +38,7 @@ impl ByteRecordWrite for PlainWriter {
 
             for subfield in field.subfields() {
                 self.writer
-                    .write_all(&[b'$', subfield.code() as u8])?;
+                    .write_all(&[b'$', subfield.code().as_byte()])?;
                 self.writer.write_all(
                     &subfield.value().replace(b"$", b"$$"),
                 )?;

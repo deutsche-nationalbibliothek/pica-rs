@@ -5,6 +5,7 @@ use bstr::ByteSlice;
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_subfield_matcher, parse_tag_matcher,
 };
+use pica_record::SubfieldCode;
 use winnow::ascii::{digit1, multispace0, multispace1};
 use winnow::combinator::{
     alt, delimited, empty, opt, preceded, repeat, separated, terminated,
@@ -180,14 +181,14 @@ fn parse_list_and_then(i: &mut &[u8]) -> PResult<List> {
 }
 
 /// Parses a subfield code (a single alpha-numeric character)
-fn parse_code(i: &mut &[u8]) -> PResult<char> {
+fn parse_code(i: &mut &[u8]) -> PResult<SubfieldCode> {
     one_of(('0'..='9', 'a'..='z', 'A'..='Z'))
-        .map(char::from)
+        .map(SubfieldCode::from_unchecked)
         .parse_next(i)
 }
 
 /// Parses a sequence of subfield codes.
-fn parse_codes(i: &mut &[u8]) -> PResult<Vec<char>> {
+fn parse_codes(i: &mut &[u8]) -> PResult<Vec<SubfieldCode>> {
     alt((
         parse_code.map(|code| vec![code]),
         delimited(ws('['), repeat(2.., parse_code), ws(']')),
