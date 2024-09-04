@@ -191,7 +191,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download binary release
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pica-${{ needs.version.outputs.VERSION }}-${{ matrix.target.triple }}-glibc${{ matrix.target.glibc }}.tar.gz
       - name: Extract binary release
@@ -230,12 +230,12 @@ jobs:
     steps:
       - name: "Download Package (DEB)"
         if: ${{ !startsWith(matrix.target.name, 'CentOS') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pica_${{ needs.version.outputs.VERSION }}-glibc${{ matrix.target.glibc}}-1_amd64.deb
       - name: "Download Package (RPM)"
         if: ${{ startsWith(matrix.target.name, 'CentOS') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pica-${{ needs.version.outputs.VERSION }}-glibc${{ matrix.target.glibc }}-1.x86_64.rpm
       - name: Fix CentoOS8
@@ -268,7 +268,7 @@ jobs:
       - version
     steps:
       - name: "Download releases/packages"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Assemble data
         run: |
           mkdir uploads/
