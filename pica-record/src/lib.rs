@@ -24,14 +24,22 @@
 //! select).
 
 pub use error::PicaError;
-pub use subfield::{SubfieldCode, SubfieldValue, SubfieldValueRef};
+pub use primitives::SubfieldCode;
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
 #[rustfmt::skip]
-pub mod parser_v2 {
-    pub use super::subfield::parse_subfield_code;
+pub mod parser {
+    pub use super::primitives::parse_subfield_code;
+    // TODO
+
     pub use super::subfield::parse_subfield_value_ref;
+    pub use super::occurrence::parse_occurrence_digits;
+    pub use super::tag::parse_tag;
 }
+
+mod primitives;
+
+pub use subfield::{SubfieldValue, SubfieldValueRef};
 
 // -----{ TODO }-----------------------------------------
 
@@ -51,11 +59,3 @@ pub use occurrence::{Occurrence, OccurrenceRef};
 pub use record::{ByteRecord, Record, RecordRef, StringRecord};
 pub use subfield::{Subfield, SubfieldRef};
 pub use tag::{Tag, TagRef};
-
-/// Parsers recognizing low-level primitives (e.g. subfield codes).
-#[rustfmt::skip]
-pub mod parser {
-    pub use super::occurrence::parse_occurrence_digits;
-    pub use super::subfield::parse_subfield_code;
-    pub use super::tag::parse_tag;
-}
