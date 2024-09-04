@@ -6,11 +6,11 @@ use winnow::combinator::{opt, repeat};
 use winnow::{PResult, Parser};
 
 use crate::occurrence::parse_occurrence;
-use crate::subfield::{parse_subfield_ref, Subfield};
+use crate::parser::parse_subfield_ref;
 use crate::tag::parse_tag;
 use crate::{
-    Level, Occurrence, OccurrenceRef, ParsePicaError, SubfieldRef, Tag,
-    TagRef,
+    Level, Occurrence, OccurrenceRef, ParsePicaError, Subfield,
+    SubfieldRef, Tag, TagRef,
 };
 
 /// An immutable PICA+ field.

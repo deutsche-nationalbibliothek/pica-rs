@@ -4,17 +4,16 @@ use std::ops::Deref;
 use std::str::Utf8Error;
 
 use bstr::ByteSlice;
-use winnow::combinator::preceded;
-use winnow::{PResult, Parser};
+use winnow::Parser;
 
-use crate::parser::{parse_subfield_code, parse_subfield_value_ref};
+use super::parse::parse_subfield_ref;
 use crate::{PicaError, SubfieldCode, SubfieldValue, SubfieldValueRef};
 
 /// An immutable PICA+ subfield.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SubfieldRef<'a> {
-    code: SubfieldCode,
-    value: SubfieldValueRef<'a>,
+    pub(super) code: SubfieldCode,
+    pub(super) value: SubfieldValueRef<'a>,
 }
 
 impl<'a> SubfieldRef<'a> {
@@ -246,24 +245,14 @@ impl quickcheck::Arbitrary for Subfield {
     }
 }
 
-/// Parse a PICA+ subfield.
-#[inline]
-pub(crate) fn parse_subfield_ref<'a>(
-    i: &mut &'a [u8],
-) -> PResult<SubfieldRef<'a>> {
-    preceded(b'\x1f', (parse_subfield_code, parse_subfield_value_ref))
-        .map(|(code, value)| SubfieldRef { code, value })
-        .parse_next(i)
-}
-
 #[cfg(test)]
 mod tests {
-    use io::Cursor;
+    use std::io::Cursor;
 
     use super::*;
 
     #[test]
-    fn subfield_ref_new() {
+    fn test_subfield_ref_new() {
         let subfield = SubfieldRef::new('a', "abc").unwrap();
         assert_eq!(subfield.code(), 'a');
         assert_eq!(subfield.value(), "abc");
@@ -280,7 +269,7 @@ mod tests {
     }
 
     #[test]
-    fn subfield_ref_from_bytes() {
+    fn test_subfield_ref_from_bytes() {
         let subfield = SubfieldRef::from_bytes(b"\x1f0abc").unwrap();
         assert_eq!(subfield.code(), '0');
         assert_eq!(subfield.value(), "abc");
@@ -292,19 +281,19 @@ mod tests {
     }
 
     #[test]
-    fn subfield_ref_code() {
+    fn test_subfield_ref_code() {
         let subfield = SubfieldRef::new('1', "abc").unwrap();
         assert_eq!(subfield.code(), '1');
     }
 
     #[test]
-    fn subfield_ref_value() {
+    fn test_subfield_ref_value() {
         let subfield = SubfieldRef::new('1', "abc").unwrap();
         assert_eq!(subfield.value(), "abc");
     }
 
     #[test]
-    fn subfield_ref_is_empty() {
+    fn test_subfield_ref_is_empty() {
         let subfield = SubfieldRef::new('1', "abc").unwrap();
         assert!(!subfield.is_empty());
 
@@ -313,7 +302,7 @@ mod tests {
     }
 
     #[test]
-    fn subfield_ref_validate() {
+    fn test_subfield_ref_validate() {
         let subfield = SubfieldRef::new('1', "abc").unwrap();
         assert!(subfield.validate().is_ok());
 
@@ -323,7 +312,7 @@ mod tests {
     }
 
     #[test]
-    fn subfield_ref_write_to() {
+    fn test_subfield_ref_write_to() {
         let mut writer = Cursor::new(Vec::<u8>::new());
         let subfield = SubfieldRef::new('0', "abcdef").unwrap();
         let _ = subfield.write_to(&mut writer);
@@ -331,7 +320,7 @@ mod tests {
     }
 
     #[test]
-    fn subfield_ref_try_from() {
+    fn test_subfield_ref_try_from() {
         let subfield = SubfieldRef::try_from(('a', "abc")).unwrap();
         assert_eq!(subfield.code(), 'a');
         assert_eq!(subfield.value(), "abc");
@@ -347,40 +336,15 @@ mod tests {
     }
 
     #[test]
-    fn subfield_ref_into_iter() {
+    fn test_subfield_ref_into_iter() {
         let subfield = SubfieldRef::new('0', "abcdef").unwrap();
         let mut iter = subfield.into_iter();
-
         assert_eq!(iter.next(), Some(&subfield));
         assert_eq!(iter.next(), None);
     }
 
     #[test]
-    fn test_parse_subfield() {
-        assert_eq!(
-            parse_subfield_ref.parse(b"\x1fa123").unwrap(),
-            SubfieldRef::new('a', "123").unwrap()
-        );
-
-        assert_eq!(
-            parse_subfield_ref.parse(b"\x1fa").unwrap(),
-            SubfieldRef::new('a', "").unwrap()
-        );
-
-        assert!(parse_subfield_ref.parse(b"a123").is_err());
-        assert!(parse_subfield_ref.parse(b"").is_err());
-    }
-
-    #[cfg_attr(miri, ignore)]
-    #[quickcheck_macros::quickcheck]
-    fn test_parse_subfield_ref_arbitrary(subfield: Subfield) -> bool {
-        let mut bytes = Vec::<u8>::new();
-        let _ = subfield.write_to(&mut bytes);
-        parse_subfield_ref.parse(&bytes).is_ok()
-    }
-
-    #[test]
-    fn subfield_write_to() {
+    fn test_subfield_write_to() {
         let mut writer = Cursor::new(Vec::<u8>::new());
         let subfield: Subfield =
             SubfieldRef::new('0', "abcdef").unwrap().into();
@@ -389,7 +353,7 @@ mod tests {
     }
 
     #[test]
-    fn subfield_from_ref() {
+    fn test_subfield_from_ref() {
         let subfield_ref = SubfieldRef::new('0', "abc").unwrap();
         let _subfield = Subfield::from(subfield_ref.clone());
     }
