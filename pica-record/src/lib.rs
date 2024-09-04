@@ -24,22 +24,20 @@
 //! select).
 
 pub use error::PicaError;
-pub use primitives::SubfieldCode;
+pub use primitives::{SubfieldCode, SubfieldValue, SubfieldValueRef};
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
 #[rustfmt::skip]
 pub mod parser {
     pub use super::primitives::parse_subfield_code;
-    // TODO
+    pub use super::primitives::parse_subfield_value_ref;
 
-    pub use super::subfield::parse_subfield_value_ref;
+    // TODO
     pub use super::occurrence::parse_occurrence_digits;
     pub use super::tag::parse_tag;
 }
 
 mod primitives;
-
-pub use subfield::{SubfieldValue, SubfieldValueRef};
 
 // -----{ TODO }-----------------------------------------
 

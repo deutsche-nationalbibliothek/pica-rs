@@ -1,7 +1,7 @@
 use winnow::prelude::*;
-use winnow::token::one_of;
+use winnow::token::{one_of, take_till};
 
-use crate::SubfieldCode;
+use crate::{SubfieldCode, SubfieldValueRef};
 
 /// Parse a PICA+ subfield code.
 pub fn parse_subfield_code(i: &mut &[u8]) -> PResult<SubfieldCode> {
@@ -10,8 +10,18 @@ pub fn parse_subfield_code(i: &mut &[u8]) -> PResult<SubfieldCode> {
         .parse_next(i)
 }
 
+/// Parse a PICA+ subfield value reference.
+pub fn parse_subfield_value_ref<'a>(
+    i: &mut &'a [u8],
+) -> PResult<SubfieldValueRef<'a>> {
+    take_till(0.., |c| c == b'\x1f' || c == b'\x1e')
+        .map(SubfieldValueRef::from_unchecked)
+        .parse_next(i)
+}
+
 #[cfg(test)]
 mod tests {
+    use bstr::ByteSlice;
     use quickcheck_macros::quickcheck;
 
     use super::*;
@@ -26,5 +36,38 @@ mod tests {
         } else {
             assert!(parse_subfield_code.parse(&[code]).is_err());
         }
+    }
+
+    #[test]
+    fn test_parse_subfield_value_ref() {
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr, $rest:expr) => {
+                let value = SubfieldValueRef::from_unchecked($expected);
+                assert_eq!(
+                    parse_subfield_value_ref
+                        .parse_peek($input)
+                        .unwrap(),
+                    ($rest.as_bytes(), value)
+                );
+            };
+        }
+        parse_success!(b"abc", b"abc", b"");
+        parse_success!(b"a\x1ebc", b"a", b"\x1ebc");
+        parse_success!(b"a\x1fbc", b"a", b"\x1fbc");
+        parse_success!(b"", b"", b"");
+    }
+
+    #[quickcheck]
+    fn test_parse_arbitrary_subfield_value_ref(input: String) {
+        let input = input.replace(['\x1f', '\x1e'], "");
+        let rest = b"".as_bytes();
+
+        let value = SubfieldValueRef::from_unchecked(input.as_bytes());
+        assert_eq!(
+            parse_subfield_value_ref
+                .parse_peek(input.as_bytes())
+                .unwrap(),
+            (rest, value)
+        );
     }
 }
