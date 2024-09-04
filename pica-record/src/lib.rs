@@ -25,8 +25,8 @@
 
 pub use error::PicaError;
 pub use primitives::{
-    Subfield, SubfieldCode, SubfieldRef, SubfieldValue,
-    SubfieldValueRef,
+    Field, FieldRef, Subfield, SubfieldCode, SubfieldRef,
+    SubfieldValue, SubfieldValueRef,
 };
 
 /// Parsers recognizing low-level primitives (e.g. subfield codes).
@@ -35,6 +35,7 @@ pub mod parser {
     pub use super::primitives::parse_subfield_code;
     pub use super::primitives::parse_subfield_value_ref;
     pub use super::primitives::parse_subfield_ref;
+    pub use super::primitives::parse_field_ref;
 
     // TODO
     pub use super::occurrence::parse_occurrence_digits;
@@ -46,7 +47,6 @@ mod primitives;
 // -----{ TODO }-----------------------------------------
 
 mod error;
-mod field;
 pub mod io;
 mod level;
 mod occurrence;
@@ -54,7 +54,6 @@ mod record;
 mod tag;
 
 pub use error::ParsePicaError;
-pub use field::{Field, FieldRef};
 pub use level::{Level, ParseLevelError};
 pub use occurrence::{Occurrence, OccurrenceRef};
 pub use record::{ByteRecord, Record, RecordRef, StringRecord};

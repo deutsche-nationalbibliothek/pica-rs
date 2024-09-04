@@ -2,12 +2,9 @@ use std::io::{self, Write};
 use std::iter;
 use std::str::Utf8Error;
 
-use winnow::combinator::{opt, repeat};
-use winnow::{PResult, Parser};
+use winnow::Parser;
 
-use crate::occurrence::parse_occurrence;
-use crate::parser::parse_subfield_ref;
-use crate::tag::parse_tag;
+use super::parse_field_ref;
 use crate::{
     Level, Occurrence, OccurrenceRef, ParsePicaError, Subfield,
     SubfieldRef, Tag, TagRef,
@@ -16,9 +13,9 @@ use crate::{
 /// An immutable PICA+ field.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FieldRef<'a> {
-    tag: TagRef<'a>,
-    occurrence: Option<OccurrenceRef<'a>>,
-    subfields: Vec<SubfieldRef<'a>>,
+    pub(super) tag: TagRef<'a>,
+    pub(super) occurrence: Option<OccurrenceRef<'a>>,
+    pub(super) subfields: Vec<SubfieldRef<'a>>,
 }
 
 /// A mutable PICA+ field.
@@ -295,30 +292,11 @@ impl<'a> FieldRef<'a> {
     }
 }
 
-/// Parse a PICA+ field.
-pub(crate) fn parse_field<'a>(
-    i: &mut &'a [u8],
-) -> PResult<FieldRef<'a>> {
-    (
-        parse_tag,
-        opt(parse_occurrence),
-        b' ',
-        repeat(0.., parse_subfield_ref),
-        b'\x1e',
-    )
-        .map(|(tag, occurrence, _, subfields, _)| FieldRef {
-            tag,
-            occurrence,
-            subfields,
-        })
-        .parse_next(i)
-}
-
 impl<'a> TryFrom<&'a [u8]> for FieldRef<'a> {
     type Error = ParsePicaError;
 
     fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
-        parse_field
+        parse_field_ref
             .parse(value)
             .map_err(|_| ParsePicaError::InvalidField)
     }
@@ -428,66 +406,5 @@ impl quickcheck::Arbitrary for Field {
             occurrence,
             subfields,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_field() {
-        use super::parse_field;
-
-        macro_rules! parse_success {
-            ($i:expr, $tag:expr, $occurrence:expr, $subfields:expr) => {
-                let field =
-                    FieldRef::new($tag, $occurrence, $subfields);
-                let result = parse_field.parse($i).unwrap();
-                assert_eq!(result, field);
-            };
-            ($i:expr, $tag:expr, $subfields:expr) => {
-                let field = FieldRef::new($tag, None, $subfields);
-                let result = parse_field.parse($i).unwrap();
-                assert_eq!(result, field);
-            };
-            ($i:expr, $tag:expr) => {
-                let field = FieldRef::new($tag, None, vec![]);
-                let result = parse_field.parse($i).unwrap();
-                assert_eq!(result, field);
-            };
-        }
-
-        parse_success!(
-            b"012A/01 \x1fabc\x1e",
-            "012A",
-            Some("01"),
-            vec![('a', "bc")]
-        );
-
-        parse_success!(b"012A \x1fabc\x1e", "012A", vec![('a', "bc")]);
-        parse_success!(b"012A \x1e", "012A");
-
-        macro_rules! parse_error {
-            ($i:expr) => {
-                assert!(parse_field.parse($i).is_err());
-            };
-        }
-
-        parse_error!(b"012A/00\x1fabc\x1e");
-        parse_error!(b"012A/00 abc\x1e");
-        parse_error!(b"012A/00 \x1fabc");
-        parse_error!(b"012!/01 \x1fabc\x1e");
-        parse_error!(b"012A/0! \x1fabc\x1e");
-        parse_error!(b"012A/00 \x1f!bc\x1e");
-    }
-
-    #[cfg_attr(miri, ignore)]
-    #[quickcheck_macros::quickcheck]
-    fn parse_arbitrary_field(field: Field) -> bool {
-        let mut bytes = Vec::<u8>::new();
-        let _ = field.write_to(&mut bytes);
-
-        super::parse_field.parse(&bytes).is_ok()
     }
 }
