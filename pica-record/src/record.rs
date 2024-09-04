@@ -8,7 +8,7 @@ use sha2::{Digest, Sha256};
 use winnow::combinator::{repeat, terminated};
 use winnow::{PResult, Parser};
 
-use crate::field::parse_field;
+use crate::parser::parse_field_ref;
 use crate::{Field, FieldRef, ParsePicaError};
 
 /// An immutable PICA+ record.
@@ -21,7 +21,7 @@ pub struct Record(Vec<Field>);
 
 #[inline]
 fn parse_record<'a>(i: &mut &'a [u8]) -> PResult<RecordRef<'a>> {
-    terminated(repeat(1.., parse_field), b'\n')
+    terminated(repeat(1.., parse_field_ref), b'\n')
         .map(RecordRef)
         .parse_next(i)
 }
