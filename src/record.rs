@@ -1,4 +1,10 @@
-use bstr::{BStr, BString};
+use std::io::{self, Write};
+use std::iter;
+use std::ops::Deref;
+use std::str::Utf8Error;
+
+use bstr::{BStr, BString, ByteSlice};
+use winnow::combinator::preceded;
 use winnow::prelude::*;
 use winnow::token::{one_of, take_till};
 
@@ -77,6 +83,14 @@ impl SubfieldCode {
     }
 }
 
+impl Deref for SubfieldCode {
+    type Target = char;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl PartialEq<char> for SubfieldCode {
     /// Compares a [SubfieldCode] with a [char](std::char).
     ///
@@ -96,6 +110,12 @@ impl PartialEq<char> for SubfieldCode {
     }
 }
 
+impl PartialEq<char> for &SubfieldCode {
+    fn eq(&self, other: &char) -> bool {
+        self.0 == *other
+    }
+}
+
 #[cfg(test)]
 impl quickcheck::Arbitrary for SubfieldCode {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
@@ -108,7 +128,6 @@ impl quickcheck::Arbitrary for SubfieldCode {
 }
 
 /// Parses a [SubfieldCode] from a byte slice.
-#[allow(unused)]
 pub(crate) fn parse_subfield_code(
     i: &mut &[u8],
 ) -> PResult<SubfieldCode> {
@@ -145,7 +164,10 @@ impl<'a> SubfieldValueRef<'a> {
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn new(value: &'a str) -> Result<Self, ParsePicaError> {
+    pub fn new<T: AsRef<str> + ?Sized>(
+        value: &'a T,
+    ) -> Result<Self, ParsePicaError> {
+        let value = value.as_ref();
         if value.contains('\x1f') || value.contains('\x1e') {
             return Err(ParsePicaError::SubfieldValue(value.into()));
         }
@@ -197,29 +219,27 @@ impl<'a> SubfieldValueRef<'a> {
     }
 }
 
+impl<'a> Deref for SubfieldValueRef<'a> {
+    type Target = BStr;
+
+    fn deref(&self) -> &'a Self::Target {
+        &self.0
+    }
+}
+
+impl PartialEq<str> for SubfieldValueRef<'_> {
+    fn eq(&self, value: &str) -> bool {
+        self.0 == value.as_bytes()
+    }
+}
+
 impl<T: AsRef<[u8]>> PartialEq<T> for SubfieldValueRef<'_> {
-    /// Compare a [SubfieldValueRef] with any type which can be handled
-    /// as a byte slice.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::SubfieldValueRef;
-    ///
-    /// let value = SubfieldValueRef::new("abc")?;
-    /// assert_eq!(value, [b'a', b'b', b'c']);
-    /// assert_ne!(value, "def");
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    #[inline]
     fn eq(&self, other: &T) -> bool {
         self.0 == other.as_ref()
     }
 }
 
 /// Parse a PICA+ subfield value reference.
-#[allow(unused)]
 pub(crate) fn parse_subfield_value_ref<'a>(
     i: &mut &'a [u8],
 ) -> PResult<SubfieldValueRef<'a>> {
@@ -300,6 +320,14 @@ impl SubfieldValue {
     }
 }
 
+impl Deref for SubfieldValue {
+    type Target = BString;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl From<SubfieldValueRef<'_>> for SubfieldValue {
     /// Creates a [SubfieldValue] from a [SubfieldValueRef].
     ///
@@ -359,6 +387,13 @@ impl PartialEq<SubfieldValueRef<'_>> for SubfieldValue {
         self.0 == other.0
     }
 }
+
+impl PartialEq<str> for SubfieldValue {
+    fn eq(&self, value: &str) -> bool {
+        self.0 == value.as_bytes()
+    }
+}
+
 impl PartialEq<SubfieldValue> for SubfieldValueRef<'_> {
     /// Compare a [SubfieldValueRef] with a [SubfieldValue].
     ///
@@ -384,6 +419,295 @@ impl quickcheck::Arbitrary for SubfieldValue {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
         let value = String::arbitrary(g).replace(['\x1f', '\x1e'], "");
         Self::from_unchecked(&value)
+    }
+}
+
+/// An immutable subfield.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SubfieldRef<'a>(SubfieldCode, SubfieldValueRef<'a>);
+
+impl<'a> SubfieldRef<'a> {
+    /// Create a new immutable PICA+ [SubfieldRef].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// let subfield = SubfieldRef::new('a', "abc")?;
+    /// assert_eq!(subfield.code(), 'a');
+    /// assert_eq!(subfield.value(), "abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new(
+        code: char,
+        value: &'a str,
+    ) -> Result<Self, ParsePicaError> {
+        let value = SubfieldValueRef::new(value)?;
+        let code = SubfieldCode::new(code)?;
+
+        Ok(Self(code, value))
+    }
+
+    /// Creates a new [SubfieldRef] from a byte slice.
+    ///
+    /// # Errors
+    ///
+    /// If an invalid subfield is given, an error is returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// let subfield = SubfieldRef::from_bytes(b"\x1f0123456789X")?;
+    /// assert_eq!(subfield.code(), '0');
+    /// assert_eq!(subfield.value(), "123456789X");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn from_bytes<T: AsRef<[u8]> + ?Sized>(
+        bytes: &'a T,
+    ) -> Result<Self, ParsePicaError> {
+        let bytes = bytes.as_ref();
+
+        parse_subfield_ref.parse(bytes).map_err(|_| {
+            ParsePicaError::Subfield(bytes.to_str_lossy().to_string())
+        })
+    }
+
+    /// Returns the code of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// let subfield = SubfieldRef::new('X', "")?;
+    /// assert_eq!(subfield.code(), 'X');
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn code(&self) -> &SubfieldCode {
+        &self.0
+    }
+
+    /// Returns the value of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// let subfield = SubfieldRef::new('a', "abc")?;
+    /// assert_eq!(subfield.value(), b"abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn value(&self) -> &SubfieldValueRef {
+        &self.1
+    }
+
+    /// Returns an [`std::str::Utf8Error`](Utf8Error) if the subfield
+    /// value contains invalid UTF-8 data, otherwise the unit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// let subfield = SubfieldRef::new('0', "123456789X")?;
+    /// assert!(subfield.validate().is_ok());
+    ///
+    /// let subfield = SubfieldRef::from_bytes(&[b'\x1f', b'0', 0, 159])?;
+    /// assert_eq!(subfield.validate().is_err(), true);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn validate(&self) -> Result<(), Utf8Error> {
+        if self.1.is_ascii() {
+            return Ok(());
+        }
+
+        std::str::from_utf8(&self.1)?;
+        Ok(())
+    }
+
+    /// Write the [SubfieldRef] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::SubfieldRef;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let subfield = SubfieldRef::new('0', "123456789X")?;
+    /// subfield.write_to(&mut writer);
+    /// #
+    /// # assert_eq!(
+    /// #    String::from_utf8(writer.into_inner())?,
+    /// #    "\x1f0123456789X"
+    /// # );
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        out.write_all(&[b'\x1f', self.0.as_byte()])?;
+        out.write_all(self.1.as_bytes())
+    }
+}
+
+/// Parse a PICA+ subfield.
+pub(crate) fn parse_subfield_ref<'a>(
+    i: &mut &'a [u8],
+) -> PResult<SubfieldRef<'a>> {
+    preceded(b'\x1f', (parse_subfield_code, parse_subfield_value_ref))
+        .map(|(code, value)| SubfieldRef(code, value))
+        .parse_next(i)
+}
+
+impl<'a> IntoIterator for &'a SubfieldRef<'a> {
+    type Item = &'a SubfieldRef<'a>;
+    type IntoIter = iter::Once<Self::Item>;
+
+    /// Creates an iterator from a single subfield. The iterator just
+    /// returns the subfield once.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldRef;
+    ///
+    /// let subfield = SubfieldRef::new('0', "123456789X")?;
+    /// let mut iter = subfield.into_iter();
+    /// assert_eq!(iter.next(), Some(&subfield));
+    /// assert_eq!(iter.next(), None);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn into_iter(self) -> Self::IntoIter {
+        iter::once(self)
+    }
+}
+
+/// A mutable PICA+ subfield.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Subfield(SubfieldCode, SubfieldValue);
+
+impl Subfield {
+    /// Create a new immutable PICA+ [SubfieldRef].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Subfield;
+    ///
+    /// let subfield = Subfield::new('a', "abc")?;
+    /// assert_eq!(subfield.code(), 'a');
+    /// assert_eq!(subfield.value(), "abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new(
+        code: char,
+        value: &str,
+    ) -> Result<Self, ParsePicaError> {
+        Ok(Self::from(SubfieldRef::new(code, value)?))
+    }
+
+    /// Returns the code of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Subfield;
+    ///
+    /// let subfield = Subfield::new('X', "")?;
+    /// assert_eq!(subfield.code(), 'X');
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn code(&self) -> &SubfieldCode {
+        &self.0
+    }
+
+    /// Returns the value of the subfield.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Subfield;
+    ///
+    /// let subfield = Subfield::new('a', "abc")?;
+    /// assert_eq!(subfield.value(), b"abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn value(&self) -> &SubfieldValue {
+        &self.1
+    }
+
+    /// Write the subfield into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::{Subfield, SubfieldRef};
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let subfield = Subfield::new('0', "123456789X")?;
+    /// subfield.write_to(&mut writer);
+    /// #
+    /// # assert_eq!(
+    /// #    String::from_utf8(writer.into_inner())?,
+    /// #    "\x1f0123456789X"
+    /// # );
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        out.write_all(&[b'\x1f', self.0.as_byte()])?;
+        out.write_all(self.1.as_bytes())
+    }
+}
+
+impl From<SubfieldRef<'_>> for Subfield {
+    /// Converts a [SubfieldRef] to a [Subfield].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{Subfield, SubfieldRef};
+    ///
+    /// let subfield_ref = SubfieldRef::new('0', "123456789X")?;
+    /// let subfield = Subfield::from(subfield_ref);
+    /// assert_eq!(subfield.code(), '0');
+    /// assert_eq!(subfield.value(), "123456789X");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+
+    fn from(subfield: SubfieldRef<'_>) -> Self {
+        let SubfieldRef(code, value) = subfield;
+        Self(code, value.into())
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Subfield {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        Self(SubfieldCode::arbitrary(g), SubfieldValue::arbitrary(g))
     }
 }
 
@@ -442,5 +766,15 @@ mod tests {
             parse_subfield_value_ref.parse(value.as_bytes()).unwrap(),
             value,
         )
+    }
+
+    #[quickcheck]
+    fn test_parse_arbitrary_subfield_ref(subfield: Subfield) {
+        let mut bytes = Vec::new();
+        subfield.write_to(&mut bytes).unwrap();
+
+        let result = parse_subfield_ref.parse(&bytes).unwrap();
+        assert_eq!(result.value(), subfield.value());
+        assert_eq!(result.code(), subfield.code());
     }
 }

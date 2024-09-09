@@ -25,4 +25,6 @@ pub enum ParsePicaError {
     SubfieldCode(char),
     #[error("'{0}' is not a valid subfield value.")]
     SubfieldValue(String),
+    #[error("'{0}' is not a valid subfield.")]
+    Subfield(String),
 }

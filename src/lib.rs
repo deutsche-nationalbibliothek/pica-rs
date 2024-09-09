@@ -3,7 +3,10 @@
 //! [OCLC](https://www.oclc.org) catalog system.
 
 pub use error::{Error, ParsePicaError};
-pub use record::{SubfieldCode, SubfieldValue, SubfieldValueRef};
+pub use record::{
+    Subfield, SubfieldCode, SubfieldRef, SubfieldValue,
+    SubfieldValueRef,
+};
 
 mod error;
 mod record;
