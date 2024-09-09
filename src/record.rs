@@ -6,7 +6,8 @@ use std::str::Utf8Error;
 use bstr::{BStr, BString, ByteSlice};
 use winnow::combinator::preceded;
 use winnow::prelude::*;
-use winnow::token::{one_of, take_till};
+use winnow::stream::AsChar;
+use winnow::token::{one_of, take_till, take_while};
 
 use crate::error::ParsePicaError;
 
@@ -199,6 +200,29 @@ impl<'a> SubfieldValueRef<'a> {
         T: AsRef<[u8]> + ?Sized,
     {
         Self(value.as_ref().into())
+    }
+
+    /// Creates a [SubfieldValueRef] from a byte slice.
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldValueRef;
+    ///
+    /// let value = SubfieldValueRef::from_bytes(b"abc")?;
+    /// assert_eq!(value, "abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn from_bytes<T: AsRef<[u8]> + ?Sized>(
+        bytes: &'a T,
+    ) -> Result<Self, ParsePicaError> {
+        let bytes = bytes.as_ref();
+
+        parse_subfield_value_ref.parse(bytes).map_err(|_| {
+            ParsePicaError::SubfieldValue(
+                bytes.to_str_lossy().to_string(),
+            )
+        })
     }
 
     /// Returns the subfield value reference as a byte slice.
@@ -427,7 +451,7 @@ impl quickcheck::Arbitrary for SubfieldValue {
 pub struct SubfieldRef<'a>(SubfieldCode, SubfieldValueRef<'a>);
 
 impl<'a> SubfieldRef<'a> {
-    /// Create a new immutable PICA+ [SubfieldRef].
+    /// Create a new [SubfieldRef].
     ///
     /// # Example
     ///
@@ -596,7 +620,7 @@ impl<'a> IntoIterator for &'a SubfieldRef<'a> {
     }
 }
 
-/// A mutable PICA+ subfield.
+/// A mutable subfield.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Subfield(SubfieldCode, SubfieldValue);
 
@@ -697,7 +721,7 @@ impl From<SubfieldRef<'_>> for Subfield {
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-
+    #[inline]
     fn from(subfield: SubfieldRef<'_>) -> Self {
         let SubfieldRef(code, value) = subfield;
         Self(code, value.into())
@@ -711,9 +735,498 @@ impl quickcheck::Arbitrary for Subfield {
     }
 }
 
+/// The level (main, local, copy) of a field (or tag).
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub enum Level {
+    #[default]
+    Main,
+    Local,
+    Copy,
+}
+
+/// An immutable tag.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TagRef<'a>(&'a BStr);
+
+impl<'a> TagRef<'a> {
+    /// Create a new [TagRef] from a string slice.
+    ///
+    /// # Panics
+    ///
+    /// This method panics if the tag is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::TagRef;
+    ///
+    /// let tag = TagRef::new("003@")?;
+    /// assert_eq!(tag, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn new(tag: &'a str) -> Result<Self, ParsePicaError> {
+        Self::from_bytes(tag.as_bytes())
+    }
+
+    /// Creates a new [TagRef] without checking for validity.
+    ///
+    /// # Safety
+    ///
+    /// The caller *must* ensure that the given tag is valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::TagRef;
+    ///
+    /// let tag = TagRef::from_unchecked(b"004A");
+    /// assert_eq!(tag, "004A");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn from_unchecked<T: AsRef<[u8]> + ?Sized>(tag: &'a T) -> Self {
+        Self(tag.as_ref().into())
+    }
+
+    /// Create a new [TagRef] from a byte slice.
+    ///
+    /// # Panics
+    ///
+    /// This method panics if the tag is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::TagRef;
+    ///
+    /// let tag = TagRef::from_bytes(b"003@")?;
+    /// assert_eq!(tag, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn from_bytes<B: AsRef<[u8]> + ?Sized>(
+        tag: &'a B,
+    ) -> Result<Self, ParsePicaError> {
+        let bytes = tag.as_ref();
+        parse_tag_ref.parse(bytes).map_err(|_| {
+            ParsePicaError::Tag(bytes.to_str_lossy().to_string())
+        })
+    }
+
+    /// Returns the [Level] of the [TagRef].
+    ///
+    /// ```rust
+    /// use pica_record::{Level, TagRef};
+    ///
+    /// assert_eq!(TagRef::new("003@")?.level(), Level::Main);
+    /// assert_eq!(TagRef::new("101@")?.level(), Level::Local);
+    /// assert_eq!(TagRef::new("203@")?.level(), Level::Copy);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn level(&self) -> Level {
+        match self.0[0] {
+            b'0' => Level::Main,
+            b'1' => Level::Local,
+            b'2' => Level::Copy,
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// Parse a PICA+ tag.
+pub(crate) fn parse_tag_ref<'a>(
+    i: &mut &'a [u8],
+) -> PResult<TagRef<'a>> {
+    (
+        one_of([b'0', b'1', b'2']),
+        one_of(|c: u8| c.is_ascii_digit()),
+        one_of(|c: u8| c.is_ascii_digit()),
+        one_of(|c: u8| c.is_ascii_uppercase() || c == b'@'),
+    )
+        .take()
+        .map(|tag| TagRef::from_unchecked(tag))
+        .parse_next(i)
+}
+
+impl PartialEq<&str> for TagRef<'_> {
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == other.as_bytes()
+    }
+}
+
+/// A mutable tag.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Tag(BString);
+
+impl Tag {
+    /// Create a new [Tag].
+    ///
+    /// # Errors
+    ///
+    /// This function returns an error if the given tag is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Tag;
+    ///
+    /// let tag = Tag::new("003@")?;
+    /// assert_eq!(tag, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new(tag: &str) -> Result<Self, ParsePicaError> {
+        Ok(Self::from(TagRef::new(tag)?))
+    }
+
+    /// Retruns the [Tag] as a byte slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Tag;
+    ///
+    /// let tag = Tag::new("003@")?;
+    /// assert_eq!(tag.as_bytes(), b"003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
+impl From<TagRef<'_>> for Tag {
+    /// Create a new [Tag] from a [TagRef].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{Tag, TagRef};
+    ///
+    /// let tag_ref = TagRef::new("003@")?;
+    /// let tag = Tag::from(tag_ref);
+    /// assert_eq!(tag, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn from(tag: TagRef<'_>) -> Self {
+        let TagRef(value) = tag;
+        Self(value.into())
+    }
+}
+
+impl PartialEq<&str> for Tag {
+    /// Compares a [Tag] with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Tag;
+    ///
+    /// let tag = Tag::new("003@")?;
+    /// assert_eq!(tag, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == other.as_bytes()
+    }
+}
+
+impl PartialEq<TagRef<'_>> for Tag {
+    #[inline]
+    fn eq(&self, other: &TagRef<'_>) -> bool {
+        self.0 == other.0
+    }
+}
+impl PartialEq<Tag> for TagRef<'_> {
+    #[inline]
+    fn eq(&self, other: &Tag) -> bool {
+        self.0 == other.0
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Tag {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let p0 = *g.choose(b"012").unwrap();
+        let p1 = *g.choose(b"0123456789").unwrap();
+        let p2 = *g.choose(b"0123456789").unwrap();
+        let p3 = *g.choose(b"ABCDEFGHIJKLMNOPQRSTUVWXYZ@").unwrap();
+
+        Self(BString::from(&[p0, p1, p2, p3]))
+    }
+}
+
+/// An immutable occurrence.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct OccurrenceRef<'a>(&'a BStr);
+
+impl<'a> OccurrenceRef<'a> {
+    /// Create a new [OccurrenceRef] from a string slice.
+    ///
+    /// # Panics
+    ///
+    /// This method panics if the occurrence is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// let occurrence = OccurrenceRef::new("001")?;
+    /// assert_eq!(occurrence, "001");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn new(occ: &'a str) -> Result<Self, ParsePicaError> {
+        Self::from_bytes(occ.as_bytes())
+    }
+
+    /// Create a new [OccurrenceRef] without checking for validity.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that the occurrence is valid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// let occurrence = OccurrenceRef::from_unchecked("001");
+    /// assert_eq!(occurrence, "001");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn from_unchecked<T: AsRef<[u8]> + ?Sized>(occ: &'a T) -> Self {
+        Self(occ.as_ref().into())
+    }
+
+    /// Create a new [OccurrenceRef] from a byte slice.
+    ///
+    /// # Panics
+    ///
+    /// This method panics if the occurrence is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// let occurrence = OccurrenceRef::from_bytes(b"00")?;
+    /// assert_eq!(occurrence, "00");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn from_bytes<B: AsRef<[u8]> + ?Sized>(
+        occurrence: &'a B,
+    ) -> Result<Self, ParsePicaError> {
+        let bytes = occurrence.as_ref();
+        parse_occurrence_ref.parse(bytes).map_err(|_| {
+            ParsePicaError::Occurrence(bytes.to_str_lossy().to_string())
+        })
+    }
+
+    /// Write the [OccurrenceRef] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let occurrence = OccurrenceRef::new("01")?;
+    /// occurrence.write_to(&mut writer);
+    ///
+    /// assert_eq!(String::from_utf8(writer.into_inner())?, "01");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "{}", self.0)
+    }
+}
+
+/// Parse PICA+ occurrence occurrence.
+#[inline]
+pub(crate) fn parse_occurrence_ref<'a>(
+    i: &mut &'a [u8],
+) -> PResult<OccurrenceRef<'a>> {
+    take_while(2..=3, AsChar::is_dec_digit)
+        .map(OccurrenceRef::from_unchecked)
+        .parse_next(i)
+}
+
+impl PartialEq<&str> for OccurrenceRef<'_> {
+    /// Compare a [OccurrenceRef] with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// let occurrence = OccurrenceRef::from_bytes(b"01")?;
+    /// assert_eq!(occurrence, "01");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn eq(&self, occurrence: &&str) -> bool {
+        self.0 == occurrence.as_bytes()
+    }
+}
+
+/// A mutable occurrence.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct Occurrence(BString);
+
+impl Occurrence {
+    /// Create a new [OccurrenceRef] from a string slice.
+    ///
+    /// # Panics
+    ///
+    /// This method panics if the occurrence is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::OccurrenceRef;
+    ///
+    /// let occurrence = OccurrenceRef::new("001")?;
+    /// assert_eq!(occurrence, "001");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn new(occ: &str) -> Result<Self, ParsePicaError> {
+        Ok(Self::from(OccurrenceRef::from_bytes(occ.as_bytes())?))
+    }
+
+    /// Returns the [Occurrence] as a byte slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Occurrence;
+    ///
+    /// let occurrence = Occurrence::new("001")?;
+    /// assert_eq!(occurrence.as_bytes(), b"001");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+
+    /// Write the [Occurrence] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::Occurrence;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let occurrence = Occurrence::new("01")?;
+    /// occurrence.write_to(&mut writer);
+    ///
+    /// assert_eq!(String::from_utf8(writer.into_inner())?, "01");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        write!(out, "{}", self.0)
+    }
+}
+
+impl From<OccurrenceRef<'_>> for Occurrence {
+    /// Creates a [Occurrence] from a [OccurrenceRef].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{Occurrence, OccurrenceRef};
+    ///
+    /// let occ_ref = OccurrenceRef::new("001")?;
+    /// let occ = Occurrence::from(occ_ref);
+    /// assert_eq!(occ, "001");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn from(occurrence: OccurrenceRef<'_>) -> Self {
+        let OccurrenceRef(occ) = occurrence;
+        Self(occ.into())
+    }
+}
+
+impl PartialEq<&str> for Occurrence {
+    /// Compares a [Occurrence] with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Occurrence;
+    ///
+    /// let occ = Occurrence::new("999")?;
+    /// assert_eq!(occ, "999");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == other.as_bytes()
+    }
+}
+
+impl PartialEq<Occurrence> for OccurrenceRef<'_> {
+    /// Compares a [OccurrenceRef] with [Occurrence].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{Occurrence, OccurrenceRef};
+    ///
+    /// let occ_ref = OccurrenceRef::new("999")?;
+    /// let occ = Occurrence::new("999")?;
+    /// assert_eq!(occ_ref, occ);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn eq(&self, other: &Occurrence) -> bool {
+        self.0 == other.0
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Occurrence {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let size = *g.choose(&[2, 3]).unwrap();
+        let value = (0..size)
+            .map(|_| *g.choose(b"0123456789").unwrap())
+            .collect::<Vec<u8>>();
+
+        Occurrence(value.into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use bstr::ByteSlice;
+    use bstr::{ByteSlice, ByteVec};
     use quickcheck_macros::quickcheck;
 
     use super::*;
@@ -776,5 +1289,20 @@ mod tests {
         let result = parse_subfield_ref.parse(&bytes).unwrap();
         assert_eq!(result.value(), subfield.value());
         assert_eq!(result.code(), subfield.code());
+    }
+
+    #[quickcheck]
+    fn test_parse_arbitrary_tag_ref(tag: Tag) {
+        let bytes = Vec::from_slice(tag.as_bytes());
+        assert_eq!(parse_tag_ref.parse(&bytes).unwrap(), tag);
+    }
+
+    #[quickcheck]
+    fn test_parse_arbitrary_occurrence_ref(occurrence: Occurrence) {
+        let bytes = Vec::from_slice(occurrence.as_bytes());
+        assert_eq!(
+            parse_occurrence_ref.parse(&bytes).unwrap(),
+            occurrence
+        );
     }
 }

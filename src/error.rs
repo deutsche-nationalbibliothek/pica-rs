@@ -27,4 +27,8 @@ pub enum ParsePicaError {
     SubfieldValue(String),
     #[error("'{0}' is not a valid subfield.")]
     Subfield(String),
+    #[error("'{0}' is not a valid tag.")]
+    Tag(String),
+    #[error("'{0}' is not a valid occurrence.")]
+    Occurrence(String),
 }

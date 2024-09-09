@@ -4,8 +4,8 @@
 
 pub use error::{Error, ParsePicaError};
 pub use record::{
-    Subfield, SubfieldCode, SubfieldRef, SubfieldValue,
-    SubfieldValueRef,
+    Level, Occurrence, OccurrenceRef, Subfield, SubfieldCode,
+    SubfieldRef, SubfieldValue, SubfieldValueRef, Tag, TagRef,
 };
 
 mod error;
