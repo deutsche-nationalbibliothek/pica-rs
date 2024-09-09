@@ -1,5 +1,5 @@
 use pica_matcher::TagMatcher;
-use pica_record::TagRef;
+use pica_record_v1::TagRef;
 
 const TAGS: [&'static str; 24] = [
     "001A", "001B", "001D", "001U", "001X", "002@", "003@", "003U",

@@ -2,8 +2,10 @@ use std::ffi::OsString;
 
 use clap::{value_parser, Parser};
 use pica_matcher::{MatcherBuilder, MatcherOptions};
-use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
-use pica_record::{ByteRecord, FieldRef, Level};
+use pica_record_v1::io::{
+    ReaderBuilder, RecordsIterator, WriterBuilder,
+};
+use pica_record_v1::{ByteRecord, FieldRef, Level};
 use serde::{Deserialize, Serialize};
 
 use super::filter::parse_predicates;

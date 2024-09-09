@@ -6,7 +6,7 @@ use bstr::ByteSlice;
 use pica_format::{parse_format, Format, FormatExt};
 use pica_matcher::MatcherOptions;
 use pica_path::{parse_path, Path};
-use pica_record::RecordRef;
+use pica_record_v1::RecordRef;
 use thiserror::Error;
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{alt, delimited, preceded, repeat, separated};
@@ -425,7 +425,7 @@ impl QueryExt for RecordRef<'_> {
     /// ```rust
     /// use std::str::FromStr;
     ///
-    /// use pica_record::RecordRef;
+    /// use pica_record_v1::RecordRef;
     /// use pica_select::{Outcome, Query, QueryExt};
     ///
     /// # fn main() { example().unwrap(); }

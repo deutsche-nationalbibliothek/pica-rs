@@ -8,8 +8,8 @@ use pica_matcher::subfield_matcher::parse_subfield_matcher;
 use pica_matcher::{
     MatcherOptions, OccurrenceMatcher, SubfieldMatcher, TagMatcher,
 };
-use pica_record::parser::parse_subfield_code;
-use pica_record::{FieldRef, RecordRef, SubfieldCode};
+use pica_record_v1::parser::parse_subfield_code;
+use pica_record_v1::{FieldRef, RecordRef, SubfieldCode};
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 use thiserror::Error;
@@ -264,7 +264,7 @@ pub trait PathExt {
     /// ```rust
     /// use bstr::ByteSlice;
     /// use pica_path::{Path, PathExt};
-    /// use pica_record::ByteRecord;
+    /// use pica_record_v1::ByteRecord;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -291,7 +291,7 @@ pub trait PathExt {
     /// ```rust
     /// use bstr::ByteSlice;
     /// use pica_path::{Path, PathExt};
-    /// use pica_record::ByteRecord;
+    /// use pica_record_v1::ByteRecord;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -322,7 +322,7 @@ impl<'a> PathExt for RecordRef<'a> {
     /// ```rust
     /// use bstr::BString;
     /// use pica_path::{Path, PathExt};
-    /// use pica_record::RecordRef;
+    /// use pica_record_v1::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {

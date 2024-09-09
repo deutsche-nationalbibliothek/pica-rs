@@ -1,14 +1,14 @@
 use std::str::FromStr;
 
-use pica_record::parser::parse_tag;
-use pica_record::{Tag, TagRef};
+use pica_record_v1::parser::parse_tag;
+use pica_record_v1::{Tag, TagRef};
 use winnow::combinator::{alt, delimited, repeat, separated_pair};
 use winnow::token::one_of;
 use winnow::{PResult, Parser};
 
 use crate::ParseMatcherError;
 
-/// A matcher that matches against PICA+ [Tags](`pica_record::Tag`).
+/// A matcher that matches against PICA+ [Tags](`pica_record_v1::Tag`).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TagMatcher {
     Simple(Tag),
@@ -73,7 +73,7 @@ impl TagMatcher {
     ///
     /// ```rust
     /// use pica_matcher::TagMatcher;
-    /// use pica_record::TagRef;
+    /// use pica_record_v1::TagRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -95,7 +95,7 @@ impl TagMatcher {
     ///
     /// ```rust
     /// use pica_matcher::TagMatcher;
-    /// use pica_record::TagRef;
+    /// use pica_record_v1::TagRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {

@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use bstr::ByteSlice;
 use clap::Parser;
-use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_record_v1::io::{ReaderBuilder, RecordsIterator};
 use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};
 use termcolor::{

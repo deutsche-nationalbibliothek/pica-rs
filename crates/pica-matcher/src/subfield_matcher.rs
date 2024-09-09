@@ -1,12 +1,12 @@
-//! Matcher that works on PICA+ [Subfields](pica_record::Subfield).
+//! Matcher that works on PICA+ [Subfields](pica_record_v1::Subfield).
 
 use std::cell::RefCell;
 use std::ops::{BitAnd, BitOr, BitXor};
 use std::str::FromStr;
 
 use bstr::ByteSlice;
-use pica_record::parser::parse_subfield_code;
-use pica_record::{SubfieldCode, SubfieldRef};
+use pica_record_v1::parser::parse_subfield_code;
+use pica_record_v1::{SubfieldCode, SubfieldRef};
 use regex::bytes::{Regex, RegexBuilder};
 use strsim::normalized_levenshtein;
 use winnow::ascii::digit1;
@@ -119,7 +119,7 @@ impl ExistsMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::ExistsMatcher;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -155,7 +155,7 @@ impl ExistsMatcher {
     /// use std::str::FromStr;
     ///
     /// use pica_matcher::subfield_matcher::ExistsMatcher;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -222,7 +222,7 @@ impl RelationMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::RelationMatcher;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -425,7 +425,7 @@ impl RegexMatcher {
     /// ```rust
     /// use pica_matcher::subfield_matcher::RegexMatcher;
     /// use pica_matcher::Quantifier;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -560,7 +560,7 @@ impl InMatcher {
     /// ```rust
     /// use pica_matcher::subfield_matcher::InMatcher;
     /// use pica_matcher::Quantifier;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -721,7 +721,7 @@ impl CardinalityMatcher {
     /// ```rust
     /// use pica_matcher::subfield_matcher::CardinalityMatcher;
     /// use pica_matcher::RelationalOp;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -855,7 +855,7 @@ impl SingletonMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::SingletonMatcher;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -921,7 +921,7 @@ impl SubfieldMatcher {
     ///
     /// ```rust
     /// use pica_matcher::subfield_matcher::SubfieldMatcher;
-    /// use pica_record::SubfieldRef;
+    /// use pica_record_v1::SubfieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {

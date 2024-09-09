@@ -1,5 +1,5 @@
 use bstr::BString;
-use pica_record::ByteRecord;
+use pica_record_v1::ByteRecord;
 use serde::Deserialize;
 
 use self::checksum::Checksum;

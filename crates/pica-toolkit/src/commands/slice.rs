@@ -1,7 +1,9 @@
 use std::ffi::OsString;
 
 use clap::Parser;
-use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
+use pica_record_v1::io::{
+    ReaderBuilder, RecordsIterator, WriterBuilder,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

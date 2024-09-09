@@ -5,7 +5,7 @@ use pica_matcher::subfield_matcher::*;
 use pica_matcher::{
     MatcherOptions, ParseMatcherError, Quantifier, RelationalOp,
 };
-use pica_record::SubfieldRef;
+use pica_record_v1::SubfieldRef;
 
 use crate::TestResult;
 

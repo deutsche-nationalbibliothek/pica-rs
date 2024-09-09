@@ -2,7 +2,7 @@ use std::ops::RangeTo;
 use std::str::FromStr;
 
 use pica_matcher::{OccurrenceMatcher, SubfieldMatcher, TagMatcher};
-use pica_record::{FieldRef, RecordRef, SubfieldCode, SubfieldRef};
+use pica_record_v1::{FieldRef, RecordRef, SubfieldCode, SubfieldRef};
 use thiserror::Error;
 use winnow::prelude::*;
 

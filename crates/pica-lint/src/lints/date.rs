@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use chrono::NaiveDate;
 use pica_path::{Path, PathExt};
-use pica_record::ByteRecord;
+use pica_record_v1::ByteRecord;
 use serde::Deserialize;
 
 use super::{Lint, Status};

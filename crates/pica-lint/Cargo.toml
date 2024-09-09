@@ -19,7 +19,7 @@ indicatif = { version = "0.17" }
 once_cell = { version = "1.19" }
 pica-matcher = { workspace = true, features = ["serde"] }
 pica-path = { workspace = true, features = ["serde"] }
-pica-record = { workspace = true }
+pica-record-v1 = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 sophia = { version = "0.8" }
 toml = { workspace = true }

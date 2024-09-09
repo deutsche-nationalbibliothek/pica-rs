@@ -1,8 +1,10 @@
 use std::ffi::OsString;
 
 use clap::{value_parser, Parser};
-use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
-use pica_record::ByteRecord;
+use pica_record_v1::io::{
+    ReaderBuilder, RecordsIterator, WriterBuilder,
+};
+use pica_record_v1::ByteRecord;
 use rand::rngs::StdRng;
 use rand::{thread_rng, Rng, SeedableRng};
 use serde::{Deserialize, Serialize};

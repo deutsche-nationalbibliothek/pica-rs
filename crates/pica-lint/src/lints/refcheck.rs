@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use bstr::BString;
 use pica_matcher::RecordMatcher;
 use pica_path::{Path, PathExt};
-use pica_record::ByteRecord;
+use pica_record_v1::ByteRecord;
 use serde::Deserialize;
 
 use super::{Lint, Status};

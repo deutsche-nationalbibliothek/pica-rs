@@ -5,8 +5,10 @@ use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
 use pica_path::PathExt;
-use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
-use pica_record::ByteRecord;
+use pica_record_v1::io::{
+    ReaderBuilder, RecordsIterator, WriterBuilder,
+};
+use pica_record_v1::ByteRecord;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

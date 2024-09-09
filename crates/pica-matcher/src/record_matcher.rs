@@ -4,7 +4,7 @@ use std::ops::{
 use std::str::FromStr;
 
 use bstr::ByteSlice;
-use pica_record::RecordRef;
+use pica_record_v1::RecordRef;
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 use winnow::Parser;
@@ -13,7 +13,7 @@ use crate::common::BooleanOp;
 use crate::field_matcher::parse_field_matcher;
 use crate::{FieldMatcher, MatcherOptions, ParseMatcherError};
 
-/// A Matcher that works on PICA+ [Records](pica_record::Record).
+/// A Matcher that works on PICA+ [Records](pica_record_v1::Record).
 #[derive(Debug)]
 pub struct RecordMatcher {
     pub(crate) field_matcher: FieldMatcher,
@@ -26,7 +26,7 @@ impl RecordMatcher {
     ///
     /// ```rust
     /// use pica_matcher::RecordMatcher;
-    /// use pica_record::RecordRef;
+    /// use pica_record_v1::RecordRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {

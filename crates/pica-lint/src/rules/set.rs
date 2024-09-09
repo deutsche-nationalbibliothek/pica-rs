@@ -6,7 +6,7 @@ use std::path::Path;
 use bstr::ByteSlice;
 use pica_matcher::RecordMatcher;
 use pica_path::PathExt;
-use pica_record::ByteRecord;
+use pica_record_v1::ByteRecord;
 use serde::Deserialize;
 
 use super::rule::Rule;
