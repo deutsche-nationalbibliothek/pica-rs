@@ -3,8 +3,8 @@ use std::fs::File;
 use std::io::{self, stdout, BufWriter, Write};
 
 use bstr::ByteSlice;
-use pica_record::io::ByteRecordWrite;
-use pica_record::ByteRecord;
+use pica_record_v1::io::ByteRecordWrite;
+use pica_record_v1::ByteRecord;
 use quick_xml::events::{
     BytesDecl, BytesEnd, BytesStart, BytesText, Event,
 };

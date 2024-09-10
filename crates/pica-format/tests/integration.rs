@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::sync::OnceLock;
 
 use pica_format::{Format, FormatExt, FormatOptions};
-use pica_record::ByteRecord;
+use pica_record_v1::ByteRecord;
 
 type TestResult = anyhow::Result<()>;
 

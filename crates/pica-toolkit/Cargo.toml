@@ -18,7 +18,7 @@ flate2 = { workspace = true }
 indicatif = { version = "0.17" }
 pica-matcher = { workspace = true }
 pica-path = { workspace = true }
-pica-record = { workspace = true }
+pica-record-v1 = { workspace = true }
 pica-select = { workspace = true }
 pica-utils = { workspace = true }
 polars = { workspace = true }

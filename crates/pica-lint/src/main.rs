@@ -1,5 +1,5 @@
 use clap::Parser;
-use pica_record::io::BufReadExt;
+use pica_record_v1::io::BufReadExt;
 
 use crate::cli::Args;
 use crate::formatter::{CsvFormatter, Formatter};

@@ -1,11 +1,11 @@
-//! Matcher that works on PICA+ [Fields](pica_record::Field).
+//! Matcher that works on PICA+ [Fields](pica_record_v1::Field).
 
 use std::cell::RefCell;
 use std::ops::{BitAnd, BitOr, BitXor, Not};
 use std::str::FromStr;
 
 use bstr::ByteSlice;
-use pica_record::FieldRef;
+use pica_record_v1::FieldRef;
 use winnow::ascii::digit1;
 use winnow::combinator::{
     alt, delimited, opt, preceded, repeat, terminated,
@@ -41,7 +41,7 @@ impl ExistsMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::ExistsMatcher;
-    /// use pica_record::FieldRef;
+    /// use pica_record_v1::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -127,7 +127,7 @@ impl SubfieldsMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::SubfieldsMatcher;
-    /// use pica_record::FieldRef;
+    /// use pica_record_v1::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -251,7 +251,7 @@ impl SingletonMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::SingletonMatcher;
-    /// use pica_record::FieldRef;
+    /// use pica_record_v1::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -331,7 +331,7 @@ impl CardinalityMatcher {
     ///
     /// ```rust
     /// use pica_matcher::field_matcher::CardinalityMatcher;
-    /// use pica_record::FieldRef;
+    /// use pica_record_v1::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -453,7 +453,7 @@ impl FieldMatcher {
     ///
     /// ```rust
     /// use pica_matcher::FieldMatcher;
-    /// use pica_record::FieldRef;
+    /// use pica_record_v1::FieldRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {

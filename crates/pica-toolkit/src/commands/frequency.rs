@@ -9,7 +9,7 @@ use std::str::FromStr;
 use clap::{value_parser, Parser};
 use pica_matcher::{MatcherBuilder, MatcherOptions};
 use pica_path::PathExt;
-use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_record_v1::io::{ReaderBuilder, RecordsIterator};
 use pica_select::{Query, QueryExt, QueryOptions};
 use pica_utils::NormalizationForm;
 use serde::{Deserialize, Serialize};

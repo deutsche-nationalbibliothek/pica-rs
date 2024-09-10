@@ -11,7 +11,7 @@ rust-version.workspace = true
 [dependencies]
 bstr = { workspace = true }
 pica-matcher = { workspace = true }
-pica-record = { workspace = true }
+pica-record-v1 = { workspace = true }
 thiserror = { workspace = true }
 winnow = { workspace = true, features = ["simd"] }
 

@@ -11,10 +11,10 @@ pub(crate) enum CliError {
     Csv(#[from] csv::Error),
 
     #[error(transparent)]
-    ParsePica(#[from] pica_record::ParsePicaError),
+    ParsePica(#[from] pica_record_v1::ParsePicaError),
 
     #[error(transparent)]
-    ReadPica(#[from] pica_record::io::ReadPicaError),
+    ReadPica(#[from] pica_record_v1::io::ReadPicaError),
 
     #[error(transparent)]
     ParsePath(#[from] pica_path::ParsePathError),

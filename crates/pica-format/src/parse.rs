@@ -5,7 +5,7 @@ use bstr::ByteSlice;
 use pica_matcher::parser::{
     parse_occurrence_matcher, parse_subfield_matcher, parse_tag_matcher,
 };
-use pica_record::SubfieldCode;
+use pica_record_v1::SubfieldCode;
 use winnow::ascii::{digit1, multispace0, multispace1};
 use winnow::combinator::{
     alt, delimited, empty, opt, preceded, repeat, separated, terminated,

@@ -1,15 +1,15 @@
 use std::str::FromStr;
 
 use bstr::{BStr, ByteSlice};
-use pica_record::parser::parse_occurrence_digits;
-use pica_record::{Occurrence, OccurrenceRef};
+use pica_record_v1::parser::parse_occurrence_digits;
+use pica_record_v1::{Occurrence, OccurrenceRef};
 use winnow::combinator::{alt, empty, preceded, separated_pair};
 use winnow::{PResult, Parser};
 
 use crate::ParseMatcherError;
 
 /// A matcher that matches against PICA+
-/// [Occurrence](`pica_record::Occurrence`).
+/// [Occurrence](`pica_record_v1::Occurrence`).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OccurrenceMatcher {
     Any,
@@ -25,7 +25,7 @@ impl OccurrenceMatcher {
     ///
     /// ```rust
     /// use pica_matcher::OccurrenceMatcher;
-    /// use pica_record::Occurrence;
+    /// use pica_record_v1::Occurrence;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {
@@ -47,7 +47,7 @@ impl OccurrenceMatcher {
     ///
     /// ```rust
     /// use pica_matcher::OccurrenceMatcher;
-    /// use pica_record::OccurrenceRef;
+    /// use pica_record_v1::OccurrenceRef;
     ///
     /// # fn main() { example().unwrap(); }
     /// fn example() -> anyhow::Result<()> {

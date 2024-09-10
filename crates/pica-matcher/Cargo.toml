@@ -10,7 +10,7 @@ rust-version.workspace = true
 
 [dependencies]
 bstr = { workspace = true }
-pica-record = { workspace = true }
+pica-record-v1 = { workspace = true }
 pica-utils = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true, optional = true }

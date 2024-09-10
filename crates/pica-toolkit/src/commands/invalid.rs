@@ -2,8 +2,10 @@ use std::ffi::OsString;
 use std::io::Write;
 
 use clap::Parser;
-use pica_record::io::{ReadPicaError, ReaderBuilder, RecordsIterator};
-use pica_record::ParsePicaError;
+use pica_record_v1::io::{
+    ReadPicaError, ReaderBuilder, RecordsIterator,
+};
+use pica_record_v1::ParsePicaError;
 
 use crate::config::Config;
 use crate::error::CliResult;

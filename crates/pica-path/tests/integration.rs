@@ -4,7 +4,7 @@ use std::sync::OnceLock;
 use bstr::{ByteSlice, B};
 use pica_matcher::MatcherOptions;
 use pica_path::{ParsePathError, Path, PathExt};
-use pica_record::ByteRecord;
+use pica_record_v1::ByteRecord;
 
 type TestResult = anyhow::Result<()>;
 

@@ -9,7 +9,9 @@ use pica_matcher::{
     ParseMatcherError, TagMatcher,
 };
 use pica_path::PathExt;
-use pica_record::io::{ReaderBuilder, RecordsIterator, WriterBuilder};
+use pica_record_v1::io::{
+    ReaderBuilder, RecordsIterator, WriterBuilder,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::error::CliResult;

@@ -8,7 +8,7 @@ use std::str::FromStr;
 use bstr::ByteSlice;
 use clap::Parser;
 use pica_path::{Path, PathExt};
-use pica_record::io::{
+use pica_record_v1::io::{
     ByteRecordWrite, ReaderBuilder, RecordsIterator, WriterBuilder,
 };
 use serde::{Deserialize, Serialize};

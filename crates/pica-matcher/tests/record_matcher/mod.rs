@@ -5,7 +5,7 @@ use std::{env, fs};
 
 use bstr::B;
 use pica_matcher::{MatcherOptions, ParseMatcherError, RecordMatcher};
-use pica_record::RecordRef;
+use pica_record_v1::RecordRef;
 
 use crate::TestResult;
 

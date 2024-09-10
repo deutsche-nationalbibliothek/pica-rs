@@ -6,7 +6,7 @@ use pica_matcher::field_matcher::{
     SubfieldsMatcher,
 };
 use pica_matcher::{FieldMatcher, MatcherOptions, ParseMatcherError};
-use pica_record::FieldRef;
+use pica_record_v1::FieldRef;
 
 use crate::TestResult;
 

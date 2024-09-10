@@ -4,7 +4,7 @@ use std::sync::OnceLock;
 use bstr::B;
 use pica_format::Format;
 use pica_path::Path;
-use pica_record::RecordRef;
+use pica_record_v1::RecordRef;
 use pica_select::{ParseQueryError, Query, QueryExt, QueryOptions};
 
 type TestResult = anyhow::Result<()>;

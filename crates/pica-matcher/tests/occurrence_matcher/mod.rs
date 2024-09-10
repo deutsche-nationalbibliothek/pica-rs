@@ -1,5 +1,5 @@
 use pica_matcher::OccurrenceMatcher;
-use pica_record::OccurrenceRef;
+use pica_record_v1::OccurrenceRef;
 
 #[test]
 fn test_occurrence_matcher_eq() {

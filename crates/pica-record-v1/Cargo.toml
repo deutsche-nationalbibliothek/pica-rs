@@ -1,0 +1,32 @@
+[package]
+name = "pica-record-v1"
+resolver = "2"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+keywords.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+quickcheck = { workspace = true, optional = true }
+bstr = { workspace = true }
+flate2 = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+winnow = { workspace = true, features = ["simd"] }
+
+[features]
+arbitrary = ["dep:quickcheck"]
+
+[dev-dependencies]
+anyhow = "1.0"
+criterion = { version = "0.5", features = ["html_reports"] }
+pica-record-v1 = { path = ".", features = ["arbitrary"] }
+quickcheck_macros = "1.0"
+tempfile = "3.8"
+
+[[bench]]
+name = "main"
+harness = false

@@ -4,7 +4,7 @@ use std::io::{self, Write};
 
 use clap::{value_parser, Parser};
 use pica_matcher::{MatcherBuilder, MatcherOptions};
-use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_record_v1::io::{ReaderBuilder, RecordsIterator};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;

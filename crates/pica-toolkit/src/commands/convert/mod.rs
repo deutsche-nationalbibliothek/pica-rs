@@ -7,7 +7,7 @@ mod xml;
 use std::ffi::OsString;
 
 use clap::{Parser, ValueEnum};
-use pica_record::io::{
+use pica_record_v1::io::{
     ByteRecordWrite, ReaderBuilder, RecordsIterator, WriterBuilder,
 };
 use serde::{Deserialize, Serialize};
