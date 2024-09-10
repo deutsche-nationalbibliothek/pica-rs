@@ -2306,7 +2306,7 @@ impl<'a> Hash for ByteRecord<'a> {
     }
 }
 
-/// A PICA+ record, that guarantees valid UTF-8 data.
+/// A record, that guarantees valid UTF-8 data.
 #[derive(Debug)]
 pub struct StringRecord<'a>(ByteRecord<'a>);
 
