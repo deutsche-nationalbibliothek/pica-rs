@@ -2401,6 +2401,7 @@ mod tests {
     }
 
     #[quickcheck]
+    #[cfg_attr(miri, ignore)]
     fn test_parse_arbitrary_subfield_value_ref(value: SubfieldValue) {
         assert_eq!(
             parse_subfield_value_ref.parse(value.as_bytes()).unwrap(),
@@ -2409,6 +2410,7 @@ mod tests {
     }
 
     #[quickcheck]
+    #[cfg_attr(miri, ignore)]
     fn test_parse_arbitrary_subfield_ref(subfield: Subfield) {
         let mut bytes = Vec::new();
         subfield.write_to(&mut bytes).unwrap();
@@ -2434,6 +2436,7 @@ mod tests {
     }
 
     #[quickcheck]
+    #[cfg_attr(miri, ignore)]
     fn test_parse_arbitrary_field_ref(field: Field) {
         let mut bytes = Vec::new();
         let _ = field.write_to(&mut bytes);

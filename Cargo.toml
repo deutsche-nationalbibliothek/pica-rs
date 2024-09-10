@@ -18,7 +18,6 @@ winnow = { version = "0.6.18" }
 serde = ["dep:serde", "bstr/serde"]
 
 [dev-dependencies]
-insta = { version = "1.40.0", features = ["toml"] }
 pica-record = { path = "./", features = ["serde"] }
 quickcheck = { version = "1.0" }
 quickcheck_macros = { version = "1.0" }
