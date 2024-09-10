@@ -31,4 +31,10 @@ pub enum ParsePicaError {
     Tag(String),
     #[error("'{0}' is not a valid occurrence.")]
     Occurrence(String),
+    #[error("'{0}' is not a valid field.")]
+    Field(String),
+    #[error("'{0}' is not a valid record.")]
+    Record(String),
+    #[error("'{0}' is not a valid string record.")]
+    StringRecord(String),
 }

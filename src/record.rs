@@ -1,10 +1,12 @@
-use std::io::{self, Write};
+use std::hash::{Hash, Hasher};
+use std::io::{self, Cursor, Write};
 use std::iter;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::str::Utf8Error;
 
 use bstr::{BStr, BString, ByteSlice};
-use winnow::combinator::preceded;
+use sha2::{Digest, Sha256};
+use winnow::combinator::{opt, preceded, repeat, terminated};
 use winnow::prelude::*;
 use winnow::stream::AsChar;
 use winnow::token::{one_of, take_till, take_while};
@@ -112,6 +114,7 @@ impl PartialEq<char> for SubfieldCode {
 }
 
 impl PartialEq<char> for &SubfieldCode {
+    #[inline]
     fn eq(&self, other: &char) -> bool {
         self.0 == *other
     }
@@ -129,6 +132,7 @@ impl quickcheck::Arbitrary for SubfieldCode {
 }
 
 /// Parses a [SubfieldCode] from a byte slice.
+#[inline]
 pub(crate) fn parse_subfield_code(
     i: &mut &[u8],
 ) -> PResult<SubfieldCode> {
@@ -203,6 +207,7 @@ impl<'a> SubfieldValueRef<'a> {
     }
 
     /// Creates a [SubfieldValueRef] from a byte slice.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -247,23 +252,50 @@ impl<'a> Deref for SubfieldValueRef<'a> {
     type Target = BStr;
 
     fn deref(&self) -> &'a Self::Target {
-        &self.0
+        self.0
     }
 }
 
 impl PartialEq<str> for SubfieldValueRef<'_> {
+    /// Compare a [SubfieldValueRef] with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldValueRef;
+    ///
+    /// let value = SubfieldValueRef::from_unchecked("abc");
+    /// assert_eq!(value, "abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
     fn eq(&self, value: &str) -> bool {
         self.0 == value.as_bytes()
     }
 }
 
 impl<T: AsRef<[u8]>> PartialEq<T> for SubfieldValueRef<'_> {
+    /// Compare a [SubfieldValueRef] with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldValueRef;
+    ///
+    /// let value = SubfieldValueRef::from_unchecked("abc");
+    /// assert_eq!(value, b"abc");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
     fn eq(&self, other: &T) -> bool {
         self.0 == other.as_ref()
     }
 }
 
 /// Parse a PICA+ subfield value reference.
+#[inline]
 pub(crate) fn parse_subfield_value_ref<'a>(
     i: &mut &'a [u8],
 ) -> PResult<SubfieldValueRef<'a>> {
@@ -277,6 +309,7 @@ pub(crate) fn parse_subfield_value_ref<'a>(
 /// This type behaves like byte slice but guarantees that the subfield
 /// value does not contain a '\x1e' or '\x1f' character.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct SubfieldValue(BString);
 
 impl SubfieldValue {
@@ -382,7 +415,7 @@ impl<T: AsRef<[u8]>> PartialEq<T> for SubfieldValue {
     ///
     /// let value = SubfieldValue::new("abc")?;
     /// assert_eq!(value, [b'a', b'b', b'c']);
-    /// assert_ne!(value, "def");
+    /// assert_ne!(value, b"def");
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
@@ -413,6 +446,20 @@ impl PartialEq<SubfieldValueRef<'_>> for SubfieldValue {
 }
 
 impl PartialEq<str> for SubfieldValue {
+    /// Compare a [SubfieldValue] with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::SubfieldValue;
+    ///
+    /// let value = SubfieldValue::new("abc")?;
+    /// assert_eq!(value, "abc");
+    /// assert_ne!(value, "def");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
     fn eq(&self, value: &str) -> bool {
         self.0 == value.as_bytes()
     }
@@ -448,6 +495,7 @@ impl quickcheck::Arbitrary for SubfieldValue {
 
 /// An immutable subfield.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct SubfieldRef<'a>(SubfieldCode, SubfieldValueRef<'a>);
 
 impl<'a> SubfieldRef<'a> {
@@ -572,11 +620,11 @@ impl<'a> SubfieldRef<'a> {
     /// let mut writer = Cursor::new(Vec::<u8>::new());
     /// let subfield = SubfieldRef::new('0', "123456789X")?;
     /// subfield.write_to(&mut writer);
-    /// #
-    /// # assert_eq!(
-    /// #    String::from_utf8(writer.into_inner())?,
-    /// #    "\x1f0123456789X"
-    /// # );
+    ///
+    /// assert_eq!(
+    ///     String::from_utf8(writer.into_inner())?,
+    ///     "\x1f0123456789X"
+    /// );
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
@@ -622,6 +670,7 @@ impl<'a> IntoIterator for &'a SubfieldRef<'a> {
 
 /// A mutable subfield.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct Subfield(SubfieldCode, SubfieldValue);
 
 impl Subfield {
@@ -728,6 +777,26 @@ impl From<SubfieldRef<'_>> for Subfield {
     }
 }
 
+impl PartialEq<Subfield> for SubfieldRef<'_> {
+    /// Compare a [SubfieldRef] with a [Subfield].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{Subfield, SubfieldRef};
+    ///
+    /// let subfield_ref = SubfieldRef::new('0', "123456789X")?;
+    /// let subfield = Subfield::new('0', "123456789X")?;
+    /// assert_eq!(subfield_ref, subfield);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn eq(&self, other: &Subfield) -> bool {
+        self.0 == other.0 && self.1 == other.1
+    }
+}
+
 #[cfg(test)]
 impl quickcheck::Arbitrary for Subfield {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
@@ -737,6 +806,7 @@ impl quickcheck::Arbitrary for Subfield {
 
 /// The level (main, local, copy) of a field (or tag).
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub enum Level {
     #[default]
     Main,
@@ -746,6 +816,7 @@ pub enum Level {
 
 /// An immutable tag.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct TagRef<'a>(&'a BStr);
 
 impl<'a> TagRef<'a> {
@@ -836,6 +907,28 @@ impl<'a> TagRef<'a> {
             _ => unreachable!(),
         }
     }
+
+    /// Write the [TagRef] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::TagRef;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let tag = TagRef::new("003@")?;
+    /// tag.write_to(&mut writer);
+    ///
+    /// assert_eq!(String::from_utf8(writer.into_inner())?, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        out.write_all(self.0)
+    }
 }
 
 /// Parse a PICA+ tag.
@@ -849,11 +942,43 @@ pub(crate) fn parse_tag_ref<'a>(
         one_of(|c: u8| c.is_ascii_uppercase() || c == b'@'),
     )
         .take()
-        .map(|tag| TagRef::from_unchecked(tag))
+        .map(TagRef::from_unchecked)
         .parse_next(i)
 }
 
 impl PartialEq<&str> for TagRef<'_> {
+    /// Compare a [TagRef] with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::TagRef;
+    ///
+    /// let tag = TagRef::new("003@")?;
+    /// assert_eq!(tag, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == other.as_bytes()
+    }
+}
+
+impl PartialEq<&str> for &TagRef<'_> {
+    /// Compare a [TagRef] reference with a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::TagRef;
+    ///
+    /// let tag = TagRef::new("003@")?;
+    /// assert_eq!(&tag, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
     fn eq(&self, other: &&str) -> bool {
         self.0 == other.as_bytes()
     }
@@ -899,6 +1024,28 @@ impl Tag {
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
         self.0.as_ref()
+    }
+
+    /// Write the [Tag] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::Tag;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let tag = Tag::new("003@")?;
+    /// tag.write_to(&mut writer);
+    ///
+    /// assert_eq!(String::from_utf8(writer.into_inner())?, "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        out.write_all(&self.0)
     }
 }
 
@@ -946,6 +1093,7 @@ impl PartialEq<TagRef<'_>> for Tag {
         self.0 == other.0
     }
 }
+
 impl PartialEq<Tag> for TagRef<'_> {
     #[inline]
     fn eq(&self, other: &Tag) -> bool {
@@ -1008,8 +1156,10 @@ impl<'a> OccurrenceRef<'a> {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
-    pub fn from_unchecked<T: AsRef<[u8]> + ?Sized>(occ: &'a T) -> Self {
-        Self(occ.as_ref().into())
+    pub fn from_unchecked<T: AsRef<[u8]> + ?Sized>(
+        occurrence: &'a T,
+    ) -> Self {
+        Self(occurrence.as_ref().into())
     }
 
     /// Create a new [OccurrenceRef] from a byte slice.
@@ -1051,13 +1201,13 @@ impl<'a> OccurrenceRef<'a> {
     /// let occurrence = OccurrenceRef::new("01")?;
     /// occurrence.write_to(&mut writer);
     ///
-    /// assert_eq!(String::from_utf8(writer.into_inner())?, "01");
+    /// assert_eq!(String::from_utf8(writer.into_inner())?, "/01");
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
-        write!(out, "{}", self.0)
+        write!(out, "/{}", self.0)
     }
 }
 
@@ -1111,8 +1261,10 @@ impl Occurrence {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
-    pub fn new(occ: &str) -> Result<Self, ParsePicaError> {
-        Ok(Self::from(OccurrenceRef::from_bytes(occ.as_bytes())?))
+    pub fn new(occurrence: &str) -> Result<Self, ParsePicaError> {
+        Ok(Self::from(OccurrenceRef::from_bytes(
+            occurrence.as_bytes(),
+        )?))
     }
 
     /// Returns the [Occurrence] as a byte slice.
@@ -1145,12 +1297,12 @@ impl Occurrence {
     /// let occurrence = Occurrence::new("01")?;
     /// occurrence.write_to(&mut writer);
     ///
-    /// assert_eq!(String::from_utf8(writer.into_inner())?, "01");
+    /// assert_eq!(String::from_utf8(writer.into_inner())?, "/01");
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
-        write!(out, "{}", self.0)
+        write!(out, "/{}", self.0)
     }
 }
 
@@ -1221,6 +1373,981 @@ impl quickcheck::Arbitrary for Occurrence {
             .collect::<Vec<u8>>();
 
         Occurrence(value.into())
+    }
+}
+
+/// An immutable field.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FieldRef<'a> {
+    pub(super) tag: TagRef<'a>,
+    pub(super) occurrence: Option<OccurrenceRef<'a>>,
+    pub(super) subfields: Vec<SubfieldRef<'a>>,
+}
+
+impl<'a> FieldRef<'a> {
+    /// Creates a new [FieldRef].
+    ///
+    /// # Errors
+    ///
+    /// This function fails if either the tag, occcurrence or any
+    /// subfield is nvalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
+    /// assert_eq!(field.tag(), "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new<T>(
+        tag: &'a str,
+        occ: Option<&'a str>,
+        subfields: T,
+    ) -> Result<Self, ParsePicaError>
+    where
+        T: IntoIterator<Item = (char, &'a str)>,
+    {
+        let tag = TagRef::new(tag)?;
+        let occurrence = if let Some(value) = occ {
+            Some(OccurrenceRef::new(value)?)
+        } else {
+            None
+        };
+
+        let subfields = subfields
+            .into_iter()
+            .map(|(code, value)| SubfieldRef::new(code, value))
+            .collect::<Result<Vec<SubfieldRef<'a>>, _>>()?;
+
+        Ok(Self {
+            tag,
+            occurrence,
+            subfields,
+        })
+    }
+
+    /// Creates an [FieldRef] from a byte slice.
+    ///
+    /// # Errors
+    ///
+    /// This function fails if the given byte slice is not a proper
+    /// PICA+ field.
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// let field =
+    ///     FieldRef::from_bytes(b"003@ \x1f0123456789X\x1e").unwrap();
+    /// assert_eq!(field.tag(), "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn from_bytes<B>(field: &'a B) -> Result<Self, ParsePicaError>
+    where
+        B: AsRef<[u8]> + ?Sized,
+    {
+        let bytes = field.as_ref();
+        parse_field_ref.parse(bytes).map_err(|_| {
+            ParsePicaError::Field(bytes.to_str_lossy().to_string())
+        })
+    }
+
+    /// Returns a reference to the [TagRef] of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
+    /// assert_eq!(field.tag(), "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn tag(&self) -> &TagRef<'a> {
+        &self.tag
+    }
+
+    /// Returns a reference to the [OccurrenceRef] of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, OccurrenceRef};
+    ///
+    /// let field =
+    ///     FieldRef::new("003@", Some("01"), vec![('0', "123456789X")])?;
+    /// assert_eq!(field.occurrence(), Some(&OccurrenceRef::new("01")?));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn occurrence(&self) -> Option<&OccurrenceRef<'a>> {
+        self.occurrence.as_ref()
+    }
+
+    /// Returns a reference to the [SubfieldRef]s of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
+    /// let subfields = field.subfields();
+    /// assert_eq!(subfields.len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn subfields(&self) -> &[SubfieldRef<'a>] {
+        &self.subfields
+    }
+
+    /// Checks whether a [FieldRef] contains a [SubfieldRef] with the
+    /// given code or not.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
+    /// assert!(!field.contains('a'));
+    /// assert!(field.contains('0'));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn contains(&self, code: char) -> bool {
+        self.subfields
+            .iter()
+            .any(|subfield| *subfield.code() == code)
+    }
+
+    /// Searches for the first [SubfieldRef] that satisfies the given
+    /// predicate.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, SubfieldRef};
+    ///
+    /// let field =
+    ///     FieldRef::new("012A", None, vec![('a', "b"), ('c', "d")])?;
+    ///
+    /// assert!(field.find(|subfield| subfield.code() == 'b').is_none());
+    ///
+    /// let subfield =
+    ///     field.find(|subfield| subfield.code() == 'a').unwrap();
+    /// assert_eq!(subfield, &SubfieldRef::new('a', "b")?);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn find<F>(&self, predicate: F) -> Option<&SubfieldRef>
+    where
+        F: Fn(&&SubfieldRef) -> bool,
+    {
+        self.subfields().iter().find(predicate)
+    }
+
+    /// Returns the level of the field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, Level};
+    ///
+    /// let field = FieldRef::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
+    /// assert_eq!(field.level(), Level::Main);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn level(&self) -> Level {
+        self.tag.level()
+    }
+
+    /// Returns an [`std::str::Utf8Error`](Utf8Error) if the field
+    /// contains invalid UTF-8 data, otherwise the unit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// let field = FieldRef::from_bytes(b"003@ \x1f0123\x1e")?;
+    /// assert!(field.validate().is_ok());
+    ///
+    /// let field = FieldRef::from_bytes(b"003@ \x1f0\x00\x9F\x1e")?;
+    /// assert!(field.validate().is_err());
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn validate(&self) -> Result<(), Utf8Error> {
+        for subfield in self.subfields.iter() {
+            subfield.validate()?;
+        }
+
+        Ok(())
+    }
+
+    /// Write the [FieldRef] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::FieldRef;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let field = FieldRef::from_bytes(b"012A/01 \x1fab\x1fcd\x1e")?;
+    /// field.write_to(&mut writer);
+    ///
+    /// assert_eq!(
+    ///     String::from_utf8(writer.into_inner())?,
+    ///     "012A/01 \x1fab\x1fcd\x1e"
+    /// );
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        self.tag.write_to(out)?;
+
+        if let Some(ref occ) = self.occurrence {
+            occ.write_to(out)?;
+        }
+
+        write!(out, " ")?;
+
+        for subfield in self.subfields.iter() {
+            subfield.write_to(out)?;
+        }
+
+        write!(out, "\x1e")
+    }
+}
+
+/// Parse a PICA+ field.
+pub(crate) fn parse_field_ref<'a>(
+    i: &mut &'a [u8],
+) -> PResult<FieldRef<'a>> {
+    (
+        parse_tag_ref,
+        opt(preceded(b'/', parse_occurrence_ref)),
+        b' ',
+        repeat(0.., parse_subfield_ref),
+        b'\x1e',
+    )
+        .map(|(tag, occurrence, _, subfields, _)| FieldRef {
+            tag,
+            occurrence,
+            subfields,
+        })
+        .parse_next(i)
+}
+
+impl<'a> IntoIterator for &'a FieldRef<'a> {
+    type Item = &'a FieldRef<'a>;
+    type IntoIter = iter::Once<Self::Item>;
+
+    /// Creates an iterator from a single field. The iterator just
+    /// returns the field once.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::FieldRef;
+    ///
+    /// let field = FieldRef::new("003@", None, vec![('0', "abc")])?;
+    /// let mut iter = field.into_iter();
+    ///
+    /// assert_eq!(iter.next(), Some(&field));
+    /// assert_eq!(iter.next(), None);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn into_iter(self) -> Self::IntoIter {
+        iter::once(self)
+    }
+}
+
+/// A mutable field.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Field {
+    tag: Tag,
+    occurrence: Option<Occurrence>,
+    subfields: Vec<Subfield>,
+}
+
+impl Field {
+    /// Creates a new [Field].
+    ///
+    /// # Errors
+    ///
+    /// This function fails if either the tag, occcurrence or any
+    /// subfield is nvalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::Field;
+    ///
+    /// let _field = Field::new("003@", None, vec![('0', "123456789X")])?;
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new<'a, T>(
+        tag: &str,
+        occ: Option<&str>,
+        subfields: T,
+    ) -> Result<Self, ParsePicaError>
+    where
+        T: IntoIterator<Item = (char, &'a str)>,
+    {
+        let tag = Tag::new(tag)?;
+        let occurrence = if let Some(value) = occ {
+            Some(Occurrence::new(value)?)
+        } else {
+            None
+        };
+
+        let subfields = subfields
+            .into_iter()
+            .map(|(code, value)| Subfield::new(code, value))
+            .collect::<Result<Vec<Subfield>, _>>()?;
+
+        Ok(Self {
+            tag,
+            occurrence,
+            subfields,
+        })
+    }
+
+    /// Write the [Field] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::Field;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let field =
+    ///     Field::new("012A", Some("01"), vec![('a', "b"), ('c', "d")])?;
+    /// field.write_to(&mut writer);
+    ///
+    /// assert_eq!(
+    ///     String::from_utf8(writer.into_inner())?,
+    ///     "012A/01 \x1fab\x1fcd\x1e"
+    /// );
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        self.tag.write_to(out)?;
+
+        if let Some(ref occ) = self.occurrence {
+            occ.write_to(out)?;
+        }
+
+        write!(out, " ")?;
+
+        for subfield in self.subfields.iter() {
+            subfield.write_to(out)?;
+        }
+
+        write!(out, "\x1e")
+    }
+}
+
+impl From<FieldRef<'_>> for Field {
+    fn from(field: FieldRef<'_>) -> Self {
+        let FieldRef {
+            tag,
+            occurrence,
+            subfields,
+        } = field;
+
+        Field {
+            tag: tag.into(),
+            occurrence: occurrence.map(Occurrence::from),
+            subfields: subfields
+                .into_iter()
+                .map(Subfield::from)
+                .collect(),
+        }
+    }
+}
+
+impl PartialEq<Field> for FieldRef<'_> {
+    fn eq(&self, field: &Field) -> bool {
+        let occ_eq = match (&self.occurrence, &field.occurrence) {
+            (Some(lhs), Some(rhs)) => lhs == rhs,
+            (None, None) => true,
+            _ => false,
+        };
+
+        self.tag == field.tag
+            && occ_eq
+            && self.subfields == field.subfields
+    }
+}
+
+impl PartialEq<FieldRef<'_>> for Field {
+    #[inline]
+    fn eq(&self, other: &FieldRef<'_>) -> bool {
+        other == self
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Field {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let tag = Tag::arbitrary(g);
+        let occurrence = Option::<Occurrence>::arbitrary(g);
+        let subfields = (0..g.size())
+            .map(|_| Subfield::arbitrary(g))
+            .collect::<Vec<Subfield>>();
+
+        Self {
+            tag,
+            occurrence,
+            subfields,
+        }
+    }
+}
+
+/// An immutable PICA+ record.
+#[derive(Debug, PartialEq, Clone)]
+pub struct RecordRef<'a>(Vec<FieldRef<'a>>);
+
+impl<'a> RecordRef<'a> {
+    /// Creates a new [RecordRef].
+    ///
+    /// # Errors
+    ///
+    /// This function fails if either the tag, occcurrence or any
+    /// subfield is nvalid.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::RecordRef;
+    ///
+    /// let record = RecordRef::new(vec![
+    ///     ("003@", None, vec![('0', "123456789X")]),
+    ///     ("002@", None, vec![('0', "Tp1")]),
+    /// ])?;
+    ///
+    /// assert_eq!(record.fields().len(), 2);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new<T>(
+        fields: Vec<(&'a str, Option<&'a str>, T)>,
+    ) -> Result<Self, ParsePicaError>
+    where
+        T: IntoIterator<Item = (char, &'a str)>,
+    {
+        let fields = fields
+            .into_iter()
+            .map(|(tag, occ, subfields)| {
+                FieldRef::new(tag, occ, subfields)
+            })
+            .collect::<Result<Vec<FieldRef<'a>>, _>>()?;
+
+        Ok(Self(fields))
+    }
+
+    /// Creates a new [RecordRef] from a byte slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::RecordRef;
+    ///
+    /// let record = RecordRef::from_bytes(b"012A \x1f0abc\x1e\n")?;
+    /// assert_eq!(record.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn from_bytes<B>(record: &'a B) -> Result<Self, ParsePicaError>
+    where
+        B: AsRef<[u8]> + ?Sized,
+    {
+        let bytes = record.as_ref();
+        parse_record_ref.parse(bytes).map_err(|_| {
+            ParsePicaError::Record(bytes.to_str_lossy().to_string())
+        })
+    }
+
+    /// Returns the fields of the record.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{FieldRef, RecordRef};
+    ///
+    /// let record = RecordRef::from_bytes(b"012A \x1f0abc\x1e\n")?;
+    /// let field = FieldRef::from_bytes(b"012A \x1f0abc\x1e")?;
+    /// assert_eq!(record.fields(), [field]);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn fields(&self) -> &[FieldRef<'a>] {
+        &self.0
+    }
+
+    /// Returns `true` if the [RecordRef] contains no fields, otherwise
+    /// `false`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::RecordRef;
+    ///
+    /// let record = RecordRef::from_bytes(b"002@ \x1f0Oaf\x1e\n")?;
+    /// assert!(!record.is_empty());
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// Retains only the [FieldRef]s specified by the predicate.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::RecordRef;
+    ///
+    /// let mut record = RecordRef::new(vec![
+    ///     ("003@", None, vec![('0', "123456789X")]),
+    ///     ("002@", None, vec![('0', "Oaf")]),
+    /// ])?;
+    ///
+    /// assert_eq!(record.fields().len(), 2);
+    ///
+    /// record.retain(|field| field.tag() == "003@");
+    /// assert_eq!(record.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn retain<F: FnMut(&FieldRef) -> bool>(&mut self, f: F) {
+        self.0.retain(f);
+    }
+
+    /// Returns an [`std::str::Utf8Error`](Utf8Error) if the record
+    /// contains invalid UTF-8 data, otherwise the unit.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::RecordRef;
+    ///
+    /// let record = RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    /// assert!(record.validate().is_ok());
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn validate(&self) -> Result<(), Utf8Error> {
+        for field in self.fields() {
+            field.validate()?;
+        }
+
+        Ok(())
+    }
+
+    /// Write the [RecordRef] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::RecordRef;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let record = RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    /// record.write_to(&mut writer);
+    ///
+    /// assert_eq!(
+    ///     String::from_utf8(writer.into_inner())?,
+    ///     "003@ \x1f0a\x1e\n"
+    /// );
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        if !self.is_empty() {
+            for field in self.fields() {
+                field.write_to(out)?;
+            }
+
+            writeln!(out)?;
+        }
+
+        Ok(())
+    }
+}
+
+/// Parse a [RecordRef].
+#[inline]
+pub(crate) fn parse_record_ref<'a>(
+    i: &mut &'a [u8],
+) -> PResult<RecordRef<'a>> {
+    terminated(repeat(1.., parse_field_ref), b'\n')
+        .map(RecordRef)
+        .parse_next(i)
+}
+
+/// An immutable PICA+ record.
+#[derive(Debug, Clone)]
+pub struct Record(Vec<Field>);
+
+impl Record {
+    /// Write the record into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::{Record, RecordRef};
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let record: Record =
+    ///     RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?.into();
+    /// record.write_to(&mut writer);
+    ///
+    /// assert_eq!(
+    ///     String::from_utf8(writer.into_inner())?,
+    ///     "003@ \x1f0a\x1e\n"
+    /// );
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        if !self.0.is_empty() {
+            for field in self.0.iter() {
+                field.write_to(out)?;
+            }
+
+            writeln!(out)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl From<RecordRef<'_>> for Record {
+    /// Converts a [RecordRef] into a [Record].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{Record, RecordRef};
+    ///
+    /// let record_ref = RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    /// let record = Record::from(record_ref);
+    /// assert_eq!(RecordRef::from_bytes(b"003@ \x1f0a\x1e\n")?, record);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn from(record: RecordRef<'_>) -> Self {
+        Self(record.0.into_iter().map(Field::from).collect())
+    }
+}
+
+impl PartialEq<Record> for RecordRef<'_> {
+    fn eq(&self, other: &Record) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl PartialEq<RecordRef<'_>> for Record {
+    fn eq(&self, other: &RecordRef<'_>) -> bool {
+        self.0 == other.0
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Record {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let fields = (0..g.size())
+            .map(|_| Field::arbitrary(g))
+            .collect::<Vec<_>>();
+
+        Self(fields)
+    }
+}
+
+/// A record, that may contain invalid UTF-8 data.
+#[derive(Debug)]
+pub struct ByteRecord<'a> {
+    raw_data: Option<&'a [u8]>,
+    record: RecordRef<'a>,
+}
+
+impl<'a> ByteRecord<'a> {
+    /// Creates a new [ByteRecord] from a byte slice.
+    ///
+    /// # Errors
+    ///
+    /// If an invalid record is given, an error is returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::ByteRecord;
+    ///
+    /// let record = ByteRecord::from_bytes(b"003@ \x1f0abc\x1e\n")?;
+    /// assert_eq!(record.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn from_bytes<B: AsRef<[u8]>>(
+        bytes: &'a B,
+    ) -> Result<Self, ParsePicaError> {
+        Ok(Self {
+            record: RecordRef::from_bytes(bytes)?,
+            raw_data: Some(bytes.as_ref()),
+        })
+    }
+
+    /// Write the [ByteRecord] into the given writer.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::io::Cursor;
+    ///
+    /// use pica_record::ByteRecord;
+    ///
+    /// let mut writer = Cursor::new(Vec::<u8>::new());
+    /// let record = ByteRecord::from_bytes(b"003@ \x1f0a\x1e\n")?;
+    /// record.write_to(&mut writer);
+    ///
+    /// assert_eq!(
+    ///     String::from_utf8(writer.into_inner())?,
+    ///     "003@ \x1f0a\x1e\n"
+    /// );
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
+        match self.raw_data {
+            Some(data) => out.write_all(data),
+            None => self.record.write_to(out),
+        }
+    }
+
+    /// Retains only the fields specified by the predicate.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::ByteRecord;
+    ///
+    /// let mut record =
+    ///     ByteRecord::from_bytes(b"003@ \x1f0a\x1e002@ \x1f0Olfo\x1e\n")?;
+    /// record.retain(|field| field.tag() == "003@");
+    /// assert_eq!(record.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn retain<F: FnMut(&FieldRef) -> bool>(&mut self, f: F) {
+        self.record.retain(f);
+        self.raw_data = None;
+    }
+
+    /// Returns the SHA-256 hash of the record.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::fmt::Write;
+    ///
+    /// use pica_record::ByteRecord;
+    ///
+    /// let mut record = ByteRecord::from_bytes(b"012A \x1fa123\x1e\n")?;
+    ///
+    /// let hash =
+    ///     record.sha256().iter().fold(String::new(), |mut out, b| {
+    ///         let _ = write!(out, "{b:02x}");
+    ///         out
+    ///     });
+    ///
+    /// assert!(hash.starts_with("95e266"));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn sha256(&self) -> Vec<u8> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        let mut hasher = Sha256::new();
+
+        let _ = self.write_to(&mut writer);
+        let data = writer.into_inner();
+        hasher.update(data);
+
+        let result = hasher.finalize();
+        result.to_vec()
+    }
+}
+
+impl<'a> Deref for ByteRecord<'a> {
+    type Target = RecordRef<'a>;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.record
+    }
+}
+
+impl<'a> DerefMut for ByteRecord<'a> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.record
+    }
+}
+
+impl PartialEq<ByteRecord<'_>> for ByteRecord<'_> {
+    /// Compare two [ByteRecord]s.
+    ///
+    /// # Note
+    ///
+    /// It's important not to derive [PartialEq] for a [ByteRecord],
+    /// because a record might have cached the raw data. There are two
+    /// cases to consider: If both records have raw data it is
+    /// sufficient to compare these byte slices. Otherwise, bot records
+    /// must be compared field by field.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{ByteRecord, RecordRef};
+    ///
+    /// let record1 = ByteRecord::from_bytes(b"012A \x1fa123\x1e\n")?;
+    /// let record2 = ByteRecord::from(RecordRef::new(vec![(
+    ///     "012A",
+    ///     None,
+    ///     vec![('a', "123")],
+    /// )])?);
+    ///
+    /// assert_eq!(record1, record2);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn eq(&self, other: &ByteRecord<'_>) -> bool {
+        match (self.raw_data, other.raw_data) {
+            (Some(lhs), Some(rhs)) => lhs == rhs,
+            _ => self.record == other.record,
+        }
+    }
+}
+
+impl<'a> From<RecordRef<'a>> for ByteRecord<'a> {
+    /// Creates a [ByteRecord] from a [RecordRef].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{ByteRecord, RecordRef};
+    ///
+    /// let record1 = ByteRecord::from_bytes(b"012A \x1fa123\x1e\n")?;
+    /// let record2 = ByteRecord::from(record1);
+    /// assert_eq!(record2.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn from(record: RecordRef<'a>) -> Self {
+        ByteRecord {
+            raw_data: None,
+            record,
+        }
+    }
+}
+
+impl<'a> Hash for ByteRecord<'a> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self.raw_data {
+            Some(data) => data.hash(state),
+            None => {
+                let mut writer = Cursor::new(Vec::<u8>::new());
+                let _ = self.write_to(&mut writer);
+                let data = writer.into_inner();
+                data.hash(state)
+            }
+        };
+    }
+}
+
+/// A PICA+ record, that guarantees valid UTF-8 data.
+#[derive(Debug)]
+pub struct StringRecord<'a>(ByteRecord<'a>);
+
+impl<'a> TryFrom<ByteRecord<'a>> for StringRecord<'a> {
+    type Error = Utf8Error;
+
+    /// Creates a [StringRecord] from a [ByteRecord].
+    ///
+    /// # Errors
+    ///
+    /// If the underlying [ByteRecord] contains invalid UTF-8 sequences,
+    /// an [Utf8Error] is returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::{ByteRecord, StringRecord};
+    ///
+    /// let record = ByteRecord::from_bytes(b"012A \x1fa123\x1e\n")?;
+    /// let record = StringRecord::try_from(record)?;
+    /// assert_eq!(record.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn try_from(record: ByteRecord<'a>) -> Result<Self, Self::Error> {
+        record.validate()?;
+        Ok(Self(record))
+    }
+}
+
+impl<'a> Deref for StringRecord<'a> {
+    type Target = ByteRecord<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<'a> DerefMut for StringRecord<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -1304,5 +2431,19 @@ mod tests {
             parse_occurrence_ref.parse(&bytes).unwrap(),
             occurrence
         );
+    }
+
+    #[quickcheck]
+    fn test_parse_arbitrary_field_ref(field: Field) {
+        let mut bytes = Vec::new();
+        let _ = field.write_to(&mut bytes);
+        assert_eq!(parse_field_ref.parse(&bytes).unwrap(), field);
+    }
+
+    #[quickcheck]
+    fn test_parse_arbitrary_record_ref(record: Record) {
+        let mut bytes = Vec::new();
+        let _ = record.write_to(&mut bytes);
+        assert_eq!(parse_record_ref.parse(&bytes).unwrap(), record);
     }
 }
