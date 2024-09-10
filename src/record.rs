@@ -2441,6 +2441,7 @@ mod tests {
     }
 
     #[quickcheck]
+    #[cfg_attr(miri, ignore)]
     fn test_parse_arbitrary_record_ref(record: Record) {
         let mut bytes = Vec::new();
         let _ = record.write_to(&mut bytes);
