@@ -10,7 +10,7 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 
-[dependencies.pica-record]
+[dependencies.pica-record-v1]
 path = ".."
 
 # Prevent this from interfering with workspaces
