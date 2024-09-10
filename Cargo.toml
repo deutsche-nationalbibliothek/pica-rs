@@ -39,7 +39,7 @@ members = [
     "crates/pica-record-v1",
     "crates/pica-select",
     "crates/pica-toolkit",
-    "crates/pica-utils"
+    "crates/pica-utils",
 ]
 
 [workspace.package]
