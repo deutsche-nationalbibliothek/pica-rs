@@ -1009,7 +1009,7 @@ impl Tag {
         Ok(Self::from(TagRef::new(tag)?))
     }
 
-    /// Retruns the [Tag] as a byte slice.
+    /// Returns the [Tag] as a byte slice.
     ///
     /// # Example
     ///
