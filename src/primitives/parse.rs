@@ -97,8 +97,9 @@ mod tests {
     use quickcheck_macros::quickcheck;
 
     use super::*;
-    use crate::primitives::{Occurrence, Subfield, SubfieldValue, Tag};
-    // use crate::primitives::{Field, Record};
+    use crate::primitives::{
+        Field, Occurrence, Record, Subfield, SubfieldValue, Tag,
+    };
 
     #[test]
     fn test_parse_subfield_code() {
@@ -177,23 +178,21 @@ mod tests {
         );
     }
 
-    // FIXME
-    // #[quickcheck]
-    // #[cfg_attr(miri, ignore)]
-    // fn test_parse_arbitrary_field_ref(field: Field) {
-    //     let mut bytes = Vec::new();
-    //     let _ = field.write_to(&mut bytes);
+    #[quickcheck]
+    #[cfg_attr(miri, ignore)]
+    fn test_parse_arbitrary_field_ref(field: Field) {
+        let mut bytes = Vec::new();
+        let _ = field.write_to(&mut bytes);
 
-    //     assert_eq!(parse_field_ref.parse(&bytes).unwrap(), field);
-    // }
+        assert_eq!(parse_field_ref.parse(&bytes).unwrap(), field);
+    }
 
-    // FIXME
-    // #[quickcheck]
-    // #[cfg_attr(miri, ignore)]
-    // fn test_parse_arbitrary_record_ref(record: Record) {
-    //     let mut bytes = Vec::new();
-    //     let _ = record.write_to(&mut bytes);
+    #[quickcheck]
+    #[cfg_attr(miri, ignore)]
+    fn test_parse_arbitrary_record_ref(record: Record) {
+        let mut bytes = Vec::new();
+        let _ = record.write_to(&mut bytes);
 
-    //     assert_eq!(parse_record_ref.parse(&bytes).unwrap(), record);
-    // }
+        assert_eq!(parse_record_ref.parse(&bytes).unwrap(), record);
+    }
 }

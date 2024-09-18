@@ -85,7 +85,7 @@ fn parse_subfield_code_all(
 
     '*'.value(
         SUBFIELD_CODES
-            .into_iter()
+            .iter()
             .map(|code| SubfieldCode::from_unchecked(*code))
             .collect(),
     )
@@ -185,7 +185,7 @@ pub(crate) fn parse_regex_matcher(
         ws(alt(("=~".value(false), "!~".value(true)))),
         parse_string
             .verify_map(|re| String::from_utf8(re).ok())
-            .verify(|re| Regex::new(&re).is_ok()),
+            .verify(|re| Regex::new(re).is_ok()),
     )
         .with_taken()
         .map(|((quantifier, codes, invert, re), raw_data)| {
@@ -214,7 +214,7 @@ pub(crate) fn parse_regex_set_matcher(
                 1..,
                 parse_string
                     .verify_map(|re| String::from_utf8(re).ok())
-                    .verify(|re| Regex::new(&re).is_ok()),
+                    .verify(|re| Regex::new(re).is_ok()),
                 ws(','),
             ),
             ws(']'),
@@ -345,7 +345,6 @@ fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
     SUBFIELD_MATCHER_GROUP_LEVEL.with(|level| {
         *level.borrow_mut() += 1;
         if *level.borrow() >= 128 {
-            eprintln!("level = {:?}", level);
             Err(winnow::error::ErrMode::from_error_kind(
                 i,
                 winnow::error::ErrorKind::Many,

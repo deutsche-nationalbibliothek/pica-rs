@@ -916,12 +916,12 @@ impl Display for SingletonMatcher {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Cardinality(matcher) => write!(f, "{}", matcher),
-            Self::Exists(matcher) => write!(f, "{}", matcher),
-            Self::In(matcher) => write!(f, "{}", matcher),
-            Self::Regex(matcher) => write!(f, "{}", matcher),
-            Self::RegexSet(matcher) => write!(f, "{}", matcher),
-            Self::Relation(matcher) => write!(f, "{}", matcher),
+            Self::Cardinality(m) => write!(f, "{m}"),
+            Self::Exists(m) => write!(f, "{m}"),
+            Self::In(m) => write!(f, "{m}"),
+            Self::Regex(m) => write!(f, "{m}"),
+            Self::RegexSet(m) => write!(f, "{m}"),
+            Self::Relation(m) => write!(f, "{m}"),
         }
     }
 }
@@ -1037,11 +1037,11 @@ impl Display for SubfieldMatcher {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Singleton(m) => write!(f, "{}", m),
-            Self::Group(m) => write!(f, "({})", m),
-            Self::Not(m) => write!(f, "!{}", m),
+            Self::Singleton(m) => write!(f, "{m}"),
+            Self::Group(m) => write!(f, "({m})"),
+            Self::Not(m) => write!(f, "!{m}"),
             Self::Composite { lhs, op, rhs } => {
-                write!(f, "{} {} {}", lhs, op, rhs)
+                write!(f, "{lhs} {op} {rhs}")
             }
         }
     }
