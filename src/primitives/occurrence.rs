@@ -1,3 +1,4 @@
+use std::fmt::{self, Display};
 use std::io::{self, Write};
 
 use bstr::{BStr, BString};
@@ -87,6 +88,11 @@ impl<'a> OccurrenceRef<'a> {
         })
     }
 
+    #[inline]
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0
+    }
+
     /// Write the [OccurrenceRef] into the given writer.
     ///
     /// # Example
@@ -110,7 +116,7 @@ impl<'a> OccurrenceRef<'a> {
     }
 }
 
-impl PartialEq<&str> for OccurrenceRef<'_> {
+impl<T: AsRef<[u8]>> PartialEq<T> for OccurrenceRef<'_> {
     /// Compare a [OccurrenceRef] with a string slice.
     ///
     /// # Example
@@ -119,12 +125,12 @@ impl PartialEq<&str> for OccurrenceRef<'_> {
     /// use pica_record::primitives::OccurrenceRef;
     ///
     /// let occurrence = OccurrenceRef::from_bytes(b"01")?;
-    /// assert_eq!(occurrence, "01");
+    /// assert_eq!(occurrence, b"01");
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    fn eq(&self, occurrence: &&str) -> bool {
-        self.0 == occurrence.as_bytes()
+    fn eq(&self, occurrence: &T) -> bool {
+        self.0 == occurrence.as_ref()
     }
 }
 
@@ -174,6 +180,23 @@ impl Occurrence {
         self.0.as_ref()
     }
 
+    /// Returns the length (number of digits) of the [Occurrence].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::primitives::Occurrence;
+    ///
+    /// let occurrence = Occurrence::new("001")?;
+    /// assert_eq!(occurrence.len(), 3);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
     /// Write the [Occurrence] into the given writer.
     ///
     /// # Example
@@ -193,6 +216,12 @@ impl Occurrence {
     #[inline]
     pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
         write!(out, "/{}", self.0)
+    }
+}
+
+impl Display for Occurrence {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
