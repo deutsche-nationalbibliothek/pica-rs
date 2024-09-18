@@ -13,7 +13,7 @@ pub use tag::{Level, Tag, TagRef};
 mod error;
 mod field;
 mod occurrence;
-mod parse;
+pub(crate) mod parse;
 mod record;
 mod subfield;
 mod tag;
