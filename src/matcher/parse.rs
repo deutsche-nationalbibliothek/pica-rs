@@ -5,8 +5,8 @@ use regex::bytes::Regex;
 use smallvec::SmallVec;
 use winnow::ascii::{digit1, multispace0, multispace1};
 use winnow::combinator::{
-    alt, delimited, opt, preceded, repeat, separated, separated_pair,
-    terminated,
+    alt, delimited, empty, opt, preceded, repeat, separated,
+    separated_pair, terminated,
 };
 use winnow::error::ParserError;
 use winnow::prelude::*;
@@ -17,11 +17,13 @@ use super::subfield::{
     ExistsMatcher, RegexSetMatcher, SubfieldMatcher,
 };
 use super::{
-    CardinalityMatcher, InMatcher, Quantifier, RegexMatcher,
-    RelationMatcher, RelationalOp, SingletonMatcher,
+    CardinalityMatcher, InMatcher, OccurrenceMatcher, Quantifier,
+    RegexMatcher, RelationMatcher, RelationalOp, SingletonMatcher,
 };
-use crate::primitives::parse::parse_subfield_code;
-use crate::primitives::SubfieldCode;
+use crate::primitives::parse::{
+    parse_occurrence_ref, parse_subfield_code,
+};
+use crate::primitives::{Occurrence, SubfieldCode};
 
 /// Strip whitespaces from the beginning and end.
 pub(crate) fn ws<I, O, E: ParserError<I>, F>(
@@ -344,7 +346,7 @@ fn group_level_reset() {
 fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
     SUBFIELD_MATCHER_GROUP_LEVEL.with(|level| {
         *level.borrow_mut() += 1;
-        if *level.borrow() >= 128 {
+        if *level.borrow() >= 256 {
             Err(winnow::error::ErrMode::from_error_kind(
                 i,
                 winnow::error::ErrorKind::Many,
@@ -493,6 +495,55 @@ pub(crate) fn parse_subfield_matcher(
     .parse_next(i)
 }
 
+#[inline]
+fn parse_occurrence_matcher_inner(
+    i: &mut &[u8],
+) -> PResult<Occurrence> {
+    parse_occurrence_ref.map(Occurrence::from).parse_next(i)
+}
+
+#[inline]
+fn parse_occurrence_matcher_exact(
+    i: &mut &[u8],
+) -> PResult<OccurrenceMatcher> {
+    parse_occurrence_matcher_inner
+        .verify(|occurrence| occurrence.as_bytes() != b"00")
+        .map(OccurrenceMatcher::Exact)
+        .parse_next(i)
+}
+
+#[inline]
+fn parse_occurrence_matcher_range(
+    i: &mut &[u8],
+) -> PResult<OccurrenceMatcher> {
+    separated_pair(
+        parse_occurrence_matcher_inner,
+        '-',
+        parse_occurrence_matcher_inner,
+    )
+    .verify(|(min, max)| min.len() == max.len() && min < max)
+    .map(|(min, max)| OccurrenceMatcher::Range(min, max))
+    .parse_next(i)
+}
+
+pub(crate) fn parse_occurrence_matcher(
+    i: &mut &[u8],
+) -> PResult<OccurrenceMatcher> {
+    alt((
+        preceded(
+            '/',
+            alt((
+                parse_occurrence_matcher_range,
+                parse_occurrence_matcher_exact,
+                "00".value(OccurrenceMatcher::None),
+                "*".value(OccurrenceMatcher::Any),
+            )),
+        ),
+        empty.value(OccurrenceMatcher::None),
+    ))
+    .parse_next(i)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -500,6 +551,8 @@ mod tests {
 
     const SUBFIELD_CODES: &str = "0123456789\
         abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    type TestResult = anyhow::Result<()>;
 
     #[test]
     fn test_parse_subfield_code_range() {
@@ -1178,5 +1231,55 @@ mod tests {
             "a =~ '(?i)(Zeitschrift|Journal)' && \
                 a !~ '(?i)(Abdr|Sonderdr|Diss(\\\\.|ertation)|Teile)'"
         );
+    }
+
+    #[test]
+    fn test_parse_occurrence_matcher() -> TestResult {
+        macro_rules! parse_success {
+            ($i:expr, $o:expr) => {
+                let o = parse_occurrence_matcher
+                    .parse($i.as_bytes())
+                    .unwrap();
+
+                assert_eq!(o.to_string(), $i);
+                assert_eq!(o, $o);
+            };
+        }
+
+        parse_success!("", OccurrenceMatcher::None);
+        parse_success!("/*", OccurrenceMatcher::Any);
+
+        parse_success!(
+            "/01",
+            OccurrenceMatcher::Exact(Occurrence::new("01")?)
+        );
+
+        parse_success!(
+            "/999",
+            OccurrenceMatcher::Exact(Occurrence::new("999")?)
+        );
+
+        parse_success!(
+            "/01-99",
+            OccurrenceMatcher::Range(
+                Occurrence::new("01")?,
+                Occurrence::new("99")?
+            )
+        );
+
+        parse_success!(
+            "/01-99",
+            OccurrenceMatcher::Range(
+                Occurrence::new("01")?,
+                Occurrence::new("99")?
+            )
+        );
+
+        assert_eq!(
+            parse_occurrence_matcher.parse(b"/00").unwrap(),
+            OccurrenceMatcher::None
+        );
+
+        Ok(())
     }
 }
