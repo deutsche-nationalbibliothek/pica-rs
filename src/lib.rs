@@ -5,8 +5,8 @@
 pub use error::Error;
 pub use record::{ByteRecord, StringRecord};
 
-pub mod primitives;
-
 mod error;
+pub mod matcher;
 pub mod prelude;
+pub mod primitives;
 mod record;
