@@ -88,6 +88,18 @@ impl<'a> OccurrenceRef<'a> {
         })
     }
 
+    /// Returns the [OccurrenceRef] as a byte slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::primitives::OccurrenceRef;
+    ///
+    /// let occurrence = OccurrenceRef::from_bytes(b"01")?;
+    /// assert_eq!(occurrence.as_bytes(), b"01");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
         self.0
@@ -137,6 +149,7 @@ impl<T: AsRef<[u8]>> PartialEq<T> for OccurrenceRef<'_> {
 /// A mutable occurrence.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[allow(clippy::len_without_is_empty)]
 pub struct Occurrence(BString);
 
 impl Occurrence {
