@@ -21,9 +21,11 @@ winnow = { version = "0.6.18" }
 serde = ["dep:serde", "bstr/serde"]
 
 [dev-dependencies]
+anyhow = { version = "1.0" }
 pica-record = { path = "./", features = ["serde"] }
 quickcheck = { version = "1.0" }
 quickcheck_macros = { version = "1.0" }
+serde_test = { version = "1" }
 
 [[test]]
 path = "tests/lib.rs"

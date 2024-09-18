@@ -1,5 +1,7 @@
 use std::fmt::{self, Display};
-use std::ops::{BitAnd, BitOr, BitXor};
+use std::ops::{
+    BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not,
+};
 
 use bstr::ByteSlice;
 use regex::bytes::{RegexBuilder, RegexSetBuilder};
@@ -996,8 +998,8 @@ impl SubfieldMatcher {
             Self::Composite { lhs, op, rhs } => {
                 let lhs = lhs.is_match(subfields.clone(), options);
                 match *op {
-                    And => lhs && rhs.is_match(subfields, options),
                     Xor => lhs != rhs.is_match(subfields, options),
+                    And => lhs && rhs.is_match(subfields, options),
                     Or => lhs || rhs.is_match(subfields, options),
                 }
             }
@@ -1015,6 +1017,20 @@ impl Display for SubfieldMatcher {
     ///
     /// let matcher = SubfieldMatcher::new("#a >= 3")?;
     /// assert_eq!(matcher.to_string(), "#a >= 3");
+    ///
+    /// let mut matcher = SubfieldMatcher::new("a == 'foo' || a == 'bar'")?;
+    /// matcher &= SubfieldMatcher::new("c == 'baz'")?;
+    /// assert_eq!(
+    ///     matcher.to_string(),
+    ///     "(a == 'foo' || a == 'bar') && c == 'baz'"
+    /// );
+    ///
+    /// let mut matcher = SubfieldMatcher::new("a == 'foo'")?;
+    /// matcher &= SubfieldMatcher::new("b == 'bar' ^ b == 'baz'")?;
+    /// assert_eq!(
+    ///     matcher.to_string(),
+    ///     "a == 'foo' && (b == 'bar' ^ b == 'baz')"
+    /// );
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
@@ -1034,12 +1050,84 @@ impl Display for SubfieldMatcher {
 impl BitAnd for SubfieldMatcher {
     type Output = Self;
 
-    #[inline]
+    /// The bitwise AND operator `&` of two [SubfieldMatcher].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('a', "foobar")?;
+    ///
+    /// let lhs = SubfieldMatcher::new("a =^ 'foo'")?;
+    /// let rhs = SubfieldMatcher::new("a =$ 'bar'")?;
+    /// let matcher = lhs & rhs;
+    ///
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline(always)]
     fn bitand(self, rhs: Self) -> Self::Output {
+        let maybe_group = |m: Self| -> Self {
+            match m {
+                Self::Composite { ref op, .. }
+                    if *op == BooleanOp::Or
+                        || *op == BooleanOp::Xor =>
+                {
+                    Self::Group(Box::new(m.clone()))
+                }
+                _ => m,
+            }
+        };
+
         Self::Composite {
-            lhs: Box::new(self),
+            lhs: Box::new(maybe_group(self)),
             op: BooleanOp::And,
-            rhs: Box::new(rhs),
+            rhs: Box::new(maybe_group(rhs)),
+        }
+    }
+}
+
+impl BitAndAssign for SubfieldMatcher {
+    /// The bitwise AND assignment operator `&=` of two
+    /// [SubfieldMatcher].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('a', "foobar")?;
+    ///
+    /// let mut matcher = SubfieldMatcher::new("a =^ 'foo'")?;
+    /// matcher &= SubfieldMatcher::new("a =$ 'bar'")?;
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline(always)]
+    fn bitand_assign(&mut self, rhs: Self) {
+        let maybe_group = |m: &Self| -> Self {
+            match m {
+                Self::Composite { op, .. }
+                    if *op == BooleanOp::Or
+                        || *op == BooleanOp::Xor =>
+                {
+                    Self::Group(Box::new(m.clone()))
+                }
+                _ => m.clone(),
+            }
+        };
+
+        *self = Self::Composite {
+            lhs: Box::new(maybe_group(self)),
+            op: BooleanOp::And,
+            rhs: Box::new(maybe_group(&rhs)),
         }
     }
 }
@@ -1047,7 +1135,25 @@ impl BitAnd for SubfieldMatcher {
 impl BitOr for SubfieldMatcher {
     type Output = Self;
 
-    #[inline]
+    /// The bitwise OR operator `|` of two [SubfieldMatcher].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('a', "bar")?;
+    ///
+    /// let lhs = SubfieldMatcher::new("a == 'foo'")?;
+    /// let rhs = SubfieldMatcher::new("a == 'bar'")?;
+    /// let matcher = lhs | rhs;
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline(always)]
     fn bitor(self, rhs: Self) -> Self::Output {
         Self::Composite {
             lhs: Box::new(self),
@@ -1057,15 +1163,712 @@ impl BitOr for SubfieldMatcher {
     }
 }
 
+impl BitOrAssign for SubfieldMatcher {
+    /// The bitwise OR assignment operator `|=` of two
+    /// [SubfieldMatcher].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('a', "foo")?;
+    ///
+    /// let mut matcher = SubfieldMatcher::new("a == 'foo'")?;
+    /// matcher |= SubfieldMatcher::new("a == 'bar'")?;
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline(always)]
+    fn bitor_assign(&mut self, rhs: Self) {
+        *self = Self::Composite {
+            lhs: Box::new(self.clone()),
+            op: BooleanOp::Or,
+            rhs: Box::new(rhs),
+        }
+    }
+}
+
 impl BitXor for SubfieldMatcher {
     type Output = Self;
 
-    #[inline]
+    /// The bitwise XOR operator `^` of two [SubfieldMatcher].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('a', "bar")?;
+    ///
+    /// let lhs = SubfieldMatcher::new("a == 'foo'")?;
+    /// let rhs = SubfieldMatcher::new("a == 'bar'")?;
+    /// let matcher = lhs ^ rhs;
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline(always)]
     fn bitxor(self, rhs: Self) -> Self::Output {
+        let maybe_group = |m: Self| -> Self {
+            match m {
+                Self::Composite { ref op, .. }
+                    if *op == BooleanOp::Or =>
+                {
+                    Self::Group(Box::new(m.clone()))
+                }
+                _ => m,
+            }
+        };
         Self::Composite {
-            lhs: Box::new(self),
+            lhs: Box::new(maybe_group(self)),
             op: BooleanOp::Xor,
-            rhs: Box::new(rhs),
+            rhs: Box::new(maybe_group(rhs)),
         }
+    }
+}
+
+impl BitXorAssign for SubfieldMatcher {
+    /// The bitwise XOR assignment operator `^=` of two
+    /// [SubfieldMatcher].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('a', "foo")?;
+    ///
+    /// let mut matcher = SubfieldMatcher::new("a == 'foo'")?;
+    /// matcher ^= SubfieldMatcher::new("a == 'bar'")?;
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline(always)]
+    fn bitxor_assign(&mut self, rhs: Self) {
+        let maybe_group = |m: &Self| -> Self {
+            match m {
+                Self::Composite { op, .. } if *op == BooleanOp::Or => {
+                    Self::Group(Box::new(m.clone()))
+                }
+                _ => m.clone(),
+            }
+        };
+
+        *self = Self::Composite {
+            lhs: Box::new(maybe_group(self)),
+            op: BooleanOp::Xor,
+            rhs: Box::new(maybe_group(&rhs)),
+        }
+    }
+}
+
+impl Not for SubfieldMatcher {
+    type Output = Self;
+
+    /// The unary logical negation operator `!` applied to a
+    /// [SubfieldMatcher].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('a', "foo")?;
+    ///
+    /// let matcher = !SubfieldMatcher::new("a == 'bar'")?;
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// let matcher = !SubfieldMatcher::new("a == 'foo'")?;
+    /// assert!(!matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline(always)]
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Singleton(SingletonMatcher::Exists(_))
+            | Self::Group(_)
+            | Self::Not(_) => Self::Not(Box::new(self)),
+            _ => Self::Not(Box::new(Self::Group(Box::new(self)))),
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for SubfieldMatcher {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s: String = serde::Deserialize::deserialize(deserializer)?;
+        Self::new(&s).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for SubfieldMatcher {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_tokens, Token};
+
+    use super::*;
+
+    type TestResult = anyhow::Result<()>;
+
+    #[test]
+    fn test_subfield_matcher_serde() -> TestResult {
+        let matcher = SubfieldMatcher::new("a? && (b? || c?)")?;
+        assert_tokens(&matcher, &[Token::Str("a? && (b? || c?)")]);
+
+        let matcher = SubfieldMatcher::new("a? && (b? || c?) ")?;
+        assert_tokens(&matcher, &[Token::Str("a? && (b? || c?)")]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_cardinality_matcher() -> TestResult {
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+
+        let matcher = CardinalityMatcher::new("#c == 0")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = CardinalityMatcher::new("#a != 1")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = CardinalityMatcher::new("#a >= 2")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = CardinalityMatcher::new("#a > 1")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = CardinalityMatcher::new("#b <= 2")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = CardinalityMatcher::new("#c < 1")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_regex_matcher() -> TestResult {
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+        let matcher = RegexMatcher::new("a =~ '^f.o$'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RegexMatcher::new("ANY a =~ '^f.o$'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RegexMatcher::new("ALL a =~ '^f.o$'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RegexMatcher::new("a !~ '^f.o$'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RegexMatcher::new("ANY a !~ '^f.o$'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RegexMatcher::new("ALL a !~ '^f.o$'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RegexMatcher::new("b !~ '^b.z$'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().case_ignore(true);
+        let matcher = RegexMatcher::new("a =~ '^F.O$'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_regex_set_matcher() -> TestResult {
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+        let matcher = RegexSetMatcher::new("a =~ ['^f.o$', '^bar']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher =
+            RegexSetMatcher::new("ANY a =~ ['^f.o$', '^bar']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher =
+            RegexSetMatcher::new("ALL a =~ ['^f.o$', '^bar']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RegexSetMatcher::new("a !~ ['^f.o$', '^bar']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher =
+            RegexSetMatcher::new("ANY a !~ ['^f.o$', '^bar']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher =
+            RegexSetMatcher::new("ALL a !~ ['^f.o$', '^bar']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().case_ignore(true);
+        let matcher = RegexSetMatcher::new("a =~ ['^F.O$', '^BAR']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_relation_matcher() -> TestResult {
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+        let matcher = RelationMatcher::new("a == 'foo'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a == 'baz'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a != 'foo'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("b != 'baz'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =^ 'fo'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =^ 'FO'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a !^ 'fo'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("b !^ 'b'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =$ 'o'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =$ 'O'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a !$ 'o'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("b !$ 'z'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =* 'foo'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =* 'foO'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =? 'oo'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = RelationMatcher::new("a =? 'frob'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().case_ignore(true);
+        let matcher = RelationMatcher::new("a == 'FOO'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().case_ignore(true);
+        let matcher = RelationMatcher::new("a =* 'foO'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().strsim_threshold(0.65);
+        let matcher = RelationMatcher::new("a =* 'foO'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_exists_matcher() -> TestResult {
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+        let matcher = ExistsMatcher::new("a?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = ExistsMatcher::new("c?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_in_matcher() -> TestResult {
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+        let matcher = InMatcher::new("a in ['foo', 'baz']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = InMatcher::new("a in ['frob', 'baz']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = InMatcher::new("a not in ['foo', 'baz']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = InMatcher::new("b not in ['frob', 'baz']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().case_ignore(true);
+        let matcher = InMatcher::new("a in ['FOO', 'BAZ']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_group() -> TestResult {
+        let options = MatcherOptions::default();
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('b', "bar")?,
+            SubfieldRef::new('c', "baz")?,
+        ];
+
+        let matcher = SubfieldMatcher::new("(a?)")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("(a? && b == 'bar')")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_not() -> TestResult {
+        let options = MatcherOptions::default();
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('b', "bar")?,
+            SubfieldRef::new('c', "baz")?,
+        ];
+
+        let matcher = SubfieldMatcher::new("!d?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("!a?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("!(d? || a?)")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_and() -> TestResult {
+        let options = MatcherOptions::default();
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let matcher = SubfieldMatcher::new("a? && b?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? && b? && c?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? && b? || c?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? || b? && c?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("c? || b? && c?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("b? && c? || c?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_or() -> TestResult {
+        let options = MatcherOptions::default();
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let matcher = SubfieldMatcher::new("a? || b?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? || b? || c?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("(a? && b?) || c?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? || (b? && c?)")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("(a? || b?) && c? || d?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? && (b? || c?) || d?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_xor() -> TestResult {
+        let options = MatcherOptions::default();
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let matcher = SubfieldMatcher::new("a? ^ b?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? ^ b? ^ c?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("a? ^ c?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("c? ^ a?")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let matcher = SubfieldMatcher::new("c? ^ d?")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_bitand() -> TestResult {
+        let expected = SubfieldMatcher::new("a? && b?")?;
+        let lhs = SubfieldMatcher::new("a?")?;
+        let rhs = SubfieldMatcher::new("b?")?;
+        assert_eq!(lhs & rhs, expected);
+
+        let expected = SubfieldMatcher::new("(a? || b?) && c?")?;
+        let lhs = SubfieldMatcher::new("a? || b?")?;
+        let rhs = SubfieldMatcher::new("c?")?;
+        assert_eq!(lhs & rhs, expected);
+
+        let expected = SubfieldMatcher::new("a? && (b? || c?)")?;
+        let lhs = SubfieldMatcher::new("a?")?;
+        let rhs = SubfieldMatcher::new("(b? || c?)")?;
+        assert_eq!(lhs & rhs, expected);
+
+        let expected = SubfieldMatcher::new("(a? ^ b?) && c?")?;
+        let lhs = SubfieldMatcher::new("a? ^ b?")?;
+        let rhs = SubfieldMatcher::new("c?")?;
+        assert_eq!(lhs & rhs, expected);
+
+        let expected = SubfieldMatcher::new("a? && (b? ^ c?)")?;
+        let lhs = SubfieldMatcher::new("a?")?;
+        let rhs = SubfieldMatcher::new("(b? ^ c?)")?;
+        assert_eq!(lhs & rhs, expected);
+
+        let expected = SubfieldMatcher::new("a? && b? && c?")?;
+        let lhs = SubfieldMatcher::new("a? && b?")?;
+        let rhs = SubfieldMatcher::new("c?")?;
+        assert_eq!(lhs & rhs, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_bitand_assign() -> TestResult {
+        let expected = SubfieldMatcher::new("a? && b?")?;
+        let mut matcher = SubfieldMatcher::new("a?")?;
+        matcher &= SubfieldMatcher::new("b?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("(a? || b?) && c?")?;
+        let mut matcher = SubfieldMatcher::new("a? || b?")?;
+        matcher &= SubfieldMatcher::new("c?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("a? && (b? || c?)")?;
+        let mut matcher = SubfieldMatcher::new("a?")?;
+        matcher &= SubfieldMatcher::new("(b? || c?)")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("(a? ^ b?) && c?")?;
+        let mut matcher = SubfieldMatcher::new("a? ^ b?")?;
+        matcher &= SubfieldMatcher::new("c?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("a? && (b? ^ c?)")?;
+        let mut matcher = SubfieldMatcher::new("a?")?;
+        matcher &= SubfieldMatcher::new("(b? ^ c?)")?;
+        assert_eq!(matcher, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_bitxor() -> TestResult {
+        let expected = SubfieldMatcher::new("a? ^ b?")?;
+        let lhs = SubfieldMatcher::new("a?")?;
+        let rhs = SubfieldMatcher::new("b?")?;
+        assert_eq!(lhs ^ rhs, expected);
+
+        let expected = SubfieldMatcher::new("(a? || b?) ^ c?")?;
+        let lhs = SubfieldMatcher::new("a? || b?")?;
+        let rhs = SubfieldMatcher::new("c?")?;
+        assert_eq!(lhs ^ rhs, expected);
+
+        let expected = SubfieldMatcher::new("a? ^ (b? || c?)")?;
+        let lhs = SubfieldMatcher::new("a?")?;
+        let rhs = SubfieldMatcher::new("(b? || c?)")?;
+        assert_eq!(lhs ^ rhs, expected);
+
+        let expected = SubfieldMatcher::new("a? ^ b? ^ c?")?;
+        let lhs = SubfieldMatcher::new("a? ^ b?")?;
+        let rhs = SubfieldMatcher::new("c?")?;
+        assert_eq!(lhs ^ rhs, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_bitxor_assign() -> TestResult {
+        let expected = SubfieldMatcher::new("a? ^ b?")?;
+        let mut matcher = SubfieldMatcher::new("a?")?;
+        matcher ^= SubfieldMatcher::new("b?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("(a? || b?) ^ c?")?;
+        let mut matcher = SubfieldMatcher::new("a? || b?")?;
+        matcher ^= SubfieldMatcher::new("c?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("a? ^ (b? || c?)")?;
+        let mut matcher = SubfieldMatcher::new("a?")?;
+        matcher ^= SubfieldMatcher::new("(b? || c?)")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("a? ^ b? ^ c?")?;
+        let mut matcher = SubfieldMatcher::new("a? ^ b?")?;
+        matcher ^= SubfieldMatcher::new("c?")?;
+        assert_eq!(matcher, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_bitor() -> TestResult {
+        let expected = SubfieldMatcher::new("a? || b?")?;
+        let lhs = SubfieldMatcher::new("a?")?;
+        let rhs = SubfieldMatcher::new("b?")?;
+        assert_eq!(lhs | rhs, expected);
+
+        let expected = SubfieldMatcher::new("a? || b? || c?")?;
+        let lhs = SubfieldMatcher::new("a? || b?")?;
+        let rhs = SubfieldMatcher::new("c?")?;
+        assert_eq!(lhs | rhs, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_bitor_assign() -> TestResult {
+        let expected = SubfieldMatcher::new("a? || b?")?;
+        let mut matcher = SubfieldMatcher::new("a?")?;
+        matcher |= SubfieldMatcher::new("b?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("a? || b? || c?")?;
+        let mut matcher = SubfieldMatcher::new("a? || b?")?;
+        matcher |= SubfieldMatcher::new("c?")?;
+        assert_eq!(matcher, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_subfield_matcher_bitnot() -> TestResult {
+        let expected = SubfieldMatcher::new("!(a?)")?;
+        let matcher = !SubfieldMatcher::new("(a?)")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("!a?")?;
+        let matcher = !SubfieldMatcher::new("a?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("!!a?")?;
+        let matcher = !SubfieldMatcher::new("!a?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("!(a == 'foo')")?;
+        let matcher = !SubfieldMatcher::new("a == 'foo'")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("!(a? && b?)")?;
+        let matcher = !SubfieldMatcher::new("a? && b?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("!(a? || b?)")?;
+        let matcher = !SubfieldMatcher::new("a? || b?")?;
+        assert_eq!(matcher, expected);
+
+        let expected = SubfieldMatcher::new("!(a? ^ b?)")?;
+        let matcher = !SubfieldMatcher::new("a? ^ b?")?;
+        assert_eq!(matcher, expected);
+
+        Ok(())
     }
 }

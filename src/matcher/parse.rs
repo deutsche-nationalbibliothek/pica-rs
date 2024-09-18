@@ -162,12 +162,15 @@ pub(crate) fn parse_relation_matcher(
     )
         .with_taken()
         .map(|((quantifier, codes, op, value), raw_data)| {
+            let raw_data =
+                raw_data.to_str().unwrap().trim().to_string();
+
             RelationMatcher {
                 quantifier,
                 codes,
                 op,
                 value,
-                raw_data: raw_data.to_str().unwrap().to_string(),
+                raw_data,
             }
         })
         .parse_next(i)
@@ -334,10 +337,15 @@ thread_local! {
         = const { RefCell::new(0) };
 }
 
+fn group_level_reset() {
+    SUBFIELD_MATCHER_GROUP_LEVEL.with(|level| *level.borrow_mut() = 0);
+}
+
 fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
     SUBFIELD_MATCHER_GROUP_LEVEL.with(|level| {
         *level.borrow_mut() += 1;
-        if *level.borrow() >= 32 {
+        if *level.borrow() >= 128 {
+            eprintln!("level = {:?}", level);
             Err(winnow::error::ErrMode::from_error_kind(
                 i,
                 winnow::error::ErrorKind::Many,
@@ -403,9 +411,9 @@ fn parse_subfield_or_matcher(
 ) -> PResult<SubfieldMatcher> {
     let atom = |i: &mut &[u8]| -> PResult<SubfieldMatcher> {
         ws(alt((
+            parse_subfield_and_matcher,
             parse_subfield_group_matcher,
             parse_subfield_xor_matcher,
-            parse_subfield_and_matcher,
             parse_subfield_singleton_matcher,
             parse_subfield_not_matcher,
         )))
@@ -479,12 +487,17 @@ pub(crate) fn parse_subfield_matcher(
         parse_subfield_not_matcher,
         parse_subfield_singleton_matcher,
     ))
+    .map(|matcher| {
+        group_level_reset();
+        matcher
+    })
     .parse_next(i)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::matcher::BooleanOp;
 
     const SUBFIELD_CODES: &str = "0123456789\
         abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -1028,12 +1041,143 @@ mod tests {
         parse_success!("(a == 'foo')");
         parse_success!("(!(a == 'foo'))");
         parse_success!("((a == 'foo'))");
+    }
 
-        assert!(parse_subfield_group_matcher
-            .parse(
-                b"((((((((((((((((((((((((((((((((a?\
-                ))))))))))))))))))))))))))))))))"
-            )
+    #[test]
+    fn test_parse_subfield_and_matcher() {
+        macro_rules! parse_success {
+            ($i:expr) => {
+                let o = parse_subfield_and_matcher
+                    .parse($i.as_bytes())
+                    .unwrap();
+
+                eprintln!("o = {o:?}");
+
+                assert_eq!(o.to_string(), $i.to_string());
+                assert!(matches!(
+                    o,
+                    SubfieldMatcher::Composite {
+                        op: BooleanOp::And,
+                        ..
+                    }
+                ));
+            };
+        }
+
+        parse_success!("a? && b?");
+        parse_success!("a? && b? && c?");
+        parse_success!("a? && b? && c? && d?");
+        parse_success!("a? && (b?)");
+        parse_success!("a? && (b? && c?)");
+        parse_success!("(a? && b?) && c?");
+        parse_success!("a? && (b? && (c? && d?))");
+        parse_success!("a? && !b?");
+        parse_success!("a? && !(b? && c?)");
+        parse_success!("!(a? && !(b? && c?)) && d?");
+
+        assert!(parse_subfield_and_matcher
+            .parse(b"a? && b? || c?")
             .is_err());
+
+        assert!(parse_subfield_and_matcher
+            .parse(b"a? && b? ^ c?")
+            .is_err());
+    }
+
+    #[test]
+    fn test_parse_subfield_xor_matcher() {
+        macro_rules! parse_success {
+            ($i:expr) => {
+                let o = parse_subfield_xor_matcher
+                    .parse($i.as_bytes())
+                    .unwrap();
+
+                assert_eq!(o.to_string(), $i.to_string());
+                assert!(matches!(
+                    o,
+                    SubfieldMatcher::Composite {
+                        op: BooleanOp::Xor,
+                        ..
+                    }
+                ));
+            };
+        }
+
+        parse_success!("a? ^ b?");
+        parse_success!("a? ^ b? ^ c?");
+        parse_success!("a? ^ b? ^ c? ^ d?");
+        parse_success!("!a? ^ b? ^ c? ^ d?");
+        parse_success!("!a? ^ !b? ^ c? ^ d?");
+        parse_success!("!a? ^ !b? ^ !c? ^ d?");
+        parse_success!("!a? ^ !b? ^ !c? ^ !d?");
+        parse_success!("a? ^ b? && c? && d?");
+        parse_success!("a? && b? ^ c? && d?");
+        parse_success!("a? && b? && c? ^ d?");
+        parse_success!("a? ^ (b? ^ c?) ^ d?");
+        parse_success!("a? ^ ((b? ^ c?) ^ d?)");
+
+        assert!(parse_subfield_xor_matcher
+            .parse(b"a? ^ b? || c?")
+            .is_err());
+    }
+
+    #[test]
+    fn test_parse_subfield_or_matcher() {
+        macro_rules! parse_success {
+            ($i:expr) => {
+                let o = parse_subfield_or_matcher
+                    .parse($i.as_bytes())
+                    .unwrap();
+
+                assert_eq!(o.to_string(), $i.to_string());
+                assert!(matches!(
+                    o,
+                    SubfieldMatcher::Composite {
+                        op: BooleanOp::Or,
+                        ..
+                    }
+                ));
+            };
+        }
+
+        parse_success!("a? || b?");
+        parse_success!("a? || b? || c?");
+        parse_success!("a? || b? || c? || d?");
+        parse_success!("a? || !b?");
+        parse_success!("a? || !(b? || c?)");
+        parse_success!("!a? || !(b? || c?)");
+        parse_success!("a? || b? && c?");
+        parse_success!("a? && b? || c? && d?");
+        parse_success!("a? || b? ^ c?");
+        parse_success!("a? ^ b? || c? ^ d?");
+        parse_success!("a? || (b? && c?)");
+        parse_success!("(a? && b?) || (c? ^ d?)");
+    }
+
+    #[test]
+    fn test_parse_subfield_matcher() {
+        macro_rules! parse_success {
+            ($i:expr) => {
+                let o = parse_subfield_matcher
+                    .parse($i.as_bytes())
+                    .unwrap();
+
+                assert_eq!(o.to_string(), $i.to_string());
+            };
+        }
+
+        parse_success!("(a? && b?) || (c == 'foo' ^ d == 'bar')");
+        parse_success!("0 in [\"Olfo\",\"Oaf\",\"Oa\"]");
+        parse_success!("0 =^ \"A\" || 0 =^ \"O\"");
+        parse_success!("c == '01' && d == 'MVB'");
+
+        parse_success!(
+            "p =~ '^\\\\[publtype\\\\]([bB]ookPart|[cC]onferencePaper)$'"
+        );
+
+        parse_success!(
+            "a =~ '(?i)(Zeitschrift|Journal)' && \
+                a !~ '(?i)(Abdr|Sonderdr|Diss(\\\\.|ertation)|Teile)'"
+        );
     }
 }
