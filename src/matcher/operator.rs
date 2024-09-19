@@ -1,5 +1,8 @@
 use std::fmt::{self, Display};
 
+use winnow::combinator::alt;
+use winnow::{PResult, Parser};
+
 /// Relational Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RelationalOp {
@@ -130,6 +133,30 @@ impl quickcheck::Arbitrary for RelationalOp {
     }
 }
 
+/// Parse RelationalOp which can be used for string comparisons.
+#[inline]
+pub(crate) fn parse_relational_operator(
+    i: &mut &[u8],
+) -> PResult<RelationalOp> {
+    use RelationalOp::*;
+
+    alt((
+        "==".value(Equal),
+        "!=".value(NotEqual),
+        "=^".value(StartsWith),
+        "!^".value(StartsNotWith),
+        "=$".value(EndsWith),
+        "!$".value(EndsNotWith),
+        "=*".value(Similar),
+        "=?".value(Contains),
+        ">=".value(GreaterThanOrEqual),
+        ">".value(GreaterThan),
+        "<=".value(LessThanOrEqual),
+        "<".value(LessThan),
+    ))
+    .parse_next(i)
+}
+
 /// Boolean Operators.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BooleanOp {
@@ -152,5 +179,39 @@ impl Display for BooleanOp {
 impl quickcheck::Arbitrary for BooleanOp {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
         g.choose(&[Self::And, Self::Or, Self::Xor]).unwrap().clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_relational_operator() {
+        use RelationalOp::*;
+
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_relational_operator
+                        .parse($input.as_bytes())
+                        .unwrap(),
+                    $expected
+                );
+            };
+        }
+
+        parse_success!("==", Equal);
+        parse_success!("!=", NotEqual);
+        parse_success!(">=", GreaterThanOrEqual);
+        parse_success!(">", GreaterThan);
+        parse_success!("<=", LessThanOrEqual);
+        parse_success!("<", LessThan);
+        parse_success!("=^", StartsWith);
+        parse_success!("!^", StartsNotWith);
+        parse_success!("=$", EndsWith);
+        parse_success!("!$", EndsNotWith);
+        parse_success!("=*", Similar);
+        parse_success!("=?", Contains);
     }
 }

@@ -1,5 +1,8 @@
 use std::fmt::{self, Display};
 
+use winnow::combinator::alt;
+use winnow::{PResult, Parser};
+
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Quantifier {
     All,
@@ -23,5 +26,24 @@ impl quickcheck::Arbitrary for Quantifier {
             true => Quantifier::All,
             false => Quantifier::Any,
         }
+    }
+}
+
+#[inline]
+pub(crate) fn parse_quantifier(i: &mut &[u8]) -> PResult<Quantifier> {
+    alt(("ALL".value(Quantifier::All), "ANY".value(Quantifier::Any)))
+        .parse_next(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_quantifier() {
+        use Quantifier::*;
+
+        assert_eq!(parse_quantifier.parse(b"ALL").unwrap(), All);
+        assert_eq!(parse_quantifier.parse(b"ANY").unwrap(), Any);
     }
 }

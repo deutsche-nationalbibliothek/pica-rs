@@ -7,6 +7,7 @@ pub use record::{ByteRecord, StringRecord};
 
 mod error;
 pub mod matcher;
+mod parser;
 pub mod prelude;
 pub mod primitives;
 mod record;
