@@ -1307,6 +1307,16 @@ impl Not for SubfieldMatcher {
 }
 
 #[cfg(feature = "serde")]
+impl serde::Serialize for SubfieldMatcher {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for SubfieldMatcher {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -1314,16 +1324,6 @@ impl<'de> serde::Deserialize<'de> for SubfieldMatcher {
     {
         let s: String = serde::Deserialize::deserialize(deserializer)?;
         Self::new(&s).map_err(serde::de::Error::custom)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for SubfieldMatcher {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
     }
 }
 

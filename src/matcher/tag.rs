@@ -95,6 +95,27 @@ impl Display for TagMatcher {
     }
 }
 
+#[cfg(feature = "serde")]
+impl serde::Serialize for TagMatcher {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for TagMatcher {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s: String = serde::Deserialize::deserialize(deserializer)?;
+        Self::new(&s).map_err(serde::de::Error::custom)
+    }
+}
+
 #[inline]
 fn parse_tag_matcher_tag(i: &mut &[u8]) -> PResult<TagMatcher> {
     parse_tag_ref
@@ -162,10 +183,25 @@ fn parse_tag_matcher(i: &mut &[u8]) -> PResult<TagMatcher> {
 
 #[cfg(test)]
 mod tests {
+    use serde_test::{assert_tokens, Token};
+
     use super::*;
 
+    type TestResult = anyhow::Result<()>;
+
     #[test]
-    fn test_parse_tag_matcher() -> anyhow::Result<()> {
+    fn test_tag_matcher_serde() -> TestResult {
+        let matcher = TagMatcher::new("003@")?;
+        assert_tokens(&matcher, &[Token::Str("003@")]);
+
+        let matcher = TagMatcher::new(".0[2-3][A@]")?;
+        assert_tokens(&matcher, &[Token::Str(".0[2-3][A@]")]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_tag_matcher() -> TestResult {
         macro_rules! parse_success {
             ($i:expr, $o:expr) => {
                 assert_eq!(
