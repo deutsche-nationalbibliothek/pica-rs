@@ -10,6 +10,7 @@ pub use subfield::{
     RegexSetMatcher, RelationMatcher, SingletonMatcher,
     SubfieldMatcher,
 };
+pub use tag::TagMatcher;
 
 mod error;
 mod occurrence;
@@ -19,3 +20,4 @@ mod parse;
 mod quantifier;
 mod string;
 mod subfield;
+mod tag;

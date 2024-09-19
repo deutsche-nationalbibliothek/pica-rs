@@ -6,6 +6,7 @@ use super::parse::parse_occurrence_matcher;
 use super::ParseMatcherError;
 use crate::primitives::{Occurrence, OccurrenceRef};
 
+/// A matcher that checks for occurrences (or no occurrence).
 #[derive(Debug, Clone, PartialEq)]
 pub enum OccurrenceMatcher {
     Exact(Occurrence),
