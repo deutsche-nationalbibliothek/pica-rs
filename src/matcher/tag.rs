@@ -1,3 +1,5 @@
+//! Matcher that can be applied on a list of [TagRef].
+
 use std::fmt::{self, Display};
 
 use bstr::ByteSlice;
@@ -10,7 +12,7 @@ use super::ParseMatcherError;
 use crate::primitives::parse::parse_tag_ref;
 use crate::primitives::{Tag, TagRef};
 
-/// A matcher that matches against a TagRef.
+/// A matcher that matches against a [TagRef].
 #[derive(Debug, Clone, PartialEq)]
 pub enum TagMatcher {
     Tag(Tag),

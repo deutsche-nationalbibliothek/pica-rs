@@ -2,154 +2,39 @@ use std::cell::RefCell;
 
 use bstr::ByteSlice;
 use regex::bytes::Regex;
-use smallvec::SmallVec;
-use winnow::ascii::{digit1, multispace0, multispace1};
+use winnow::ascii::{digit1, multispace1};
 use winnow::combinator::{
-    alt, delimited, empty, opt, preceded, repeat, separated,
-    separated_pair, terminated,
+    alt, delimited, opt, preceded, repeat, separated, terminated,
 };
 use winnow::error::ParserError;
 use winnow::prelude::*;
-use winnow::stream::{AsChar, Stream, StreamIsPartial};
 
-use super::string::parse_string;
-use super::subfield::{
-    ExistsMatcher, RegexSetMatcher, SubfieldMatcher,
-};
 use super::{
-    CardinalityMatcher, InMatcher, OccurrenceMatcher, Quantifier,
-    RegexMatcher, RelationMatcher, RelationalOp, SingletonMatcher,
+    CardinalityMatcher, ExistsMatcher, InMatcher, RegexMatcher,
+    RegexSetMatcher, RelationMatcher, SingletonMatcher,
+    SubfieldMatcher,
 };
-use crate::primitives::parse::{
-    parse_occurrence_ref, parse_subfield_code,
+use crate::matcher::operator::{
+    parse_relational_operator, RelationalOp,
 };
-use crate::primitives::{Occurrence, SubfieldCode};
+use crate::matcher::quantifier::parse_quantifier;
+use crate::parser::{parse_string, parse_subfield_codes, ws};
+use crate::primitives::parse::parse_subfield_code;
 
-/// Strip whitespaces from the beginning and end.
-pub(crate) fn ws<I, O, E: ParserError<I>, F>(
-    mut inner: F,
-) -> impl Parser<I, O, E>
-where
-    I: Stream + StreamIsPartial,
-    <I as Stream>::Token: AsChar + Clone,
-    F: Parser<I, O, E>,
-{
-    move |i: &mut I| {
-        let _ = multispace0.parse_next(i)?;
-        let o = inner.parse_next(i);
-        let _ = multispace0.parse_next(i)?;
-        o
-    }
-}
-
-#[inline]
-pub(crate) fn parse_subfield_code_range(
-    i: &mut &[u8],
-) -> PResult<Vec<SubfieldCode>> {
-    separated_pair(parse_subfield_code, b'-', parse_subfield_code)
-        .verify(|(min, max)| min < max)
-        .map(|(min, max)| {
-            (min.as_byte()..=max.as_byte())
-                .map(SubfieldCode::from_unchecked)
-                .collect()
-        })
-        .parse_next(i)
-}
-
-#[inline]
-fn parse_subfield_code_list(
-    i: &mut &[u8],
-) -> PResult<Vec<SubfieldCode>> {
-    delimited(
-        '[',
-        repeat(
-            1..,
-            alt((
-                parse_subfield_code_range,
-                parse_subfield_code.map(|code| vec![code]),
-            )),
-        )
-        .fold(Vec::new, |mut acc: Vec<_>, item| {
-            acc.extend_from_slice(&item);
-            acc
-        }),
-        ']',
-    )
-    .parse_next(i)
-}
-
-#[inline]
-fn parse_subfield_code_all(
-    i: &mut &[u8],
-) -> PResult<Vec<SubfieldCode>> {
-    const SUBFIELD_CODES: &[u8; 62] = b"0123456789\
-        abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    '*'.value(
-        SUBFIELD_CODES
-            .iter()
-            .map(|code| SubfieldCode::from_unchecked(*code))
-            .collect(),
-    )
-    .parse_next(i)
-}
-
-/// Parse a list of subfield codes
-#[allow(dead_code)]
-pub(crate) fn parse_subfield_codes(
-    i: &mut &[u8],
-) -> PResult<SmallVec<[SubfieldCode; 4]>> {
-    alt((
-        parse_subfield_code_list,
-        parse_subfield_code.map(|code| vec![code]),
-        parse_subfield_code_all,
-    ))
-    .map(SmallVec::from_vec)
-    .parse_next(i)
-}
-
-/// Parse the matcher expression from a byte slice.
+/// Parses a [ExistsMatcher] expression.
 pub(crate) fn parse_exists_matcher(
     i: &mut &[u8],
 ) -> PResult<ExistsMatcher> {
     terminated(parse_subfield_codes, '?')
         .with_taken()
-        .map(|(codes, raw_data)| ExistsMatcher {
-            raw_data: raw_data.to_str().unwrap().to_string(),
-            codes,
+        .map(|(codes, raw_data)| {
+            let raw_data = raw_data.to_str().unwrap().to_string();
+            ExistsMatcher { raw_data, codes }
         })
         .parse_next(i)
 }
 
-#[inline]
-pub(crate) fn parse_quantifier(i: &mut &[u8]) -> PResult<Quantifier> {
-    alt(("ALL".value(Quantifier::All), "ANY".value(Quantifier::Any)))
-        .parse_next(i)
-}
-
-/// Parse RelationalOp which can be used for string comparisons.
-#[inline]
-pub(crate) fn parse_relational_operator(
-    i: &mut &[u8],
-) -> PResult<RelationalOp> {
-    alt((
-        "==".value(RelationalOp::Equal),
-        "!=".value(RelationalOp::NotEqual),
-        "=^".value(RelationalOp::StartsWith),
-        "!^".value(RelationalOp::StartsNotWith),
-        "=$".value(RelationalOp::EndsWith),
-        "!$".value(RelationalOp::EndsNotWith),
-        "=*".value(RelationalOp::Similar),
-        "=?".value(RelationalOp::Contains),
-        ">=".value(RelationalOp::GreaterThanOrEqual),
-        ">".value(RelationalOp::GreaterThan),
-        "<=".value(RelationalOp::LessThanOrEqual),
-        "<".value(RelationalOp::LessThan),
-    ))
-    .parse_next(i)
-}
-
-/// Parse a relational expression
+/// Parse a [RelationMatcher] expression.
 #[inline]
 pub(crate) fn parse_relation_matcher(
     i: &mut &[u8],
@@ -178,6 +63,7 @@ pub(crate) fn parse_relation_matcher(
         .parse_next(i)
 }
 
+/// Parse a [RegexMatcher] expression.
 pub(crate) fn parse_regex_matcher(
     i: &mut &[u8],
 ) -> PResult<RegexMatcher> {
@@ -203,6 +89,7 @@ pub(crate) fn parse_regex_matcher(
         .parse_next(i)
 }
 
+/// Parse a [RegexSetMatcher] expression.
 pub(crate) fn parse_regex_set_matcher(
     i: &mut &[u8],
 ) -> PResult<RegexSetMatcher> {
@@ -225,7 +112,6 @@ pub(crate) fn parse_regex_set_matcher(
         .with_taken()
         .map(|((quantifier, codes, invert, re), raw_data)| {
             let raw_data = raw_data.to_str().unwrap().to_string();
-
             RegexSetMatcher {
                 quantifier,
                 codes,
@@ -237,7 +123,7 @@ pub(crate) fn parse_regex_set_matcher(
         .parse_next(i)
 }
 
-/// Parse a in matcher expression.
+/// Parse a [InMatcher] expression.
 pub(crate) fn parse_in_matcher(i: &mut &[u8]) -> PResult<InMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
@@ -281,7 +167,7 @@ pub(crate) fn parse_in_matcher(i: &mut &[u8]) -> PResult<InMatcher> {
         .parse_next(i)
 }
 
-/// Parse a cardinality matcher expression.
+/// Parse a [CardinalityMatcher] expression.
 pub(crate) fn parse_cardinality_matcher(
     i: &mut &[u8],
 ) -> PResult<CardinalityMatcher> {
@@ -495,131 +381,16 @@ pub(crate) fn parse_subfield_matcher(
     .parse_next(i)
 }
 
-#[inline]
-fn parse_occurrence_matcher_inner(
-    i: &mut &[u8],
-) -> PResult<Occurrence> {
-    parse_occurrence_ref.map(Occurrence::from).parse_next(i)
-}
-
-#[inline]
-fn parse_occurrence_matcher_exact(
-    i: &mut &[u8],
-) -> PResult<OccurrenceMatcher> {
-    parse_occurrence_matcher_inner
-        .verify(|occurrence| occurrence.as_bytes() != b"00")
-        .map(OccurrenceMatcher::Exact)
-        .parse_next(i)
-}
-
-#[inline]
-fn parse_occurrence_matcher_range(
-    i: &mut &[u8],
-) -> PResult<OccurrenceMatcher> {
-    separated_pair(
-        parse_occurrence_matcher_inner,
-        '-',
-        parse_occurrence_matcher_inner,
-    )
-    .verify(|(min, max)| min.len() == max.len() && min < max)
-    .map(|(min, max)| OccurrenceMatcher::Range(min, max))
-    .parse_next(i)
-}
-
-pub(crate) fn parse_occurrence_matcher(
-    i: &mut &[u8],
-) -> PResult<OccurrenceMatcher> {
-    alt((
-        preceded(
-            '/',
-            alt((
-                parse_occurrence_matcher_range,
-                parse_occurrence_matcher_exact,
-                "00".value(OccurrenceMatcher::None),
-                "*".value(OccurrenceMatcher::Any),
-            )),
-        ),
-        empty.value(OccurrenceMatcher::None),
-    ))
-    .parse_next(i)
-}
-
 #[cfg(test)]
 mod tests {
+    use smallvec::SmallVec;
+
     use super::*;
-    use crate::matcher::BooleanOp;
+    use crate::matcher::{BooleanOp, Quantifier};
+    use crate::primitives::SubfieldCode;
 
     const SUBFIELD_CODES: &str = "0123456789\
         abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    type TestResult = anyhow::Result<()>;
-
-    #[test]
-    fn test_parse_subfield_code_range() {
-        macro_rules! parse_success {
-            ($input:expr, $expected:expr) => {
-                assert_eq!(
-                    parse_subfield_code_range
-                        .parse($input.as_bytes())
-                        .unwrap(),
-                    $expected
-                        .into_iter()
-                        .map(SubfieldCode::from_unchecked)
-                        .collect::<Vec<_>>()
-                );
-            };
-        }
-
-        parse_success!("a-b", ['a', 'b']);
-        parse_success!("a-c", ['a', 'b', 'c']);
-        parse_success!("a-z", ('a'..='z'));
-        parse_success!("0-9", ('0'..='9'));
-        parse_success!("A-Z", ('A'..='Z'));
-
-        assert!(parse_subfield_code_range.parse(b"a-a").is_err());
-        assert!(parse_subfield_code_range.parse(b"a-!").is_err());
-        assert!(parse_subfield_code_range.parse(b"c-a").is_err());
-    }
-
-    #[test]
-    fn test_parse_subfield_code_list() {
-        macro_rules! parse_success {
-            ($input:expr, $expected:expr) => {
-                assert_eq!(
-                    parse_subfield_code_list
-                        .parse($input.as_bytes())
-                        .unwrap(),
-                    $expected
-                        .into_iter()
-                        .map(SubfieldCode::from_unchecked)
-                        .collect::<Vec<_>>()
-                );
-            };
-        }
-
-        parse_success!("[ab]", ['a', 'b']);
-        parse_success!("[abc]", ['a', 'b', 'c']);
-        parse_success!("[a-z]", ('a'..='z'));
-        parse_success!("[0-9]", ('0'..='9'));
-        parse_success!("[A-Z]", ('A'..='Z'));
-        parse_success!("[0a-cz]", ['0', 'a', 'b', 'c', 'z']);
-
-        assert!(parse_subfield_code_range.parse(b"[ab!]").is_err());
-        assert!(parse_subfield_code_range.parse(b"[a-a]").is_err());
-        assert!(parse_subfield_code_range.parse(b"[a-!]").is_err());
-        assert!(parse_subfield_code_range.parse(b"[c-a]").is_err());
-    }
-
-    #[test]
-    fn test_parse_subfield_code_all() {
-        assert_eq!(
-            parse_subfield_code_all.parse(b"*").unwrap(),
-            SUBFIELD_CODES
-                .chars()
-                .map(SubfieldCode::from_unchecked)
-                .collect::<Vec<_>>()
-        );
-    }
 
     #[test]
     fn test_parse_exists_matcher() {
@@ -658,46 +429,6 @@ mod tests {
         assert!(parse_exists_matcher.parse(b"[a-c=]?").is_err());
         assert!(parse_exists_matcher.parse(b"ALL a?").is_err());
         assert!(parse_exists_matcher.parse(b"ANY a?").is_err());
-    }
-
-    #[test]
-    fn test_parse_quantifier() {
-        assert_eq!(
-            parse_quantifier.parse(b"ALL").unwrap(),
-            Quantifier::All
-        );
-
-        assert_eq!(
-            parse_quantifier.parse(b"ANY").unwrap(),
-            Quantifier::Any
-        );
-    }
-
-    #[test]
-    fn test_parse_relational_operator() {
-        macro_rules! parse_success {
-            ($input:expr, $expected:expr) => {
-                assert_eq!(
-                    parse_relational_operator
-                        .parse($input.as_bytes())
-                        .unwrap(),
-                    $expected
-                );
-            };
-        }
-
-        parse_success!("==", RelationalOp::Equal);
-        parse_success!("!=", RelationalOp::NotEqual);
-        parse_success!(">=", RelationalOp::GreaterThanOrEqual);
-        parse_success!(">", RelationalOp::GreaterThan);
-        parse_success!("<=", RelationalOp::LessThanOrEqual);
-        parse_success!("<", RelationalOp::LessThan);
-        parse_success!("=^", RelationalOp::StartsWith);
-        parse_success!("!^", RelationalOp::StartsNotWith);
-        parse_success!("=$", RelationalOp::EndsWith);
-        parse_success!("!$", RelationalOp::EndsNotWith);
-        parse_success!("=*", RelationalOp::Similar);
-        parse_success!("=?", RelationalOp::Contains);
     }
 
     #[test]
@@ -1231,55 +962,5 @@ mod tests {
             "a =~ '(?i)(Zeitschrift|Journal)' && \
                 a !~ '(?i)(Abdr|Sonderdr|Diss(\\\\.|ertation)|Teile)'"
         );
-    }
-
-    #[test]
-    fn test_parse_occurrence_matcher() -> TestResult {
-        macro_rules! parse_success {
-            ($i:expr, $o:expr) => {
-                let o = parse_occurrence_matcher
-                    .parse($i.as_bytes())
-                    .unwrap();
-
-                assert_eq!(o.to_string(), $i);
-                assert_eq!(o, $o);
-            };
-        }
-
-        parse_success!("", OccurrenceMatcher::None);
-        parse_success!("/*", OccurrenceMatcher::Any);
-
-        parse_success!(
-            "/01",
-            OccurrenceMatcher::Exact(Occurrence::new("01")?)
-        );
-
-        parse_success!(
-            "/999",
-            OccurrenceMatcher::Exact(Occurrence::new("999")?)
-        );
-
-        parse_success!(
-            "/01-99",
-            OccurrenceMatcher::Range(
-                Occurrence::new("01")?,
-                Occurrence::new("99")?
-            )
-        );
-
-        parse_success!(
-            "/01-99",
-            OccurrenceMatcher::Range(
-                Occurrence::new("01")?,
-                Occurrence::new("99")?
-            )
-        );
-
-        assert_eq!(
-            parse_occurrence_matcher.parse(b"/00").unwrap(),
-            OccurrenceMatcher::None
-        );
-
-        Ok(())
     }
 }

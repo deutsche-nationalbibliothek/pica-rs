@@ -14,5 +14,8 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
-pub use crate::matcher::{MatcherOptions, SubfieldMatcher};
+pub use crate::matcher::subfield::SubfieldMatcher;
+pub use crate::matcher::{
+    MatcherOptions, OccurrenceMatcher, TagMatcher,
+};
 pub use crate::{ByteRecord, Error, StringRecord};

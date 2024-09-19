@@ -1,12 +1,15 @@
+//! Matcher that can be applied on a list of [OccurrenceRef].
+
 use std::fmt::{self, Display};
 
-use winnow::Parser;
+use winnow::combinator::{alt, empty, preceded, separated_pair};
+use winnow::prelude::*;
 
-use super::parse::parse_occurrence_matcher;
 use super::ParseMatcherError;
+use crate::primitives::parse::parse_occurrence_ref;
 use crate::primitives::{Occurrence, OccurrenceRef};
 
-/// A matcher that checks for occurrences (or no occurrence).
+/// A matcher that matches against a [OccurrenceRef].
 #[derive(Debug, Clone, PartialEq)]
 pub enum OccurrenceMatcher {
     Exact(Occurrence),
@@ -93,6 +96,110 @@ impl Display for OccurrenceMatcher {
             Self::Any => write!(f, "/*")?,
             Self::None => (),
         }
+
+        Ok(())
+    }
+}
+
+#[inline]
+fn parse_occurrence_matcher_inner(
+    i: &mut &[u8],
+) -> PResult<Occurrence> {
+    parse_occurrence_ref.map(Occurrence::from).parse_next(i)
+}
+
+#[inline]
+fn parse_occurrence_matcher_exact(
+    i: &mut &[u8],
+) -> PResult<OccurrenceMatcher> {
+    parse_occurrence_matcher_inner
+        .verify(|occurrence| occurrence.as_bytes() != b"00")
+        .map(OccurrenceMatcher::Exact)
+        .parse_next(i)
+}
+
+#[inline]
+fn parse_occurrence_matcher_range(
+    i: &mut &[u8],
+) -> PResult<OccurrenceMatcher> {
+    separated_pair(
+        parse_occurrence_matcher_inner,
+        '-',
+        parse_occurrence_matcher_inner,
+    )
+    .verify(|(min, max)| min.len() == max.len() && min < max)
+    .map(|(min, max)| OccurrenceMatcher::Range(min, max))
+    .parse_next(i)
+}
+
+pub(crate) fn parse_occurrence_matcher(
+    i: &mut &[u8],
+) -> PResult<OccurrenceMatcher> {
+    alt((
+        preceded(
+            '/',
+            alt((
+                parse_occurrence_matcher_range,
+                parse_occurrence_matcher_exact,
+                "00".value(OccurrenceMatcher::None),
+                "*".value(OccurrenceMatcher::Any),
+            )),
+        ),
+        empty.value(OccurrenceMatcher::None),
+    ))
+    .parse_next(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_occurrence_matcher() -> anyhow::Result<()> {
+        macro_rules! parse_success {
+            ($i:expr, $o:expr) => {
+                let o = parse_occurrence_matcher
+                    .parse($i.as_bytes())
+                    .unwrap();
+
+                assert_eq!(o.to_string(), $i);
+                assert_eq!(o, $o);
+            };
+        }
+
+        parse_success!("", OccurrenceMatcher::None);
+        parse_success!("/*", OccurrenceMatcher::Any);
+
+        parse_success!(
+            "/01",
+            OccurrenceMatcher::Exact(Occurrence::new("01")?)
+        );
+
+        parse_success!(
+            "/999",
+            OccurrenceMatcher::Exact(Occurrence::new("999")?)
+        );
+
+        parse_success!(
+            "/01-99",
+            OccurrenceMatcher::Range(
+                Occurrence::new("01")?,
+                Occurrence::new("99")?
+            )
+        );
+
+        parse_success!(
+            "/01-99",
+            OccurrenceMatcher::Range(
+                Occurrence::new("01")?,
+                Occurrence::new("99")?
+            )
+        );
+
+        assert_eq!(
+            parse_occurrence_matcher.parse(b"/00").unwrap(),
+            OccurrenceMatcher::None
+        );
 
         Ok(())
     }
