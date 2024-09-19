@@ -1,4 +1,6 @@
+use std::fmt::{self, Display};
 use std::io::{self, Write};
+use std::ops::Index;
 
 use bstr::{BStr, BString};
 #[cfg(feature = "serde")]
@@ -135,6 +137,35 @@ impl<'a> TagRef<'a> {
     #[inline]
     pub fn write_to(&self, out: &mut impl Write) -> io::Result<()> {
         out.write_all(self.0)
+    }
+}
+
+impl Index<usize> for TagRef<'_> {
+    type Output = u8;
+
+    /// Access certain positions (indexed from zero) of a [TagRef].
+    ///
+    /// # Panics
+    ///
+    /// This functions panics of the position is greater than three.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::primitives::TagRef;
+    ///
+    /// let tag = TagRef::new("003@")?;
+    /// assert_eq!(tag[0], b'0');
+    /// assert_eq!(tag[1], b'0');
+    /// assert_eq!(tag[2], b'3');
+    /// assert_eq!(tag[3], b'@');
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn index(&self, index: usize) -> &Self::Output {
+        debug_assert!(index < self.0.len());
+        &self.0[index]
     }
 }
 
@@ -317,6 +348,25 @@ impl PartialEq<Tag> for TagRef<'_> {
     #[inline]
     fn eq(&self, other: &Tag) -> bool {
         self.0 == other.0
+    }
+}
+
+impl Display for Tag {
+    /// Formats the tag as a human-readable string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::primitives::Tag;
+    ///
+    /// let tag = Tag::new("003@")?;
+    /// assert_eq!(tag.to_string(), "003@");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

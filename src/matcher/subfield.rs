@@ -21,6 +21,7 @@ use super::{
 use crate::matcher::parse::parse_exists_matcher;
 use crate::primitives::{SubfieldCode, SubfieldRef};
 
+/// A matcher that checks for the existance of subfields.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExistsMatcher {
     pub(crate) codes: SmallVec<[SubfieldCode; 4]>,
