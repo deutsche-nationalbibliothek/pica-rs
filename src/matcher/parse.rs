@@ -554,41 +554,9 @@ fn parse_tag_matcher_tag(i: &mut &[u8]) -> PResult<TagMatcher> {
         .parse_next(i)
 }
 
-// fn parse_tag_matcher_pattern_fragment(
-//     allowed: &[u8],
-//     i: &mut &[u8],
-// ) -> PResult<Vec<u8>> {
-//     alt((
-//         one_of(|c: u8| allowed.contains(&c)).map(|c| vec![c]),
-//         '.'.value(allowed.to_vec()),
-//         delimited(
-//             '[',
-//             repeat(
-//                 1..,
-//                 alt((
-//                     separated_pair(
-//                         one_of(|c| allowed.contains(&c)),
-//                         '-',
-//                         one_of(|c| allowed.contains(&c)),
-//                     )
-//                     .verify(|(min, max)| min < max)
-//                     .map(|(min, max)| (min..=max).collect()),
-//                     one_of(|c| allowed.contains(&c)).map(|c|
-// vec![c]),                 )),
-//             )
-//             .fold(Vec::new, |mut acc, item| {
-//                 acc.extend(&item);
-//                 acc
-//             }),
-//             ']',
-//         ),
-//     ))
-//     .parse_next(i)
-// }
-
 fn parse_tag_matcher_pattern_fragment<'a, E: ParserError<&'a [u8]>>(
     allowed: &[u8],
-) -> impl Parser<&'a [u8], Vec<u8>, E> + use<'a, '_, E> {
+) -> impl Parser<&'a [u8], Vec<u8>, E> + '_ {
     move |i: &mut &'a [u8]| {
         alt((
             one_of(|c: u8| allowed.contains(&c)).map(|c| vec![c]),
