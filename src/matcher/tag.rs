@@ -178,7 +178,7 @@ fn parse_tag_matcher_pattern(i: &mut &[u8]) -> PResult<TagMatcher> {
         .parse_next(i)
 }
 
-fn parse_tag_matcher(i: &mut &[u8]) -> PResult<TagMatcher> {
+pub(crate) fn parse_tag_matcher(i: &mut &[u8]) -> PResult<TagMatcher> {
     alt((parse_tag_matcher_tag, parse_tag_matcher_pattern))
         .parse_next(i)
 }

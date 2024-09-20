@@ -6,18 +6,18 @@ use winnow::{PResult, Parser};
 /// Relational Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RelationalOp {
-    Equal,              // equal, "=="
-    NotEqual,           // not equal, "!="
-    GreaterThan,        // greater than, ">"
-    GreaterThanOrEqual, // greater than or equal, ">="
-    LessThan,           // less than, "<"
-    LessThanOrEqual,    // less than or equal, "<="
-    StartsWith,         // starts with, "=^"
-    StartsNotWith,      // starts not with, "!^"
-    EndsWith,           // ends with, "=$"
-    EndsNotWith,        // ends not with, "!$"
-    Similar,            // similar, "=*"
-    Contains,           // contains, "=?"
+    Eq,            // equal, "=="
+    Ne,            // not equal, "!="
+    Gt,            // greater than, ">"
+    Ge,            // greater than or equal, ">="
+    Lt,            // less than, "<"
+    Le,            // less than or equal, "<="
+    StartsWith,    // starts with, "=^"
+    StartsNotWith, // starts not with, "!^"
+    EndsWith,      // ends with, "=$"
+    EndsNotWith,   // ends not with, "!$"
+    Similar,       // similar, "=*"
+    Contains,      // contains, "=?"
 }
 
 impl RelationalOp {
@@ -29,12 +29,12 @@ impl RelationalOp {
     /// ```rust
     /// use pica_record::matcher::RelationalOp;
     ///
-    /// assert!(RelationalOp::Equal.is_usize_applicable());
-    /// assert!(RelationalOp::NotEqual.is_usize_applicable());
-    /// assert!(RelationalOp::GreaterThanOrEqual.is_usize_applicable());
-    /// assert!(RelationalOp::GreaterThan.is_usize_applicable());
-    /// assert!(RelationalOp::LessThanOrEqual.is_usize_applicable());
-    /// assert!(RelationalOp::LessThan.is_usize_applicable());
+    /// assert!(RelationalOp::Eq.is_usize_applicable());
+    /// assert!(RelationalOp::Ne.is_usize_applicable());
+    /// assert!(RelationalOp::Ge.is_usize_applicable());
+    /// assert!(RelationalOp::Gt.is_usize_applicable());
+    /// assert!(RelationalOp::Le.is_usize_applicable());
+    /// assert!(RelationalOp::Lt.is_usize_applicable());
     ///
     /// assert!(!RelationalOp::Contains.is_usize_applicable());
     /// assert!(!RelationalOp::EndsNotWith.is_usize_applicable());
@@ -48,12 +48,12 @@ impl RelationalOp {
     pub fn is_usize_applicable(&self) -> bool {
         matches!(
             self,
-            RelationalOp::Equal
-                | RelationalOp::NotEqual
-                | RelationalOp::GreaterThanOrEqual
-                | RelationalOp::GreaterThan
-                | RelationalOp::LessThan
-                | RelationalOp::LessThanOrEqual
+            RelationalOp::Eq
+                | RelationalOp::Ne
+                | RelationalOp::Ge
+                | RelationalOp::Gt
+                | RelationalOp::Lt
+                | RelationalOp::Le
         )
     }
 
@@ -65,29 +65,29 @@ impl RelationalOp {
     /// ```rust
     /// use pica_record::matcher::RelationalOp;
     ///
+    /// assert!(RelationalOp::Eq.is_str_applicable());
+    /// assert!(RelationalOp::Ne.is_str_applicable());
     /// assert!(RelationalOp::Contains.is_str_applicable());
     /// assert!(RelationalOp::EndsNotWith.is_str_applicable());
     /// assert!(RelationalOp::EndsWith.is_str_applicable());
-    /// assert!(RelationalOp::Equal.is_str_applicable());
-    /// assert!(RelationalOp::NotEqual.is_str_applicable());
     /// assert!(RelationalOp::Similar.is_str_applicable());
     /// assert!(RelationalOp::StartsNotWith.is_str_applicable());
     /// assert!(RelationalOp::StartsWith.is_str_applicable());
     ///
-    /// assert!(!RelationalOp::GreaterThanOrEqual.is_str_applicable());
-    /// assert!(!RelationalOp::GreaterThan.is_str_applicable());
-    /// assert!(!RelationalOp::LessThanOrEqual.is_str_applicable());
-    /// assert!(!RelationalOp::LessThan.is_str_applicable());
+    /// assert!(!RelationalOp::Ge.is_str_applicable());
+    /// assert!(!RelationalOp::Gt.is_str_applicable());
+    /// assert!(!RelationalOp::Le.is_str_applicable());
+    /// assert!(!RelationalOp::Lt.is_str_applicable());
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn is_str_applicable(&self) -> bool {
         !matches!(
             self,
-            RelationalOp::GreaterThanOrEqual
-                | RelationalOp::GreaterThan
-                | RelationalOp::LessThan
-                | RelationalOp::LessThanOrEqual
+            RelationalOp::Ge
+                | RelationalOp::Gt
+                | RelationalOp::Lt
+                | RelationalOp::Le
         )
     }
 }
@@ -95,12 +95,12 @@ impl RelationalOp {
 impl Display for RelationalOp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            RelationalOp::Equal => write!(f, "=="),
-            RelationalOp::NotEqual => write!(f, "!="),
-            RelationalOp::GreaterThan => write!(f, ">"),
-            RelationalOp::GreaterThanOrEqual => write!(f, ">="),
-            RelationalOp::LessThan => write!(f, "<"),
-            RelationalOp::LessThanOrEqual => write!(f, "<="),
+            RelationalOp::Eq => write!(f, "=="),
+            RelationalOp::Ne => write!(f, "!="),
+            RelationalOp::Gt => write!(f, ">"),
+            RelationalOp::Ge => write!(f, ">="),
+            RelationalOp::Lt => write!(f, "<"),
+            RelationalOp::Le => write!(f, "<="),
             RelationalOp::StartsWith => write!(f, "=^"),
             RelationalOp::StartsNotWith => write!(f, "!^"),
             RelationalOp::EndsWith => write!(f, "=$"),
@@ -115,12 +115,12 @@ impl Display for RelationalOp {
 impl quickcheck::Arbitrary for RelationalOp {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
         g.choose(&[
-            Self::Equal,
-            Self::NotEqual,
-            Self::GreaterThan,
-            Self::GreaterThanOrEqual,
-            Self::LessThan,
-            Self::LessThanOrEqual,
+            Self::Eq,
+            Self::Ne,
+            Self::Gt,
+            Self::Ge,
+            Self::Lt,
+            Self::Le,
             Self::StartsWith,
             Self::StartsNotWith,
             Self::EndsWith,
@@ -141,18 +141,18 @@ pub(crate) fn parse_relational_operator(
     use RelationalOp::*;
 
     alt((
-        "==".value(Equal),
-        "!=".value(NotEqual),
+        "==".value(Eq),
+        "!=".value(Ne),
         "=^".value(StartsWith),
         "!^".value(StartsNotWith),
         "=$".value(EndsWith),
         "!$".value(EndsNotWith),
         "=*".value(Similar),
         "=?".value(Contains),
-        ">=".value(GreaterThanOrEqual),
-        ">".value(GreaterThan),
-        "<=".value(LessThanOrEqual),
-        "<".value(LessThan),
+        ">=".value(Ge),
+        ">".value(Gt),
+        "<=".value(Le),
+        "<".value(Lt),
     ))
     .parse_next(i)
 }
@@ -201,12 +201,12 @@ mod tests {
             };
         }
 
-        parse_success!("==", Equal);
-        parse_success!("!=", NotEqual);
-        parse_success!(">=", GreaterThanOrEqual);
-        parse_success!(">", GreaterThan);
-        parse_success!("<=", LessThanOrEqual);
-        parse_success!("<", LessThan);
+        parse_success!("==", Eq);
+        parse_success!("!=", Ne);
+        parse_success!(">=", Ge);
+        parse_success!(">", Gt);
+        parse_success!("<=", Le);
+        parse_success!("<", Lt);
         parse_success!("=^", StartsWith);
         parse_success!("!^", StartsNotWith);
         parse_success!("=$", EndsWith);
