@@ -8,6 +8,7 @@ pub use quantifier::Quantifier;
 pub use tag::TagMatcher;
 
 mod error;
+pub mod field;
 mod occurrence;
 mod operator;
 mod options;

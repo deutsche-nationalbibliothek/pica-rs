@@ -191,8 +191,8 @@ impl RelationMatcher {
             let value = subfield.value().as_ref();
 
             match self.op {
-                Equal => self.compare(value, options),
-                NotEqual => !self.compare(value, options),
+                Eq => self.compare(value, options),
+                Ne => !self.compare(value, options),
                 StartsWith => self.starts_with(value, options, false),
                 StartsNotWith => self.starts_with(value, options, true),
                 EndsWith => self.ends_with(value, options, false),
@@ -813,12 +813,12 @@ impl CardinalityMatcher {
             .count();
 
         match self.op {
-            RelationalOp::Equal => count == self.value,
-            RelationalOp::NotEqual => count != self.value,
-            RelationalOp::GreaterThanOrEqual => count >= self.value,
-            RelationalOp::GreaterThan => count > self.value,
-            RelationalOp::LessThanOrEqual => count <= self.value,
-            RelationalOp::LessThan => count < self.value,
+            RelationalOp::Eq => count == self.value,
+            RelationalOp::Ne => count != self.value,
+            RelationalOp::Ge => count >= self.value,
+            RelationalOp::Gt => count > self.value,
+            RelationalOp::Le => count <= self.value,
+            RelationalOp::Lt => count < self.value,
             _ => unreachable!(),
         }
     }

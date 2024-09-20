@@ -212,7 +212,7 @@ pub(crate) fn parse_singleton_matcher(
 }
 
 #[inline(always)]
-fn parse_subfield_singleton_matcher(
+pub(crate) fn parse_subfield_singleton_matcher(
     i: &mut &[u8],
 ) -> PResult<SubfieldMatcher> {
     parse_singleton_matcher
@@ -299,8 +299,8 @@ fn parse_subfield_or_matcher(
     let atom = |i: &mut &[u8]| -> PResult<SubfieldMatcher> {
         ws(alt((
             parse_subfield_and_matcher,
-            parse_subfield_group_matcher,
             parse_subfield_xor_matcher,
+            parse_subfield_group_matcher,
             parse_subfield_singleton_matcher,
             parse_subfield_not_matcher,
         )))
@@ -319,8 +319,8 @@ fn parse_subfield_xor_matcher(
 ) -> PResult<SubfieldMatcher> {
     let atom = |i: &mut &[u8]| -> PResult<SubfieldMatcher> {
         ws(alt((
-            parse_subfield_group_matcher,
             parse_subfield_and_matcher,
+            parse_subfield_group_matcher,
             parse_subfield_singleton_matcher,
             parse_subfield_not_matcher,
         )))
@@ -370,9 +370,9 @@ pub(crate) fn parse_subfield_matcher(
 ) -> PResult<SubfieldMatcher> {
     alt((
         parse_subfield_composite_matcher,
+        parse_subfield_singleton_matcher,
         parse_subfield_group_matcher,
         parse_subfield_not_matcher,
-        parse_subfield_singleton_matcher,
     ))
     .map(|matcher| {
         group_level_reset();
@@ -456,9 +456,9 @@ mod tests {
             };
         }
 
-        parse_success!("0 == 'abc'", Any, "0", Equal, b"abc");
-        parse_success!("ALL 0 != 'abc'", All, "0", NotEqual, b"abc");
-        parse_success!("ANY [ab] == 'abc'", Any, "ab", Equal, b"abc");
+        parse_success!("0 == 'abc'", Any, "0", Eq, b"abc");
+        parse_success!("ALL 0 != 'abc'", All, "0", Ne, b"abc");
+        parse_success!("ANY [ab] == 'abc'", Any, "ab", Eq, b"abc");
         parse_success!("a =^ 'abc'", Any, "a", StartsWith, b"abc");
         parse_success!("a !^ 'abc'", Any, "a", StartsNotWith, b"abc");
         parse_success!("a =$ 'abc'", Any, "a", EndsWith, b"abc");
@@ -677,12 +677,12 @@ mod tests {
             };
         }
 
-        parse_success!("#a == 1", 'a', Equal, 1);
-        parse_success!("#a != 2", 'a', NotEqual, 2);
-        parse_success!("#a >= 3", 'a', GreaterThanOrEqual, 3);
-        parse_success!("#a > 4", 'a', GreaterThan, 4);
-        parse_success!("#a <= 5", 'a', LessThanOrEqual, 5);
-        parse_success!("#a < 6", 'a', LessThan, 6);
+        parse_success!("#a == 1", 'a', Eq, 1);
+        parse_success!("#a != 2", 'a', Ne, 2);
+        parse_success!("#a >= 3", 'a', Ge, 3);
+        parse_success!("#a > 4", 'a', Gt, 4);
+        parse_success!("#a <= 5", 'a', Le, 5);
+        parse_success!("#a < 6", 'a', Lt, 6);
 
         assert!(parse_cardinality_matcher.parse(b"#a > -1").is_err());
         assert!(parse_cardinality_matcher.parse(b"#a > '2'").is_err());

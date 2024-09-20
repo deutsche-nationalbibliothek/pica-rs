@@ -58,20 +58,26 @@ impl OccurrenceMatcher {
     /// use pica_record::primitives::OccurrenceRef;
     ///
     /// let matcher = OccurrenceMatcher::new("/01-03")?;
-    /// assert!(matcher.is_match(&OccurrenceRef::new("02")?));
-    /// assert!(!matcher.is_match(&OccurrenceRef::new("04")?));
+    /// assert!(matcher.is_match(Some(&OccurrenceRef::new("02")?)));
+    /// assert!(!matcher.is_match(Some(&OccurrenceRef::new("04")?)));
+    ///
+    /// let matcher = OccurrenceMatcher::new("/*")?;
+    /// assert!(matcher.is_match(None));
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn is_match(&self, other: &OccurrenceRef) -> bool {
-        match self {
-            Self::Any => true,
-            Self::None => other == b"00",
-            Self::Exact(rhs) => other == rhs,
-            Self::Range(min, max) => {
-                (other.as_bytes() >= min.as_bytes())
-                    && (other.as_bytes() <= max.as_bytes())
-            }
+    pub fn is_match(&self, other: Option<&OccurrenceRef>) -> bool {
+        match other {
+            None => matches!(self, Self::Any | Self::None),
+            Some(occ) => match self {
+                Self::Any => true,
+                Self::None => occ == b"00",
+                Self::Exact(rhs) => occ == rhs,
+                Self::Range(min, max) => {
+                    (occ.as_bytes() >= min.as_bytes())
+                        && (occ.as_bytes() <= max.as_bytes())
+                }
+            },
         }
     }
 }
