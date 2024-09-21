@@ -65,9 +65,9 @@ impl RecordMatcher {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline(always)]
-    pub fn is_match<'a>(
+    pub fn is_match(
         &self,
-        record: &RecordRef<'a>,
+        record: &RecordRef,
         options: &MatcherOptions,
     ) -> bool {
         self.0.is_match(record.fields(), options)
