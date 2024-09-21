@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Level"],"struct":["Field","FieldRef","Occurrence","OccurrenceRef","ParsePicaError","Record","RecordRef","Subfield","SubfieldCode","SubfieldRef","SubfieldValue","SubfieldValueRef","Tag","TagRef"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["cat","completions","convert","count","explode","filter","frequency","hash","invalid","partition","print","sample","select","slice","split"]};

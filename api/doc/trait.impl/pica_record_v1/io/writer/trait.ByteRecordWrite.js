@@ -1,0 +1,9 @@
+(function() {
+    var implementors = Object.fromEntries([["pica",[["impl <a class=\"trait\" href=\"pica_record_v1/io/writer/trait.ByteRecordWrite.html\" title=\"trait pica_record_v1::io::writer::ByteRecordWrite\">ByteRecordWrite</a> for <a class=\"struct\" href=\"pica/commands/convert/binary/struct.BinaryWriter.html\" title=\"struct pica::commands::convert::binary::BinaryWriter\">BinaryWriter</a>"],["impl <a class=\"trait\" href=\"pica_record_v1/io/writer/trait.ByteRecordWrite.html\" title=\"trait pica_record_v1::io::writer::ByteRecordWrite\">ByteRecordWrite</a> for <a class=\"struct\" href=\"pica/commands/convert/import/struct.ImportWriter.html\" title=\"struct pica::commands::convert::import::ImportWriter\">ImportWriter</a>"],["impl <a class=\"trait\" href=\"pica_record_v1/io/writer/trait.ByteRecordWrite.html\" title=\"trait pica_record_v1::io::writer::ByteRecordWrite\">ByteRecordWrite</a> for <a class=\"struct\" href=\"pica/commands/convert/json/struct.JsonWriter.html\" title=\"struct pica::commands::convert::json::JsonWriter\">JsonWriter</a>"],["impl <a class=\"trait\" href=\"pica_record_v1/io/writer/trait.ByteRecordWrite.html\" title=\"trait pica_record_v1::io::writer::ByteRecordWrite\">ByteRecordWrite</a> for <a class=\"struct\" href=\"pica/commands/convert/plain/struct.PlainWriter.html\" title=\"struct pica::commands::convert::plain::PlainWriter\">PlainWriter</a>"],["impl <a class=\"trait\" href=\"pica_record_v1/io/writer/trait.ByteRecordWrite.html\" title=\"trait pica_record_v1::io::writer::ByteRecordWrite\">ByteRecordWrite</a> for <a class=\"struct\" href=\"pica/commands/convert/xml/struct.XmlWriter.html\" title=\"struct pica::commands::convert::xml::XmlWriter\">XmlWriter</a>"]]],["pica_record_v1",[]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[1660,22]}

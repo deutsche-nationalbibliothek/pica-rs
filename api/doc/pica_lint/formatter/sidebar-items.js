@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["csv"],"struct":["CsvFormatter"],"trait":["Formatter"]};

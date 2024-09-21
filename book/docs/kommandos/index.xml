@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>pica-rs</title><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/</link><description>Recent content on pica-rs</description><generator>Hugo</generator><language>de-DE</language><atom:link href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/index.xml" rel="self" type="application/rss+xml"/><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/cat/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/cat/</guid><description>&lt;h1 id="cat">
+ cat
+ &lt;a class="anchor" href="#cat">#&lt;/a>
+&lt;/h1>
+&lt;p>Das &lt;code>cat&lt;/code>-Kommando liest Datensätze direkt von der Standardeingabe
+(&lt;code>stdin&lt;/code>) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe
+kann entweder in eine Datei oder in die Standardausgabe (&lt;code>stdout&lt;/code>)
+geschrieben werden.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Der wichtigste Anwendungsfall des Kommandos besteht in Kombination mit
+den Kommandos &lt;em>&lt;a href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/pica-rs/book/docs/kommandos/partition/">partition&lt;/a>&lt;/em> oder &lt;em>&lt;a href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/pica-rs/book/docs/kommandos/split/">split&lt;/a>&lt;/em>, da mittels &lt;code>cat&lt;/code> das
+Ergebnis von &lt;em>&lt;a href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/pica-rs/book/docs/kommandos/partition/">partition&lt;/a>&lt;/em> oder &lt;em>&lt;a href="https://deutsche-nationalbibliothek.github.io/pica-rs/book/pica-rs/book/docs/kommandos/split/">split&lt;/a>&lt;/em> (teil-)rückgängig gemacht
+werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere
+Dateien anhand eines Kriteriums zu teilen und anschließend eine
+Teilmenge wieder zusammenzufügen.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/completions/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/completions/</guid><description>&lt;h1 id="completions">
+ completions
+ &lt;a class="anchor" href="#completions">#&lt;/a>
+&lt;/h1>
+&lt;p>Das &lt;code>completions&lt;/code>-Kommando erzeugt Dateien, die Anweisungen enthalten,
+welche Argumente und Optionen des Toolkits für eine &lt;a href="https://de.wikipedia.org/wiki/Shell_%28Betriebssystem%29">Shell&lt;/a> zur
+Befehlszeilenergänzung verfügbar sind.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;blockquote class="book-hint info">
+ &lt;p>&lt;strong>Hinweis&lt;/strong>&lt;/p>
+&lt;p>Mit jeder neuen &lt;code>pica&lt;/code>-Version können sich die Argumente und Optionen
+des &lt;em>command-line interface&lt;/em> (CLI) ändern. Daher ist ein regelmäßiges
+Updaten der Skripte zu empfehlen.&lt;/p>
+
+&lt;/blockquote>
+
+&lt;p>Nachfolgend werden exemplarisch die Befehle gezeigt, die für die
+Einbindung in die jeweilige Shell nötig sind. Die Schritte sind vom
+System sowie der Nutzereinstellung abhängig und müssen ggf. angepasst
+werden.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/convert/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/convert/</guid><description>&lt;h1 id="convert">
+ convert
+ &lt;a class="anchor" href="#convert">#&lt;/a>
+&lt;/h1>
+&lt;p>Das &lt;code>convert&lt;/code>-Kommando wird für die Konvertierung von und in andere
+Datenformate verwendet.&lt;/p>
+&lt;blockquote class="book-hint danger">
+ &lt;strong>Hinweis:&lt;/strong>
+Das &lt;code>convert&lt;/code>-Kommando befindet sich in der aktiven Entwicklung.
+Funktionalitäten können unvollständig oder fehlerhaft sein. Änderungen
+am &lt;em>command-line interface&lt;/em> (CLI) sind nicht ausgeschlossen.
+&lt;/blockquote>
+
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Das PICA-Format kann in verschiedene Datenformate serialisiert werden.
+Das &lt;code>convert&lt;/code>-Kommando ermöglicht es, Datensätze von einem Format in ein
+anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit,
+Datensätze, die nicht in normalisiertem PICA+ vorliegen, nach PICA+ zu
+konvertieren, um sie durch andere Kommandos verarbeiten zu können.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/count/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/count/</guid><description>&lt;h1 id="count">
+ count
+ &lt;a class="anchor" href="#count">#&lt;/a>
+&lt;/h1>
+&lt;p>Mithilfe des &lt;code>count&lt;/code>-Kommandos lässt sich die Anzahl an Datensätzen
+(&lt;em>records&lt;/em>), Feldern (&lt;em>fields&lt;/em>) sowie Unterfeldern (&lt;em>subfields&lt;/em>)
+ermitteln.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Soll die Anzahl der Datensätze und deren Felder sowie Unterfelder
+ermittelt werden, kann dies mit dem &lt;code>count&lt;/code>-Kommando erfolgen. Ungültige
+Datensätze können mit dem Flag &lt;code>--skip-invalid&lt;/code> (bzw. &lt;code>-s&lt;/code>) übersprungen
+werden. Im folgenden Beispiel werden drei Dateien eingelesen und eine
+Zusammenfassung auf der Konsole ausgegeben:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-console" data-lang="console">&lt;span style="display:flex;">&lt;span>$ pica count -s DUMP.dat.gz
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>records: 12
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>fields: 1035
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>subfields: 3973
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="optionen">
+ Optionen
+ &lt;a class="anchor" href="#optionen">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>&lt;code>-s&lt;/code>, &lt;code>--skip-invalid&lt;/code> — überspringt jene Zeilen aus der Eingabe, die
+nicht dekodiert werden konnten.&lt;/li>
+&lt;li>&lt;code>-i&lt;/code>, &lt;code>--ignore-case&lt;/code> — Groß- und Kleinschreibung wird bei Vergleichen
+ignoriert.&lt;/li>
+&lt;li>&lt;code>--strsim-threshold &amp;lt;value&amp;gt;&lt;/code> — Festlegen des Schwellenwerts beim
+Ähnlichkeitsvergleich von Zeichenketten mittels &lt;code>=*&lt;/code>.&lt;/li>
+&lt;li>&lt;code>--append&lt;/code> — Wenn die Ausgabedatei bereits existiert, wird die
+Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine
+bestehende Datei standardmäßig überschrieben.&lt;/li>
+&lt;li>&lt;code>--records&lt;/code> — gibt nur die Anzahl der vorhandenen Datensätze aus.
+Dieses Flag ist nicht mit den Optionen &lt;code>--fields&lt;/code>, &lt;code>--subfields&lt;/code>,
+&lt;code>--csv&lt;/code>, &lt;code>--tsv&lt;/code> und &lt;code>--no-header&lt;/code> kombinierbar.&lt;/li>
+&lt;li>&lt;code>--fields&lt;/code> — gibt nur die Anzahl der vorhandenen Felder aus.
+Dieses Flag ist nicht mit den Optionen &lt;code>--records&lt;/code>, &lt;code>--subfields&lt;/code>,
+&lt;code>--csv&lt;/code>, &lt;code>--tsv&lt;/code> und &lt;code>--no-header&lt;/code> kombinierbar.&lt;/li>
+&lt;li>&lt;code>--subfields&lt;/code> — gibt nur die Anzahl der vorhandenen Unterfelder aus.
+Dieses Flag ist nicht mit den Optionen &lt;code>--records&lt;/code>, &lt;code>--fields&lt;/code>,
+&lt;code>--csv&lt;/code>, &lt;code>--tsv&lt;/code> und &lt;code>--no-header&lt;/code> kombinierbar.&lt;/li>
+&lt;li>&lt;code>--csv&lt;/code> — die Ausgabe erfolgt im CSV-Format.&lt;/li>
+&lt;li>&lt;code>--tsv&lt;/code> — die Ausgabe erfolgt im TSV-Format.&lt;/li>
+&lt;li>&lt;code>--no-header&lt;/code> — es wird keine Kopfzeile in die Ausgabe geschrieben.&lt;/li>
+&lt;li>&lt;code>--where&lt;/code> &lt;code>&amp;lt;filter&amp;gt;&lt;/code> — Angabe eines Filters, der auf die erzeugten
+Datensätze angewandt wird.&lt;/li>
+&lt;li>&lt;code>--and&lt;/code> &lt;code>&amp;lt;expr&amp;gt;&lt;/code> — Hinzufügen eines zusätzlichen Filters mittels der
+booleschen &lt;code>&amp;amp;&amp;amp;&lt;/code>-Verknüpfung. Der ursprüngliche Filterausdruck
+&lt;code>&amp;lt;filter&amp;gt;&lt;/code> wird zum Ausdruck &lt;code>&amp;lt;filter&amp;gt; &amp;amp;&amp;amp; &amp;lt;expr&amp;gt;&lt;/code>.&lt;/li>
+&lt;li>&lt;code>--or&lt;/code> &lt;code>&amp;lt;expr&amp;gt;&lt;/code> — Hinzufügen eines zusätzlichen Filters mittels der
+booleschen &lt;code>||&lt;/code>-Verknüpfung. Der ursprüngliche Filterausdruck
+&lt;code>&amp;lt;filter&amp;gt;&lt;/code> wird zum Ausdruck &lt;code>&amp;lt;filter&amp;gt; || &amp;lt;expr&amp;gt;&lt;/code>.&lt;/li>
+&lt;li>&lt;code>--not&lt;/code> &lt;code>&amp;lt;expr&amp;gt;&lt;/code> — Hinzufügen eines zusätzlichen Filters. Der
+ursprüngliche Filterausdruck &lt;code>&amp;lt;filter&amp;gt;&lt;/code> wird zum Ausdruck &lt;code>&amp;lt;filter&amp;gt; &amp;amp;&amp;amp; !(&amp;lt;expr&amp;gt;)&lt;/code>.&lt;/li>
+&lt;li>&lt;code>-p&lt;/code>, &lt;code>--progress&lt;/code> — Anzeige des Fortschritts, der die Anzahl der
+eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
+Aktivieren der Option erfordert das Schreiben der Datensätze in eine
+Datei mittels &lt;code>-o&lt;/code> bzw. &lt;code>--output&lt;/code>.&lt;/li>
+&lt;li>&lt;code>-o&lt;/code>, &lt;code>--output&lt;/code> — Angabe, in welche Datei die Ausgabe geschrieben
+werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe
+&lt;code>stdout&lt;/code> geschrieben.&lt;/li>
+&lt;/ul>
+&lt;h2 id="konfiguration">
+ Konfiguration
+ &lt;a class="anchor" href="#konfiguration">#&lt;/a>
+&lt;/h2>
+&lt;!-- TODO: Link zum allgemeinen Kapitel über die Konfigurationsdatei -->
+&lt;p>Die Option zum Ignorieren invalider Datensätze lässt sich in der
+&lt;code>Pica.toml&lt;/code> konfigurieren:&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/explode/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/explode/</guid><description>&lt;h1 id="explode">
+ explode
+ &lt;a class="anchor" href="#explode">#&lt;/a>
+&lt;/h1>
+&lt;p>Mithilfe des &lt;code>explode&lt;/code>-Kommandos lassen sich Datensätze in Lokal- bzw.
+Exemplardatensätze aufteilen.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;!-- TODO: Separate Seite über den Aufbau eines PICA+-Datensatzes erstellen. Untenstehende Notizen dazu stammen aus https://wiki.k10plus.de/download/attachments/203128864/K10plusKatalogisierungsschulung-mit-Notizen-Teil1.pdf?version=3&amp;modificationDate=1606824839604&amp;api=v2 -->
+&lt;p>Die Verarbeitung und Analyse von Datensätzen auf Lokal- bzw.
+Exemplarebene ist mitunter nur unzureichend möglich, da Filterausdrücke
+die Grenzen von untergeordneten Ebenen nicht respektiert. Abhilfe kann
+das &lt;code>explode&lt;/code>-Kommando schaffen, das einen Datensatz in einzelne Lokal-
+bzw. Exemplardatensätze aufteilen kann. Dabei werden alle Felder der
+übergeordneten Ebenen mit in die Datensätze übernommen.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/filter/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/filter/</guid><description>&lt;h1 id="filter">
+ filter
+ &lt;a class="anchor" href="#filter">#&lt;/a>
+&lt;/h1>
+&lt;p>Mithilfe des &lt;code>filter&lt;/code>-Kommandos können Datensätze anhand eines Kriterums
+aus der Eingabe gefiltert werden.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Das &lt;code>filter&lt;/code>-Kommando bildet das Herzstück des Toolkits. Es ermöglicht
+es, aus einer (mitunter sehr großen) Datenmenge, bspw. dem Gesamtabzug
+des Katalogsystems, eine kleinere Menge effizient zu extrahieren, um sie
+anschließend weiterzuverarbeiten. Dies erfolgt über die Angabe eines
+Filterausdrucks, der darüber entscheidet, ob ein Datensatz in die
+Zielmenge eingeht oder nicht.&lt;/p>
+&lt;p>Im folgenden Beispiel werden alle Datensätze aus der Datei
+&lt;code>DUMP.dat.gz&lt;/code> extrahiert, die ein Feld &lt;code>003@&lt;/code> enthalten, das ein
+Unterfeld &lt;code>0&lt;/code> besitzt, welches mit dem Wert &lt;code>118540238&lt;/code> belegt ist.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/frequency/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/frequency/</guid><description>&lt;h1 id="frequency">
+ frequency
+ &lt;a class="anchor" href="#frequency">#&lt;/a>
+&lt;/h1>
+&lt;p>Mithilfe des Kommandos &lt;code>frequency&lt;/code> lässt sich die Häufigkeitsverteilung
+aller Werte eines oder mehrerer Unterfelder bestimmen.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Das Kommando &lt;code>frequency&lt;/code> wird dazu genutzt, um die Häufigkeiten der
+Werte ein oder mehrerer Unterfelder zu bestimmen. Ist das zu
+untersuchende Feld bzw. Unterfeld wiederholbar, gehen alle
+Wertausprägungen eines Datensatzes in die Häufigkeitsverteilung ein. Die
+Ausgabe erfolgt standardmäßig im CSV-Format. Im folgenden Beispiel wird
+die Häufigkeitsverteilung des Unterfelds &lt;code>002@.0&lt;/code> (Satzart) ermittelt:&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/hash/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/hash/</guid><description>&lt;h1 id="hash">
+ hash
+ &lt;a class="anchor" href="#hash">#&lt;/a>
+&lt;/h1>
+&lt;p>Mithilfe des Kommandos &lt;code>hash&lt;/code> lässt sich eine Tabelle erzeugen, die in
+der ersten Spalte die IDN (Feld &lt;code>003@.0&lt;/code>) eines Datensatzes und in der
+zweiten Spalte den &lt;a href="https://de.wikipedia.org/wiki/SHA-2">&lt;em>SHA-256&lt;/em>&lt;/a> Hashwert enthält.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Mitunter kommt es vor, dass eine regelmäßige und aufwändige Berechnung
+für Datensätze ausgeführt werden muss und es nicht praktikabel ist, die
+Berechnung über alle Datensätze durchzuführen. Mittels des
+&lt;code>hash&lt;/code>-Kommandos können auf unterschiedlichen Abzügen die Hashwerte der
+Datensätze bestimmt werden. Durch Vergleich dieser Tabelle ist es
+möglich, die Datensätze zu identifizieren, die sich geändert haben,
+gelöscht oder neu hinzugefügt wurden. Das folgende Beispiel demonstriert
+die Erzeugung dieser Hash-Tabellen:&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/invalid/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/invalid/</guid><description>&lt;h1 id="invalid">
+ invalid
+ &lt;a class="anchor" href="#invalid">#&lt;/a>
+&lt;/h1>
+&lt;p>Das &lt;code>invalid&lt;/code>-Kommando findet Zeilen in der Eingabe, die nicht als
+normalisiertes PICA+ dekodiert werden konnten und somit ungültig sind.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in
+der Eingabe nicht dekodiert werden können. Diese ungültigen Zeilen
+lassen sich bei vielen Kommandos mit der Option &lt;code>--skip-invalid&lt;/code> (bzw.
+&lt;code>-s&lt;/code>) überspringen, wobei die Anzahl der übersprungenen Zeilen nicht
+angezeigt wird. Es kann aber empfehlenswert oder notwendig sein, die
+Anzahl invalider Datensätze zu kontrollieren und einer Prüfung zu
+unterziehen, um diese ggf. zu korrigieren.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/partition/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/partition/</guid><description>&lt;h1 id="partition">
+ partition
+ &lt;a class="anchor" href="#partition">#&lt;/a>
+&lt;/h1>
+&lt;p>Mittels des &lt;code>partition&lt;/code>-Kommandos lassen sich Datensätze anhand eines
+Unterfelds in Partitionen einteilen.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Lassen sich Datensätze anhand von den Wertausprägungen in einem
+Unterfeld gruppieren, ist es mitunter hilfreich die Gesamtmenge der
+Datensätze in Partitionen aufzuteilen. Ist das Unterfeld, nach dem
+partitioniert werden soll, wiederholbar, sind die erzeugten Partitionen
+i.d.R. nicht disjunkt. Ein Datensatz der das Unterfeld nicht besitzt,
+geht in keine Partition ein.&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>Hinweis:&lt;/strong> Die Werte des Unterfelds ergeben den Dateinamen der
+Partition. Es kann vorkommen, dass die Werte Sonderzeichen enthalten,
+die nicht vom Betriebssystem in Dateinamen erlaubt sind.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/print/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/print/</guid><description>&lt;h1 id="print">
+ print
+ &lt;a class="anchor" href="#print">#&lt;/a>
+&lt;/h1>
+&lt;p>Das &lt;code>print&lt;/code>-Kommando gibt Datensätze in einer menschenlesbaren Form aus.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Mithilfe des &lt;code>print&lt;/code>-Kommandos können Datensätze in einer
+menschenlesbaren Form auf dem Terminal ausgegeben oder in eine Datei
+geschrieben werden. Das Format ist an die Darstellung in der WinIBW
+angelehnt: Felder werden zeilenweise ausgegeben; zuerst wird das Feld
+(bspw. &lt;code>003@&lt;/code>), dann - sofern vorhanden - die Okkurrenz (bspw. &lt;code>/01&lt;/code>),
+und schließlich die Liste von Unterfeldern ausgegeben. Dem
+Unterfeld-Code wird ein Dollarzeichen vorangestellt. Die Unterfeldwerte
+werden genau so ausgegeben, wie sie im Datensatz vorhanden sind; es
+findet kein [&lt;em>Escaping&lt;/em>] von Sonderzeichen statt. Einzelne Datensätze
+werden durch eine Leerzeile voneinander getrennt.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/slice/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/slice/</guid><description>&lt;h1 id="slice">
+ slice
+ &lt;a class="anchor" href="#slice">#&lt;/a>
+&lt;/h1>
+&lt;p>Das &lt;code>slice&lt;/code>-Kommando schneidet einen zusammenhängenden Teilbereich aus
+der Eingabe aus.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Mittels des &lt;code>slice&lt;/code>-Kommandos kann ein zusammenhängender Teilbereich aus
+der Eingabe ausgeschnitten werden. Dabei wird der Teilbereich als
+halb-offenes Intervall angegeben, wobei die Positionen von 0 an gezählt
+werden. Beim Auftreten eines ungültigen Datensatzes wird die Position
+weitergezählt. Enthält bspw. die Eingabe 1.000 Zeilen, mit 990
+Datensätzen und 10 ungültigen Zeilen, dann sind die Positionen von &lt;code>0&lt;/code>
+bis 999 durchnummeriert.&lt;/p></description></item><item><title/><link>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/split/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/split/</guid><description>&lt;h1 id="split">
+ split
+ &lt;a class="anchor" href="#split">#&lt;/a>
+&lt;/h1>
+&lt;p>Das &lt;code>split&lt;/code>-Kommando teilt eine Menge an Datensätzen in mehrere Dateien
+mit einer maximalen Anzahl pro Datei auf.&lt;/p>
+&lt;h2 id="beschreibung">
+ Beschreibung
+ &lt;a class="anchor" href="#beschreibung">#&lt;/a>
+&lt;/h2>
+&lt;p>Mithilfe des &lt;code>split&lt;/code>-Kommandos können alle Datensätze aus der Eingabe in
+mehrere Dateien aufgeteilt werden, wobei jede Datei eine maximale Anzahl
+an Datensätzen nicht überschreitet. Ein Anwendungsfall für das Splitting
+könnte eine automatisierte &lt;a href="https://de.wikipedia.org/wiki/Stapelverarbeitung">Stapelverarbeitung&lt;/a> oder die parallele
+Verarbeitung der entstandenen Dateien sein.&lt;/p>
+&lt;p>Der folgende Aufruf des &lt;code>split&lt;/code>-Kommandos teilt die zwölf Datensätze der
+Eingabe (&lt;code>DUMP.dat.gz&lt;/code>) in drei Dateien mit maximal fünf Datensätzen pro
+Datei. Die ersten beiden Dateien (&lt;code>0.dat&lt;/code> und &lt;code>1.dat&lt;/code>) enthalten die
+maximale Anzahl an Datensätzen, die letzte Datei (&lt;code>2.dat&lt;/code>) die
+restlichen zwei Datensätze.&lt;/p></description></item></channel></rss>

@@ -1,0 +1,9 @@
+(function() {
+    var implementors = Object.fromEntries([["pica",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"pica/commands/convert/enum.Format.html\" title=\"enum pica::commands::convert::Format\">Format</a>"]]],["pica_utils",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"pica_utils/enum.NormalizationForm.html\" title=\"enum pica_utils::NormalizationForm\">NormalizationForm</a>"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[281,297]}

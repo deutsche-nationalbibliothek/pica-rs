@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BooleanOp","OccurrenceMatcher","Quantifier","RelationalOp","TagMatcher"],"mod":["field","subfield"],"struct":["MatcherOptions","ParseMatcherError","RecordMatcher"]};

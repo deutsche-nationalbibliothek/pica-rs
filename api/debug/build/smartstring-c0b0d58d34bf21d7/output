@@ -1,0 +1,3 @@
+cargo:rustc-cfg=has_allocator
+cargo:rustc-cfg=needs_allocator_feature
+cargo:rerun-if-changed=build.rs

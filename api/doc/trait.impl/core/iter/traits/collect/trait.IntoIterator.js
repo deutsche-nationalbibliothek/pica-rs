@@ -1,0 +1,9 @@
+(function() {
+    var implementors = Object.fromEntries([["pica_record",[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html\" title=\"trait core::iter::traits::collect::IntoIterator\">IntoIterator</a> for &amp;'a <a class=\"struct\" href=\"pica_record/primitives/struct.FieldRef.html\" title=\"struct pica_record::primitives::FieldRef\">FieldRef</a>&lt;'a&gt;"],["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html\" title=\"trait core::iter::traits::collect::IntoIterator\">IntoIterator</a> for &amp;'a <a class=\"struct\" href=\"pica_record/primitives/struct.SubfieldRef.html\" title=\"struct pica_record::primitives::SubfieldRef\">SubfieldRef</a>&lt;'a&gt;"]]],["pica_record_v1",[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html\" title=\"trait core::iter::traits::collect::IntoIterator\">IntoIterator</a> for &amp;'a <a class=\"struct\" href=\"pica_record_v1/struct.FieldRef.html\" title=\"struct pica_record_v1::FieldRef\">FieldRef</a>&lt;'a&gt;"],["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html\" title=\"trait core::iter::traits::collect::IntoIterator\">IntoIterator</a> for &amp;'a <a class=\"struct\" href=\"pica_record_v1/struct.SubfieldRef.html\" title=\"struct pica_record_v1::SubfieldRef\">SubfieldRef</a>&lt;'a&gt;"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[754,724]}

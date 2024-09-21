@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["parse_field_ref","parse_occurrence_digits","parse_subfield_code","parse_subfield_ref","parse_subfield_value_ref","parse_tag"]};

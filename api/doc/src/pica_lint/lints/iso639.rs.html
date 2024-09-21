@@ -1,0 +1,191 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/pica-lint/src/lints/iso639.rs`."><title>iso639.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9d5ec5f3536319c6.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="pica_lint" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0-nightly (da889684c 2024-09-20)" data-channel="nightly" data-search-js="search-0cfde64e8ad3a7fe.js" data-settings-js="settings-7e3bb6c46e92e77c.js" ><script src="../../../static.files/storage-29b1d5a9048d38fe.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-59a36e46ca746814.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-40f72c9259523cb3.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeSet;
+<span class="kw">use </span>std::sync::Mutex;
+
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>pica_path::{Path, PathExt};
+<span class="kw">use </span>pica_record_v1::ByteRecord;
+<span class="kw">use </span>serde::Deserialize;
+
+<span class="kw">use super</span>::{Lint, Status};
+
+<span class="attr">#[derive(Debug, Deserialize)]
+</span><span class="kw">pub struct </span>Iso639 {
+    path: Path,
+}
+
+<span class="macro">macro_rules!</span> codes {
+    ($(<span class="macro-nonterminal">$x</span>:expr),+ $(,)<span class="question-mark">?</span>) =&gt; (
+        <span class="macro">vec!</span>[$(<span class="macro-nonterminal">$x</span>.as_bytes().to_vec()),<span class="kw-2">*</span>]
+    );
+}
+
+<span class="kw">static </span>ISO639_CODES: Lazy&lt;Mutex&lt;BTreeSet&lt;Vec&lt;u8&gt;&gt;&gt;&gt; = Lazy::new(|| {
+    <span class="kw">let </span>codes = BTreeSet::from_iter(<span class="macro">codes!</span>[
+        <span class="string">"aar"</span>, <span class="string">"abk"</span>, <span class="string">"ace"</span>, <span class="string">"ach"</span>, <span class="string">"ada"</span>, <span class="string">"ady"</span>, <span class="string">"afa"</span>, <span class="string">"afh"</span>, <span class="string">"afr"</span>,
+        <span class="string">"ain"</span>, <span class="string">"aka"</span>, <span class="string">"akk"</span>, <span class="string">"alb"</span>, <span class="string">"ale"</span>, <span class="string">"alg"</span>, <span class="string">"alt"</span>, <span class="string">"amh"</span>, <span class="string">"ang"</span>,
+        <span class="string">"anp"</span>, <span class="string">"apa"</span>, <span class="string">"ara"</span>, <span class="string">"arc"</span>, <span class="string">"arg"</span>, <span class="string">"arm"</span>, <span class="string">"arn"</span>, <span class="string">"arp"</span>, <span class="string">"art"</span>,
+        <span class="string">"arw"</span>, <span class="string">"asm"</span>, <span class="string">"ast"</span>, <span class="string">"ath"</span>, <span class="string">"aus"</span>, <span class="string">"ava"</span>, <span class="string">"ave"</span>, <span class="string">"awa"</span>, <span class="string">"aym"</span>,
+        <span class="string">"aze"</span>, <span class="string">"bad"</span>, <span class="string">"bai"</span>, <span class="string">"bak"</span>, <span class="string">"bal"</span>, <span class="string">"bam"</span>, <span class="string">"ban"</span>, <span class="string">"baq"</span>, <span class="string">"bas"</span>,
+        <span class="string">"bat"</span>, <span class="string">"bej"</span>, <span class="string">"bel"</span>, <span class="string">"bem"</span>, <span class="string">"ben"</span>, <span class="string">"ber"</span>, <span class="string">"bho"</span>, <span class="string">"bih"</span>, <span class="string">"bik"</span>,
+        <span class="string">"bin"</span>, <span class="string">"bis"</span>, <span class="string">"bla"</span>, <span class="string">"bnt"</span>, <span class="string">"tib"</span>, <span class="string">"bos"</span>, <span class="string">"bra"</span>, <span class="string">"bre"</span>, <span class="string">"btk"</span>,
+        <span class="string">"bua"</span>, <span class="string">"bug"</span>, <span class="string">"bul"</span>, <span class="string">"bur"</span>, <span class="string">"byn"</span>, <span class="string">"cad"</span>, <span class="string">"cai"</span>, <span class="string">"car"</span>, <span class="string">"cat"</span>,
+        <span class="string">"cau"</span>, <span class="string">"ceb"</span>, <span class="string">"cel"</span>, <span class="string">"cze"</span>, <span class="string">"cha"</span>, <span class="string">"chb"</span>, <span class="string">"che"</span>, <span class="string">"chg"</span>, <span class="string">"chi"</span>,
+        <span class="string">"chk"</span>, <span class="string">"chm"</span>, <span class="string">"chn"</span>, <span class="string">"cho"</span>, <span class="string">"chp"</span>, <span class="string">"chr"</span>, <span class="string">"chu"</span>, <span class="string">"chv"</span>, <span class="string">"chy"</span>,
+        <span class="string">"cmc"</span>, <span class="string">"cnr"</span>, <span class="string">"cop"</span>, <span class="string">"cor"</span>, <span class="string">"cos"</span>, <span class="string">"cpe"</span>, <span class="string">"cpf"</span>, <span class="string">"cpp"</span>, <span class="string">"cre"</span>,
+        <span class="string">"crh"</span>, <span class="string">"crp"</span>, <span class="string">"csb"</span>, <span class="string">"cus"</span>, <span class="string">"wel"</span>, <span class="string">"cze"</span>, <span class="string">"dak"</span>, <span class="string">"dan"</span>, <span class="string">"dar"</span>,
+        <span class="string">"day"</span>, <span class="string">"del"</span>, <span class="string">"den"</span>, <span class="string">"ger"</span>, <span class="string">"dgr"</span>, <span class="string">"din"</span>, <span class="string">"div"</span>, <span class="string">"doi"</span>, <span class="string">"dra"</span>,
+        <span class="string">"dsb"</span>, <span class="string">"dua"</span>, <span class="string">"dum"</span>, <span class="string">"dut"</span>, <span class="string">"dyu"</span>, <span class="string">"dzo"</span>, <span class="string">"efi"</span>, <span class="string">"egy"</span>, <span class="string">"eka"</span>,
+        <span class="string">"gre"</span>, <span class="string">"elx"</span>, <span class="string">"eng"</span>, <span class="string">"enm"</span>, <span class="string">"epo"</span>, <span class="string">"est"</span>, <span class="string">"baq"</span>, <span class="string">"ewe"</span>, <span class="string">"ewo"</span>,
+        <span class="string">"fan"</span>, <span class="string">"fao"</span>, <span class="string">"per"</span>, <span class="string">"fat"</span>, <span class="string">"fij"</span>, <span class="string">"fil"</span>, <span class="string">"fin"</span>, <span class="string">"fiu"</span>, <span class="string">"fon"</span>,
+        <span class="string">"fre"</span>, <span class="string">"fre"</span>, <span class="string">"frm"</span>, <span class="string">"fro"</span>, <span class="string">"frr"</span>, <span class="string">"frs"</span>, <span class="string">"fry"</span>, <span class="string">"ful"</span>, <span class="string">"fur"</span>,
+        <span class="string">"gaa"</span>, <span class="string">"gay"</span>, <span class="string">"gba"</span>, <span class="string">"gem"</span>, <span class="string">"geo"</span>, <span class="string">"ger"</span>, <span class="string">"gez"</span>, <span class="string">"gil"</span>, <span class="string">"gla"</span>,
+        <span class="string">"gle"</span>, <span class="string">"glg"</span>, <span class="string">"glv"</span>, <span class="string">"gmh"</span>, <span class="string">"goh"</span>, <span class="string">"gon"</span>, <span class="string">"gor"</span>, <span class="string">"got"</span>, <span class="string">"grb"</span>,
+        <span class="string">"grc"</span>, <span class="string">"gre"</span>, <span class="string">"grn"</span>, <span class="string">"gsw"</span>, <span class="string">"guj"</span>, <span class="string">"gwi"</span>, <span class="string">"hai"</span>, <span class="string">"hat"</span>, <span class="string">"hau"</span>,
+        <span class="string">"haw"</span>, <span class="string">"heb"</span>, <span class="string">"her"</span>, <span class="string">"hil"</span>, <span class="string">"him"</span>, <span class="string">"hin"</span>, <span class="string">"hit"</span>, <span class="string">"hmn"</span>, <span class="string">"hmo"</span>,
+        <span class="string">"hrv"</span>, <span class="string">"hsb"</span>, <span class="string">"hun"</span>, <span class="string">"hup"</span>, <span class="string">"arm"</span>, <span class="string">"iba"</span>, <span class="string">"ibo"</span>, <span class="string">"ice"</span>, <span class="string">"ido"</span>,
+        <span class="string">"iii"</span>, <span class="string">"ijo"</span>, <span class="string">"iku"</span>, <span class="string">"ile"</span>, <span class="string">"ilo"</span>, <span class="string">"ina"</span>, <span class="string">"inc"</span>, <span class="string">"ind"</span>, <span class="string">"ine"</span>,
+        <span class="string">"inh"</span>, <span class="string">"ipk"</span>, <span class="string">"ira"</span>, <span class="string">"iro"</span>, <span class="string">"ice"</span>, <span class="string">"ita"</span>, <span class="string">"jav"</span>, <span class="string">"jbo"</span>, <span class="string">"jpn"</span>,
+        <span class="string">"jpr"</span>, <span class="string">"jrb"</span>, <span class="string">"kaa"</span>, <span class="string">"kab"</span>, <span class="string">"kac"</span>, <span class="string">"kal"</span>, <span class="string">"kam"</span>, <span class="string">"kan"</span>, <span class="string">"kar"</span>,
+        <span class="string">"kas"</span>, <span class="string">"geo"</span>, <span class="string">"kau"</span>, <span class="string">"kaw"</span>, <span class="string">"kaz"</span>, <span class="string">"kbd"</span>, <span class="string">"kha"</span>, <span class="string">"khi"</span>, <span class="string">"khm"</span>,
+        <span class="string">"kho"</span>, <span class="string">"kik"</span>, <span class="string">"kin"</span>, <span class="string">"kir"</span>, <span class="string">"kmb"</span>, <span class="string">"kok"</span>, <span class="string">"kom"</span>, <span class="string">"kon"</span>, <span class="string">"kor"</span>,
+        <span class="string">"kos"</span>, <span class="string">"kpe"</span>, <span class="string">"krc"</span>, <span class="string">"krl"</span>, <span class="string">"kro"</span>, <span class="string">"kru"</span>, <span class="string">"kua"</span>, <span class="string">"kum"</span>, <span class="string">"kur"</span>,
+        <span class="string">"kut"</span>, <span class="string">"lad"</span>, <span class="string">"lah"</span>, <span class="string">"lam"</span>, <span class="string">"lao"</span>, <span class="string">"lat"</span>, <span class="string">"lav"</span>, <span class="string">"lez"</span>, <span class="string">"lim"</span>,
+        <span class="string">"lin"</span>, <span class="string">"lit"</span>, <span class="string">"lol"</span>, <span class="string">"loz"</span>, <span class="string">"ltz"</span>, <span class="string">"lua"</span>, <span class="string">"lub"</span>, <span class="string">"lug"</span>, <span class="string">"lui"</span>,
+        <span class="string">"lun"</span>, <span class="string">"luo"</span>, <span class="string">"lus"</span>, <span class="string">"mac"</span>, <span class="string">"mad"</span>, <span class="string">"mag"</span>, <span class="string">"mah"</span>, <span class="string">"mai"</span>, <span class="string">"mak"</span>,
+        <span class="string">"mal"</span>, <span class="string">"man"</span>, <span class="string">"mao"</span>, <span class="string">"map"</span>, <span class="string">"mar"</span>, <span class="string">"mas"</span>, <span class="string">"may"</span>, <span class="string">"mdf"</span>, <span class="string">"mdr"</span>,
+        <span class="string">"men"</span>, <span class="string">"mga"</span>, <span class="string">"mic"</span>, <span class="string">"min"</span>, <span class="string">"mis"</span>, <span class="string">"mac"</span>, <span class="string">"mkh"</span>, <span class="string">"mlg"</span>, <span class="string">"mlt"</span>,
+        <span class="string">"mnc"</span>, <span class="string">"mni"</span>, <span class="string">"mno"</span>, <span class="string">"moh"</span>, <span class="string">"mon"</span>, <span class="string">"mos"</span>, <span class="string">"mao"</span>, <span class="string">"may"</span>, <span class="string">"mul"</span>,
+        <span class="string">"mun"</span>, <span class="string">"mus"</span>, <span class="string">"mwl"</span>, <span class="string">"mwr"</span>, <span class="string">"bur"</span>, <span class="string">"myn"</span>, <span class="string">"myv"</span>, <span class="string">"nah"</span>, <span class="string">"nai"</span>,
+        <span class="string">"nap"</span>, <span class="string">"nau"</span>, <span class="string">"nav"</span>, <span class="string">"nbl"</span>, <span class="string">"nde"</span>, <span class="string">"ndo"</span>, <span class="string">"nds"</span>, <span class="string">"nep"</span>, <span class="string">"new"</span>,
+        <span class="string">"nia"</span>, <span class="string">"nic"</span>, <span class="string">"niu"</span>, <span class="string">"dut"</span>, <span class="string">"nno"</span>, <span class="string">"nob"</span>, <span class="string">"nog"</span>, <span class="string">"non"</span>, <span class="string">"nor"</span>,
+        <span class="string">"nqo"</span>, <span class="string">"nso"</span>, <span class="string">"nub"</span>, <span class="string">"nwc"</span>, <span class="string">"nya"</span>, <span class="string">"nym"</span>, <span class="string">"nyn"</span>, <span class="string">"nyo"</span>, <span class="string">"nzi"</span>,
+        <span class="string">"oci"</span>, <span class="string">"oji"</span>, <span class="string">"ori"</span>, <span class="string">"orm"</span>, <span class="string">"osa"</span>, <span class="string">"oss"</span>, <span class="string">"ota"</span>, <span class="string">"oto"</span>, <span class="string">"paa"</span>,
+        <span class="string">"pag"</span>, <span class="string">"pal"</span>, <span class="string">"pam"</span>, <span class="string">"pan"</span>, <span class="string">"pap"</span>, <span class="string">"pau"</span>, <span class="string">"peo"</span>, <span class="string">"per"</span>, <span class="string">"phi"</span>,
+        <span class="string">"phn"</span>, <span class="string">"pli"</span>, <span class="string">"pol"</span>, <span class="string">"pon"</span>, <span class="string">"por"</span>, <span class="string">"pra"</span>, <span class="string">"pro"</span>, <span class="string">"pus"</span>, <span class="string">"que"</span>,
+        <span class="string">"raj"</span>, <span class="string">"rap"</span>, <span class="string">"rar"</span>, <span class="string">"roa"</span>, <span class="string">"roh"</span>, <span class="string">"rom"</span>, <span class="string">"rum"</span>, <span class="string">"rum"</span>, <span class="string">"run"</span>,
+        <span class="string">"rup"</span>, <span class="string">"rus"</span>, <span class="string">"sad"</span>, <span class="string">"sag"</span>, <span class="string">"sah"</span>, <span class="string">"sai"</span>, <span class="string">"sal"</span>, <span class="string">"sam"</span>, <span class="string">"san"</span>,
+        <span class="string">"sas"</span>, <span class="string">"sat"</span>, <span class="string">"scn"</span>, <span class="string">"sco"</span>, <span class="string">"sel"</span>, <span class="string">"sem"</span>, <span class="string">"sga"</span>, <span class="string">"sgn"</span>, <span class="string">"shn"</span>,
+        <span class="string">"sid"</span>, <span class="string">"sin"</span>, <span class="string">"sio"</span>, <span class="string">"sit"</span>, <span class="string">"sla"</span>, <span class="string">"slo"</span>, <span class="string">"slo"</span>, <span class="string">"slv"</span>, <span class="string">"sma"</span>,
+        <span class="string">"sme"</span>, <span class="string">"smi"</span>, <span class="string">"smj"</span>, <span class="string">"smn"</span>, <span class="string">"smo"</span>, <span class="string">"sms"</span>, <span class="string">"sna"</span>, <span class="string">"snd"</span>, <span class="string">"snk"</span>,
+        <span class="string">"sog"</span>, <span class="string">"som"</span>, <span class="string">"son"</span>, <span class="string">"sot"</span>, <span class="string">"spa"</span>, <span class="string">"alb"</span>, <span class="string">"srd"</span>, <span class="string">"srn"</span>, <span class="string">"srp"</span>,
+        <span class="string">"srr"</span>, <span class="string">"ssa"</span>, <span class="string">"ssw"</span>, <span class="string">"suk"</span>, <span class="string">"sun"</span>, <span class="string">"sus"</span>, <span class="string">"sux"</span>, <span class="string">"swa"</span>, <span class="string">"swe"</span>,
+        <span class="string">"syc"</span>, <span class="string">"syr"</span>, <span class="string">"tah"</span>, <span class="string">"tai"</span>, <span class="string">"tam"</span>, <span class="string">"tat"</span>, <span class="string">"tel"</span>, <span class="string">"tem"</span>, <span class="string">"ter"</span>,
+        <span class="string">"tet"</span>, <span class="string">"tgk"</span>, <span class="string">"tgl"</span>, <span class="string">"tha"</span>, <span class="string">"tib"</span>, <span class="string">"tig"</span>, <span class="string">"tir"</span>, <span class="string">"tiv"</span>, <span class="string">"tkl"</span>,
+        <span class="string">"tlh"</span>, <span class="string">"tli"</span>, <span class="string">"tmh"</span>, <span class="string">"tog"</span>, <span class="string">"ton"</span>, <span class="string">"tpi"</span>, <span class="string">"tsi"</span>, <span class="string">"tsn"</span>, <span class="string">"tso"</span>,
+        <span class="string">"tuk"</span>, <span class="string">"tum"</span>, <span class="string">"tup"</span>, <span class="string">"tur"</span>, <span class="string">"tut"</span>, <span class="string">"tvl"</span>, <span class="string">"twi"</span>, <span class="string">"tyv"</span>, <span class="string">"udm"</span>,
+        <span class="string">"uga"</span>, <span class="string">"uig"</span>, <span class="string">"ukr"</span>, <span class="string">"umb"</span>, <span class="string">"und"</span>, <span class="string">"urd"</span>, <span class="string">"uzb"</span>, <span class="string">"vai"</span>, <span class="string">"ven"</span>,
+        <span class="string">"vie"</span>, <span class="string">"vol"</span>, <span class="string">"vot"</span>, <span class="string">"wak"</span>, <span class="string">"wal"</span>, <span class="string">"war"</span>, <span class="string">"was"</span>, <span class="string">"wel"</span>, <span class="string">"wen"</span>,
+        <span class="string">"wln"</span>, <span class="string">"wol"</span>, <span class="string">"xal"</span>, <span class="string">"xho"</span>, <span class="string">"yao"</span>, <span class="string">"yap"</span>, <span class="string">"yid"</span>, <span class="string">"yor"</span>, <span class="string">"ypk"</span>,
+        <span class="string">"zap"</span>, <span class="string">"zbl"</span>, <span class="string">"zen"</span>, <span class="string">"zgh"</span>, <span class="string">"zha"</span>, <span class="string">"chi"</span>, <span class="string">"znd"</span>, <span class="string">"zul"</span>, <span class="string">"zun"</span>,
+        <span class="string">"zxx"</span>, <span class="string">"zza"</span>,
+    ]);
+
+    Mutex::new(codes)
+});
+
+<span class="kw">impl </span>Lint <span class="kw">for </span>Iso639 {
+    <span class="kw">fn </span>check(<span class="kw-2">&amp;mut </span><span class="self">self</span>, record: <span class="kw-2">&amp;</span>ByteRecord) -&gt; Status {
+        <span class="kw">let </span>codes = ISO639_CODES.lock().unwrap();
+        record
+            .path(<span class="kw-2">&amp;</span><span class="self">self</span>.path, <span class="kw-2">&amp;</span>Default::default())
+            .iter()
+            .any(|value| !codes.contains(<span class="kw-2">&amp;</span>value.to_vec()))
+            .into()
+    }
+}
+</code></pre></div></section></main></body></html>
