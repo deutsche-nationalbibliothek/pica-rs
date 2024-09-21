@@ -16,6 +16,7 @@ permissions:
 env:
   RUSTUP_MAX_RETRIES: 10
   CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: 1
 
 jobs:
   check:
@@ -189,27 +190,24 @@ jobs:
       - run: cargo update
       - run: cargo outdated --workspace --exit-code 1
 
-  miri-lib:
+  miri:
     if: ${{ github.ref == 'refs/heads/main' }}
-    name: miri (lib)
+    name: "miri ${{ matrix.item.name }}"
     runs-on: ubuntu-latest
-    needs: test
+    needs: check
+    strategy:
+      matrix:
+        item:
+          - { name: "pica-record (lib)", package: "pica-record", flags: "--lib" }
+          - { name: "pica-record (doc)", package: "pica-record", flags: "--doc" }
+    env:
+      MIRIFLAGS: -Zmiri-disable-isolation
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@miri
       - uses: Swatinem/rust-cache@v2
-      - run: cargo miri test -p pica-record --lib --verbose
-
-  miri-doc:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    name: miri (doc)
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@miri
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo miri test -p pica-record --doc --verbose
+      - run: |
+          cargo miri test -p ${{ matrix.item.package }} ${{ matrix.item.flags }}
 
   docs:
     runs-on: ubuntu-latest
@@ -224,8 +222,7 @@ jobs:
       - deny
       - fmt
       - fuzz
-      - miri-lib
-      - miri-doc
+      - miri
       - outdated
       - test
       - udeps
