@@ -17,6 +17,6 @@
 pub use crate::matcher::field::FieldMatcher;
 pub use crate::matcher::subfield::SubfieldMatcher;
 pub use crate::matcher::{
-    MatcherOptions, OccurrenceMatcher, TagMatcher,
+    MatcherOptions, OccurrenceMatcher, RecordMatcher, TagMatcher,
 };
 pub use crate::{ByteRecord, Error, StringRecord};

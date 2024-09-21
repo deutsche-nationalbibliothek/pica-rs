@@ -21,3 +21,10 @@ path = "fuzz_targets/fuzz_record_ref.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz-record-matcher"
+path = "fuzz_targets/fuzz_record_matcher.rs"
+test = false
+doc = false
+bench = false

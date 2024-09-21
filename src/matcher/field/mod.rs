@@ -19,7 +19,7 @@ use super::{
 use crate::prelude::SubfieldMatcher;
 use crate::primitives::FieldRef;
 
-mod parser;
+pub(crate) mod parser;
 
 /// A matcher that checks if a field exists.
 #[derive(Debug, Clone, PartialEq)]
@@ -561,8 +561,7 @@ impl BitAnd for FieldMatcher {
 }
 
 impl BitAndAssign for FieldMatcher {
-    /// The bitwise AND assignment operator `&=` of two
-    /// [FieldMatcher].
+    /// The bitwise AND assignment operator `&=` of two [FieldMatcher].
     ///
     /// # Example
     ///

@@ -142,7 +142,10 @@ pub trait RecordsIterator {
 }
 
 impl<R: Read> RecordsIterator for Reader<R> {
-    type Item<'a> = Result<ByteRecord<'a>, ReadPicaError> where Self: 'a;
+    type Item<'a>
+        = Result<ByteRecord<'a>, ReadPicaError>
+    where
+        Self: 'a;
 
     fn next(&mut self) -> Option<Self::Item<'_>> {
         if self.limit > 0 && self.count >= self.limit {
