@@ -191,8 +191,8 @@ jobs:
       - run: cargo outdated --workspace --exit-code 1
 
   miri:
-    # if: ${{ github.ref == 'refs/heads/main' }}
-    name: "miri: ${{ matrix.item.name }}"
+    if: ${{ github.ref == 'refs/heads/main' }}
+    name: "miri ${{ matrix.item.name }}"
     runs-on: ubuntu-latest
     needs: check
     strategy:
