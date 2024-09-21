@@ -207,7 +207,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@miri
       - uses: Swatinem/rust-cache@v2
       - run: |
-          cargo miri test -p ${{ item.package }} ${{ item.flags }}
+          cargo miri test -p ${{ matrix.item.package }} ${{ matrix.item.flags }}
 
   docs:
     runs-on: ubuntu-latest
