@@ -321,7 +321,7 @@ fn parse_field_composite_matcher(
 }
 
 /// Parse a [FieldMatcher] expression.
-pub(super) fn parse_field_matcher(
+pub(crate) fn parse_field_matcher(
     i: &mut &[u8],
 ) -> PResult<FieldMatcher> {
     ws(alt((
