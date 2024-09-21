@@ -191,18 +191,23 @@ jobs:
       - run: cargo outdated --workspace --exit-code 1
 
   miri:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    name: miri
+    # if: ${{ github.ref == 'refs/heads/main' }}
+    name: "miri: ${{ matrix.item.name }}"
     runs-on: ubuntu-latest
     needs: check
+    strategy:
+      matrix:
+        item:
+          - { name: "pica-record (lib)", package: "pica-record", flags: "--lib" }
+          - { name: "pica-record (doc)", package: "pica-record", flags: "--doc" }
     env:
       MIRIFLAGS: -Zmiri-disable-isolation
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@miri
       - uses: Swatinem/rust-cache@v2
-      - run: cargo miri test -p pica-record --lib
-      - run: cargo miri test -p pica-record --doc
+      - run: |
+          cargo miri test -p ${{ item.package }} ${{ item.flags }}
 
   docs:
     runs-on: ubuntu-latest
