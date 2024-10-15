@@ -10,10 +10,10 @@ pub use tag::TagMatcher;
 
 mod error;
 pub mod field;
-mod occurrence;
+pub(crate) mod occurrence;
 mod operator;
 mod options;
 mod quantifier;
 mod record;
 pub mod subfield;
-mod tag;
+pub(crate) mod tag;
