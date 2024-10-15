@@ -1,4 +1,5 @@
 use crate::matcher::ParseMatcherError;
+use crate::path::ParsePathError;
 use crate::primitives::ParsePicaError;
 
 /// An error that can occur in this crate.
@@ -8,4 +9,6 @@ pub enum Error {
     ParsePica(ParsePicaError),
     #[error(transparent)]
     ParseMatcher(ParseMatcherError),
+    #[error(transparent)]
+    ParsePath(ParsePathError),
 }

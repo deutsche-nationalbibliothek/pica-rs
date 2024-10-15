@@ -67,7 +67,6 @@ fn parse_subfield_code_all(
 }
 
 /// Parse a list of subfield codes
-#[allow(dead_code)]
 pub(crate) fn parse_subfield_codes(
     i: &mut &[u8],
 ) -> PResult<SmallVec<[SubfieldCode; 4]>> {
