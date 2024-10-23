@@ -86,7 +86,7 @@ impl<'a> SubfieldValueRef<'a> {
     }
 }
 
-impl<'a> Deref for SubfieldValueRef<'a> {
+impl Deref for SubfieldValueRef<'_> {
     type Target = BStr;
 
     fn deref(&self) -> &Self::Target {

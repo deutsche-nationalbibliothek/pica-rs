@@ -314,7 +314,7 @@ pub trait PathExt {
     }
 }
 
-impl<'a> PathExt for RecordRef<'a> {
+impl PathExt for RecordRef<'_> {
     /// Returns all subfield values which satisfies the path matcher.
     ///
     /// # Example
