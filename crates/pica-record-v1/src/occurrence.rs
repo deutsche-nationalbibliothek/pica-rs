@@ -125,14 +125,14 @@ impl<'a> OccurrenceRef<'a> {
     }
 }
 
-impl<'a, T: AsRef<[u8]>> PartialEq<T> for OccurrenceRef<'a> {
+impl<T: AsRef<[u8]>> PartialEq<T> for OccurrenceRef<'_> {
     #[inline]
     fn eq(&self, other: &T) -> bool {
         self.0 == other.as_ref()
     }
 }
 
-impl<'a> Display for OccurrenceRef<'a> {
+impl Display for OccurrenceRef<'_> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "/{}", self.0)
