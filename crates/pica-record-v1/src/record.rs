@@ -407,7 +407,7 @@ impl<'a> Deref for ByteRecord<'a> {
     }
 }
 
-impl<'a> DerefMut for ByteRecord<'a> {
+impl DerefMut for ByteRecord<'_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.record
     }
@@ -431,7 +431,7 @@ impl<'a> From<RecordRef<'a>> for ByteRecord<'a> {
     }
 }
 
-impl<'a> Hash for ByteRecord<'a> {
+impl Hash for ByteRecord<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self.raw_data {
             Some(data) => data.hash(state),
@@ -497,7 +497,7 @@ impl<'a> Deref for StringRecord<'a> {
     }
 }
 
-impl<'a> DerefMut for StringRecord<'a> {
+impl DerefMut for StringRecord<'_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }

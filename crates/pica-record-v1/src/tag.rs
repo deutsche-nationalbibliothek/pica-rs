@@ -84,14 +84,14 @@ impl<'a> TagRef<'a> {
     }
 }
 
-impl<'a, T: AsRef<[u8]>> PartialEq<T> for TagRef<'a> {
+impl<T: AsRef<[u8]>> PartialEq<T> for TagRef<'_> {
     #[inline]
     fn eq(&self, other: &T) -> bool {
         self.0 == other.as_ref()
     }
 }
 
-impl<'a> PartialEq<str> for TagRef<'a> {
+impl PartialEq<str> for TagRef<'_> {
     /// Compare a `TagRef` with a string slice.
     ///
     /// ```rust
@@ -110,7 +110,7 @@ impl<'a> PartialEq<str> for TagRef<'a> {
     }
 }
 
-impl<'a> Deref for TagRef<'a> {
+impl Deref for TagRef<'_> {
     type Target = BStr;
 
     #[inline]
@@ -119,7 +119,7 @@ impl<'a> Deref for TagRef<'a> {
     }
 }
 
-impl<'a> Index<usize> for TagRef<'a> {
+impl Index<usize> for TagRef<'_> {
     type Output = u8;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -128,7 +128,7 @@ impl<'a> Index<usize> for TagRef<'a> {
     }
 }
 
-impl<'a> Display for TagRef<'a> {
+impl Display for TagRef<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
