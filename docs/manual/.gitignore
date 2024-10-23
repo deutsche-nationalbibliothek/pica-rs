@@ -1,0 +1,8 @@
+*.aux
+*.hd
+*.log
+*.out
+*.pdf
+*.toc
+
+auto/
