@@ -9,7 +9,6 @@ use quick_xml::events::{
     BytesDecl, BytesEnd, BytesStart, BytesText, Event,
 };
 use quick_xml::writer::Writer;
-use quick_xml::Error;
 
 pub(crate) struct XmlWriter {
     writer: Writer<BufWriter<Box<dyn Write>>>,
@@ -83,12 +82,12 @@ impl ByteRecordWrite for XmlWriter {
                                     .unwrap();
                             }
 
-                            Ok::<(), Error>(())
+                            Ok::<(), std::io::Error>(())
                         })
                         .unwrap();
                 }
 
-                Ok::<(), Error>(())
+                Ok::<(), std::io::Error>(())
             })
             .unwrap();
 
