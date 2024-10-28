@@ -6,3 +6,5 @@
 *.toc
 
 auto/
+
+!images/logo.pdf
