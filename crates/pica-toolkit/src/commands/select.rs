@@ -44,8 +44,6 @@ pub(crate) struct Select {
 
     /// Whether to merge all values of a column into a single value or
     /// not. The separator can be specified by the `--separator`
-    /// Note: This option cannot be used with `--merge`.
-    /// option.
     ///
     /// Note: This option cannot be used with `--squash`.
     #[arg(long, conflicts_with = "squash")]
