@@ -7,6 +7,13 @@
 \graphicspath{{images/}}
 
 \usepackage{blindtext}
+\usepackage{xcolor}
+
+\definecolor{codebg}{HTML}{fbf7f0}
+
+\usepackage{minted}
+\setminted{fontsize=\footnotesize}
+\setminted{bgcolor=codebg}
 
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
@@ -17,10 +24,11 @@
 \usepackage[linktocpage=false]{hyperref}
 \hypersetup{
   colorlinks=true,
+  pdfauthor={Deutsche Nationalbibliothek},
   pdftitle={pica-rs},
-  pdfauthor={Nico Wagner},
 }
 
+\usepackage{awesomebox}
 \usepackage{acronym}
 \usepackage{syntax}
 
@@ -29,52 +37,27 @@
 \setlength{\parskip}{0.2cm}
 \linespread{1.2}
 
+\newcommand{\pica}{\lit*{pica}}
+\newcommand{\cmd}[1]{\lit*{#1}}
+
 \begin{document}
 
-\title{\includegraphics[width=0.6\textwidth]{logo}\\
-  \textbf{\textsf{\Huge pica-rs}}}
-\author{\Large Nico Wagner\footnote{
-    \url{https://orcid.org/0000-0002-2033-1806}}\\
-  Deutsche Nationalbibliothek\\
-  \href{mailto:n.wagner@dnb.de}{\texttt{n.wagner@dnb.de}}}
-\date{\vfill \today}
+\title{\includegraphics[width=0.6\textwidth]{logo}}
+\author{Deutsche Nationalbibliothek}
+\date{\today}
 
 \maketitle
-
 \tableofcontents
 \clearpage
 
 \chapter*{Abkürzungsverzeichnis}
 \input{acronyms}
 
-\chapter{Einführung}
-\label{ch:einf}
 
-Das Projekt \lit{pica-rs} ermöglicht eine effiziente Verarbeitung von
-bibliografischen Metadaten, die in PICA+, dem internen Format des
-\href{https://www.oclc.org/}{OCLC}-Katalogsystems, kodiert sind. Das
-Kommandozeilenprogramm \lit{pica} stellt unterschiedliche Kommandos
-zur Verfügung, um Daten auszuwählen, statistisch aufzubereiten oder
-für die Weiterverarbeitung in \emph{Data Science}-Frameworks wie
-\href{https://pola.rs/}{Polars} (Python) oder der Programmiersprache
-\href{https://www.r-project.org/}{R} nutzbar zu machen. Die Anwendung
-ist in der Programmiersprache \textit{Rust} geschrieben und lässt sich
-unter den Betriebsystemen Linux, macOS und Windows verwenden. Die
-Kommandos lassen sich über die Standard-Datenströme miteinander
-verketten, wodurch sich leicht Metadaten-Workflows erstellen und
-automatisieren lassen.
+\input{ch01}
+\input{ch02}
 
-Die Entwicklung von \lit{pica-rs} wurde vom Referat \ac{AEN} der
-\ac{DNB} initiert und wird dort für die Erstellung von Datenanalysen
-sowie für die Automatisierung von Workflows (Datenmanagement) im
-Rahmen der automatischen Inhaltserschließung genutzt. Weiterhin wird
-es zur Unterstützung der Forschungsarbeiten im
-\href{https://www.dnb.de/ki-projekt}{KI-Projekt} sowie für diverse
-andere Datenanalysen innerhalb der \ac{DNB} eingesetzt.
 
-% \chapter{Erste Schritte}
-% \section{Installation}
-% \blindtext
 
 
 % \appendix

@@ -1,0 +1,181 @@
+\chapter{Installation und Einrichtung}
+
+Das Kommandozeilen-Tool \pica{} lässt sich unter den Betriebssystemen
+Linux, macOS und Windows nutzen. Folgend wird die Installation von
+sowie Einrichtung und Konfiguration des Tools beschrieben.
+
+\section{Installation}
+
+\subsection{Installation unter Linux}
+
+Abhängig von der genutzten Linux-Distribution, gibt es
+unterschiedliche Möglichkeiten Möglichkeiten der
+Installation. Vorgefertigte Releases stehen auf der Plattform GitHub
+zum Download
+bereit\footnote{\url{https://github.com/deutsche-nationalbibliothek/pica-rs/releases}}.
+
+\subsubsection{Debian und Ubuntu}
+
+Unter \href{https://www.debian.org}{Debian GNU/Linux} und
+\href{https://ubuntu.com}{Ubuntu Linux} können fertige
+\texttt{DEB}-Pakete genutzt werden.  Diese lassen sich mit dem
+\lit*{dpkg}-Programm wie folgt installiert werden:
+
+\begin{minted}{shell-session}
+$ dpkg -i pica_0.25.0-glibc2.35-1_amd64.deb
+\end{minted}
+
+\subsubsection{Red Hat, SUSE und CentOS}
+
+Für die Distributionen \href{https://www.redhat.com}{Red Hat Linux},
+\href{https://www.suse.com}{SUSE Linux} und
+\href{https://www.centos.org}{CentOS Linux} stehen fertige
+\texttt{RPM}-Pakete zum Download bereit. Installieren lassen sich
+diese mit dem \texttt{rpm}-Programm installieren:
+
+\begin{minted}{shell-session}
+$ rpm -i pica-0.25.0-glibc2.35-1.x86_64.rpm
+\end{minted}
+
+\subsubsection{Binary Releases}
+
+Soll \pica{} nicht über den Paketmanager installiert werden, steht für
+die Zielarchitektur \texttt{x86_64-unknown-linux-gnu} mit den
+\texttt{glibc}-Versionen 2.28, 2.31 und 2.35 fertige \emph{Binary
+  Releases} zur Verfügung\footnote{Die \texttt{glibc}-Version des
+  Systems lässt sich mit dem Aufruf \texttt{ldd ----version}
+  ermitteln.}.
+
+Das \texttt{tar}-Archiv enthält neben dem Tool \pica{} auch weitere
+Dateien wie die Shell-Skripte zur Befehlszeilenergänzung:
+
+\begin{minted}{shell-session}
+$ tar -tf pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35.tar.gz
+pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/
+pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/pica
+pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/README.md
+pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/pica.zsh
+pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/LICENSE
+pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/pica.fish
+pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/pica.bash
+\end{minted}
+
+Eine systemweite Installation von \pica{} in das Verzeichnis
+\texttt{/usr/local/bin} kann mit dem \lit*{install} erfolgten. Hierfür
+sind ggf. \lit*{root}-Rechte nötig:
+
+\begin{minted}{shell-session}
+$ tar xfz pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35.tar.gz
+$ sudo install -m755 pica-0.25.0-x86_64-unknown-linux-gnu-glibc2.35/pica \
+    /usr/local/bin/pica
+\end{minted}
+
+\subsection{Installation unter macOS}
+
+Unter \textit{macOS} wird nur die Zielarchitektur
+\texttt{x86_64-apple-darwin} (macOS 10.7+, Lion+) unterstützt. Diese
+lässt sich analog wie die Linux-Release installieren:
+
+\begin{minted}{shell-session}
+$ tar xfz pica-0.25.0-x86_64-apple-darwin.tar.gz
+$ install -m755  pica-0.25.0-x86_64-apple-darwin/pica /usr/local/bin/pica
+\end{minted}
+
+
+\subsection{Installation unter Windows}
+
+Unter Windows (\texttt{x86_64-pc-windows-gnu} oder
+\texttt{x86_64-pc-windows-msvc}) kann das Programm direkt dem
+\texttt{zip}-Archiv entnommen werden. Nach einem Wechsel in das
+Verzeichnis, in dem sich die \lit*{pica.exe} befindet, kann das
+Programm direkt genutzt werden. Soll \pica{} aus jedem beliebigen
+Verzeichnis aus aufrufbar sein, dann muss der Installationspfad in der
+\lit*{PATH}-Umgebungsvariable mit aufgelistet sein.
+
+
+\subsection{Aus dem Quellcode installieren}
+
+Das Projekt lässt sich auch direkt aus den Quellen
+kompilieren. Hierfür wird eine aktuelle Rust-Version ($>= 1.74.1$) mit
+dem Paketmanager \lit*{cargo} benötigt.
+
+Der aktuelle Entwicklungsstand lässt sich wie folgt installieren:
+
+\begin{minted}{shell-session}
+$ git clone https://github.com/deutsche-nationalbibliothek/pica-rs.git
+$ cd pica-rs
+$ cargo build --release
+\end{minted}
+
+Das fertige Release-Binary \pica{} liegt im Verzeichnis
+\Verb{target/release/} und kann bspw. in das Verzeichnis
+\Verb{/usr/local/bin} installiert werden:
+
+\begin{minted}{shell-session}
+$ install -m755 target/release/pica /usr/local/bin/pica
+\end{minted}
+
+Wenn die Quelle nicht benötigt werden, kann das Projekt auch direkt
+über den Paketmanager \cmd{cargo} installiert werden:
+
+\begin{minted}{shell-session}
+$ # Installation der aktuellen Entwicklungsversion
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
+     --branch main pica-toolkit
+
+$ # Installation der Version 0.25.0
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
+      --tag v0.25.0 pica-toolkit
+\end{minted}
+
+Das fertige Programm befindet sich dann unter
+\Verb{~/.cargo/bin/pica}.
+
+
+\section{Einrichtung}
+
+\subsection{Shell}
+
+Nach der Installation kann \pica{} direkt in einem
+Kommandozeileninterpreter (\emph{Shell}) verwendet werden. Die
+Interpretation der Kommandoaufrufe und -optionen ist abhängig von der
+verwendeten Shell. Alle Beispiele in diesem Manual werden in der
+\href{https://de.wikipedia.org/wiki/Bash_(Shell)}{bash}-Shell unter
+Linux ausgeführt. Wie die Argumente und Kommandoaufrufe von einer
+anderen Shell und dem Betriebssystemen interpretiert werden, kann
+variieren und ist ggf. bei einer Fehlersuche mit einzubeziehen.
+
+\warningbox{Insbesondere unter Windows muss in der
+  \href{https://de.wikipedia.org/wiki/PowerShell}{PowerShell}
+  besondere Vorsicht walten. Hier wird die Zeichenkodierung der Daten
+  bei der Vekettung von Kommandos verändert. Aus diesem Grund wird von
+  der Verwendung der PowerShell abgeraten und stattdessen die
+  Eingabeaufforderung \lit*{cmd.exe} empfohlen. Siehe auch den GitHub
+  \href{https://github.com/deutsche-nationalbibliothek/pica-rs/issues/371}{Issue
+    \#371}.}
+
+Eine wichtige Eigenschaft der verwendeten Shell, die Benutzende immer
+im Hinterkopf haben sollten, ist die Interpretionen von
+Zeichenketten. Hier werden ggf. besondere Anweisungen durch die Shell
+ausgeführt und durch andere Ausdrücke ersetzt. Dieses Verhalten führt
+zu fehlerhaften \pica{}-Anweisungen.
+
+\tipbox{Um in der \lit*{bash}-Shell die Fehler zu minimieren, sollten
+  Literale (bspw. Filter- und Selektionsausdrücke) immer in einfachen
+  Anführungszeichen ausgezeichnet werden. Ebenfalls sinnvoll kann die
+  Deaktivierung der History-Substitution mittels \Verb{set +H}
+  sein. Dies verhindert das Ersetzen von \lit{!0}-Fragmenten durch den
+  letzten Befehl, der von der Shell ausgeführt wurde.}
+
+\subsubsection*{Befehlszeilenergänzung}
+
+TODO
+
+\subsection{Konfiguration}
+
+TODO
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "manual"
+%%% End:
