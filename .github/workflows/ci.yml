@@ -209,43 +209,10 @@ jobs:
       - run: |
           cargo miri test -p ${{ matrix.item.package }} ${{ matrix.item.flags }}
 
-  # docs:
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: write
-  #   needs:
-  #     - audit
-  #     - careful
-  #     - check
-  #     - clippy
-  #     - cross
-  #     - deny
-  #     - fmt
-  #     - fuzz
-  #     - miri
-  #     - outdated
-  #     - test
-  #     - udeps
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: dtolnay/rust-toolchain@nightly
-  #     - uses: Swatinem/rust-cache@v2
-  #     - uses: peaceiris/actions-hugo@v2
-  #       with:
-  #         hugo-version: 'latest'
-  #         extended: true
-  #     - run: make docs
-  #     - name: deploy
-  #       uses: peaceiris/actions-gh-pages@v3
-  #       if: ${{ github.ref == 'refs/heads/main' }}
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
-  #         publish_dir: target/docs
-  #         keep_files: false
-  #         force_orphan: true
-
-  ci:
+  docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs:
       - audit
       - careful
@@ -260,4 +227,22 @@ jobs:
       - test
       - udeps
     steps:
+      - uses: actions/checkout@v4
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+            working_directory: docs/manual/
+            root_file: manual.tex
+      - name: prepare
+        run: |
+          mkdir -p out
+          cp docs/manual/manual.pdf out/pica-rs.pdf
+      - name: deploy
+        uses: peaceiris/actions-gh-pages@v4
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: out
+          keep_files: false
+          force_orphan: true
       - run: exit 0

@@ -34,7 +34,7 @@ anzulegen. Diese werden wir dann intern beraten und möglichst zeitnah
 ein Feedback geben. Ferner kann das Forum [metadaten.community] zur
 Diskussion genutzt werden.
 
-Die [Installation] des Toolkits und alle Kommandos sind in der
+Die Installation des Toolkits und alle Kommandos sind in der
 [Dokumentation] beschrieben.
 
 ### Kommandos
@@ -67,8 +67,7 @@ Die [Installation] des Toolkits und alle Kommandos sind in der
 
 [AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
 [DNB]: https://www.dnb.de/
-[Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/
-[Installation]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/installation/
+[Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/pica-rs.pdf
 [Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
 [KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
 [metadaten.community]: https://metadaten.community/c/software-und-tools/pica-rs/31
