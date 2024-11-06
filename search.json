@@ -1,0 +1,12 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "pica-rs",
+    "section": "",
+    "text": "Start\n\nDas Projekt pica-rs ermöglicht eine effiziente Verarbeitung von bibliografischen Metadaten, die in PICA+, dem internen Format des OCLC-Katalogsystems, kodiert sind. Das Programm pica stellt unterschiedliche Kommandos zur Verfügung, um Daten auszuwählen, statistisch aufzubereiten oder für die Weiterverarbeitung in Data Science-Frameworks wie Polars (Python) oder der Sprache R nutzbar zu machen. Die Anwendung ist in der Programmiersprache Rust geschrieben und lässt sich unter den Betriebsystemen Linux, macOS und Windows verwenden. Die Kommandos lassen sich über die Standard-Datenströme (Kombination von verschiedenen Programmen mittels Unix-Pipelines) miteinander verketten, wodurch sich leicht Metadaten-Workflows erstellen und automatisieren lassen.\nDie Entwicklung von pica-rs wurde vom Referat Automatische Erschließungsverfahren; Netzpublikationen (AEN) der Deutsche Nationalbibliothek (DNB) initiert und wird dort für die Erstellung von Datenanalysen sowie für die Automatisierung von Workflows (Datenmanagement) im Rahmen der automatischen Inhaltserschließung genutzt. Weiterhin wird es zur Unterstützung der Forschungsarbeiten im KI-Projekt sowie für diverse andere Datenanalysen innerhalb der DNB eingesetzt.",
+    "crumbs": [
+      "Start"
+    ]
+  }
+]
