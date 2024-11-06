@@ -396,4 +396,60 @@ mod tests {
     fn test_path_new_panic() {
         let _ = Path::new("003@.!").unwrap();
     }
+
+    #[test]
+    fn test_byte_record_path() -> TestResult {
+        let data = ada_lovelace();
+        let record = ByteRecord::from_bytes(&data)?;
+        let options = MatcherOptions::default();
+        let path = Path::new("008A.a")?;
+
+        let values: Vec<&BStr> = record.path(&path, &options).collect();
+        assert_eq!(values, vec!["s", "z", "f"]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_string_record_path() -> TestResult {
+        let data = ada_lovelace();
+        let record = ByteRecord::from_bytes(&data)?;
+        let record = StringRecord::try_from(record)?;
+        let options = MatcherOptions::default();
+
+        let path = Path::new("008A.a")?;
+
+        let values: Vec<&str> = record.path(&path, &options).collect();
+        assert_eq!(values, vec!["s", "z", "f"]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_path_with_predicate() -> TestResult {
+        let data = ada_lovelace();
+        let record = ByteRecord::from_bytes(&data)?;
+        let options = MatcherOptions::default();
+        let path = Path::new("007N{ 0 | a == 'swd'}")?;
+
+        let values: Vec<&BStr> = record.path(&path, &options).collect();
+        assert_eq!(values, vec!["4370325-2"]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_path_first() -> TestResult {
+        let data = ada_lovelace();
+        let record = ByteRecord::from_bytes(&data)?;
+        let options = MatcherOptions::default();
+        let path = Path::new("007[KN]{0 | a in ['pnd','swd']}")?;
+        assert_eq!(record.first(&path, &options).unwrap(), "172642531");
+        Ok(())
+    }
+
+    #[test]
+    fn test_path_ppn() -> TestResult {
+        let data = ada_lovelace();
+        let record = ByteRecord::from_bytes(&data)?;
+        assert_eq!(record.ppn(), "119232022");
+        Ok(())
+    }
 }
