@@ -64,8 +64,6 @@ jobs:
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-      - name: "Run prepare tests"
-        run: ci/prepare-tests.sh
       - run: make release
       - name: "Build release archive"
         id: build-archive
@@ -111,8 +109,6 @@ jobs:
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-      - name: "Run prepare tests"
-        run: ci/prepare-tests.sh
       - run: make release
       - name: "Build release archive"
         id: build-archive
@@ -154,8 +150,6 @@ jobs:
         with:
           toolchain: stable
           target: ${{ matrix.target.triple }}
-      - name: "Run prepare tests"
-        run: ci/prepare-tests.sh
       - run: make release
       - name: "Build release archive"
         shell: bash

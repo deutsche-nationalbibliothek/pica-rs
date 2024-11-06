@@ -47,7 +47,6 @@ jobs:
           toolchain: ${{ matrix.target.toolchain }}
           targets: ${{ matrix.target.triple }}
       - uses: Swatinem/rust-cache@v2
-      - run: ci/prepare-tests.sh
       - run: make test
 
   cross:
@@ -140,7 +139,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - run: cargo install cargo-careful
-      - run: ci/prepare-tests.sh
       - run: make careful
 
   udeps:
