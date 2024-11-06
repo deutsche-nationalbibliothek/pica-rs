@@ -217,19 +217,7 @@ jobs:
     permissions:
       contents: write
     needs:
-      - audit
-      - careful
-      - check
-      - clippy
-      - cross
-      - msrv
-      - deny
-      - fmt
-      - fuzz
-      - miri
-      - outdated
       - test
-      - udeps
     steps:
       - uses: actions/checkout@v4
       - uses: quarto-dev/quarto-actions/setup@v2
@@ -243,4 +231,25 @@ jobs:
           path: docs/book
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      - audit
+      - careful
+      - check
+      - clippy
+      - cross
+      - deny
+      - docs
+      - fmt
+      - fuzz
+      - miri
+      - msrv
+      - outdated
+      - test
+      - udeps
+    steps:
       - run: exit 0
