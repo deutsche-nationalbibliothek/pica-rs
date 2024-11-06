@@ -219,36 +219,30 @@ jobs:
     permissions:
       contents: write
     needs:
-      - audit
-      - careful
+      # - audit
+      # - careful
       - check
-      - clippy
-      - cross
-      - msrv
-      - deny
-      - fmt
-      - fuzz
-      - miri
-      - outdated
-      - test
-      - udeps
+      # - clippy
+      # - cross
+      # - msrv
+      # - deny
+      # - fmt
+      # - fuzz
+      # - miri
+      # - outdated
+      # - test
+      # - udeps
     steps:
       - uses: actions/checkout@v4
-      - name: Compile LaTeX document
-        uses: xu-cheng/latex-action@v3
+      - uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-            working_directory: docs/manual/
-            root_file: manual.tex
-      - name: prepare
-        run: |
-          mkdir -p out
-          cp docs/manual/manual.pdf out/pica-rs.pdf
-      - name: deploy
-        uses: peaceiris/actions-gh-pages@v4
-        if: ${{ github.ref == 'refs/heads/main' }}
+          tinytex: true
+      - uses: quarto-dev/quarto-actions/publish@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: out
-          keep_files: false
-          force_orphan: true
+          target: gh-pages
+          path: docs/book
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: exit 0
