@@ -221,7 +221,8 @@ impl Hash for ByteRecord<'_> {
 #[derive(Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct StringRecord<'a>(
-    #[cfg_attr(feature = "serde", serde(borrow))] ByteRecord<'a>,
+    #[cfg_attr(feature = "serde", serde(borrow))]
+    pub(crate)  ByteRecord<'a>,
 );
 
 impl<'a> TryFrom<ByteRecord<'a>> for StringRecord<'a> {

@@ -214,7 +214,7 @@ jobs:
       - run: |
           cargo miri test -p ${{ matrix.item.package }} ${{ matrix.item.flags }}
 
-  docs:
+  ci:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -233,22 +233,4 @@ jobs:
       - test
       - udeps
     steps:
-      - uses: actions/checkout@v4
-      - name: Compile LaTeX document
-        uses: xu-cheng/latex-action@v3
-        with:
-            working_directory: docs/manual/
-            root_file: manual.tex
-      - name: prepare
-        run: |
-          mkdir -p out
-          cp docs/manual/manual.pdf out/pica-rs.pdf
-      - name: deploy
-        uses: peaceiris/actions-gh-pages@v4
-        if: ${{ github.ref == 'refs/heads/main' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: out
-          keep_files: false
-          force_orphan: true
       - run: exit 0
