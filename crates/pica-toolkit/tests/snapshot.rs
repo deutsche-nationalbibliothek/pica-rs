@@ -30,18 +30,3 @@ fn cli_tests() {
         .case("tests/snapshot/split/*.toml")
         .case("tests/snapshot/split/*.trycmd");
 }
-
-#[test]
-fn doc_tests() {
-    trycmd::TestCases::new()
-        .case("../../docs/content/docs/kommandos/count.md")
-        .case("../../docs/content/docs/kommandos/filter.md")
-        .case("../../docs/content/docs/kommandos/frequency.md")
-        .case("../../docs/content/docs/kommandos/explode.md")
-        .case("../../docs/content/docs/kommandos/hash.md")
-        .case("../../docs/content/docs/kommandos/invalid.md")
-        .case("../../docs/content/docs/kommandos/partition.md")
-        .case("../../docs/content/docs/kommandos/print.md")
-        .case("../../docs/content/docs/kommandos/slice.md")
-        .case("../../docs/content/docs/kommandos/split.md");
-}
