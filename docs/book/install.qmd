@@ -129,9 +129,11 @@ aktivieren, um erweiterte Funktionen zu erhalten. Die folgenden
 Funktionen können mit der `cargo`-Option `--features` aktiviert
 werden:
 
-- `unstable` --- Funktionalitäten, die für eine der nächsten Versionen
-  vorgesehen sind
-- und `compat` --- Kompatibilität mit der Abfragesprache [PICA Path].
+- `unstable`, um die neuesten Funktionalitäten, die noch in der
+  Entwicklung sind und für eine der nächsten Versionen vorgesehen
+  sind, zu aktivieren
+- und `compat`, um eine höhere Kompatibilität mit der Abfragesprache
+  [PICA Path] zu erhalten.
 
 
 [Releases]: https://github.com/deutsche-nationalbibliothek/pica-rs/releases
