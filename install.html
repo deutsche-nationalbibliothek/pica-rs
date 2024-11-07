@@ -226,18 +226,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo install <span class="at">-m755</span> pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica <span class="dt">\</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>      /usr/local/bin/pica</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="installation-unter-macos" class="level3">
-<h3 class="anchored" data-anchor-id="installation-unter-macos">Installation unter macOS</h3>
+</section>
+<section id="installation-unter-macos" class="level2">
+<h2 class="anchored" data-anchor-id="installation-unter-macos">Installation unter macOS</h2>
 <p>Unter macOS wird nur die Zielarchitektur <code>x86_64-apple-darwin</code> (macOS 10.7+, Lion+) unterstützt. Diese lässt sich analog wie unter Linux installieren:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tar xfz pica-X.Y.Z-x86_64-apple-darwin.tar.gz</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> install <span class="at">-m755</span>  pica-X.Y.Z-x86_64-apple-darwin/pica /usr/local/bin/pica</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="installation-unter-windows" class="level3">
-<h3 class="anchored" data-anchor-id="installation-unter-windows">Installation unter Windows</h3>
+<section id="installation-unter-windows" class="level2">
+<h2 class="anchored" data-anchor-id="installation-unter-windows">Installation unter Windows</h2>
 <p>Unter Windows (<code>x86_64-pc-windows-gnu</code> oder <code>x86_64-pc-windows-msvc</code>) kann das Programm direkt dem <code>zip</code>-Archiv entnommen werden. Nach einem Wechsel in das Verzeichnis, in dem sich die <code>pica.exe</code> befindet, kann das Programm direkt genutzt werden. Soll <code>pica</code> aus jedem beliebigen Verzeichnis aus aufrufbar sein, dann muss der Installationspfad in der <code>PATH</code>-Umgebungsvariable mit aufgelistet sein.</p>
 </section>
-<section id="aus-dem-quellcode-installieren" class="level3">
-<h3 class="anchored" data-anchor-id="aus-dem-quellcode-installieren">Aus dem Quellcode installieren</h3>
+<section id="aus-dem-quellcode-installieren" class="level2">
+<h2 class="anchored" data-anchor-id="aus-dem-quellcode-installieren">Aus dem Quellcode installieren</h2>
 <p>Das Projekt lässt sich auch direkt aus den Quellen kompilieren. Hierfür wird eine aktuelle Rust-Version (&gt;= 1.74.1) mit dem Paketmanager <code>cargo</code> benötigt.</p>
 <p>Der aktuelle Entwicklungsstand lässt sich wie folgt installieren:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/deutsche-nationalbibliothek/pica-rs.git</span>
@@ -254,8 +255,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cargo install <span class="at">--git</span> https://github.com/deutsche-nationalbibliothek/pica-rs <span class="dt">\</span></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">--tag</span> vX.Y.Z pica-toolkit</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Das fertige Programm befindet sich dann unter <code>~/.cargo/bin/pica</code>.</p>
-<section id="features" class="level4">
-<h4 class="anchored" data-anchor-id="features">Features</h4>
+<section id="features" class="level3">
+<h3 class="anchored" data-anchor-id="features">Features</h3>
 <p>Wer das Programm aus den Quellen baut, kann optional Features aktivieren, um erweiterte Funktionen zu erhalten. Die folgenden Funktionen können mit der <code>cargo</code>-Option <code>--features</code> aktiviert werden:</p>
 <ul>
 <li><code>unstable</code>, um die neuesten Funktionalitäten, die noch in der Entwicklung sind und für eine der nächsten Versionen vorgesehen sind, zu aktivieren</li>
@@ -263,7 +264,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 
 
-</section>
 </section>
 </section>
 
