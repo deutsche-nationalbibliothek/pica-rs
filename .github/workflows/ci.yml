@@ -47,7 +47,6 @@ jobs:
           toolchain: ${{ matrix.target.toolchain }}
           targets: ${{ matrix.target.triple }}
       - uses: Swatinem/rust-cache@v2
-      - run: ci/prepare-tests.sh
       - run: make test
 
   cross:
@@ -140,7 +139,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - run: cargo install cargo-careful
-      - run: ci/prepare-tests.sh
       - run: make careful
 
   udeps:
@@ -214,6 +212,26 @@ jobs:
       - run: |
           cargo miri test -p ${{ matrix.item.package }} ${{ matrix.item.flags }}
 
+  docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      - test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tinytex: true
+      - uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          path: docs/book
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   ci:
     runs-on: ubuntu-latest
     permissions:
@@ -224,11 +242,12 @@ jobs:
       - check
       - clippy
       - cross
-      - msrv
       - deny
+      - docs
       - fmt
       - fuzz
       - miri
+      - msrv
       - outdated
       - test
       - udeps

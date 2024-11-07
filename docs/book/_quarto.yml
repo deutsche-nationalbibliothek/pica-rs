@@ -1,0 +1,35 @@
+project:
+  type: book
+
+
+lang: de
+
+book:
+  title: pica-rs
+  author:
+    - name: Nico Wagner
+      orcid: 0000-0002-2033-1806
+      affiliations:
+        - name: Deutsche Nationalbibliothek
+          url: https://www.dnb.de/
+  date: "11/6/2024"
+  chapters:
+    - index.qmd
+    # - intro.qmd
+    # - summary.qmd
+    # - references.qmd
+  sidebar:
+    logo: assets/img/logo.png
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: flatly
+    css: assets/css/style.css
+    max-width: 740px
+    fontsize: 0.9em
+    fontcolor: "#333"
+    toc: false
+
+
