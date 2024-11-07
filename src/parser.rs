@@ -1,5 +1,6 @@
 //! This module contains shared parsers.
 
+use bstr::ByteSlice;
 use smallvec::SmallVec;
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{
@@ -200,6 +201,7 @@ fn parse_string_double_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
 
 pub(crate) fn parse_string(i: &mut &[u8]) -> PResult<Vec<u8>> {
     alt((parse_string_single_quoted, parse_string_double_quoted))
+        .verify(|s: &[u8]| s.to_str().is_ok())
         .parse_next(i)
 }
 
@@ -326,5 +328,21 @@ mod tests {
         parse_success!("\"a'c\"", b"a'c");
         parse_success!("\"a\\/bc\"", b"a/bc");
         parse_success!("\"a\\ bc\"", b"abc");
+    }
+
+    mod regressions {
+        use super::*;
+
+        /// This bug was found by cargo-fuzz
+        #[test]
+        fn test_parse_invalid_byte_seq() {
+            assert!(parse_string
+                .parse(&[
+                    39, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                    255, 255, 255, 255, 255, 255, 61, 92, 92, 4, 39,
+                ])
+                .is_err());
+        }
     }
 }
