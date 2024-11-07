@@ -108,7 +108,8 @@ struct Group {
 }
 
 thread_local! {
-    pub static FORMAT_FRAGMENT_GROUP_LEVEL: RefCell<u32> = const { RefCell::new(0) };
+    pub static FORMAT_FRAGMENT_GROUP_LEVEL: RefCell<u32>
+        = const { RefCell::new(0) };
 }
 
 fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
@@ -210,6 +211,7 @@ enum List {
     Cons(Vec<Fragments>),
 }
 
+#[inline]
 fn parse_list(i: &mut &[u8]) -> PResult<List> {
     alt((parse_list_cons, parse_list_and_then)).parse_next(i)
 }
@@ -274,21 +276,21 @@ impl Modifier {
 fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
     opt(preceded(
         '?',
-        repeat(1.., alt(('L', 'U', 'T', 'W'))).map(|codes: Vec<_>| {
+        repeat(1.., alt(('l', 'u', 't', 'w'))).map(|codes: Vec<_>| {
             let mut modifier = Modifier::default();
-            if codes.contains(&'L') {
+            if codes.contains(&'l') {
                 modifier.lowercase(true);
             }
 
-            if codes.contains(&'U') {
+            if codes.contains(&'u') {
                 modifier.uppercase(true);
             }
 
-            if codes.contains(&'W') {
+            if codes.contains(&'w') {
                 modifier.remove_ws(true);
             }
 
-            if codes.contains(&'T') {
+            if codes.contains(&'t') {
                 modifier.trim(true);
             }
 
@@ -300,6 +302,8 @@ fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
 
 #[cfg(test)]
 mod tests {
+    use std::usize;
+
     use super::*;
 
     type TestResult = anyhow::Result<()>;
@@ -307,7 +311,7 @@ mod tests {
     #[test]
     fn test_parse_modifier() -> TestResult {
         assert_eq!(
-            parse_modifier.parse(b"?L").unwrap().unwrap(),
+            parse_modifier.parse(b"?l").unwrap().unwrap(),
             Modifier {
                 lowercase: true,
                 ..Default::default()
@@ -315,7 +319,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_modifier.parse(b"?U").unwrap().unwrap(),
+            parse_modifier.parse(b"?u").unwrap().unwrap(),
             Modifier {
                 uppercase: true,
                 ..Default::default()
@@ -323,7 +327,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_modifier.parse(b"?W").unwrap().unwrap(),
+            parse_modifier.parse(b"?w").unwrap().unwrap(),
             Modifier {
                 remove_ws: true,
                 ..Default::default()
@@ -331,7 +335,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_modifier.parse(b"?T").unwrap().unwrap(),
+            parse_modifier.parse(b"?t").unwrap().unwrap(),
             Modifier {
                 trim: true,
                 ..Default::default()
@@ -339,7 +343,17 @@ mod tests {
         );
 
         assert_eq!(
-            parse_modifier.parse(b"?LUWT").unwrap().unwrap(),
+            parse_modifier.parse(b"?luwt").unwrap().unwrap(),
+            Modifier {
+                lowercase: true,
+                uppercase: true,
+                remove_ws: true,
+                trim: true,
+            }
+        );
+
+        assert_eq!(
+            parse_modifier.parse(b"?luwtluwt").unwrap().unwrap(),
             Modifier {
                 lowercase: true,
                 uppercase: true,
@@ -349,5 +363,269 @@ mod tests {
         );
 
         Ok(())
+    }
+
+    #[test]
+    fn test_parse_value() -> TestResult {
+        assert_eq!(
+            parse_value.parse(b"a").unwrap(),
+            Value {
+                prefix: None,
+                codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                    'a'
+                )?]),
+                bounds: RangeTo { end: 1 },
+                suffix: None,
+            }
+        );
+
+        assert_eq!(
+            parse_value.parse(b"a..2").unwrap(),
+            Value {
+                prefix: None,
+                codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                    'a'
+                )?]),
+                bounds: RangeTo { end: 2 },
+                suffix: None,
+            }
+        );
+
+        assert_eq!(
+            parse_value.parse(b"a..").unwrap(),
+            Value {
+                prefix: None,
+                codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                    'a'
+                )?]),
+                bounds: RangeTo { end: usize::MAX },
+                suffix: None,
+            }
+        );
+
+        assert_eq!(
+            parse_value.parse(b"a..2 'def'").unwrap(),
+            Value {
+                prefix: None,
+                codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                    'a'
+                )?]),
+                bounds: RangeTo { end: 2 },
+                suffix: Some("def".to_string()),
+            }
+        );
+
+        assert_eq!(
+            parse_value.parse(b"'abc' a..2 'def'").unwrap(),
+            Value {
+                prefix: Some("abc".to_string()),
+                codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                    'a'
+                )?]),
+                bounds: RangeTo { end: 2 },
+                suffix: Some("def".to_string()),
+            }
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_group() -> TestResult {
+        assert_eq!(
+            parse_group.parse(b"(a)").unwrap(),
+            Group {
+                fragments: Box::new(Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'a'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                })),
+                bounds: RangeTo { end: usize::MAX },
+                modifier: Modifier::default(),
+            }
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_list_cons() -> TestResult {
+        assert_eq!(
+            parse_list_cons.parse(b"a <*> b").unwrap(),
+            List::Cons(vec![
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'a'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                }),
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'b'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                })
+            ])
+        );
+
+        assert_eq!(
+            parse_list_cons.parse(b"a <*> b <*> c").unwrap(),
+            List::Cons(vec![
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'a'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                }),
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'b'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                }),
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'c'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                })
+            ])
+        );
+
+        assert_eq!(
+            parse_list_cons.parse(b"a <*> (b <*> c)").unwrap(),
+            List::Cons(vec![
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'a'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                }),
+                Fragments::Group(Group {
+                    fragments: Box::new(Fragments::List(List::Cons(
+                        vec![
+                            Fragments::Value(Value {
+                                prefix: None,
+                                codes: SmallVec::from_vec(vec![
+                                    SubfieldCode::new('b')?
+                                ]),
+                                bounds: RangeTo { end: 1 },
+                                suffix: None,
+                            }),
+                            Fragments::Value(Value {
+                                prefix: None,
+                                codes: SmallVec::from_vec(vec![
+                                    SubfieldCode::new('c')?
+                                ]),
+                                bounds: RangeTo { end: 1 },
+                                suffix: None,
+                            })
+                        ]
+                    ))),
+                    bounds: RangeTo { end: usize::MAX },
+                    modifier: Modifier::default()
+                }),
+            ])
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_list_and_then() -> TestResult {
+        assert_eq!(
+            parse_list_and_then.parse(b"a <$> b").unwrap(),
+            List::AndThen(vec![
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'a'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                }),
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'b'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                })
+            ])
+        );
+
+        assert_eq!(
+            parse_list_and_then.parse(b"a <$> (b <*> c)").unwrap(),
+            List::AndThen(vec![
+                Fragments::Value(Value {
+                    prefix: None,
+                    codes: SmallVec::from_vec(vec![SubfieldCode::new(
+                        'a'
+                    )?]),
+                    bounds: RangeTo { end: 1 },
+                    suffix: None,
+                }),
+                Fragments::Group(Group {
+                    fragments: Box::new(Fragments::List(List::Cons(
+                        vec![
+                            Fragments::Value(Value {
+                                prefix: None,
+                                codes: SmallVec::from_vec(vec![
+                                    SubfieldCode::new('b')?
+                                ]),
+                                bounds: RangeTo { end: 1 },
+                                suffix: None,
+                            }),
+                            Fragments::Value(Value {
+                                prefix: None,
+                                codes: SmallVec::from_vec(vec![
+                                    SubfieldCode::new('c')?
+                                ]),
+                                bounds: RangeTo { end: 1 },
+                                suffix: None,
+                            })
+                        ]
+                    ))),
+                    bounds: RangeTo { end: usize::MAX },
+                    modifier: Modifier::default()
+                }),
+            ])
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_format() {
+        let inputs = vec![
+            "028[A@]{[aP] <$> (', ' d <*> ' ' c) | !U? || U == 'Latn'}",
+            "042A{'https://d-nb.info/standards/vocab/gnd/gnd-sc#' a }",
+            "006Y{(?w 'https://isni.org/isni/' 0) | S == 'isni' }",
+            "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)..1}",
+            "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)..2}",
+            "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)..3}",
+            "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)..}",
+            "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)}",
+        ];
+
+        for i in inputs {
+            assert!(parse_format.parse(i.as_bytes()).is_ok());
+        }
     }
 }
