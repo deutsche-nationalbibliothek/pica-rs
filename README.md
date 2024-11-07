@@ -67,7 +67,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 
 [AE]: https://blog.dnb.de/erschliessungsmaschine-gestartet/
 [DNB]: https://www.dnb.de/
-[Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/pica-rs.pdf
+[Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/
 [Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
 [KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
 [metadaten.community]: https://metadaten.community/c/software-und-tools/pica-rs/31
