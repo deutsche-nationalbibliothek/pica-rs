@@ -15,7 +15,9 @@ book:
   date: "11/6/2024"
   chapters:
     - index.qmd
-    # - intro.qmd
+    - part: "Erste Schritte"
+      chapters:
+        - install.qmd
     # - summary.qmd
     # - references.qmd
   sidebar:

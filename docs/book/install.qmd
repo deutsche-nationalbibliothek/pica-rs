@@ -1,0 +1,143 @@
+# Installation {.unnumbered}
+
+Das Kommandozeilen-Tool `pica` lässt sich unter den Betriebssystemen
+Linux, macOS und Windows nutzen. Folgend wird die Installation sowie
+Einrichtung und Konfiguration des Tools beschrieben. Die Zeichenkette
+`X.Y.Z` ist ein Platzhalter für eine konkrete *pica-rs* Version und
+muss in den Befehl entsprechend ersetzt werden.
+
+## Installation unter Linux
+
+Abhängig von der genutzten Linux-Distribution, gibt es
+unterschiedliche Möglichkeiten der Installation. Vorgefertigte
+[Releases] stehen auf der Plattform GitHub zum Download bereit.
+
+### Debian und Ubuntu
+
+Unter [Debian GNU/Linux] und [Ubuntu Linux] können fertige
+*DEB*-Pakete genutzt werden.  Diese können mit dem `dpkg`-Programm
+installiert werden:
+
+```{.bash}
+$ dpkg -i pica_X.Y.Z-glibc2.35-1_amd64.deb
+```
+
+### Red Hat, SUSE und CentOS
+
+Für die Distributionen [Red Hat Linux], [SUSE Linux] und [CentOS
+Linux] stehen fertige *RPM*-Pakete zum Download bereit. Installieren
+lassen sich diese mit dem `rpm`-Programm installieren:
+
+```{.bash}
+$ rpm -i pica-X.Y.Z-glibc2.35-1.x86_64.rpm
+```
+
+### Binary Releases
+
+Soll `pica` nicht über einen Paketmanager installiert werden, stehen
+für die Zielarchitektur `x86_64-unknown-linux-gnu` mit den
+*glibc*-Versionen 2.28, 2.31 und 2.35 fertige *Binary Releases* zur
+Verfügung. Die *glibc*-Version des Systems lässt sich mit dem Aufruf
+`ldd --version` ermitteln.
+
+Das `tar`-Archiv enthält neben dem Tool `pica` auch weitere Dateien
+wie Shell-Skripte zur Befehlszeilenergänzung:
+
+```{.bash}
+$ tar -tf
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35.tar.gz
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/README.md
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica.zsh
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/LICENSE
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica.fish
+pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica.bash
+```
+
+Eine systemweite Installation von `pica` in das Verzeichnis
+`/usr/local/bin` kann mit dem `install` erfolgten. Hierfür sind
+ggf. *root*-Rechte nötig:
+
+```{.bash}
+$ tar xfz pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35.tar.gz
+$ sudo install -m755 pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica \
+      /usr/local/bin/pica
+```
+
+### Installation unter macOS
+
+Unter macOS wird nur die Zielarchitektur `x86_64-apple-darwin` (macOS
+10.7+, Lion+) unterstützt. Diese lässt sich analog wie unter Linux
+installieren:
+
+```{.bash}
+$ tar xfz pica-X.Y.Z-x86_64-apple-darwin.tar.gz
+$ install -m755  pica-X.Y.Z-x86_64-apple-darwin/pica /usr/local/bin/pica
+```
+
+### Installation unter Windows
+
+Unter Windows (`x86_64-pc-windows-gnu` oder `x86_64-pc-windows-msvc`)
+kann das Programm direkt dem `zip`-Archiv entnommen werden. Nach einem
+Wechsel in das Verzeichnis, in dem sich die `pica.exe` befindet, kann
+das Programm direkt genutzt werden. Soll `pica` aus jedem beliebigen
+Verzeichnis aus aufrufbar sein, dann muss der Installationspfad in der
+`PATH`-Umgebungsvariable mit aufgelistet sein.
+
+
+### Aus dem Quellcode installieren
+
+Das Projekt lässt sich auch direkt aus den Quellen
+kompilieren. Hierfür wird eine aktuelle Rust-Version (>= 1.74.1) mit
+dem Paketmanager `cargo` benötigt.
+
+Der aktuelle Entwicklungsstand lässt sich wie folgt installieren:
+
+```{.bash}
+$ git clone https://github.com/deutsche-nationalbibliothek/pica-rs.git
+$ cd pica-rs
+$ cargo build --release
+```
+
+Das fertige `pica`-Programm liegt im Verzeichnis `target/release/` und
+kann bspw. in das Verzeichnis `/usr/local/bin` installiert werden:
+
+```{.bash}
+$ install -m755 target/release/pica /usr/local/bin/pica
+```
+
+Wenn der Quellcode nicht benötigt wird, kann das Projekt auch direkt
+über den Paketmanager `cargo` installiert werden:
+
+```{.bash}
+$ # Installation der aktuellen Entwicklungsversion
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
+     --branch main pica-toolkit
+
+$ # Installation der Version X.Y.Z
+$ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
+      --tag vX.Y.Z pica-toolkit
+```
+
+Das fertige Programm befindet sich dann unter `~/.cargo/bin/pica`.
+
+#### Features
+
+Wer das Programm aus den Quellen baut, kann optional Features
+aktivieren, um erweiterte Funktionen zu erhalten. Die folgenden
+Funktionen können mit der `cargo`-Option `--features` aktiviert
+werden:
+
+- `unstable` --- Funktionalitäten, die für eine der nächsten Versionen
+  vorgesehen sind
+- und `compat` --- Kompatibilität mit der Abfragesprache [PICA Path].
+
+
+[Releases]: https://github.com/deutsche-nationalbibliothek/pica-rs/releases
+[CentOS Linux]: https://www.centos.org
+[Debian GNU/Linux]: https://www.debian.org
+[Red Hat Linux]: https://www.redhat.com
+[SUSE Linux]: https:://www.suse.com
+[Ubuntu Linux]: https://ubuntu.com
+[PICA Path]: https://format.gbv.de/query/picapath
