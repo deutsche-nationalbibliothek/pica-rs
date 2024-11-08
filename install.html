@@ -194,7 +194,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Das Kommandozeilen-Tool <code>pica</code> lässt sich unter den Betriebssystemen Linux, macOS und Windows nutzen. Folgend wird die Installation sowie Einrichtung und Konfiguration des Tools beschrieben. Die Zeichenkette <code>X.Y.Z</code> ist ein Platzhalter für eine konkrete <em>pica-rs</em> Version und muss in den Befehl entsprechend ersetzt werden.</p>
+<p>Das Kommandozeilen-Tool <code>pica</code> lässt sich unter den Betriebssystemen Linux, macOS und Windows nutzen. Folgend wird die Installation sowie Einrichtung und Konfiguration des Tools beschrieben. Die Zeichenkette <code>X.Y.Z</code> ist ein Platzhalter für eine konkrete <em>pica-rs</em> Version und muss in dem Befehl entsprechend ersetzt werden.</p>
 <section id="installation-unter-linux" class="level2">
 <h2 class="anchored" data-anchor-id="installation-unter-linux">Installation unter Linux</h2>
 <p>Abhängig von der genutzten Linux-Distribution, gibt es unterschiedliche Möglichkeiten der Installation. Vorgefertigte <a href="https://github.com/deutsche-nationalbibliothek/pica-rs/releases">Releases</a> stehen auf der Plattform GitHub zum Download bereit.</p>
@@ -205,13 +205,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="red-hat-suse-und-centos" class="level3">
 <h3 class="anchored" data-anchor-id="red-hat-suse-und-centos">Red Hat, SUSE und CentOS</h3>
-<p>Für die Distributionen <a href="https://www.redhat.com">Red Hat Linux</a>, <a href="https:://www.suse.com">SUSE Linux</a> und <a href="https://www.centos.org">CentOS Linux</a> stehen fertige <em>RPM</em>-Pakete zum Download bereit. Installieren lassen sich diese mit dem <code>rpm</code>-Programm installieren:</p>
+<p>Für die Distributionen <a href="https://www.redhat.com">Red Hat Linux</a>, <a href="https:://www.suse.com">SUSE Linux</a> und <a href="https://www.centos.org">CentOS Linux</a> stehen fertige <em>RPM</em>-Pakete zum Download bereit, die sich mit dem <code>rpm</code>-Programm installieren lassen:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> rpm <span class="at">-i</span> pica-X.Y.Z-glibc2.35-1.x86_64.rpm</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="binary-releases" class="level3">
 <h3 class="anchored" data-anchor-id="binary-releases">Binary Releases</h3>
 <p>Soll <code>pica</code> nicht über einen Paketmanager installiert werden, stehen für die Zielarchitektur <code>x86_64-unknown-linux-gnu</code> mit den <em>glibc</em>-Versionen 2.28, 2.31 und 2.35 fertige <em>Binary Releases</em> zur Verfügung. Die <em>glibc</em>-Version des Systems lässt sich mit dem Aufruf <code>ldd --version</code> ermitteln.</p>
-<p>Das <code>tar</code>-Archiv enthält neben dem Tool <code>pica</code> auch weitere Dateien wie Shell-Skripte zur Befehlszeilenergänzung:</p>
+<p>Das <code>tar</code>-Archiv enthält neben dem Tool <code>pica</code> auch weitere Dateien wie bspw. Shell-Skripte zur Befehlszeilenergänzung:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tar <span class="at">-tf</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35.tar.gz</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/</span></span>
@@ -221,7 +221,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/LICENSE</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica.fish</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ex">pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica.bash</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Eine systemweite Installation von <code>pica</code> in das Verzeichnis <code>/usr/local/bin</code> kann mit dem <code>install</code> erfolgten. Hierfür sind ggf. <em>root</em>-Rechte nötig:</p>
+<p>Eine systemweite Installation von <code>pica</code> in das Verzeichnis <code>/usr/local/bin</code> kann mit dem <code>install</code> erfolgen. Hierfür sind ggf. <em>root</em>-Rechte nötig:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tar xfz pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35.tar.gz</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo install <span class="at">-m755</span> pica-X.Y.Z-x86_64-unknown-linux-gnu-glibc2.35/pica <span class="dt">\</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>      /usr/local/bin/pica</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -235,7 +235,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="installation-unter-windows" class="level2">
 <h2 class="anchored" data-anchor-id="installation-unter-windows">Installation unter Windows</h2>
-<p>Unter Windows (<code>x86_64-pc-windows-gnu</code> oder <code>x86_64-pc-windows-msvc</code>) kann das Programm direkt dem <code>zip</code>-Archiv entnommen werden. Nach einem Wechsel in das Verzeichnis, in dem sich die <code>pica.exe</code> befindet, kann das Programm direkt genutzt werden. Soll <code>pica</code> aus jedem beliebigen Verzeichnis aus aufrufbar sein, dann muss der Installationspfad in der <code>PATH</code>-Umgebungsvariable mit aufgelistet sein.</p>
+<p>Unter Windows (<code>x86_64-pc-windows-gnu</code> oder <code>x86_64-pc-windows-msvc</code>) kann das Programm direkt dem <code>zip</code>-Archiv entnommen werden. Nach einem Wechsel in das Verzeichnis, in dem sich die <code>pica.exe</code> befindet, kann das Programm direkt genutzt werden. Soll <code>pica</code> aus jedem beliebigen Verzeichnis heraus aufrufbar sein, dann muss der Installationspfad in der <code>PATH</code>-Umgebungsvariable mit aufgelistet werden.</p>
 </section>
 <section id="aus-dem-quellcode-installieren" class="level2">
 <h2 class="anchored" data-anchor-id="aus-dem-quellcode-installieren">Aus dem Quellcode installieren</h2>
@@ -257,7 +257,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Das fertige Programm befindet sich dann unter <code>~/.cargo/bin/pica</code>.</p>
 <section id="features" class="level3">
 <h3 class="anchored" data-anchor-id="features">Features</h3>
-<p>Wer das Programm aus den Quellen baut, kann optional Features aktivieren, um erweiterte Funktionen zu erhalten. Die folgenden Funktionen können mit der <code>cargo</code>-Option <code>--features</code> aktiviert werden:</p>
+<p>Wird das Programm anhand der Quellen gebaut, können optionale Features aktiviert werden.Die folgenden Funktionen können mit der <code>cargo</code>-Option <code>--features</code> aktiviert werden:</p>
 <ul>
 <li><code>unstable</code>, um die neuesten Funktionalitäten, die noch in der Entwicklung sind und für eine der nächsten Versionen vorgesehen sind, zu aktivieren</li>
 <li>und <code>compat</code>, um eine höhere Kompatibilität mit der Abfragesprache <a href="https://format.gbv.de/query/picapath">PICA Path</a> zu erhalten.</li>
