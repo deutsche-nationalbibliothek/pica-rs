@@ -1,12 +1,10 @@
-use std::cell::RefCell;
 use std::ops::RangeTo;
 
 use bstr::ByteSlice;
 use winnow::ascii::digit1;
 use winnow::combinator::{
-    alt, delimited, empty, opt, preceded, repeat, separated, terminated,
+    alt, delimited, empty, opt, preceded, repeat, separated,
 };
-use winnow::error::ParserError;
 use winnow::{PResult, Parser};
 
 use super::{Format, Fragments, Group, List, Modifier, Value};
@@ -51,41 +49,15 @@ fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
     .parse_next(i)
 }
 
-thread_local! {
-    pub static FORMAT_FRAGMENT_GROUP_LEVEL: RefCell<u32>
-        = const { RefCell::new(0) };
-}
-
-fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
-    FORMAT_FRAGMENT_GROUP_LEVEL.with(|level| {
-        *level.borrow_mut() += 1;
-        if *level.borrow() >= 32 {
-            Err(winnow::error::ErrMode::from_error_kind(
-                i,
-                winnow::error::ErrorKind::Many,
-            ))
-        } else {
-            Ok(())
-        }
-    })
-}
-
-fn group_level_dec() {
-    FORMAT_FRAGMENT_GROUP_LEVEL.with(|level| {
-        *level.borrow_mut() -= 1;
-    })
-}
-
-fn group_level_reset() {
-    FORMAT_FRAGMENT_GROUP_LEVEL.with(|level| *level.borrow_mut() = 0);
-}
-
 fn parse_group(i: &mut &[u8]) -> PResult<Group> {
     (
-        terminated(ws('('), group_level_inc),
+        ws('('),
         parse_modifier,
-        parse_fragments,
-        ws(')').map(|_| group_level_dec()),
+        alt((
+            ws(parse_list).map(Fragments::List),
+            ws(parse_value).map(Fragments::Value),
+        )),
+        ws(')'),
         alt((
             preceded(
                 "..",
@@ -97,19 +69,17 @@ fn parse_group(i: &mut &[u8]) -> PResult<Group> {
             empty.value(usize::MAX),
         )),
     )
-        .map(|(_, modifier, fragments, _, end)| {
-            group_level_reset();
-            Group {
-                fragments: Box::new(fragments),
-                bounds: RangeTo { end },
-                modifier: modifier.unwrap_or_default(),
-            }
+        .map(|(_, modifier, fragments, _, end)| Group {
+            fragments: Box::new(fragments),
+            bounds: RangeTo { end },
+            modifier: modifier.unwrap_or_default(),
         })
         .parse_next(i)
 }
 
 fn parse_value(i: &mut &[u8]) -> PResult<Value> {
     (
+        ws(parse_modifier),
         opt(ws(parse_string).map(|s| {
             // SAFETY: `parse_string` returns a valid string and
             // therefore it's safe to unwrap the result.
@@ -132,7 +102,8 @@ fn parse_value(i: &mut &[u8]) -> PResult<Value> {
             s.to_str().unwrap().to_string()
         })),
     )
-        .map(|(prefix, codes, end, suffix)| Value {
+        .map(|(modifier, prefix, codes, end, suffix)| Value {
+            modifier: modifier.unwrap_or_default(),
             prefix,
             codes,
             suffix,
@@ -203,9 +174,9 @@ fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
 #[cfg(test)]
 mod tests {
     use smallvec::SmallVec;
-    use crate::primitives::SubfieldCode;
-    
+
     use super::*;
+    use crate::primitives::SubfieldCode;
 
     type TestResult = anyhow::Result<()>;
 
@@ -277,6 +248,7 @@ mod tests {
                 )?]),
                 bounds: RangeTo { end: 1 },
                 suffix: None,
+                modifier: Modifier::default(),
             }
         );
 
@@ -289,6 +261,7 @@ mod tests {
                 )?]),
                 bounds: RangeTo { end: 2 },
                 suffix: None,
+                modifier: Modifier::default(),
             }
         );
 
@@ -301,6 +274,7 @@ mod tests {
                 )?]),
                 bounds: RangeTo { end: usize::MAX },
                 suffix: None,
+                modifier: Modifier::default(),
             }
         );
 
@@ -313,6 +287,7 @@ mod tests {
                 )?]),
                 bounds: RangeTo { end: 2 },
                 suffix: Some("def".to_string()),
+                modifier: Modifier::default(),
             }
         );
 
@@ -325,6 +300,7 @@ mod tests {
                 )?]),
                 bounds: RangeTo { end: 2 },
                 suffix: Some("def".to_string()),
+                modifier: Modifier::default(),
             }
         );
 
@@ -343,6 +319,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 })),
                 bounds: RangeTo { end: usize::MAX },
                 modifier: Modifier::default(),
@@ -364,6 +341,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 }),
                 Fragments::Value(Value {
                     prefix: None,
@@ -372,6 +350,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 })
             ])
         );
@@ -386,6 +365,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 }),
                 Fragments::Value(Value {
                     prefix: None,
@@ -394,6 +374,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 }),
                 Fragments::Value(Value {
                     prefix: None,
@@ -402,6 +383,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 })
             ])
         );
@@ -416,6 +398,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 }),
                 Fragments::Group(Group {
                     fragments: Box::new(Fragments::List(List::Cons(
@@ -427,6 +410,7 @@ mod tests {
                                 ]),
                                 bounds: RangeTo { end: 1 },
                                 suffix: None,
+                                modifier: Modifier::default(),
                             }),
                             Fragments::Value(Value {
                                 prefix: None,
@@ -435,6 +419,7 @@ mod tests {
                                 ]),
                                 bounds: RangeTo { end: 1 },
                                 suffix: None,
+                                modifier: Modifier::default(),
                             })
                         ]
                     ))),
@@ -459,6 +444,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 }),
                 Fragments::Value(Value {
                     prefix: None,
@@ -467,6 +453,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 })
             ])
         );
@@ -481,6 +468,7 @@ mod tests {
                     )?]),
                     bounds: RangeTo { end: 1 },
                     suffix: None,
+                    modifier: Modifier::default(),
                 }),
                 Fragments::Group(Group {
                     fragments: Box::new(Fragments::List(List::Cons(
@@ -492,6 +480,7 @@ mod tests {
                                 ]),
                                 bounds: RangeTo { end: 1 },
                                 suffix: None,
+                                modifier: Modifier::default(),
                             }),
                             Fragments::Value(Value {
                                 prefix: None,
@@ -500,6 +489,7 @@ mod tests {
                                 ]),
                                 bounds: RangeTo { end: 1 },
                                 suffix: None,
+                                modifier: Modifier::default(),
                             })
                         ]
                     ))),
