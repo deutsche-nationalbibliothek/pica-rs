@@ -2,7 +2,6 @@ use std::cell::RefCell;
 use std::ops::RangeTo;
 
 use bstr::ByteSlice;
-use smallvec::SmallVec;
 use winnow::ascii::digit1;
 use winnow::combinator::{
     alt, delimited, empty, opt, preceded, repeat, separated, terminated,
@@ -10,54 +9,13 @@ use winnow::combinator::{
 use winnow::error::ParserError;
 use winnow::{PResult, Parser};
 
+use super::{Format, Fragments, Group, List, Modifier, Value};
 use crate::matcher::occurrence::parse_occurrence_matcher;
 use crate::matcher::subfield::parser::parse_subfield_matcher;
-use crate::matcher::subfield::SubfieldMatcher;
 use crate::matcher::tag::parse_tag_matcher;
-use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_string, parse_subfield_codes, ws};
-use crate::primitives::SubfieldCode;
 
-/// An error that can occur when parsing a format expression.
-#[derive(thiserror::Error, Debug, Clone, PartialEq)]
-#[error("{0}")]
-pub struct ParseFormatError(pub(crate) String);
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Format {
-    tag_matcher: TagMatcher,
-    occurrence_matcher: OccurrenceMatcher,
-    subfield_matcher: Option<SubfieldMatcher>,
-    raw_format: String,
-    fragments: Fragments,
-}
-
-impl Format {
-    /// Creates a new [Format].
-    ///
-    /// # Errors
-    ///
-    /// This function fails if the given expression is not a valid
-    /// format expression.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::prelude::*;
-    ///
-    /// let _fmt = Format::new("028[A@]{ a }")?;
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    #[inline]
-    pub fn new(fmt: &str) -> Result<Self, ParseFormatError> {
-        parse_format.parse(fmt.as_bytes()).map_err(|_| {
-            ParseFormatError(format!("invalid format '{fmt}'"))
-        })
-    }
-}
-
-fn parse_format(i: &mut &[u8]) -> PResult<Format> {
+pub(crate) fn parse_format(i: &mut &[u8]) -> PResult<Format> {
     (
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -84,13 +42,6 @@ fn parse_format(i: &mut &[u8]) -> PResult<Format> {
         .parse_next(i)
 }
 
-#[derive(Debug, Clone, PartialEq)]
-enum Fragments {
-    Group(Group),
-    Value(Value),
-    List(List),
-}
-
 fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
     alt((
         ws(parse_list).map(Fragments::List),
@@ -98,13 +49,6 @@ fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
         ws(parse_value).map(Fragments::Value),
     ))
     .parse_next(i)
-}
-
-#[derive(Debug, Clone, PartialEq)]
-struct Group {
-    fragments: Box<Fragments>,
-    bounds: RangeTo<usize>,
-    modifier: Modifier,
 }
 
 thread_local! {
@@ -164,14 +108,6 @@ fn parse_group(i: &mut &[u8]) -> PResult<Group> {
         .parse_next(i)
 }
 
-#[derive(Debug, Clone, PartialEq)]
-struct Value {
-    codes: SmallVec<[SubfieldCode; 4]>,
-    prefix: Option<String>,
-    suffix: Option<String>,
-    bounds: RangeTo<usize>,
-}
-
 fn parse_value(i: &mut &[u8]) -> PResult<Value> {
     (
         opt(ws(parse_string).map(|s| {
@@ -203,12 +139,6 @@ fn parse_value(i: &mut &[u8]) -> PResult<Value> {
             bounds: RangeTo { end },
         })
         .parse_next(i)
-}
-
-#[derive(Debug, Clone, PartialEq)]
-enum List {
-    AndThen(Vec<Fragments>),
-    Cons(Vec<Fragments>),
 }
 
 #[inline]
@@ -243,36 +173,6 @@ fn parse_list_and_then(i: &mut &[u8]) -> PResult<List> {
     .parse_next(i)
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
-struct Modifier {
-    lowercase: bool,
-    uppercase: bool,
-    remove_ws: bool,
-    trim: bool,
-}
-
-impl Modifier {
-    pub(crate) fn lowercase(&mut self, yes: bool) -> &mut Self {
-        self.lowercase = yes;
-        self
-    }
-
-    pub(crate) fn uppercase(&mut self, yes: bool) -> &mut Self {
-        self.uppercase = yes;
-        self
-    }
-
-    pub(crate) fn remove_ws(&mut self, yes: bool) -> &mut Self {
-        self.remove_ws = yes;
-        self
-    }
-
-    pub(crate) fn trim(&mut self, yes: bool) -> &mut Self {
-        self.trim = yes;
-        self
-    }
-}
-
 fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
     opt(preceded(
         '?',
@@ -302,8 +202,9 @@ fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
 
 #[cfg(test)]
 mod tests {
-    use std::usize;
-
+    use smallvec::SmallVec;
+    use crate::primitives::SubfieldCode;
+    
     use super::*;
 
     type TestResult = anyhow::Result<()>;
@@ -622,6 +523,7 @@ mod tests {
             "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)..3}",
             "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)..}",
             "029A{a <$> (' (' g ')' <*> ' / ' [xb] <*> ', ' n)}",
+            "041A{ x.. <$> (a <*> b)..2 <$> (c <*> d).. | a? }",
         ];
 
         for i in inputs {

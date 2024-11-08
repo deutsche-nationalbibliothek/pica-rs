@@ -218,7 +218,6 @@ pub trait PathExt {
         self.first(&PATH, &Default::default()).unwrap()
     }
 }
-
 impl PathExt for RecordRef<'_> {
     type Value = BStr;
 
