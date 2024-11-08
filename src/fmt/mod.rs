@@ -312,7 +312,7 @@ impl<'de> serde::Deserialize<'de> for Format {
 }
 
 pub trait FormatExt {
-    type Value: ?Sized;
+    type Value;
 
     /// Returns an iterator over the formatted fields of the record.
     fn format(
