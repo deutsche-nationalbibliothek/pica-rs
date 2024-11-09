@@ -28,3 +28,10 @@ path = "fuzz_targets/fuzz_record_matcher.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz-format"
+path = "fuzz_targets/fuzz_format.rs"
+test = false
+doc = false
+bench = false
