@@ -51,7 +51,8 @@ impl Format {
         })
     }
 
-    pub fn fmt_field(
+    /// Formats a field according to the format parameters.
+    pub(crate) fn fmt_field(
         &self,
         field: &FieldRef,
         options: &FormatOptions,
@@ -67,9 +68,12 @@ impl Format {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FormatOptions {
+    /// Whether to strip the overread character '@' or not.
     pub(crate) strip_overread_char: bool,
+
     /// The threshold for string similarity comparisons.
     pub(crate) strsim_threshold: f64,
+
     /// Whether to ignore case when comparing values or not.
     pub(crate) case_ignore: bool,
 }
@@ -285,9 +289,17 @@ impl List {
 
 #[derive(Debug, Default, Clone, PartialEq)]
 struct Modifier {
+    /// Whether to transform a fragment to lowercase or not.
     lowercase: bool,
+
+    /// Whether to transform a fragment to uppercase or not.
     uppercase: bool,
+
+    /// Whether to remove all whitespaces from a fragment or not.
     remove_ws: bool,
+
+    /// Whether to remove all whitespaces from the beginning or end of
+    /// a fragment or not.
     trim: bool,
 }
 
