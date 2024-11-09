@@ -13,7 +13,6 @@ cargo-fuzz = true
 pica-record = { path = "..", features = ["unstable"] }
 libfuzzer-sys = "0.4"
 
-
 [[bin]]
 name = "fuzz-record-ref"
 path = "fuzz_targets/fuzz_record_ref.rs"

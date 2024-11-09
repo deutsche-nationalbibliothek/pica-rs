@@ -140,11 +140,11 @@ impl FormatOptions {
 }
 
 impl From<&FormatOptions> for MatcherOptions {
+    #[inline]
     fn from(options: &FormatOptions) -> Self {
         MatcherOptions {
             strsim_threshold: options.strsim_threshold,
             case_ignore: options.case_ignore,
-            ..Default::default()
         }
     }
 }
