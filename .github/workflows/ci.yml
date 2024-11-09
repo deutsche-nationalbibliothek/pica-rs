@@ -58,9 +58,6 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
           - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
           - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
           - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
