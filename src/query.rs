@@ -5,7 +5,7 @@ use winnow::combinator::{alt, separated};
 use winnow::{PResult, Parser};
 
 #[cfg(feature = "unstable")]
-use crate::fmt::Format;
+use crate::fmt::{parse_format, Format};
 use crate::parser::{parse_string, ws};
 use crate::path::{parse_path, Path};
 
