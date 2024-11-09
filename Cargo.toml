@@ -19,6 +19,7 @@ winnow = { version = "0.6.18" }
 
 [features]
 serde = ["dep:serde", "bstr/serde"]
+unstable = []
 
 [dev-dependencies]
 anyhow = { version = "1.0" }
@@ -36,7 +37,6 @@ resolver = "2"
 default-members = ["crates/pica-toolkit"]
 
 members = [
-    "crates/pica-format",
     "crates/pica-lint",
     "crates/pica-matcher",
     "crates/pica-path",
@@ -56,7 +56,6 @@ edition = "2021"
 rust-version = "1.80"
 
 [workspace.dependencies]
-pica-format = { version = "0.1", path = "./crates/pica-format" }
 pica-matcher = { version = "0.25", path = "./crates/pica-matcher" }
 pica-path = { version = "0.25", path = "./crates/pica-path" }
 pica-record-v1 = { version = "0.25", path = "./crates/pica-record-v1" }

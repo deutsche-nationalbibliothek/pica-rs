@@ -15,7 +15,7 @@ use crate::parser::{parse_subfield_codes, ws};
 use crate::primitives::{FieldRef, RecordRef, SubfieldCode};
 use crate::StringRecord;
 
-/// An error that can occur when parsing PICA+ records.
+/// An error that can occur when parsing a path expression.
 #[derive(Debug, thiserror::Error)]
 #[error("{0}")]
 pub struct ParsePathError(pub(crate) String);
@@ -38,6 +38,7 @@ impl Path {
     /// path expression.
     ///
     /// # Example
+    ///
     /// ```rust
     /// use pica_record::prelude::*;
     ///
@@ -217,7 +218,6 @@ pub trait PathExt {
         self.first(&PATH, &Default::default()).unwrap()
     }
 }
-
 impl PathExt for RecordRef<'_> {
     type Value = BStr;
 

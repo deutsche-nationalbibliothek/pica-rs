@@ -10,10 +10,8 @@ edition = "2021"
 cargo-fuzz = true
 
 [dependencies]
+pica-record = { path = "..", features = ["unstable"] }
 libfuzzer-sys = "0.4"
-
-[dependencies.pica-record]
-path = ".."
 
 [[bin]]
 name = "fuzz-record-ref"
@@ -25,6 +23,13 @@ bench = false
 [[bin]]
 name = "fuzz-record-matcher"
 path = "fuzz_targets/fuzz_record_matcher.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz-format"
+path = "fuzz_targets/fuzz_format.rs"
 test = false
 doc = false
 bench = false
