@@ -14,4 +14,6 @@ pub enum Error {
     #[cfg(feature = "unstable")]
     #[error(transparent)]
     ParseFormat(crate::fmt::ParseFormatError),
+    #[error(transparent)]
+    ParseQuery(crate::query::ParseQueryError),
 }

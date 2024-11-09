@@ -110,7 +110,7 @@ fn parse_path_curly(i: &mut &[u8]) -> PResult<Path> {
 }
 
 #[inline]
-fn parse_path(i: &mut &[u8]) -> PResult<Path> {
+pub(crate) fn parse_path(i: &mut &[u8]) -> PResult<Path> {
     alt((parse_path_simple, parse_path_curly)).parse_next(i)
 }
 
