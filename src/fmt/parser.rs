@@ -1,10 +1,12 @@
+use std::cell::RefCell;
 use std::ops::RangeTo;
 
 use bstr::ByteSlice;
 use winnow::ascii::digit1;
 use winnow::combinator::{
-    alt, delimited, empty, opt, preceded, repeat, separated,
+    alt, delimited, empty, opt, preceded, repeat, separated, terminated,
 };
+use winnow::error::ParserError;
 use winnow::{PResult, Parser};
 
 use super::{Format, Fragments, Group, List, Modifier, Value};
@@ -49,15 +51,39 @@ fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
     .parse_next(i)
 }
 
+thread_local! {
+    pub static GROUP_LEVEL: RefCell<u32> = const { RefCell::new(0) };
+}
+
+fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() += 1;
+        if *level.borrow() >= 32 {
+            Err(winnow::error::ErrMode::from_error_kind(
+                i,
+                winnow::error::ErrorKind::Many,
+            ))
+        } else {
+            Ok(())
+        }
+    })
+}
+
+fn group_level_dec() {
+    GROUP_LEVEL.with(|level| {
+        *level.borrow_mut() -= 1;
+    })
+}
+
 fn parse_group(i: &mut &[u8]) -> PResult<Group> {
     (
-        ws('('),
+        terminated(ws('('), group_level_inc),
         parse_modifier,
         alt((
             ws(parse_list).map(Fragments::List),
             ws(parse_value).map(Fragments::Value),
         )),
-        ws(')'),
+        ws(')').map(|_| group_level_dec()),
         alt((
             preceded(
                 "..",
