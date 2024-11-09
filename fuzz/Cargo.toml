@@ -12,8 +12,8 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 
-[dependencies.pica-record]
-path = ".."
+[dependencies]
+pica-record = { path = "..", features = ["unstable"] }
 
 [[bin]]
 name = "fuzz-record-ref"
