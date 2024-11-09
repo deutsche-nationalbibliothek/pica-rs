@@ -7,8 +7,9 @@ use smallvec::SmallVec;
 use winnow::prelude::*;
 
 use crate::matcher::subfield::SubfieldMatcher;
-use crate::matcher::{OccurrenceMatcher, TagMatcher};
+use crate::matcher::{MatcherOptions, OccurrenceMatcher, TagMatcher};
 use crate::primitives::{FieldRef, RecordRef, SubfieldCode};
+use crate::StringRecord;
 
 mod parser;
 
@@ -66,13 +67,19 @@ impl Format {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FormatOptions {
-    strip_overread_char: bool,
+    pub(crate) strip_overread_char: bool,
+    /// The threshold for string similarity comparisons.
+    pub(crate) strsim_threshold: f64,
+    /// Whether to ignore case when comparing values or not.
+    pub(crate) case_ignore: bool,
 }
 
 impl Default for FormatOptions {
     fn default() -> Self {
         Self {
             strip_overread_char: true,
+            strsim_threshold: 0.8,
+            case_ignore: false,
         }
     }
 }
@@ -84,9 +91,61 @@ impl FormatOptions {
     }
 
     /// Whether to strip the overread character '@' from a value or not.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    ///
+    /// let _options = FormatOptions::new().strip_overread_char(true);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn strip_overread_char(mut self, yes: bool) -> Self {
         self.strip_overread_char = yes;
         self
+    }
+
+    /// Whether to ignore case when comparing strings or not.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    ///
+    /// let _options = FormatOptions::new().case_ignore(true);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn case_ignore(mut self, yes: bool) -> Self {
+        self.case_ignore = yes;
+        self
+    }
+
+    /// Set the similarity threshold for the similar operator (`=*`).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    ///
+    /// let _options = FormatOptions::new().strsim_threshold(0.75);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn strsim_threshold(mut self, threshold: f64) -> Self {
+        self.strsim_threshold = threshold;
+        self
+    }
+}
+
+impl From<&FormatOptions> for MatcherOptions {
+    fn from(options: &FormatOptions) -> Self {
+        MatcherOptions {
+            strsim_threshold: options.strsim_threshold,
+            case_ignore: options.case_ignore,
+            ..Default::default()
+        }
     }
 }
 
@@ -339,16 +398,47 @@ impl FormatExt for RecordRef<'_> {
                         .is_match(field.occurrence());
 
                 if let Some(ref matcher) = format.subfield_matcher {
-                    // FIXME:
-                    let options = Default::default();
-
                     retval
-                        && matcher.is_match(field.subfields(), &options)
+                        && matcher.is_match(
+                            field.subfields(),
+                            &options.into(),
+                        )
                 } else {
                     retval
                 }
             })
             .filter_map(|field| format.fmt_field(field, options))
+    }
+}
+
+impl FormatExt for StringRecord<'_> {
+    type Value = String;
+
+    /// Returns the path values as an iterator over string slices.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    ///
+    /// let record =
+    ///     ByteRecord::from_bytes(b"021A \x1fafoo\x1fdbar\x1e\n")?;
+    /// let record = StringRecord::try_from(record)?;
+    /// let format = Format::new("021A{ a <$> ' ' d }")?;
+    /// let values: Vec<_> =
+    ///     record.format(&format, &Default::default()).collect();
+    /// assert_eq!(values, vec!["foo bar"]);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn format(
+        &self,
+        format: &Format,
+        options: &FormatOptions,
+    ) -> impl Iterator<Item = Self::Value> {
+        self.0
+            .format(format, options)
+            .map(|value: BString| value.to_string())
     }
 }
 
