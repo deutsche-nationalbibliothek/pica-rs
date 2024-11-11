@@ -18,9 +18,7 @@ use crate::matcher::operator::{
     parse_relational_operator, RelationalOp,
 };
 use crate::matcher::quantifier::parse_quantifier;
-use crate::parser::{
-    parse_string, parse_subfield_codes, parse_subfield_codes_compat, ws,
-};
+use crate::parser::{parse_string, parse_subfield_codes, ws};
 use crate::primitives::parse::parse_subfield_code;
 
 /// Parses a [ExistsMatcher] expression.
@@ -47,7 +45,7 @@ pub(crate) fn parse_relation_matcher(
         alt((
             ws(parse_subfield_codes),
             #[cfg(feature = "compat")]
-            ws(parse_subfield_codes_compat),
+            ws(crate::parser::parse_subfield_codes_compat),
         )),
         ws(parse_relational_operator)
             .verify(RelationalOp::is_str_applicable),
