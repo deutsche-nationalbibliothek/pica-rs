@@ -22,10 +22,10 @@ pub struct ParsePathError(pub(crate) String);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Path {
-    tag_matcher: TagMatcher,
-    occurrence_matcher: OccurrenceMatcher,
-    subfield_matcher: Option<SubfieldMatcher>,
-    codes: Vec<SmallVec<[SubfieldCode; 4]>>,
+    pub(crate) tag_matcher: TagMatcher,
+    pub(crate) occurrence_matcher: OccurrenceMatcher,
+    pub(crate) subfield_matcher: Option<SubfieldMatcher>,
+    pub(crate) codes: Vec<SmallVec<[SubfieldCode; 4]>>,
     raw_path: String,
 }
 
@@ -110,7 +110,7 @@ fn parse_path_curly(i: &mut &[u8]) -> PResult<Path> {
 }
 
 #[inline]
-fn parse_path(i: &mut &[u8]) -> PResult<Path> {
+pub(crate) fn parse_path(i: &mut &[u8]) -> PResult<Path> {
     alt((parse_path_simple, parse_path_curly)).parse_next(i)
 }
 

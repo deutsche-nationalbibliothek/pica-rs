@@ -40,3 +40,10 @@ path = "fuzz_targets/fuzz_path.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz-query"
+path = "fuzz_targets/fuzz_query.rs"
+test = false
+doc = false
+bench = false

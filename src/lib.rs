@@ -13,4 +13,5 @@ mod parser;
 pub mod path;
 pub mod prelude;
 pub mod primitives;
+pub mod query;
 mod record;

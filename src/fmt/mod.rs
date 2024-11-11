@@ -2,7 +2,7 @@ use std::fmt::{self, Display};
 use std::ops::RangeTo;
 
 use bstr::{BString, ByteSlice};
-use parser::parse_format;
+pub(crate) use parser::parse_format;
 use smallvec::SmallVec;
 use winnow::prelude::*;
 
