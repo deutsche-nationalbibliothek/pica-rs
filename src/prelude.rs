@@ -22,5 +22,5 @@ pub use crate::matcher::{
     MatcherOptions, OccurrenceMatcher, RecordMatcher, TagMatcher,
 };
 pub use crate::path::{Path, PathExt};
-pub use crate::query::Query;
+pub use crate::query::{Query, QueryExt, QueryOptions};
 pub use crate::{ByteRecord, Error, StringRecord};
