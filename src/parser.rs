@@ -80,6 +80,27 @@ pub(crate) fn parse_subfield_codes(
     .parse_next(i)
 }
 
+#[cfg(feature = "compat")]
+fn parse_subfield_code_list_compat(
+    i: &mut &[u8],
+) -> PResult<Vec<SubfieldCode>> {
+    repeat(1.., parse_subfield_code.map(|code| vec![code]))
+        .fold(Vec::new, |mut acc: Vec<_>, item| {
+            acc.extend_from_slice(&item);
+            acc
+        })
+        .parse_next(i)
+}
+
+#[cfg(feature = "compat")]
+pub(crate) fn parse_subfield_codes_compat(
+    i: &mut &[u8],
+) -> PResult<SmallVec<[SubfieldCode; 4]>> {
+    alt((parse_subfield_code_list_compat, parse_subfield_code_all))
+        .map(SmallVec::from_vec)
+        .parse_next(i)
+}
+
 /// Strip whitespaces from the beginning and end.
 pub(crate) fn ws<I, O, E: ParserError<I>, F>(
     mut inner: F,
@@ -266,6 +287,52 @@ mod tests {
         assert!(parse_subfield_code_range.parse(b"[a-a]").is_err());
         assert!(parse_subfield_code_range.parse(b"[a-!]").is_err());
         assert!(parse_subfield_code_range.parse(b"[c-a]").is_err());
+    }
+
+    #[cfg(feature = "compat")]
+    #[test]
+    fn test_parse_subfield_code_list_compat() {
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_subfield_code_list_compat
+                        .parse($input.as_bytes())
+                        .unwrap(),
+                    $expected
+                        .into_iter()
+                        .map(SubfieldCode::from_unchecked)
+                        .collect::<Vec<_>>()
+                );
+            };
+        }
+
+        parse_success!("ab", ['a', 'b']);
+        parse_success!("abc", ['a', 'b', 'c']);
+        parse_success!("aabc", ['a', 'a', 'b', 'c']);
+    }
+
+    #[cfg(feature = "compat")]
+    #[test]
+    fn test_parse_subfield_code_compat() {
+        macro_rules! parse_success {
+            ($input:expr, $expected:expr) => {
+                assert_eq!(
+                    parse_subfield_codes_compat
+                        .parse($input.as_bytes())
+                        .unwrap(),
+                    SmallVec::<[SubfieldCode; 4]>::from_vec(
+                        $expected
+                            .into_iter()
+                            .map(SubfieldCode::from_unchecked)
+                            .collect::<Vec<_>>()
+                    )
+                );
+            };
+        }
+
+        parse_success!("a", ['a']);
+        parse_success!("ab", ['a', 'b']);
+        parse_success!("abc", ['a', 'b', 'c']);
     }
 
     #[test]

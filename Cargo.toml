@@ -21,6 +21,7 @@ winnow = { version = "0.6.18" }
 [features]
 serde = ["dep:serde", "bstr/serde"]
 unstable = []
+compat = []
 
 [dev-dependencies]
 anyhow = { version = "1.0" }
