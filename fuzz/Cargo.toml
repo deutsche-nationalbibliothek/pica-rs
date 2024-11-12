@@ -10,7 +10,7 @@ edition = "2021"
 cargo-fuzz = true
 
 [dependencies]
-pica-record = { path = "..", features = ["unstable"] }
+pica-record = { path = "..", features = ["unstable", "compat"] }
 libfuzzer-sys = "0.4"
 
 [[bin]]

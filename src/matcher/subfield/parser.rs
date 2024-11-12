@@ -42,7 +42,11 @@ pub(crate) fn parse_relation_matcher(
     (
         opt(ws(terminated(parse_quantifier, multispace1)))
             .map(Option::unwrap_or_default),
-        ws(parse_subfield_codes),
+        alt((
+            ws(parse_subfield_codes),
+            #[cfg(feature = "compat")]
+            ws(crate::parser::parse_subfield_codes_compat),
+        )),
         ws(parse_relational_operator)
             .verify(RelationalOp::is_str_applicable),
         ws(parse_string),
