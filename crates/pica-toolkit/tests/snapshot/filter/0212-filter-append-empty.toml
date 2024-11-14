@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "filter \"003@.0?\" --append -o out.dat"
 status = "success"
 stderr = ""

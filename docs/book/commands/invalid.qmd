@@ -1,0 +1,20 @@
+# invalid {.unnumbered}
+
+Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in der
+Eingabe nicht als normalisiertes PICA+ dekodiert werden können. Diese
+ungültigen Zeilen lassen sich bei vielen Kommandos mit der Option
+`--skip-invalid` / `-s` überspringen, wobei die Anzahl der übersprungenen
+Zeilen nicht angezeigt wird. Ist ist zu empfehlen, die Anzahl invalider
+Datensätze zu kontrollieren und einer Prüfung zu unterziehen, um diese ggf.
+zu korrigieren. Das `invalid`-Kommando findet diese Zeilen in der Eingabe und
+gibt diese wieder auf der Standardausgabe (`stdout`) aus. Durch Angabe der
+Option `--output` / `-o` wird die Ausgabe in eine Datei geschrieben werden.
+
+## Beispiel
+
+Der folgende Befehl findet alle ungültigen Datensätze aus der Datei
+`DUMP.dat.gz` und schreibt diese Zeile in die Datei `invalid.dat`:
+
+```{.bash}
+$ pica invalid DUMP.dat.gz -o invalid.dat
+```

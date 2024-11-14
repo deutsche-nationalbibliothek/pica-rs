@@ -39,6 +39,7 @@ resolver = "2"
 default-members = ["crates/pica-toolkit"]
 
 members = [
+    "crates/pica-cli",
     "crates/pica-lint",
     "crates/pica-matcher",
     "crates/pica-path",
@@ -61,6 +62,7 @@ rust-version = "1.80"
 pica-matcher = { version = "0.25", path = "./crates/pica-matcher" }
 pica-path = { version = "0.25", path = "./crates/pica-path" }
 pica-record-v1 = { version = "0.25", path = "./crates/pica-record-v1" }
+pica-record = { version = "0.1", path = "." }
 pica-select = { version = "0.25", path = "./crates/pica-select" }
 pica-utils = { version = "0.25", path = "./crates/pica-utils" }
 

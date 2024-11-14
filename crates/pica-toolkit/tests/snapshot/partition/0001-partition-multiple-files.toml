@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "partition -s \"002@.0\" algebra.dat math.dat.gz"
 status = "success"
 stdout = ""

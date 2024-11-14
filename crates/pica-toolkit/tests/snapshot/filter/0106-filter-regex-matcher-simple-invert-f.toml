@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "filter \"001A.0 !~ '^[0-9]{4}:[0-9]{2}-[0-9]{2}-[0-9]{2}$'\""
 status = "success"
 stdout = ""

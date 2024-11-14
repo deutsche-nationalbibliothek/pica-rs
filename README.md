@@ -85,7 +85,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 [filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/filter/
 [frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/frequency/
 [hash]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/hash/
-[invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/invalid/
+[invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/invalid.html
 [partition]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/partition/
 [print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/print/
 [slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/slice/

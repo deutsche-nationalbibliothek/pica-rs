@@ -1,5 +1,4 @@
-use std::fs::{create_dir_all, read_to_string, File};
-use std::io::{self, BufWriter, Write};
+use std::fs::{create_dir_all, read_to_string};
 use std::path::{Path, PathBuf};
 
 use directories::ProjectDirs;
@@ -77,17 +76,6 @@ impl Config {
         match path {
             Some(path) => Self::from_path(path),
             None => Self::new(),
-        }
-    }
-
-    pub(crate) fn writer<P: AsRef<Path>>(
-        &self,
-        path: Option<P>,
-    ) -> io::Result<BufWriter<Box<dyn Write>>> {
-        if let Some(path) = path {
-            Ok(BufWriter::new(Box::new(File::create(path)?)))
-        } else {
-            Ok(BufWriter::new(Box::new(io::stdout())))
         }
     }
 }

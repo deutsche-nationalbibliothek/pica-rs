@@ -1,4 +1,4 @@
 ```
-$ pica count --csv algebra.dat -o count.txt
-$ pica count --csv --no-header math.dat.gz --append -o count.txt
+$ pica-v1 count --csv algebra.dat -o count.txt
+$ pica-v1 count --csv --no-header math.dat.gz --append -o count.txt
 ```

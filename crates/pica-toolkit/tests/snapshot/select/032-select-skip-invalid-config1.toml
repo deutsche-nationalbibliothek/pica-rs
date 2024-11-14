@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "-c Pica.toml select \"003@.0\""
 status = "success"
 stderr = ""

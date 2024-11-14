@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "-c Pica.toml cat --unique --unique-strategy idn"
 status = "success"
 stderr = ""

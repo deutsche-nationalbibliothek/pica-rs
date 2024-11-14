@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "explode local -d '002@' COPY.dat.gz -o local.dat"
 status = "success"
 stdout = ""

@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "select \"'abc'\""
 status = "success"
 stdin = "012A \u001fa123\u001fa456\u001e012A \u001fa789\u001e\n"

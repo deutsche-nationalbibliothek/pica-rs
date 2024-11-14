@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "filter '041[A@].* =? \"Algebra\"'"
 status = "success"
 stderr = ""

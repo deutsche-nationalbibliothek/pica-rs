@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "filter \"#008[AB]{ a == 'z' } == 2\""
 status = "success"
 stdout = ""
