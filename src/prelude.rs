@@ -16,7 +16,6 @@
 
 #[cfg(feature = "unstable")]
 pub use crate::fmt::{Format, FormatExt, FormatOptions};
-pub use crate::io::{ReadPicaError, ReaderBuilder, RecordsIter};
 pub use crate::matcher::field::FieldMatcher;
 pub use crate::matcher::subfield::SubfieldMatcher;
 pub use crate::matcher::{
@@ -24,4 +23,6 @@ pub use crate::matcher::{
 };
 pub use crate::path::{Path, PathExt};
 pub use crate::query::{Query, QueryExt, QueryOptions};
+pub use crate::reader::{ReadPicaError, ReaderBuilder, RecordsIter};
+pub use crate::writer::{ByteRecordWrite, WriterBuilder};
 pub use crate::{ByteRecord, Error, StringRecord};
