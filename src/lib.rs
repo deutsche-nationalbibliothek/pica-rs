@@ -8,11 +8,22 @@ pub use record::{ByteRecord, StringRecord};
 mod error;
 #[cfg(feature = "unstable")]
 mod fmt;
-pub mod io;
 pub mod matcher;
 mod parser;
 pub mod path;
 pub mod prelude;
 pub mod primitives;
 pub mod query;
+
+pub mod io {
+    pub use super::reader::{
+        ReadPicaError, ReaderBuilder, RecordsIter,
+    };
+    pub use super::writer::{
+        ByteRecordWrite, GzipWriter, PlainWriter, WriterBuilder,
+    };
+}
+
+mod reader;
 mod record;
+mod writer;
