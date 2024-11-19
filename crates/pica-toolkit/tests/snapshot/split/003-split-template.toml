@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "split -s --template \"FOO_{}.dat\" 2 dump.dat.gz"
 status = "success"
 stdout = ""

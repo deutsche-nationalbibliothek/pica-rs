@@ -1,3 +1,0 @@
-bin.name = "pica"
-args = "invalid 118515551.dat.gz -"
-status = "success"

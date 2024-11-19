@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "count --csv -o count.csv"
 status = "success"
 stderr = ""

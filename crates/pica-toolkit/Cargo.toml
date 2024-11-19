@@ -40,4 +40,4 @@ trycmd = "0.15"
 
 [[bin]]
 path = "src/main.rs"
-name = "pica"
+name = "pica-v1"

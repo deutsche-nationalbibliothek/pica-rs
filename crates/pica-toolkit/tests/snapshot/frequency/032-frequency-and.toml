@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "frequency -s \"002@.0\" --where \"002@.0 =^ 'Ts'\" --and \"002@.0 != 'Tsz'\" dump.dat.gz"
 status = "success"
 stdout = "Ts1,2\n"

@@ -1,0 +1,34 @@
+[package]
+name = "pica-cli"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+keywords.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+clap = { version = "4.5.21", features = ["derive", "cargo"] }
+flate2 = { workspace = true }
+indicatif = { version = "0.17.9", features = ["improved_unicode"] }
+pica-record = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+anyhow = { version = "1.0.93" }
+assert_cmd = { version = "2.0.16" }
+assert_fs = { version = "1.1.2" }
+predicates = { version = "3.1.2" }
+
+[[bin]]
+path = "src/main.rs"
+name = "pica"
+
+[[test]]
+path = "tests/integration.rs"
+name = "integration"
+
+[features]
+unstable = ["pica-record/unstable"]
+compat = ["pica-record/compat"]
