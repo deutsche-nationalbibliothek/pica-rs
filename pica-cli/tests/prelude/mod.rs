@@ -8,7 +8,7 @@ pub(crate) fn data_dir() -> &'static PathBuf {
     static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
         current_dir()
             .unwrap()
-            .join("../../tests/data")
+            .join("../tests/data")
             .canonicalize()
             .unwrap()
             .to_path_buf()
