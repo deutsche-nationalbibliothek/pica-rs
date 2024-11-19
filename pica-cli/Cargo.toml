@@ -28,3 +28,7 @@ name = "pica"
 [[test]]
 path = "tests/integration.rs"
 name = "integration"
+
+[features]
+unstable = ["pica-record/unstable"]
+compat = ["pica-record/compat"]

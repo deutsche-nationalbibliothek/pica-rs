@@ -39,7 +39,7 @@ resolver = "2"
 default-members = ["crates/pica-toolkit"]
 
 members = [
-    "crates/pica-cli",
+    "pica-cli",
     "crates/pica-lint",
     "crates/pica-matcher",
     "crates/pica-path",
