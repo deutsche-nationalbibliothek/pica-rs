@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "count --skip-invalid dump.dat.gz"
 status = "success"
 stderr = ""

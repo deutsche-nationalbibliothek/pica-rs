@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "cat math.dat.gz --append -o out.dat"
 status = "success"
 stdout = ""

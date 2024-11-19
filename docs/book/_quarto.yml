@@ -18,6 +18,9 @@ book:
     - part: "Erste Schritte"
       chapters:
         - install.qmd
+    - part: "Kommandos"
+      chapters:
+        - commands/invalid.qmd
     # - summary.qmd
     # - references.qmd
   sidebar:
@@ -29,7 +32,6 @@ format:
   html:
     theme: flatly
     css: assets/css/style.css
-    max-width: 740px
     fontsize: 0.9em
     fontcolor: "#333"
     toc: false

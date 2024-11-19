@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "filter \"037G.p?\""
 status = "success"
 stdout = ""

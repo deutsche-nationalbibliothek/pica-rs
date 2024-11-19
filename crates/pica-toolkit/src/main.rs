@@ -17,7 +17,7 @@ use std::{io, process};
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
     Cat, Completions, Convert, Count, Explode, Filter, Frequency, Hash,
-    Invalid, Partition, Print, Sample, Select, Slice, Split,
+    Partition, Print, Sample, Select, Slice, Split,
 };
 use config::Config;
 use error::{CliError, CliResult};
@@ -48,7 +48,6 @@ enum Commands {
     Filter(Filter),
     Frequency(Frequency),
     Hash(Hash),
-    Invalid(Invalid),
     Partition(Partition),
     Print(Print),
     Sample(Sample),
@@ -70,7 +69,6 @@ fn run() -> CliResult<()> {
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),
         Commands::Hash(cmd) => cmd.run(&config),
-        Commands::Invalid(cmd) => cmd.run(&config),
         Commands::Partition(cmd) => cmd.run(&config),
         Commands::Print(cmd) => cmd.run(&config),
         Commands::Sample(cmd) => cmd.run(&config),

@@ -113,11 +113,11 @@ Wenn der Quellcode nicht benötigt wird, kann das Projekt auch direkt
 ```{.bash}
 $ # Installation der aktuellen Entwicklungsversion
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
-     --branch main pica-toolkit
+     --branch main pica-cli
 
 $ # Installation der Version X.Y.Z
 $ cargo install --git https://github.com/deutsche-nationalbibliothek/pica-rs \
-      --tag vX.Y.Z pica-toolkit
+      --tag vX.Y.Z pica-cli
 ```
 
 Das fertige Programm befindet sich dann unter `~/.cargo/bin/pica`.

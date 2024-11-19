@@ -15,8 +15,6 @@ fn cli_tests() {
         .case("tests/snapshot/frequency/*.trycmd")
         .case("tests/snapshot/hash/*.toml")
         .case("tests/snapshot/hash/*.trycmd")
-        .case("tests/snapshot/invalid/*.toml")
-        .case("tests/snapshot/invalid/*.trycmd")
         .case("tests/snapshot/partition/*.toml")
         .case("tests/snapshot/partition/*.trycmd")
         .case("tests/snapshot/print/*.toml")

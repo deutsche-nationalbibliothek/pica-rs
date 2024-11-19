@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "filter -s -A allow.csv \"002@.0 == 'Ts1'\" dump.dat.gz"
 status = "success"
 stderr = ""

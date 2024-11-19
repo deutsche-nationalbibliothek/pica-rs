@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "-c Pica.toml frequency \"029@{ a | a =^ 'Städtische'}\""
 status = "success"
 stdout = "Sta\u0308dtische Pressestelle,1\n"

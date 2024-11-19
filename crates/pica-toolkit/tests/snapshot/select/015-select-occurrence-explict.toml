@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "select \"047A/03.e\""
 status = "success"
 stdout = "DE-101\n"

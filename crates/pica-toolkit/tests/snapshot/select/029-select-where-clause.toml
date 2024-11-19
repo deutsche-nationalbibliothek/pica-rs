@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "select -s \"041A.a\" --where \"003@.0 == '040011569'\" dump.dat.gz"
 status = "success"
 stdout = "Algebra\n"

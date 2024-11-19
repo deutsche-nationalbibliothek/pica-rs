@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "hash algebra.dat math.dat.gz -o hashes.csv"
 status = "success"
 stdout = ""

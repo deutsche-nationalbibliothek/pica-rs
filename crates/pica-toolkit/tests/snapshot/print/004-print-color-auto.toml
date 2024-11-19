@@ -1,4 +1,4 @@
-bin.name = "pica"
+bin.name = "pica-v1"
 args = "print --color=auto"
 status = "success"
 stdin = "003@ \u001f0123456789X\u001e\n"
