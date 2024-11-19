@@ -7,11 +7,15 @@ use error::{CliError, CliResult};
 
 mod cli;
 mod commands;
+#[cfg(feature = "unstable")]
+mod config;
 mod error;
 mod progress;
 
 fn run(args: Args) -> CliResult {
     match args.cmd {
+        #[cfg(feature = "unstable")]
+        Command::Config(cmd) => cmd.execute(),
         Command::Invalid(cmd) => cmd.execute(),
     }
 }
