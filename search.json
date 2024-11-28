@@ -65,6 +65,28 @@
     ]
   },
   {
+    "objectID": "commands/config.html",
+    "href": "commands/config.html",
+    "title": "config",
+    "section": "",
+    "text": "Optionen\nMithilfe des config-Kommandos lassen sich bestimmte Optionen setzen und das Laufzeitverhalten von pica beeinflussen. Die Konfigurationsdatei wird automatisch angelegt und je nach Betriebssystem in den Standardpfaden gespeichert:",
+    "crumbs": [
+      "Kommandos",
+      "config"
+    ]
+  },
+  {
+    "objectID": "commands/config.html#optionen",
+    "href": "commands/config.html#optionen",
+    "title": "config",
+    "section": "",
+    "text": "Überspringen ungültiger Datensätze\nKann eine Zeile in der Eingabe nicht als Datensatz (normalisiertes PICA+) dekodiert werden, brechen die meisten Kommandos die Verarbeitung mit einer Fehlermeldung ab. Dieses Verhalten kann mit der Option --skip-invalid geändert werden, sodass diese ungültigen Datensätze übersprungen werden. Dieses Verhalten kann auch in der Konfigurationsdatei hinterlegt werden:\n$ pica config skip-invalid true\nNachdem die Variable gesetzt wurde, kann die Angabe der --skip-invalid-Option entfallen. Die Einstellung lässt sich mit --unset rückgängig machen:\n$ pica config --unset skip-invalid\n\n\nÄndern der Unicode Normalform\nLiegen die PICA-Daten in einer anderen Unicode Normalform vor, lassen sich Filterausdrücke mit der Option normalization an die Normalform der Daten angleichen:\n$ pica config normalization nfd\nEs werden die vier Normalformen nfd, nfc, nfkc und nfkd unterstützt. Nur wenn eine Normalform ausgewählt ist, werden Filterausdrücke immer entsprechend transliteriert. Die Einstellung lässt sich mit --unset rückgängig machen:\n$ pica config --unset normalization",
+    "crumbs": [
+      "Kommandos",
+      "config"
+    ]
+  },
+  {
     "objectID": "commands/invalid.html",
     "href": "commands/invalid.html",
     "title": "invalid",

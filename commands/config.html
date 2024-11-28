@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>invalid – pica-rs</title>
+<title>config – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,7 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/config.html" rel="prev">
+<link href="../commands/invalid.html" rel="next">
+<link href="../install.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -115,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/config.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/invalid.html">invalid</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/config.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/config.html">config</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -177,13 +178,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/config.html" class="sidebar-item-text sidebar-link">
+  <a href="../commands/config.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">config</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/invalid.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/invalid.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">invalid</span></a>
   </div>
 </li>
@@ -198,9 +199,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/config.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/invalid.html">invalid</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/config.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/config.html">config</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">invalid</h1>
+<h1 class="title">config</h1>
 </div>
 
 
@@ -217,13 +218,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in der Eingabe nicht als normalisiertes PICA+ dekodiert werden können. Diese ungültigen Zeilen lassen sich bei vielen Kommandos mit der Option <code>--skip-invalid</code> / <code>-s</code> überspringen, wobei die Anzahl der übersprungenen Zeilen nicht angezeigt wird. Es ist zu empfehlen, die Anzahl invalider Datensätze zu kontrollieren und einer Prüfung zu unterziehen, um diese ggf. zu korrigieren. Das <code>invalid</code>-Kommando findet diese Zeilen in der Eingabe und gibt diese wieder auf der Standardausgabe (<code>stdout</code>) aus. Durch Angabe der Option <code>--output</code> / <code>-o</code> kann die Ausgabe in eine Datei geschrieben werden.</p>
-<section id="beispiel" class="level2">
-<h2 class="anchored" data-anchor-id="beispiel">Beispiel</h2>
-<p>Der folgende Befehl findet alle ungültigen Datensätze aus der Datei <code>DUMP.dat.gz</code> und schreibt diese Zeile in die Datei <code>invalid.dat</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica invalid DUMP.dat.gz <span class="at">-o</span> invalid.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warnung
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Das Kommando <code>config</code> ist eine <code>unstable</code>-Funktion, die noch nicht in den Releases enthalten ist und explizit aktiviert werden muss.</p>
+</div>
+</div>
+<p>Mithilfe des <code>config</code>-Kommandos lassen sich bestimmte Optionen setzen und das Laufzeitverhalten von <code>pica</code> beeinflussen. Die Konfigurationsdatei wird automatisch angelegt und je nach Betriebssystem in den Standardpfaden gespeichert:</p>
+<ul>
+<li><code>/home/alice/.config/pica/config.toml</code> (Linux),</li>
+<li><code>/Users/Charlie/Library/Application Support/de.DNB.pica/config.toml</code> (macOS),</li>
+<li><code>C:\Users\Bob\AppData\Roaming\DNB\pica\config.toml</code> (Windows).</li>
+</ul>
+<section id="optionen" class="level2">
+<h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
+<section id="überspringen-ungültiger-datensätze" class="level3">
+<h3 class="anchored" data-anchor-id="überspringen-ungültiger-datensätze">Überspringen ungültiger Datensätze</h3>
+<p>Kann eine Zeile in der Eingabe nicht als Datensatz (normalisiertes PICA+) dekodiert werden, brechen die meisten Kommandos die Verarbeitung mit einer Fehlermeldung ab. Dieses Verhalten kann mit der Option <code>--skip-invalid</code> geändert werden, sodass diese ungültigen Datensätze übersprungen werden. Dieses Verhalten kann auch in der Konfigurationsdatei hinterlegt werden:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica config skip-invalid true</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Nachdem die Variable gesetzt wurde, kann die Angabe der <code>--skip-invalid</code>-Option entfallen. Die Einstellung lässt sich mit <code>--unset</code> rückgängig machen:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica config <span class="at">--unset</span> skip-invalid</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="ändern-der-unicode-normalform" class="level3">
+<h3 class="anchored" data-anchor-id="ändern-der-unicode-normalform">Ändern der Unicode Normalform</h3>
+<p>Liegen die PICA-Daten in einer anderen <a href="https://de.wikipedia.org/wiki/Normalisierung_(Unicode)">Unicode Normalform</a> vor, lassen sich Filterausdrücke mit der Option <code>normalization</code> an die Normalform der Daten angleichen:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica config normalization nfd</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Es werden die vier Normalformen <code>nfd</code>, <code>nfc</code>, <code>nfkc</code> und <code>nfkd</code> unterstützt. Nur wenn eine Normalform ausgewählt ist, werden Filterausdrücke immer entsprechend transliteriert. Die Einstellung lässt sich mit <code>--unset</code> rückgängig machen:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica config <span class="at">--unset</span> normalization</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -646,11 +677,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/config.html" class="pagination-link" aria-label="config">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">config</span>
+      <a href="../install.html" class="pagination-link" aria-label="Installation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Installation</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../commands/invalid.html" class="pagination-link" aria-label="invalid">
+        <span class="nav-page-text">invalid</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
