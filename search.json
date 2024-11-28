@@ -69,7 +69,7 @@
     "href": "commands/config.html",
     "title": "config",
     "section": "",
-    "text": "Optionen\nMithilfe des config-Kommandos lassen sich bestimmte Optionen setzen und das Laufzeitverhalten von pica beeinflussen. Die Konfigurationsdatei wird automatisch angelegt und je nach Betriebssystem in den Standardpfaden gespeichert:",
+    "text": "Optionen\nMithilfe des config-Kommandos lassen sich bestimmte Optionen setzen und das Laufzeitverhalten von pica beeinflussen. Falls noch keine Konfigurationsdatei existiert, wird diese automatisch angelegt und je nach Betriebssystem in den dafür vorgesehenen Pfaden gespeichert:",
     "crumbs": [
       "Kommandos",
       "config"
