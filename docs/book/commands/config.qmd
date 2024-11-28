@@ -1,0 +1,59 @@
+# config {.unnumbered}
+
+::: {.callout-warning}
+Das Kommando `config` ist eine `unstable`-Funktion, die noch nicht in den
+Releases enthalten ist und explizit aktiviert werden muss.
+:::
+
+Mithilfe des `config`-Kommandos lassen sich bestimmte Optionen setzen und das
+Laufzeitverhalten von `pica` beeinflussen. Die Konfigurationsdatei wird
+automatisch angelegt und je nach Betriebssystem in den Standardpfaden
+gespeichert:
+
+- `/home/alice/.config/pica/config.toml` (Linux),
+- `/Users/Charlie/Library/Application Support/de.DNB.pica/config.toml` (macOS),
+- `C:\Users\Bob\AppData\Roaming\DNB\pica\config.toml` (Windows).
+
+## Optionen
+
+### Überspringen ungültiger Datensätze
+
+Kann eine Zeile in der Eingabe nicht als Datensatz (normalisiertes PICA+)
+dekodiert werden, brechen die meisten Kommandos die Verarbeitung mit einer
+Fehlermeldung ab. Dieses Verhalten kann mit der Option `--skip-invalid`
+geändert werden, sodass diese ungültigen Datensätze übersprungen werden. Dieses
+Verhalten kann auch in der Konfigurationsdatei hinterlegt werden:
+
+```{.bash}
+$ pica config skip-invalid true
+```
+
+Nachdem die Variable gesetzt wurde, kann die Angabe der `--skip-invalid`-Option
+entfallen. Die Einstellung lässt sich mit `--unset` rückgängig machen:
+
+```{.bash}
+$ pica config --unset skip-invalid
+```
+
+### Ändern der Unicode Normalform
+
+Liegen die PICA-Daten in einer anderen [Unicode Normalform] vor, lassen sich
+Filterausdrücke mit der Option `normalization` an die Normalform der Daten
+angleichen:
+
+```{.bash}
+$ pica config normalization nfd
+```
+Es werden die vier Normalformen `nfd`, `nfc`, `nfkc` und `nfkd` unterstützt.
+Nur wenn eine Normalform ausgewählt ist, werden Filterausdrücke immer
+entsprechend transliteriert. Die Einstellung lässt sich mit `--unset`
+rückgängig machen:
+
+```{.bash}
+$ pica config --unset normalization
+```
+
+
+
+
+[Unicode Normalform]: https://de.wikipedia.org/wiki/Normalisierung_(Unicode)

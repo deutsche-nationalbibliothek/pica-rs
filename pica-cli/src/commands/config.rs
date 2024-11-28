@@ -2,7 +2,9 @@ use std::process::ExitCode;
 
 use clap::Parser;
 
+use crate::config;
 use crate::error::{bail, CliError, CliResult};
+use crate::unicode::NormalizationForm;
 
 /// Get and set configuration options.
 #[derive(Debug, Parser)]
@@ -28,12 +30,9 @@ pub(crate) struct Config {
 }
 
 #[inline]
-fn print_option<T>(key: &str, value: Option<T>)
-where
-    T: ToString,
-{
+fn print_option<T: ToString>(value: Option<T>) {
     println!(
-        "{key} = {}",
+        "{}",
         match value {
             Some(value) => value.to_string(),
             None => "None".to_string(),
@@ -42,10 +41,13 @@ where
 }
 
 impl Config {
-    pub(crate) fn execute(self) -> CliResult {
-        let mut config = crate::config::Config::discover()?;
+    pub(crate) fn execute(
+        self,
+        config: &mut config::Config,
+    ) -> CliResult {
         let name = match self.name.as_str() {
             name if name == "skip-invalid" => name,
+            name if name == "normalization" => name,
             name => {
                 bail!("unknown config option `{name}`");
             }
@@ -61,13 +63,26 @@ impl Config {
                         bail!("invalid value `{value}`");
                     }
                 }
+                "normalization" => {
+                    if let Ok(value) =
+                        value.parse::<NormalizationForm>()
+                    {
+                        config.normalization = Some(value);
+                    } else {
+                        bail!("invalid value `{value}`");
+                    }
+                }
                 _ => unreachable!(),
             }
+
             config.save()?;
         } else if self.unset {
             match name {
                 "skip-invalid" => {
                     config.skip_invalid = false;
+                }
+                "normalization" => {
+                    config.normalization = None;
                 }
                 _ => unreachable!(),
             }
@@ -76,7 +91,10 @@ impl Config {
         } else if self.get || (!self.unset && !self.set) {
             match name {
                 "skip-invalid" => {
-                    print_option(name, Some(&config.skip_invalid));
+                    print_option(Some(&config.skip_invalid));
+                }
+                "normalization" => {
+                    print_option(config.normalization.as_ref())
                 }
                 _ => unreachable!(),
             }

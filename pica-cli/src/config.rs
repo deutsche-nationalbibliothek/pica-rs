@@ -1,9 +1,10 @@
-use std::fs::{self, create_dir_all, File};
-use std::io::{self, Write};
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
+
+use crate::unicode::NormalizationForm;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -14,6 +15,10 @@ pub(crate) struct Config {
 
     // Whether to skip invalid records or not.
     pub(crate) skip_invalid: bool,
+
+    /// If set, a filter expression is translitered into the given
+    /// unicode normalization form before applied on a record.
+    pub(crate) normalization: Option<NormalizationForm>,
 
     /// This structure should always be constructed using a public
     /// constructor or using the update syntax:
@@ -31,27 +36,18 @@ pub(crate) struct Config {
 }
 
 impl Config {
-    /// Creates a new default config and sets the file location.
-    pub(crate) fn discover() -> io::Result<Self> {
-        if let Some(project_dir) =
-            ProjectDirs::from("de.dnb", "DNB", "pica")
-        {
-            let config_dir = project_dir.config_dir();
-            let config = config_dir.join("config.toml");
-
-            if config.is_file() {
-                Self::from_path(config)
-            } else {
-                Ok(Self {
-                    path: config,
-                    ..Default::default()
-                })
-            }
-        } else {
-            Ok(Self::default())
+    /// Creates a new default config.
+    pub(crate) fn new<P>(path: P) -> Self
+    where
+        P: AsRef<Path>,
+    {
+        Self {
+            path: path.as_ref().into(),
+            ..Default::default()
         }
     }
 
+    /// Loads a config from a path.
     pub(crate) fn from_path<P>(path: P) -> io::Result<Self>
     where
         P: AsRef<Path>,
@@ -65,9 +61,32 @@ impl Config {
         Ok(config)
     }
 
+    /// Creates a new configuration. The file location is derived from
+    /// the standard directories and the name of the project and
+    /// organization.
+    pub(crate) fn discover() -> io::Result<Self> {
+        if let Some(project_dir) =
+            ProjectDirs::from("de.dnb", "DNB", "pica")
+        {
+            let config_dir = project_dir.config_dir();
+            let config = config_dir.join("config.toml");
+
+            if config.is_file() {
+                Self::from_path(config)
+            } else {
+                Ok(Self::new(config))
+            }
+        } else {
+            Ok(Self::default())
+        }
+    }
+
     /// Saves the config.
-    #[allow(dead_code)]
+    #[cfg(feature = "unstable")]
     pub(crate) fn save(&self) -> io::Result<()> {
+        use std::fs::{create_dir_all, File};
+        use std::io::Write;
+
         if let Some(parent) = self.path.parent() {
             if !parent.is_dir() {
                 create_dir_all(parent)?;

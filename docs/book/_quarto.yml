@@ -20,6 +20,7 @@ book:
         - install.qmd
     - part: "Kommandos"
       chapters:
+        - commands/config.qmd
         - commands/invalid.qmd
     # - summary.qmd
     # - references.qmd
@@ -35,5 +36,3 @@ format:
     fontsize: 0.9em
     fontcolor: "#333"
     toc: false
-
-
