@@ -10,10 +10,13 @@ rust-version.workspace = true
 
 [dependencies]
 clap = { version = "4.5.21", features = ["derive", "cargo"] }
+directories = { version = "5.0.1" }
 flate2 = { workspace = true }
 indicatif = { version = "0.17.9", features = ["improved_unicode"] }
 pica-record = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
+toml = { version = "0.8.19", features = ["preserve_order"] }
 
 [dev-dependencies]
 anyhow = { version = "1.0.93" }

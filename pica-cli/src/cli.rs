@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 
 use crate::commands::*;
@@ -7,11 +9,17 @@ use crate::commands::*;
 #[derive(Debug, Parser)]
 #[command(name = "pica", version, about, long_about = None)]
 pub(crate) struct Args {
+    /// Sets a custom config file
+    #[arg(short, long, value_name = "FILE")]
+    pub(crate) config: Option<PathBuf>,
+
     #[command(subcommand)]
     pub(crate) cmd: Command,
 }
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
+    #[cfg(feature = "unstable")]
+    Config(Config),
     Invalid(Invalid),
 }
