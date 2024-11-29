@@ -20,6 +20,15 @@ pub enum ReadPicaError {
     IO(#[from] std::io::Error),
 }
 
+impl ReadPicaError {
+    /// Returns true if the error variant is a parse error and the
+    /// `skip_invalid` flag is true.
+    #[inline(always)]
+    pub fn skip_parse_err(&self, skip_invalid: bool) -> bool {
+        matches!(self, Self::Parse { .. }) && skip_invalid
+    }
+}
+
 /// Configures and builda a PICA+ reader.
 #[derive(Debug, Default)]
 pub struct ReaderBuilder();

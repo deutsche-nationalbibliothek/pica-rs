@@ -16,7 +16,7 @@ use std::{io, process};
 
 use clap::{CommandFactory, Parser, Subcommand};
 use commands::{
-    Cat, Completions, Convert, Count, Explode, Filter, Frequency, Hash,
+    Completions, Convert, Count, Explode, Filter, Frequency, Hash,
     Partition, Print, Sample, Select, Slice, Split,
 };
 use config::Config;
@@ -38,8 +38,6 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    Cat(Cat),
-
     /// Generate shell completions (e.g. Bash, ZSH)
     Completions(Completions),
     Convert(Convert),
@@ -61,7 +59,6 @@ fn run() -> CliResult<()> {
     let config = Config::from_path_or_default(args.config)?;
 
     match args.command {
-        Commands::Cat(cmd) => cmd.run(&config),
         Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
         Commands::Convert(cmd) => cmd.run(&config),
         Commands::Count(cmd) => cmd.run(&config),

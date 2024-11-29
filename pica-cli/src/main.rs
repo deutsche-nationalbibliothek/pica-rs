@@ -16,7 +16,7 @@ mod unicode;
 fn run() -> CliResult {
     let args = Args::parse();
 
-    #[allow(unused)]
+    #[allow(unused_mut)]
     let mut config = if let Some(ref path) = args.config {
         Config::from_path(path).unwrap_or(Config::new(path))
     } else {
@@ -24,6 +24,7 @@ fn run() -> CliResult {
     };
 
     match args.cmd {
+        Command::Concat(cmd) => cmd.execute(&config),
         #[cfg(feature = "unstable")]
         Command::Config(cmd) => cmd.execute(&mut config),
         Command::Invalid(cmd) => cmd.execute(),
