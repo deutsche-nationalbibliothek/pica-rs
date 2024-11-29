@@ -45,7 +45,7 @@ pub(crate) struct Concat {
         requires = "unique",
         value_name = "STRATEGY",
         hide_possible_values = true,
-        default_value = "idn",
+        default_value = "idn"
     )]
     unique_strategy: Strategy,
 
@@ -120,8 +120,10 @@ impl Concat {
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
                         if self.unique {
-                            let key =
-                                record_key(record, &self.unique_strategy);
+                            let key = record_key(
+                                record,
+                                &self.unique_strategy,
+                            );
                             if seen.contains(&key) || key.is_empty() {
                                 continue;
                             }

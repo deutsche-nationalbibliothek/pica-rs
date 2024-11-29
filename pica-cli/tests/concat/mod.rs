@@ -210,7 +210,6 @@ fn skip_invalid() -> TestResult {
             "parse erorr: invalid record on line 1",
         ));
 
-
     // config
     let mut cmd = Command::cargo_bin("pica")?;
     let temp_dir = TempDir::new().unwrap();
