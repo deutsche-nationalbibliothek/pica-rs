@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>invalid – pica-rs</title>
+<title>concat – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,7 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/config.html" rel="prev">
+<link href="../commands/config.html" rel="next">
+<link href="../install.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -115,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/concat.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/invalid.html">invalid</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/concat.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/concat.html">concat</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -177,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/concat.html" class="sidebar-item-text sidebar-link">
+  <a href="../commands/concat.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">concat</span></a>
   </div>
 </li>
@@ -189,7 +190,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/invalid.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/invalid.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">invalid</span></a>
   </div>
 </li>
@@ -204,9 +205,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/concat.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/invalid.html">invalid</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/concat.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/concat.html">concat</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">invalid</h1>
+<h1 class="title">concat</h1>
 </div>
 
 
@@ -223,13 +224,84 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in der Eingabe nicht als normalisiertes PICA+ dekodiert werden können. Diese ungültigen Zeilen lassen sich bei vielen Kommandos mit der Option <code>--skip-invalid</code> / <code>-s</code> überspringen, wobei die Anzahl der übersprungenen Zeilen nicht angezeigt wird. Es ist zu empfehlen, die Anzahl invalider Datensätze zu kontrollieren und einer Prüfung zu unterziehen, um diese ggf. zu korrigieren. Das <code>invalid</code>-Kommando findet diese Zeilen in der Eingabe und gibt diese wieder auf der Standardausgabe (<code>stdout</code>) aus. Durch Angabe der Option <code>--output</code> / <code>-o</code> kann die Ausgabe in eine Datei geschrieben werden.</p>
-<section id="beispiel" class="level2">
-<h2 class="anchored" data-anchor-id="beispiel">Beispiel</h2>
-<p>Der folgende Befehl findet alle ungültigen Datensätze aus der Datei <code>DUMP.dat.gz</code> und schreibt diese Zeile in die Datei <code>invalid.dat</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica invalid DUMP.dat.gz <span class="at">-o</span> invalid.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Das <code>concat</code>-Kommando (Alias <code>cat</code>) liest Datensätze direkt von der Standardeingabe (<code>stdin</code>) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe kann entweder in eine Datei oder in die Standardausgabe (<code>stdout</code>) geschrieben werden.</p>
+<p>Der wichtigste Anwendungsfall des Kommandos besteht in Kombination mit den Kommandos <code>partition</code> oder <code>split</code>, da mittels <code>concat</code> das Ergebnis dieser Kommandos (teil-)rückgängig gemacht werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere Dateien anhand eines Kriteriums zu teilen (bspw. nach der Sprache), um anschließend einzelne Dateien wieder zusammenzufügen.</p>
+<p>Das folgende Beispiel fügt die Datensätze aus den Dateien <code>ger.dat</code> und <code>eng.dat</code> zu einer Datei <code>ger_eng.dat</code> zusammen:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-u</span> ger.dat eng.dat <span class="at">-o</span> ger_eng.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="optionen" class="level2">
+<h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
+<dl>
+<dt><code>-s</code>, <code>--skip-invalid</code></dt>
+<dd>
+Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+</dd>
+<dt><code>-u</code>, <code>--unique</code></dt>
+<dd>
+Es werden keine Duplikate in die Ausgabe geschrieben. Die Strategie zur Erkennung von Duplikaten wird mittels der Option <code>--unique-strategy</code> festgelegt.
+</dd>
+<dt><code>--unique-strategy &lt;STRATEGY&gt;</code></dt>
+<dd>
+Festlegen, wie Duplikate erkannt werden sollen. Standardmäßig ist der Wert <code>idn</code> ausgewählt, der Duplikate anhand der PPN aus dem Feld <code>003@.0</code> erkannt. Alternativ kann die Strategie <code>hash</code> gewählt werden. Der Vergleich erfolgt dann über die SHA-256 Prüfsumme der Datensätze.
+</dd>
+<dt><code>--append</code></dt>
+<dd>
+Wenn die Ausgabedatei bereits existiert, wird die Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine bestehende Datei standardmäßig überschrieben.
+</dd>
+<dt><code>--tee &lt;filename&gt;</code></dt>
+<dd>
+Abzweigen der Ausgabe in eine zusätzliche Datei.
+</dd>
+<dt><code>-p</code>, <code>--progress</code></dt>
+<dd>
+Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels <code>-o</code> bzw. <code>--output</code>.
+</dd>
+<dt><code>-o</code>, <code>--output</code></dt>
+<dd>
+Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe <code>stdout</code> geschrieben. Endet der Dateiname mit dem Suffix <code>.gz</code>, wird die Ausgabe automatisch im <a href="https://de.wikipedia.org/wiki/Gzip">Gzip</a>-Format komprimiert.
+</dd>
+</dl>
+</section>
+<section id="beispiele" class="level2">
+<h2 class="anchored" data-anchor-id="beispiele">Beispiele</h2>
+<section id="überspringen-ungültiger-datensätze" class="level3">
+<h3 class="anchored" data-anchor-id="überspringen-ungültiger-datensätze">Überspringen ungültiger Datensätze</h3>
+<p>Der eingangs verwendete Befehl geht davon aus, dass die zwei Partitionen ausschließlich gültige Datensätze enthalten. Gültig in diesem Zusammenhang bedeutet, dass es sich um valide Datensätze im Format PICA+ handelt und nicht ob ein Datensatz einem bestimmten Regelwerk entspricht.</p>
+<p>Das Ausschließen von ungültigen Datensätzen wird mit der Option <code>-s</code> oder <code>--skip-invalid</code> erreicht:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--skip-invalid</span> DUMP.dat.gz <span class="at">-o</span> dump_valid.dat</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-s</span> DUMP.dat.gz <span class="at">--output</span> dump_valid.dat.gz</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Alternativ lässt sich das Überspringen ungültiger Datensätze mittels des <a href="../commands/config.html#überspringen-ungültiger-datensätze">config</a>-Kommandos einstellen.</p>
+</section>
+<section id="lesen-von-der-standardeingabe" class="level3">
+<h3 class="anchored" data-anchor-id="lesen-von-der-standardeingabe">Lesen von der Standardeingabe</h3>
+<p>Das Kommando kann auch direkt von der Standardeingabe (<code>stdin</code>) lesen. Das ist bspw. dann hilfreich, wenn die Ausgabe aus einem vorhergehenden Pipeline-Schritt mit dem Inhalt einer oder mehrerer Dateien konkateniert werden soll.</p>
+<p>Das folgende Beispiel liest im ersten Pipeline-Schritt die Datei <code>dump1.dat</code> ein, entfernt ungültige Datensätze und gibt die Ausgabe nach <code>stdout</code> aus. Der zweite Pipeline-Schritt liest diese Datensätze ein (<code>-</code>) und konkateniert diese mit den Datensätzen aus der Datei <code>dump2.dat</code>. Das Ergebnis wird in die Datei <code>out.dat</code> geschrieben.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-s</span> dump1.dat <span class="kw">|</span> <span class="ex">pica</span> cat <span class="at">-</span> dump2.dat <span class="at">-o</span> out.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Der Dateiname <code>-</code> steht für die Standardeingabe (<code>stdin</code>). Wären die zwei Argumente vertauscht (<code>pica cat dump2.dat -</code>), dann würden erst die gültigen Datensätze aus der Datei <code>dump1.dat</code> und anschließend die Datensätze aus dem ersten Pipeline-Schritt geschrieben.</p>
+</section>
+<section id="hinzufügen-von-datensätzen" class="level3">
+<h3 class="anchored" data-anchor-id="hinzufügen-von-datensätzen">Hinzufügen von Datensätzen</h3>
+<p>Wenn eine Ausgabedatei bereits existiert, wird diese standardmäßig neu angelegt und überschrieben. Soll das Verhalten dahingehend geändert werden, dass an die bestehenden Dateien angehangen wird, kann dies mit der <code>--append</code>-Option erreicht werden. Diese Option ändert das Verhalten von <code>--output</code> und <code>--tee</code>. Die Option hat auf das Verhalten beim Schreiben in die Standardausgabe keine Auswirkung.</p>
+<p>Im folgenden Beispiel erzeugt der erste Befehl eine neue Datei <code>gnd.dat</code>. Sollte die Datei bereits existieren, wird der Datei-Inhalt überschrieben. Die darauffolgenden Kommandos hängen jeweils an das Ende der Datei <code>gnd.dat</code> an.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat Tp<span class="pp">*</span>.dat <span class="at">-o</span> gnd.dat</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--append</span> Ts<span class="pp">*</span>.dat <span class="at">-o</span> gnd.dat</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--append</span> Tu<span class="pp">*</span>.dat <span class="at">-o</span> gnd.dat</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="abzweigen-der-ausgabe" class="level3">
+<h3 class="anchored" data-anchor-id="abzweigen-der-ausgabe">Abzweigen der Ausgabe</h3>
+<p>Gelegenlich kann es nützlich sein, die Ausgabe des <code>concat</code>-Kommandos in eine Datei zu schreiben und gleichzeitig die Ausgabe an einen weiteren Pipeline-Schritt weiterzureichen. Dies hat den Vorteil, dass zwei CPU-Kerne gleichzeitig genutzt werden können. Mit der <code>--tee</code>-Option lässt sich dieses Verhalten erzielen. Der Name der Option leitet sich von dem T-Stück (engl. tee connector) ab, mit dem ein Klempner eine Abzeigung in eine Leitung einbaut.</p>
+<p>Im folgenden Beispiel werden alle <code>Tp*.dat</code> zusammengefügt und in eine Datei <code>Tp.dat</code> geschrieben. Gleichzeitig werden alle Datensätze mit dem <code>filter</code>-Kommando nach der Satzart <code>Tp2</code> im Feld <code>002@.0</code> gefiltert.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat partitions/Tp<span class="pp">*</span>.dat <span class="at">--tee</span> gnd_person.dat <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">pica</span> filter <span class="st">"002@.0 =^ 'Tp2'"</span> <span class="at">-o</span> Tp2.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="entfernen-von-duplikaten" class="level3">
+<h3 class="anchored" data-anchor-id="entfernen-von-duplikaten">Entfernen von Duplikaten</h3>
+<p>Duplikate können durch die Angabe des Flags <code>--unique</code> (<code>-u</code>) entfernt werden. Standardmäßig erfolgt die Erkennung von Duplikaten per PPN aus dem Feld <code>003@.0</code> . Alternativ kann durch die Angabe der Option <code>--unique-strategy</code> die Variante <code>hash</code> ausgewählt werden, bei der nur solche Datensätze als gleich gewertet werden, bei denen alle Bytes gleich sind.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--unique</span> <span class="at">--unique-strategy</span> hash ger.dat eng.dat <span class="at">-o</span> out.dat</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--unique</span> <span class="at">--unique-strategy</span> idn ger.dat eng.dat <span class="at">-o</span> out.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -652,11 +724,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/config.html" class="pagination-link" aria-label="config">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">config</span>
+      <a href="../install.html" class="pagination-link" aria-label="Installation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Installation</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../commands/config.html" class="pagination-link" aria-label="config">
+        <span class="nav-page-text">config</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
