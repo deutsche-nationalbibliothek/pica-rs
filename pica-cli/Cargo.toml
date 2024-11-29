@@ -12,6 +12,7 @@ rust-version.workspace = true
 clap = { version = "4.5.21", features = ["derive", "cargo"] }
 directories = { version = "5.0.1" }
 flate2 = { workspace = true }
+hashbrown = { version = "0.15" }
 indicatif = { version = "0.17.9", features = ["improved_unicode"] }
 pica-record = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

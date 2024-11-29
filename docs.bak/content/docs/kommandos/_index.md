@@ -6,7 +6,6 @@ bookFlatSection: true
 
 ## Übersicht
 
-* **[cat]** --- Zusammenfügen (Konkatenieren) von Datensätzen
 * **[convert]** --- Konvertierung zwischen verschiedenen PICA-Formaten
 * **[completions]** --- Erzeugung von Shell-Skripten zur Autovervollständigung
 * **[count]** --- Zählen von Datensätzen, Feldern und Unterfeldern
@@ -20,7 +19,6 @@ bookFlatSection: true
 * **[slice]** --- Ausschneiden eines zusammenhängenden Teilbereichs aus der Eingabe
 * **[split]** --- Teilt eine Menge an Datensätzen in Dateien fester Größe
 
-[cat]: {{< relref "cat.md" >}}
 [completions]: {{< relref "completions.md" >}}
 [convert]: {{< relref "convert.md" >}}
 [count]: {{< relref "count.md" >}}

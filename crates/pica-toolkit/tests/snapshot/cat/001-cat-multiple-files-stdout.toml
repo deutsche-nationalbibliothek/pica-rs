@@ -1,4 +1,0 @@
-bin.name = "pica-v1"
-args = "cat algebra.dat math.dat.gz"
-status = "success"
-stderr = ""

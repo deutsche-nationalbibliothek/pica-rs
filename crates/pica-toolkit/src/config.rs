@@ -18,7 +18,6 @@ pub(crate) struct GlobalConfig {
 pub(crate) struct Config {
     #[serde(skip)]
     pub(crate) path: Option<PathBuf>,
-    pub(crate) cat: Option<CatConfig>,
     pub(crate) convert: Option<ConvertConfig>,
     pub(crate) count: Option<CountConfig>,
     pub(crate) explode: Option<ExplodeConfig>,

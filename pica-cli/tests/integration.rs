@@ -1,3 +1,4 @@
+mod concat;
 #[cfg(feature = "unstable")]
 mod config;
 mod invalid;

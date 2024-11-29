@@ -1,4 +1,3 @@
-mod cat;
 mod completions;
 mod convert;
 mod count;
@@ -13,7 +12,6 @@ mod select;
 mod slice;
 mod split;
 
-pub(crate) use cat::{Cat, CatConfig};
 pub(crate) use completions::Completions;
 pub(crate) use convert::{Convert, ConvertConfig};
 pub(crate) use count::{Count, CountConfig};
