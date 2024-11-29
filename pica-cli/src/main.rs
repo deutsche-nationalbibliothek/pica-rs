@@ -1,7 +1,7 @@
 use std::io::ErrorKind;
 use std::process::ExitCode;
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use cli::{Args, Command};
 use config::Config;
 use error::{CliError, CliResult};
@@ -24,6 +24,7 @@ fn run() -> CliResult {
     };
 
     match args.cmd {
+        Command::Completions(cmd) => cmd.execute(&mut Args::command()),
         Command::Concat(cmd) => cmd.execute(&config),
         #[cfg(feature = "unstable")]
         Command::Config(cmd) => cmd.execute(&mut config),

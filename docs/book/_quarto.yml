@@ -20,6 +20,7 @@ book:
         - install.qmd
     - part: "Kommandos"
       chapters:
+        - commands/completions.qmd
         - commands/concat.qmd
         - commands/config.qmd
         - commands/invalid.qmd

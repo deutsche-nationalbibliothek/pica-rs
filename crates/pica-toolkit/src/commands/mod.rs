@@ -1,4 +1,3 @@
-mod completions;
 mod convert;
 mod count;
 mod explode;
@@ -12,7 +11,6 @@ mod select;
 mod slice;
 mod split;
 
-pub(crate) use completions::Completions;
 pub(crate) use convert::{Convert, ConvertConfig};
 pub(crate) use count::{Count, CountConfig};
 pub(crate) use explode::{Explode, ExplodeConfig};
