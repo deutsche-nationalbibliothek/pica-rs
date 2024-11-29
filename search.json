@@ -65,6 +65,72 @@
     ]
   },
   {
+    "objectID": "commands/completions.html",
+    "href": "commands/completions.html",
+    "title": "completions",
+    "section": "",
+    "text": "Bash\nDas completions-Kommando erzeugt Dateien, die Anweisungen enthalten, welche Argumente und Optionen des Toolkits für eine Shell zur Befehlszeilenergänzung verfügbar sind.\nNachfolgend werden exemplarisch die Befehle gezeigt, die für die Einbindung in die jeweilige Shell nötig sind. Die Schritte sind vom System sowie der Nutzereinstellung abhängig und müssen ggf. angepasst werden.\nEs werden folgende Shells unterstützt:\nAlternativ kann auch immer die aktuelle Version, passend zur installierten pica-Version, eingebunden werden. Dafür muss folgende Zeile in die .bashrc eingetragen werden:",
+    "crumbs": [
+      "Kommandos",
+      "completions"
+    ]
+  },
+  {
+    "objectID": "commands/completions.html#bash",
+    "href": "commands/completions.html#bash",
+    "title": "completions",
+    "section": "",
+    "text": "$ mkdir -p ~/.local/share/bash-completion/completions\n$ pica completions bash \\\n    -o  ~/.local/share/bash-completion/completions/pica\n\n$ source &lt;(pica completions bash)\n\nBash (macOS/Homebrew)\n$ mkdir -p $(brew --prefix)/etc/bash_completion.d\n$ pica completions bash \\\n    -o $(brew --prefix)/etc/bash_completion.d/pica.bash-completion",
+    "crumbs": [
+      "Kommandos",
+      "completions"
+    ]
+  },
+  {
+    "objectID": "commands/completions.html#elvish",
+    "href": "commands/completions.html#elvish",
+    "title": "completions",
+    "section": "Elvish",
+    "text": "Elvish\n$ mkdir -p ~/.local/share/elvish/lib/completions\n$ pica completions elvish -o ~/.local/share/elvish/lib/completions/pica.elv\n$ echo \"use completions/pica\" &gt;&gt; ~/.elvish/rc.elv",
+    "crumbs": [
+      "Kommandos",
+      "completions"
+    ]
+  },
+  {
+    "objectID": "commands/completions.html#fish",
+    "href": "commands/completions.html#fish",
+    "title": "completions",
+    "section": "Fish",
+    "text": "Fish\n$ mkdir -p ~/.config/fish/completions\n$ pica completions fish -o ~/.config/fish/completions/pica.fish",
+    "crumbs": [
+      "Kommandos",
+      "completions"
+    ]
+  },
+  {
+    "objectID": "commands/completions.html#powershell",
+    "href": "commands/completions.html#powershell",
+    "title": "completions",
+    "section": "Powershell",
+    "text": "Powershell\n$ pica completions powershell \\\n     &gt;&gt; ${env:USERPROFILE}\\Documents\\WindowsPowerShell\\Microsoft.PowerShell_profile.ps1",
+    "crumbs": [
+      "Kommandos",
+      "completions"
+    ]
+  },
+  {
+    "objectID": "commands/completions.html#zsh",
+    "href": "commands/completions.html#zsh",
+    "title": "completions",
+    "section": "ZSH",
+    "text": "ZSH\nDer Pfad ~/.zfunc muss in der Variable $fpath gesetzt sein, bevor die Funktion compinit aufgerufen wird.\n$ pica completions zsh -o ~/.zfunc/_pica",
+    "crumbs": [
+      "Kommandos",
+      "completions"
+    ]
+  },
+  {
     "objectID": "commands/concat.html",
     "href": "commands/concat.html",
     "title": "concat",
