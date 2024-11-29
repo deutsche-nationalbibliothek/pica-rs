@@ -14,10 +14,10 @@ mod progress;
 use std::path::PathBuf;
 use std::{io, process};
 
-use clap::{CommandFactory, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use commands::{
-    Completions, Convert, Count, Explode, Filter, Frequency, Hash,
-    Partition, Print, Sample, Select, Slice, Split,
+    Convert, Count, Explode, Filter, Frequency, Hash, Partition, Print,
+    Sample, Select, Slice, Split,
 };
 use config::Config;
 use error::{CliError, CliResult};
@@ -38,8 +38,6 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    /// Generate shell completions (e.g. Bash, ZSH)
-    Completions(Completions),
     Convert(Convert),
     Count(Count),
     Explode(Explode),
@@ -59,7 +57,6 @@ fn run() -> CliResult<()> {
     let config = Config::from_path_or_default(args.config)?;
 
     match args.command {
-        Commands::Completions(cmd) => cmd.run(&mut Cli::command()),
         Commands::Convert(cmd) => cmd.run(&config),
         Commands::Count(cmd) => cmd.run(&config),
         Commands::Explode(cmd) => cmd.run(&config),
