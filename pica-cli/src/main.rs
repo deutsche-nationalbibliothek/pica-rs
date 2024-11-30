@@ -11,7 +11,6 @@ mod commands;
 mod config;
 mod error;
 mod progress;
-mod unicode;
 
 fn run() -> CliResult {
     let args = Args::parse();
@@ -28,6 +27,7 @@ fn run() -> CliResult {
         Command::Concat(cmd) => cmd.execute(&config),
         #[cfg(feature = "unstable")]
         Command::Config(cmd) => cmd.execute(&mut config),
+        Command::Count(cmd) => cmd.execute(&config),
         Command::Invalid(cmd) => cmd.execute(),
     }
 }

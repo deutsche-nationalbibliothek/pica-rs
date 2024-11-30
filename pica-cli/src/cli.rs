@@ -23,5 +23,6 @@ pub(crate) enum Command {
     Concat(Concat),
     #[cfg(feature = "unstable")]
     Config(Config),
+    Count(Count),
     Invalid(Invalid),
 }

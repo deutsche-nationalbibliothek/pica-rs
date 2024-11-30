@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "count --tsv -o count.tsv"
-status = "success"
-stderr = ""
-stdout = ""

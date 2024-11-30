@@ -1,5 +1,4 @@
 mod convert;
-mod count;
 mod explode;
 mod filter;
 mod frequency;
@@ -12,7 +11,6 @@ mod slice;
 mod split;
 
 pub(crate) use convert::{Convert, ConvertConfig};
-pub(crate) use count::{Count, CountConfig};
 pub(crate) use explode::{Explode, ExplodeConfig};
 pub(crate) use filter::{Filter, FilterConfig};
 pub(crate) use frequency::{Frequency, FrequencyConfig};

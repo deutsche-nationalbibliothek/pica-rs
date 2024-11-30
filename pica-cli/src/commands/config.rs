@@ -1,10 +1,10 @@
 use std::process::ExitCode;
 
 use clap::Parser;
+use pica_record::matcher::NormalizationForm;
 
 use crate::config;
 use crate::error::{bail, CliError, CliResult};
-use crate::unicode::NormalizationForm;
 
 /// Get and set configuration options.
 #[derive(Debug, Parser)]

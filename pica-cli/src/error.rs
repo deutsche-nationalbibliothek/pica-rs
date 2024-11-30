@@ -1,6 +1,7 @@
 use std::process::ExitCode;
 
 use pica_record::io::ReadPicaError;
+use pica_record::matcher::ParseMatcherError;
 use thiserror::Error;
 
 pub(crate) type CliResult = Result<ExitCode, CliError>;
@@ -19,10 +20,10 @@ pub(crate) use bail;
 pub(crate) enum CliError {
     #[error(transparent)]
     ReadPica(#[from] ReadPicaError),
-
+    #[error(transparent)]
+    ParseMatcher(#[from] ParseMatcherError),
     #[error(transparent)]
     IO(#[from] std::io::Error),
-
     #[cfg(feature = "unstable")]
     #[error("{0}")]
     Other(String),

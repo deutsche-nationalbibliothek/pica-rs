@@ -16,7 +16,7 @@ use std::{io, process};
 
 use clap::{Parser, Subcommand};
 use commands::{
-    Convert, Count, Explode, Filter, Frequency, Hash, Partition, Print,
+    Convert, Explode, Filter, Frequency, Hash, Partition, Print,
     Sample, Select, Slice, Split,
 };
 use config::Config;
@@ -39,7 +39,6 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Commands {
     Convert(Convert),
-    Count(Count),
     Explode(Explode),
     Filter(Filter),
     Frequency(Frequency),
@@ -58,7 +57,6 @@ fn run() -> CliResult<()> {
 
     match args.command {
         Commands::Convert(cmd) => cmd.run(&config),
-        Commands::Count(cmd) => cmd.run(&config),
         Commands::Explode(cmd) => cmd.run(&config),
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),

@@ -1,5 +1,6 @@
 //! Various matcher against record primitives.
 
+pub use builder::{NormalizationForm, RecordMatcherBuilder};
 pub use error::ParseMatcherError;
 pub use occurrence::OccurrenceMatcher;
 pub use operator::{BooleanOp, RelationalOp};
@@ -8,6 +9,7 @@ pub use quantifier::Quantifier;
 pub use record::RecordMatcher;
 pub use tag::TagMatcher;
 
+mod builder;
 mod error;
 pub mod field;
 pub(crate) mod occurrence;

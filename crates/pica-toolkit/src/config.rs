@@ -19,7 +19,6 @@ pub(crate) struct Config {
     #[serde(skip)]
     pub(crate) path: Option<PathBuf>,
     pub(crate) convert: Option<ConvertConfig>,
-    pub(crate) count: Option<CountConfig>,
     pub(crate) explode: Option<ExplodeConfig>,
     pub(crate) filter: Option<FilterConfig>,
     pub(crate) frequency: Option<FrequencyConfig>,

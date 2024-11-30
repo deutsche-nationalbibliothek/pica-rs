@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "count -s --fields"
-status = "success"
-stderr = ""
-stdout = "28\n"
