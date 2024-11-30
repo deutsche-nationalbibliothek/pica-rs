@@ -1,0 +1,63 @@
+# sample {.unnumbered}
+
+Das `sample`-Kommando zieht nach dem Zufallsprinzip gleichmäßig Datensätze aus
+der Eingabe. 
+
+::: {.callout-note}
+Beim Aufruf des Kommandos ist die Anzahl der gültigen Datensätze nicht
+bekannt. Deshalb wird für die Stichprobenziehen das Verfahren [Reservoir
+sampling] eingesetzt. Hierfür wird während der Laufzeit Arbeitsspeicher
+proportial zum gewünschten Stichprobenumfang $n$ verwendet. Datensätze am
+Anfang der Eingabe haben eine höhere Wahrscheinlichkeit in der Stichproben
+enthalten zu sein, als Datensätze am Ende.
+:::
+
+Im folgenden Beispiel werden zufällig 200 Datensätze aus der Eingabe
+ausgewählt und in die Datei `samples.dat` geschrieben:
+
+```{.bash}
+$ pica sample 200 DUMP.dat.gz -o samples.dat
+```
+
+## Optionen
+
+`-s`, `--skip-invalid`
+: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+
+`-i`, `--ignore-case`
+: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+
+`--strsim-threshold <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
+mittels `=*`.
+
+`-g`, `--gzip`
+: Komprimieren der Ausgabe im [Gzip]-Format.
+
+`--seed <number>`
+: Initialisiert den Zufallszahlengenerator mit einem _seed_-Wert, um eine
+deterministische Auswahl zu erhalten.
+
+`-p`, `--progress`
+: Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
+invaliden Datensätze anzeigt.
+
+`-o <path>`, `--outdir <path>`
+: Angabe, in welches Verzeichnis die Partitionen geschrieben werden sollen.
+Standardmäßig wird das aktuelle Verzeichnis verwendet.
+
+
+## Beispiele
+
+### Zufällige PPN-Liste
+
+In Kombination mit dem `select`-Kommando kann eine zufällige PPN-Liste erzeugt
+werden:
+
+```{.bash}
+$ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv
+```
+
+
+[Reservoir sampling]: https://en.wikipedia.org/wiki/Reservoir_sampling
+

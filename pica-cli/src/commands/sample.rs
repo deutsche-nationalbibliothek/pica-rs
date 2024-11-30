@@ -1,31 +1,20 @@
 use std::ffi::OsString;
+use std::process::ExitCode;
 
 use clap::{value_parser, Parser};
-use pica_record_v1::io::{
-    ReaderBuilder, RecordsIterator, WriterBuilder,
-};
-use pica_record_v1::ByteRecord;
+use pica_record::prelude::*;
 use rand::rngs::StdRng;
 use rand::{thread_rng, Rng, SeedableRng};
-use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::error::CliResult;
 use crate::progress::Progress;
-use crate::{gzip_flag, skip_invalid_flag};
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct SampleConfig {
-    pub(crate) skip_invalid: Option<bool>,
-    pub(crate) gzip: Option<bool>,
-}
 
 /// Selects a random permutation of records of the given sample size
 /// using reservoir sampling.
 #[derive(Parser, Debug)]
 pub(crate) struct Sample {
-    /// Skip invalid records that can't be decoded as normalized PICA+
+    /// Whether to skip invalid records or not
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -58,16 +47,10 @@ pub(crate) struct Sample {
 }
 
 impl Sample {
-    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let gzip_compression = gzip_flag!(self.gzip, config.sample);
-        let skip_invalid = skip_invalid_flag!(
-            self.skip_invalid,
-            config.sample,
-            config.global
-        );
-
+    pub(crate) fn execute(self, config: &Config) -> CliResult {
+        let skip_invalid = self.skip_invalid || config.skip_invalid;
         let mut writer = WriterBuilder::new()
-            .gzip(gzip_compression)
+            .gzip(self.gzip)
             .from_path_or_stdout(self.output)?;
 
         let mut rng: StdRng = match self.seed {
@@ -86,32 +69,30 @@ impl Sample {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next() {
-                if let Err(e) = result {
-                    if e.is_invalid_record() && skip_invalid {
-                        progress.invalid();
+            while let Some(result) = reader.next_byte_record() {
+                match result {
+                    Err(e) if e.skip_parse_err(skip_invalid) => {
+                        progress.update(true);
                         continue;
-                    } else {
-                        return Err(e.into());
+                    }
+                    Err(e) => return Err(e.into()),
+                    Ok(ref record) => {
+                        progress.update(false);
+                        let mut data = Vec::<u8>::new();
+                        record.write_to(&mut data)?;
+
+                        if i < sample_size {
+                            reservoir.push(data);
+                        } else {
+                            let j = rng.gen_range(0..i);
+                            if j < sample_size {
+                                reservoir[j] = data;
+                            }
+                        }
+
+                        i += 1;
                     }
                 }
-
-                let record = result.unwrap();
-                progress.record();
-
-                let mut data = Vec::<u8>::new();
-                record.write_to(&mut data)?;
-
-                if i < sample_size {
-                    reservoir.push(data);
-                } else {
-                    let j = rng.gen_range(0..i);
-                    if j < sample_size {
-                        reservoir[j] = data;
-                    }
-                }
-
-                i += 1;
             }
         }
 
@@ -122,6 +103,7 @@ impl Sample {
 
         progress.finish();
         writer.finish()?;
-        Ok(())
+
+        Ok(ExitCode::SUCCESS)
     }
 }

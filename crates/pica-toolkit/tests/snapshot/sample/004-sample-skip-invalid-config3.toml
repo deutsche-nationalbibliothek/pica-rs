@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "-c Pica.toml sample --seed 42 2 dump.dat.gz -o samples.dat"
-status = "success"
-stdout = ""
-stderr = ""

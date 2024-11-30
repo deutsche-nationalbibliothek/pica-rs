@@ -22,7 +22,6 @@ pica-select = { workspace = true }
 pica-utils = { workspace = true }
 polars = { workspace = true }
 quick-xml = { version = "0.37" }
-rand = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
