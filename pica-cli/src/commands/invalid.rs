@@ -10,6 +10,7 @@ use clap::Parser;
 use flate2::read::GzDecoder;
 use pica_record::ByteRecord;
 
+use crate::config::Config;
 use crate::error::CliResult;
 use crate::progress::Progress;
 
@@ -62,7 +63,7 @@ where
 }
 
 impl Invalid {
-    pub(crate) fn execute(self) -> CliResult {
+    pub(crate) fn execute(self, _config: &Config) -> CliResult {
         let mut progress = Progress::new(self.progress);
         let mut writer = writer(self.output)?;
         let mut buf = Vec::<u8>::new();

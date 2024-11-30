@@ -26,4 +26,5 @@ pub(crate) enum Command {
     Count(Count),
     Hash(Hash),
     Invalid(Invalid),
+    Split(Split),
 }
