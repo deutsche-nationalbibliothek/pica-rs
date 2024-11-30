@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>hash – pica-rs</title>
+<title>partition – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,8 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/invalid.html" rel="next">
-<link href="../commands/count.html" rel="prev">
+<link href="../commands/split.html" rel="next">
+<link href="../commands/invalid.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/hash.html">hash</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/partition.html">partition</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -202,7 +202,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/hash.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/hash.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">hash</span></a>
   </div>
 </li>
@@ -214,7 +214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/partition.html" class="sidebar-item-text sidebar-link">
+  <a href="../commands/partition.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">partition</span></a>
   </div>
 </li>
@@ -235,9 +235,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/hash.html">hash</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/partition.html">partition</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">hash</h1>
+<h1 class="title">partition</h1>
 </div>
 
 
@@ -254,14 +254,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Mithilfe des Kommandos <code>hash</code> lässt sich eine Tabelle erzeugen, die in der ersten Spalte die PPN (Feld <code>003@.0</code>) und in der zweiten Spalte den <a href="https://de.wikipedia.org/wiki/SHA-2"><em>SHA-256</em></a>-Hashwert des Datensatzes enthält.</p>
-<p>Mitunter kommt es vor, dass eine regelmäßige und aufwändige Berechnung für Datensätze ausgeführt werden muss und es nicht praktikabel ist, die Berechnung über alle Datensätze durchzuführen. Mittels des <code>hash</code>-Kommandos können auf unterschiedlichen Abzügen die Hashwerte der Datensätze bestimmt werden. Durch Vergleich dieser Tabelle ist es möglich, die Datensätze zu identifizieren, die sich geändert haben, gelöscht oder neu hinzugefügt wurden. Das folgende Beispiel demonstriert die Erzeugung dieser Hash-Tabellen:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica hash <span class="at">-s</span> DUMP.dat.gz</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ppn,hash</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">118607626,8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">040993396,0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Mittels des <code>partition</code>-Kommandos lassen sich Datensätze anhand eines Unterfelds in Partitionen einteilen.</p>
+<p>Lassen sich Datensätze anhand von den Wertausprägungen in einem Unterfeld gruppieren, ist es mitunter hilfreich die Gesamtmenge der Datensätze in Partitionen aufzuteilen. Ist das Unterfeld, nach dem partitioniert werden soll, wiederholbar, sind die erzeugten Partitionen i.d.R. nicht disjunkt. Ein Datensatz der das Unterfeld nicht besitzt, geht in keine Partition ein.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Hinweis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Die Werte des Unterfelds ergeben den Dateinamen der Partition. Es kann vorkommen, dass die Werte Sonderzeichen enthalten, die nicht vom Betriebssystem in Dateinamen erlaubt sind.</p>
+</div>
+</div>
+<p>Im folgenden Beispiel wird pro Entitätencode im Feld <code>004B.a</code> eine Partition erstellt, die alle GND-Entitäten enthält, die diesem Entitätencode zugeordnet sind.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica partition <span class="at">-s</span> <span class="st">"004B.a"</span> DUMP.dat.gz <span class="at">-o</span> out</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tree out/</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">out</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> gik.dat</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> piz.dat</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> saz.dat</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> wit.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="optionen" class="level2">
 <h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
 <dl>
@@ -269,59 +284,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dd>
 Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
 </dd>
-<dt><code>-H &lt;header&gt;</code>, <code>--header &lt;header&gt;</code></dt>
+<dt><code>-i</code>, <code>--ignore-case</code></dt>
 <dd>
-Kopfzeile, die den Ergebnissen vorangestellt wird.
+Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
 </dd>
-<dt><code>-t</code>, <code>--tsv</code></dt>
+<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
 <dd>
-Ausgabe erfolgt im TSV-Format.
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
+</dd>
+<dt><code>-g</code>, <code>--gzip</code></dt>
+<dd>
+Komprimieren der Ausgabe im <a href="https://de.wikipedia.org/wiki/Gzip">Gzip</a>-Format.
+</dd>
+<dt><code>-t &lt;string&gt;</code>, <code>--template &lt;string&gt;</code></dt>
+<dd>
+Template für die Dateinamen. Der Platzhalter <code>{}</code> wird durch den Namen der Partition ersetzt.
 </dd>
 <dt><code>-p</code>, <code>--progress</code></dt>
 <dd>
-Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels <code>-o</code> bzw. <code>--output</code>.
+Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.
 </dd>
-<dt><code>-o &lt;filename&gt;</code>, <code>--output &lt;filename&gt;</code></dt>
+<dt><code>-o &lt;path&gt;</code>, <code>--outdir &lt;path&gt;</code></dt>
 <dd>
-Angabe, in welche Datei die Ausgabe geschrieben werden soll.
+Angabe, in welches Verzeichnis die Partitionen geschrieben werden sollen. Standardmäßig wird das aktuelle Verzeichnis verwendet.
 </dd>
 </dl>
 </section>
 <section id="beispiele" class="level2">
 <h2 class="anchored" data-anchor-id="beispiele">Beispiele</h2>
-<section id="ausgabe-im-tsv-format" class="level3">
-<h3 class="anchored" data-anchor-id="ausgabe-im-tsv-format">Ausgabe im TSV-Format</h3>
-<p>Die Ausgabe lässt sich mittels der Option <code>--tsv</code> (bzw. <code>-t</code>) in das TSV-Format ändern.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica hash <span class="at">-s</span> <span class="at">--tsv</span> DUMP.dat.gz</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ppn</span> hash</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238</span>   762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">118607626</span>   8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">040993396</span>   0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="eingrenzen-der-partitionen" class="level3">
+<h3 class="anchored" data-anchor-id="eingrenzen-der-partitionen">Eingrenzen der Partitionen</h3>
+<p>Sollen nicht alle Partitionen erstellt werden, kann die Anzahl der möglichen Partition durch die Angabe eines Filterausdrucks eingegrenzt werden:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica partition <span class="at">-s</span> <span class="st">"004B{a | a in ['piz', 'saz']}"</span> DUMP.dat.gz <span class="at">-o</span> out</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tree out/</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">out</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> piz.dat</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> saz.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="hinzufügen-einer-kopfzeile" class="level3">
-<h3 class="anchored" data-anchor-id="hinzufügen-einer-kopfzeile">Hinzufügen einer Kopfzeile</h3>
-<p>Eine individuelle Kopfzeile lässt sich mit der Option <code>--header</code> (bzw. <code>-H</code>) ausgeben:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica hash <span class="at">-s</span> <span class="at">--header</span> <span class="st">'idn,sha256'</span> DUMP.dat.gz</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">idn,sha256</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">118607626,8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">040993396,0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="benutzerdefinierte-dateinamen" class="level3">
+<h3 class="anchored" data-anchor-id="benutzerdefinierte-dateinamen">Benutzerdefinierte Dateinamen</h3>
+<p>Standardmäßig werden die erstellten Partitionen nach den Werten im Unterfeld benannt. Der Dateiname kann individuell mit der <code>-t</code>/<code>--template</code>-Option angepasst werden. Jedes Vorkommen der Zeichenfolge <code>{}</code> im Template wird durch den Wert des Unterfelds ersetzt. Endet die Datei auf der Dateiendung <code>.gz</code>, wird die Ausgabe automatisch im <a href="https://de.wikipedia.org/wiki/Gzip">Gzip</a>-Format komprimiert.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica partition <span class="at">-s</span> <span class="st">"004B.a"</span> <span class="at">--template</span> <span class="st">"code_{}.dat.gz"</span> DUMP.dat.gz <span class="at">-o</span> out</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tree out/</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">out</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> code_gik.dat.gz</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> code_piz.dat.gz</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> code_saz.dat.gz</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> code_wit.dat.gz</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-</section>
-<section id="anmerkung" class="level2">
-<h2 class="anchored" data-anchor-id="anmerkung">Anmerkung</h2>
-<p>Zur Berechnung des <a href="https://de.wikipedia.org/wiki/SHA-2"><em>SHA-256</em></a>-Hashwerts wird der abschließende Zeilenumbruch mit einbezogen, um einen gleichen Hashwert zu erzeugen, der entsteht, wenn der Hashwert über die gesamte Zeile aus der Eingabe ermittelt wird. Im folgenden Beispiel wird zuerst der erste gültige Datensatz in die Datei <code>1.dat</code> geschrieben. Anschließend wird der Hashwert einmal mit dem <code>hash</code>-Kommando und einmal mit dem Unix-Programm <a href="https://manpages.ubuntu.com/manpages/trusty/de/man1/sha256sum.1.html"><em>sha256sum</em></a> gebildet. Beide Ergebnisse sind gleich.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">-l1</span> <span class="st">"003@?"</span> DUMP.dat.gz <span class="at">-o</span> 1.dat</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica hash 1.dat</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ppn,hash</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sha256sum 1.dat</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="komprimierte-ausgabe" class="level3">
+<h3 class="anchored" data-anchor-id="komprimierte-ausgabe">Komprimierte Ausgabe</h3>
+<p>Mittels der Option <code>--gzip</code> bzw. <code>-g</code> erfolgt eine Komprimierung der Ausgabe:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica partition <span class="at">-s</span> <span class="st">"004B.a"</span> <span class="at">--gzip</span> DUMP.dat.gz <span class="at">-o</span> out</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tree out/</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">out</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> gik.dat.gz</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> piz.dat.gz</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> saz.dat.gz</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> wit.dat.gz</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -744,13 +767,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/count.html" class="pagination-link" aria-label="count">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">count</span>
+      <a href="../commands/invalid.html" class="pagination-link" aria-label="invalid">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">invalid</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../commands/invalid.html" class="pagination-link" aria-label="invalid">
-        <span class="nav-page-text">invalid</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../commands/split.html" class="pagination-link" aria-label="split">
+        <span class="nav-page-text">split</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

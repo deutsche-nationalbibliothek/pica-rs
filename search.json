@@ -285,6 +285,39 @@
     ]
   },
   {
+    "objectID": "commands/partition.html",
+    "href": "commands/partition.html",
+    "title": "partition",
+    "section": "",
+    "text": "Optionen\nMittels des partition-Kommandos lassen sich Datensätze anhand eines Unterfelds in Partitionen einteilen.\nLassen sich Datensätze anhand von den Wertausprägungen in einem Unterfeld gruppieren, ist es mitunter hilfreich die Gesamtmenge der Datensätze in Partitionen aufzuteilen. Ist das Unterfeld, nach dem partitioniert werden soll, wiederholbar, sind die erzeugten Partitionen i.d.R. nicht disjunkt. Ein Datensatz der das Unterfeld nicht besitzt, geht in keine Partition ein.\nIm folgenden Beispiel wird pro Entitätencode im Feld 004B.a eine Partition erstellt, die alle GND-Entitäten enthält, die diesem Entitätencode zugeordnet sind.",
+    "crumbs": [
+      "Kommandos",
+      "partition"
+    ]
+  },
+  {
+    "objectID": "commands/partition.html#optionen",
+    "href": "commands/partition.html#optionen",
+    "title": "partition",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-i, --ignore-case\n\nGroß- und Kleinschreibung wird bei Vergleichen ignoriert.\n\n--strsim-threshold &lt;value&gt;\n\nFestlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels =*.\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n-t &lt;string&gt;, --template &lt;string&gt;\n\nTemplate für die Dateinamen. Der Platzhalter {} wird durch den Namen der Partition ersetzt.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.\n\n-o &lt;path&gt;, --outdir &lt;path&gt;\n\nAngabe, in welches Verzeichnis die Partitionen geschrieben werden sollen. Standardmäßig wird das aktuelle Verzeichnis verwendet.",
+    "crumbs": [
+      "Kommandos",
+      "partition"
+    ]
+  },
+  {
+    "objectID": "commands/partition.html#beispiele",
+    "href": "commands/partition.html#beispiele",
+    "title": "partition",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nEingrenzen der Partitionen\nSollen nicht alle Partitionen erstellt werden, kann die Anzahl der möglichen Partition durch die Angabe eines Filterausdrucks eingegrenzt werden:\n$ pica partition -s \"004B{a | a in ['piz', 'saz']}\" DUMP.dat.gz -o out\n$ tree out/\nout\n├── piz.dat\n└── saz.dat\n\n\nBenutzerdefinierte Dateinamen\nStandardmäßig werden die erstellten Partitionen nach den Werten im Unterfeld benannt. Der Dateiname kann individuell mit der -t/--template-Option angepasst werden. Jedes Vorkommen der Zeichenfolge {} im Template wird durch den Wert des Unterfelds ersetzt. Endet die Datei auf der Dateiendung .gz, wird die Ausgabe automatisch im Gzip-Format komprimiert.\n$ pica partition -s \"004B.a\" --template \"code_{}.dat.gz\" DUMP.dat.gz -o out\n$ tree out/\nout\n├── code_gik.dat.gz\n├── code_piz.dat.gz\n├── code_saz.dat.gz\n└── code_wit.dat.gz\n\n\nKomprimierte Ausgabe\nMittels der Option --gzip bzw. -g erfolgt eine Komprimierung der Ausgabe:\n$ pica partition -s \"004B.a\" --gzip DUMP.dat.gz -o out\n$ tree out/\nout\n├── gik.dat.gz\n├── piz.dat.gz\n├── saz.dat.gz\n└── wit.dat.gz",
+    "crumbs": [
+      "Kommandos",
+      "partition"
+    ]
+  },
+  {
     "objectID": "commands/split.html",
     "href": "commands/split.html",
     "title": "split",
