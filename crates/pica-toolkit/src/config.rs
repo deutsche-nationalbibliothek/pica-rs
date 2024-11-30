@@ -24,7 +24,6 @@ pub(crate) struct Config {
     pub(crate) frequency: Option<FrequencyConfig>,
     pub(crate) global: Option<GlobalConfig>,
     pub(crate) print: Option<PrintConfig>,
-    pub(crate) sample: Option<SampleConfig>,
     pub(crate) select: Option<SelectConfig>,
     pub(crate) slice: Option<SliceConfig>,
 }

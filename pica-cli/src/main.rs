@@ -31,6 +31,7 @@ fn run() -> CliResult {
         Command::Hash(cmd) => cmd.execute(&config),
         Command::Invalid(cmd) => cmd.execute(&config),
         Command::Partition(cmd) => cmd.execute(&config),
+        Command::Sample(cmd) => cmd.execute(&config),
         Command::Split(cmd) => cmd.execute(&config),
     }
 }
