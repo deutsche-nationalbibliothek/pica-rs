@@ -23,6 +23,8 @@ pub(crate) enum CliError {
     #[error(transparent)]
     ParseMatcher(#[from] ParseMatcherError),
     #[error(transparent)]
+    Csv(#[from] csv::Error),
+    #[error(transparent)]
     IO(#[from] std::io::Error),
     #[cfg(feature = "unstable")]
     #[error("{0}")]

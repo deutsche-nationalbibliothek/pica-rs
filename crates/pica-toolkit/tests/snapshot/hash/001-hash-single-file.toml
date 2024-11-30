@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "hash algebra.dat"
-status = "success"
-stdout = "idn,sha256\n040011569,ca9add6db02315df1aeee941b8aced2f63968499594dcb0d88ba54df0181d428\n"
-stderr = ""

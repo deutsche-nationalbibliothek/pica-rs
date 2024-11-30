@@ -2,33 +2,25 @@ use std::ffi::OsString;
 use std::fmt::Write as _;
 use std::fs::File;
 use std::io::{self, Write};
+use std::process::ExitCode;
 
 use clap::Parser;
-use pica_path::PathExt;
-use pica_record_v1::io::{ReaderBuilder, RecordsIterator};
-use serde::{Deserialize, Serialize};
+use csv::WriterBuilder;
+use pica_record::prelude::*;
 
 use crate::config::Config;
 use crate::error::CliResult;
 use crate::progress::Progress;
-use crate::skip_invalid_flag;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct HashConfig {
-    /// Skip invalid records that can't be decoded.
-    pub(crate) skip_invalid: Option<bool>,
-}
 
 /// Compute SHA-256 checksum of records.
 #[derive(Parser, Debug)]
 pub(crate) struct Hash {
-    /// Skip invalid records that can't be decoded.
+    /// Whether to skip invalid records or not.
     #[arg(short, long)]
     skip_invalid: bool,
 
     /// Comma-separated list of column names.
-    #[arg(long, short = 'H', default_value = "idn,sha256")]
+    #[arg(long, short = 'H', default_value = "ppn,hash")]
     header: String,
 
     /// Write output tab-separated (TSV)
@@ -51,20 +43,16 @@ pub(crate) struct Hash {
 }
 
 impl Hash {
-    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
+    pub(crate) fn execute(self, config: &Config) -> CliResult {
+        let skip_invalid = self.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
-        let skip_invalid = skip_invalid_flag!(
-            self.skip_invalid,
-            config.hash,
-            config.global
-        );
 
         let writer: Box<dyn Write> = match self.output {
             Some(filename) => Box::new(File::create(filename)?),
             None => Box::new(io::stdout()),
         };
 
-        let mut writer = csv::WriterBuilder::new()
+        let mut writer = WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
 
@@ -74,35 +62,35 @@ impl Hash {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next() {
-                if let Err(e) = result {
-                    if e.is_invalid_record() && skip_invalid {
-                        progress.invalid();
+            while let Some(result) = reader.next_byte_record() {
+                match result {
+                    Err(e) if e.skip_parse_err(skip_invalid) => {
+                        progress.update(true);
                         continue;
-                    } else {
-                        return Err(e.into());
                     }
-                }
+                    Err(e) => return Err(e.into()),
+                    Ok(ref record) => {
+                        progress.update(false);
+                        let hash = record.sha256().iter().fold(
+                            String::new(),
+                            |mut out, b| {
+                                let _ = write!(out, "{b:02x}");
+                                out
+                            },
+                        );
 
-                let record = result.unwrap();
-                progress.record();
-
-                if let Some(idn) = record.idn() {
-                    let hash = record.sha256().iter().fold(
-                        String::new(),
-                        |mut out, b| {
-                            let _ = write!(out, "{b:02x}");
-                            out
-                        },
-                    );
-
-                    writer.write_record(&[idn.to_string(), hash])?;
+                        writer.write_record(&[
+                            record.ppn().to_string(),
+                            hash,
+                        ])?;
+                    }
                 }
             }
         }
 
         progress.finish();
         writer.flush()?;
-        Ok(())
+
+        Ok(ExitCode::SUCCESS)
     }
 }

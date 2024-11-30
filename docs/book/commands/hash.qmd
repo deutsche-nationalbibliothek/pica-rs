@@ -1,10 +1,8 @@
-# hash
+# hash {.unnumbered}
 
-Mithilfe des Kommandos `hash` lässt sich eine Tabelle erzeugen, die in
-der ersten Spalte die IDN (Feld `003@.0`) eines Datensatzes und in der
-zweiten Spalte den [_SHA-256_] Hashwert enthält.
-
-## Beschreibung
+Mithilfe des Kommandos `hash` lässt sich eine Tabelle erzeugen, die in der
+ersten Spalte die PPN (Feld `003@.0`) und in der zweiten Spalte den
+[_SHA-256_]-Hashwert des Datensatzes enthält.
 
 Mitunter kommt es vor, dass eine regelmäßige und aufwändige Berechnung
 für Datensätze ausgeführt werden muss und es nicht praktikabel ist, die
@@ -15,9 +13,9 @@ möglich, die Datensätze zu identifizieren, die sich geändert haben,
 gelöscht oder neu hinzugefügt wurden. Das folgende Beispiel demonstriert
 die Erzeugung dieser Hash-Tabellen:
 
-```console
+```{.bash}
 $ pica hash -s DUMP.dat.gz
-idn,sha256
+ppn,hash
 118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
 118607626,8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee
 040993396,0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a
@@ -27,33 +25,22 @@ idn,sha256
 
 ## Optionen
 
-* `-s`, `--skip-invalid` — überspringt jene Zeilen aus der Eingabe, die
-  nicht dekodiert werden konnten.
-* `-H`, `--header` `<header>` — Kopfzeile, die den Ergebnissen
-  vorangestellt wird.
-* `-t`, `--tsv` — Ausgabe erfolgt im TSV-Format.
-* `-p`, `--progress` — Anzeige des Fortschritts, der die Anzahl der
-  eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das
-  Aktivieren der Option erfordert das Schreiben der Datensätze in eine
-  Datei mittels `-o` bzw. `--output`.
-* `-o`, `--output` — Angabe, in welche Datei die Ausgabe geschrieben
-  werden soll.
+`-s`, `--skip-invalid`
+: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
 
+`-H <header>`, `--header <header>`
+: Kopfzeile, die den Ergebnissen vorangestellt wird.
 
-## Konfiguration
+`-t`, `--tsv`
+: Ausgabe erfolgt im TSV-Format.
 
-<!-- TODO: Link zum allgemeinen Kapitel über die Konfigurationsdatei -->
+`-p`, `--progress`
+: Anzeige des Fortschritts, der die Anzahl der   eingelesenen gültigen sowie
+invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben
+der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 
-Die Option zum Ignorieren invalider Datensätze lässt sich in der
-`Pica.toml` konfigurieren:
-
-```toml
-[hash]
-skip-invalid = true
-```
-
-Die Werte der Kommandozeilen-Optionen haben Vorrang vor den Werten aus
-der Konfiguration.
+`-o <filename>`, `--output <filename>`
+: Angabe, in welche Datei die Ausgabe geschrieben werden soll.
 
 
 ## Beispiele
@@ -63,9 +50,9 @@ der Konfiguration.
 Die Ausgabe lässt sich mittels der Option `--tsv` (bzw. `-t`) in das
 TSV-Format ändern.
 
-```console
+```{.bash}
 $ pica hash -s --tsv DUMP.dat.gz
-idn	sha256
+ppn hash
 118540238	762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
 118607626	8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee
 040993396	0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a
@@ -77,9 +64,9 @@ idn	sha256
 Eine individuelle Kopfzeile lässt sich mit der Option `--header` (bzw.
 `-H`) ausgeben:
 
-```console
-$ pica hash -s --header 'ppn,hash' DUMP.dat.gz
-ppn,hash
+```{.bash}
+$ pica hash -s --header 'idn,sha256' DUMP.dat.gz
+idn,sha256
 118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
 118607626,8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee
 040993396,0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a
@@ -97,29 +84,15 @@ Datensatz in die Datei `1.dat` geschrieben. Anschließend wird der
 Hashwert einmal mit dem `hash`-Kommando und einmal mit dem Unix-Programm
 [_sha256sum_] gebildet. Beide Ergebnisse sind gleich.
 
-```console
+```{.bash}
 $ pica filter -s -l1 "003@?" DUMP.dat.gz -o 1.dat
 $ pica hash 1.dat
-idn,sha256
+ppn,hash
 118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
 
 $ sha256sum 1.dat
 762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3
 ```
-
-[cat]: {{< relref "cat.md" >}}
-[completions]: {{< relref "completions.md" >}}
-[convert]: {{< relref "convert.md" >}}
-[count]: {{< relref "count.md" >}}
-[explode]: {{< relref "explode.md" >}}
-[filter]: {{< relref "filter.md" >}}
-[frequency]: {{< relref "frequency.md" >}}
-[hash]: {{< relref "hash.md" >}}
-[invalid]: {{< relref "invalid.md" >}}
-[partition]: {{< relref "partition.md" >}}
-[print]: {{< relref "print.md" >}}
-[slice]: {{< relref "slice.md" >}}
-[split]: {{< relref "split.md" >}}
 
 [_SHA-256_]: https://de.wikipedia.org/wiki/SHA-2
 [_sha256sum_]: https://manpages.ubuntu.com/manpages/trusty/de/man1/sha256sum.1.html
