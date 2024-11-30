@@ -283,5 +283,38 @@
       "Kommandos",
       "invalid"
     ]
+  },
+  {
+    "objectID": "commands/split.html",
+    "href": "commands/split.html",
+    "title": "split",
+    "section": "",
+    "text": "Optionen\nMithilfe des split-Kommandos können alle Datensätze aus der Eingabe in mehrere Dateien aufgeteilt werden, wobei jede Datei eine maximale Anzahl an Datensätzen nicht überschreitet. Ein Anwendungsfall für das Splitting könnte eine automatisierte Stapelverarbeitung oder die parallele Verarbeitung der entstandenen Dateien sein.\nDer folgende Aufruf des split-Kommandos teilt die zwölf Datensätze der Eingabe (DUMP.dat.gz) in drei Dateien mit maximal fünf Datensätzen pro Datei. Die ersten beiden Dateien (0.dat und 1.dat) enthalten die maximale Anzahl an Datensätzen, die letzte Datei (2.dat) die restlichen zwei Datensätze.",
+    "crumbs": [
+      "Kommandos",
+      "split"
+    ]
+  },
+  {
+    "objectID": "commands/split.html#optionen",
+    "href": "commands/split.html#optionen",
+    "title": "split",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n--template\n\nTemplate für die Dateinamen. Der Platzhalter {} wird durch eine fortlaufende Nummer ersetzt.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.\n\n-o &lt;path&gt;, --outdir &lt;path&gt;\n\nAngabe, in welches Verzeichnis die Ausgabe geschrieben werden soll. Standardmäßig wird das aktuelle Verzeichnis verwendet.",
+    "crumbs": [
+      "Kommandos",
+      "split"
+    ]
+  },
+  {
+    "objectID": "commands/split.html#beispiele",
+    "href": "commands/split.html#beispiele",
+    "title": "split",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nBenutzerdefinierte Dateinamen\nStandardmäßig werden die erstellten Dateien beginnend bei 0 durchnummeriert. Der Dateiname kann individuell mit der --template-Option angepasst werden. Jedes Vorkommen der Zeichenfolge {} im Template wird durch die aktuelle Nummer ersetzt. Endet die Datei auf der Dateiendung .gz, wird die Ausgabe automatisch im Gzip-Format komprimiert.\n$ pica split -s --template \"CHUNK_{}.dat.gz\" 10 DUMP.dat.gz\n$ tree\n.\n├── CHUNK_0.dat.gz\n├── CHUNK_1.dat.gz\n└── DUMP.dat.gz\n\n$ pica count --records CHUNK_0.dat.gz\n10\n\n$ pica count --records CHUNK_1.dat.gz\n2\n\n\nKomprimierte Ausgabe\nMittels der Option --gzip bzw. -g erfolgt eine Komprimierung der Ausgabe:\n$ pica split -s --gzip 10 DUMP.dat.gz\n$ tree\n.\n├── 0.dat.gz\n├── 1.dat.gz\n└── DUMP.dat.gz\n\n$ pica count --records 0.dat.gz\n10\n\n$ pica count --records 1.dat.gz\n2",
+    "crumbs": [
+      "Kommandos",
+      "split"
+    ]
   }
 ]
