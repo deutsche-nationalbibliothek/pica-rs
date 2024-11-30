@@ -133,7 +133,7 @@ impl Partition {
                                 }
                             };
 
-                            writer.write_byte_record(&record)?;
+                            writer.write_byte_record(record)?;
                         }
                     }
                 }
