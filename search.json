@@ -219,6 +219,50 @@
     ]
   },
   {
+    "objectID": "commands/hash.html",
+    "href": "commands/hash.html",
+    "title": "hash",
+    "section": "",
+    "text": "Optionen\nMithilfe des Kommandos hash lässt sich eine Tabelle erzeugen, die in der ersten Spalte die PPN (Feld 003@.0) und in der zweiten Spalte den SHA-256-Hashwert des Datensatzes enthält.\nMitunter kommt es vor, dass eine regelmäßige und aufwändige Berechnung für Datensätze ausgeführt werden muss und es nicht praktikabel ist, die Berechnung über alle Datensätze durchzuführen. Mittels des hash-Kommandos können auf unterschiedlichen Abzügen die Hashwerte der Datensätze bestimmt werden. Durch Vergleich dieser Tabelle ist es möglich, die Datensätze zu identifizieren, die sich geändert haben, gelöscht oder neu hinzugefügt wurden. Das folgende Beispiel demonstriert die Erzeugung dieser Hash-Tabellen:",
+    "crumbs": [
+      "Kommandos",
+      "hash"
+    ]
+  },
+  {
+    "objectID": "commands/hash.html#optionen",
+    "href": "commands/hash.html#optionen",
+    "title": "hash",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-H &lt;header&gt;, --header &lt;header&gt;\n\nKopfzeile, die den Ergebnissen vorangestellt wird.\n\n-t, --tsv\n\nAusgabe erfolgt im TSV-Format.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-o &lt;filename&gt;, --output &lt;filename&gt;\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll.",
+    "crumbs": [
+      "Kommandos",
+      "hash"
+    ]
+  },
+  {
+    "objectID": "commands/hash.html#beispiele",
+    "href": "commands/hash.html#beispiele",
+    "title": "hash",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nAusgabe im TSV-Format\nDie Ausgabe lässt sich mittels der Option --tsv (bzw. -t) in das TSV-Format ändern.\n$ pica hash -s --tsv DUMP.dat.gz\nppn hash\n118540238   762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3\n118607626   8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee\n040993396   0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a\n...\n\n\nHinzufügen einer Kopfzeile\nEine individuelle Kopfzeile lässt sich mit der Option --header (bzw. -H) ausgeben:\n$ pica hash -s --header 'idn,sha256' DUMP.dat.gz\nidn,sha256\n118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3\n118607626,8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee\n040993396,0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a\n...",
+    "crumbs": [
+      "Kommandos",
+      "hash"
+    ]
+  },
+  {
+    "objectID": "commands/hash.html#anmerkung",
+    "href": "commands/hash.html#anmerkung",
+    "title": "hash",
+    "section": "Anmerkung",
+    "text": "Anmerkung\nZur Berechnung des SHA-256-Hashwerts wird der abschließende Zeilenumbruch mit einbezogen, um einen gleichen Hashwert zu erzeugen, der entsteht, wenn der Hashwert über die gesamte Zeile aus der Eingabe ermittelt wird. Im folgenden Beispiel wird zuerst der erste gültige Datensatz in die Datei 1.dat geschrieben. Anschließend wird der Hashwert einmal mit dem hash-Kommando und einmal mit dem Unix-Programm sha256sum gebildet. Beide Ergebnisse sind gleich.\n$ pica filter -s -l1 \"003@?\" DUMP.dat.gz -o 1.dat\n$ pica hash 1.dat\nppn,hash\n118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3\n\n$ sha256sum 1.dat\n762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3",
+    "crumbs": [
+      "Kommandos",
+      "hash"
+    ]
+  },
+  {
     "objectID": "commands/invalid.html",
     "href": "commands/invalid.html",
     "title": "invalid",
