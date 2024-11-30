@@ -318,6 +318,39 @@
     ]
   },
   {
+    "objectID": "commands/sample.html",
+    "href": "commands/sample.html",
+    "title": "sample",
+    "section": "",
+    "text": "Optionen\nDas sample-Kommando zieht nach dem Zufallsprinzip gleichmäßig Datensätze aus der Eingabe.\nIm folgenden Beispiel werden zufällig 200 Datensätze aus der Eingabe ausgewählt und in die Datei samples.dat geschrieben:",
+    "crumbs": [
+      "Kommandos",
+      "sample"
+    ]
+  },
+  {
+    "objectID": "commands/sample.html#optionen",
+    "href": "commands/sample.html#optionen",
+    "title": "sample",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-i, --ignore-case\n\nGroß- und Kleinschreibung wird bei Vergleichen ignoriert.\n\n--strsim-threshold &lt;value&gt;\n\nFestlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels =*.\n\n-g, --gzip\n\nKomprimieren der Ausgabe im [Gzip]-Format.\n\n--seed &lt;number&gt;\n\nInitialisiert den Zufallszahlengenerator mit einem seed-Wert, um eine deterministische Auswahl zu erhalten.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.\n\n-o &lt;path&gt;, --outdir &lt;path&gt;\n\nAngabe, in welches Verzeichnis die Partitionen geschrieben werden sollen. Standardmäßig wird das aktuelle Verzeichnis verwendet.",
+    "crumbs": [
+      "Kommandos",
+      "sample"
+    ]
+  },
+  {
+    "objectID": "commands/sample.html#beispiele",
+    "href": "commands/sample.html#beispiele",
+    "title": "sample",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nZufällige PPN-Liste\nIn Kombination mit dem select-Kommando kann eine zufällige PPN-Liste erzeugt werden:\n$ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv",
+    "crumbs": [
+      "Kommandos",
+      "sample"
+    ]
+  },
+  {
     "objectID": "commands/split.html",
     "href": "commands/split.html",
     "title": "split",
