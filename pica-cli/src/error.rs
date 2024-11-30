@@ -2,6 +2,7 @@ use std::process::ExitCode;
 
 use pica_record::io::ReadPicaError;
 use pica_record::matcher::ParseMatcherError;
+use pica_record::path::ParsePathError;
 use thiserror::Error;
 
 pub(crate) type CliResult = Result<ExitCode, CliError>;
@@ -22,6 +23,8 @@ pub(crate) enum CliError {
     ReadPica(#[from] ReadPicaError),
     #[error(transparent)]
     ParseMatcher(#[from] ParseMatcherError),
+    #[error(transparent)]
+    ParsePath(#[from] ParsePathError),
     #[error(transparent)]
     Csv(#[from] csv::Error),
     #[error(transparent)]

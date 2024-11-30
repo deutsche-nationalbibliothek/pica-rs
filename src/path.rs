@@ -1,4 +1,5 @@
 use std::fmt::{self, Display};
+use std::str::FromStr;
 use std::sync::LazyLock;
 
 use bstr::{BStr, ByteSlice};
@@ -52,6 +53,27 @@ impl Path {
         parse_path.parse(path.as_bytes()).map_err(|_| {
             ParsePathError(format!("invalid path '{path}'"))
         })
+    }
+}
+
+impl FromStr for Path {
+    type Err = ParsePathError;
+
+    /// Creates a new [Path] from a string slice.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::prelude::*;
+    ///
+    /// let _path: Path = "041A/*{ (9, a) | 9? }".parse()?;
+    /// let _path: Path = "003@.0".parse()?;
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::new(s)
     }
 }
 

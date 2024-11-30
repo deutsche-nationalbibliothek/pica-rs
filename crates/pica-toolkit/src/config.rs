@@ -23,7 +23,6 @@ pub(crate) struct Config {
     pub(crate) filter: Option<FilterConfig>,
     pub(crate) frequency: Option<FrequencyConfig>,
     pub(crate) global: Option<GlobalConfig>,
-    pub(crate) partition: Option<PartitionConfig>,
     pub(crate) print: Option<PrintConfig>,
     pub(crate) sample: Option<SampleConfig>,
     pub(crate) select: Option<SelectConfig>,
