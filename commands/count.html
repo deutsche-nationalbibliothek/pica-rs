@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>invalid – pica-rs</title>
+<title>count – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,7 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/count.html" rel="prev">
+<link href="../commands/invalid.html" rel="next">
+<link href="../commands/config.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -115,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/invalid.html">invalid</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/count.html">count</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -195,13 +196,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/count.html" class="sidebar-item-text sidebar-link">
+  <a href="../commands/count.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">count</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/invalid.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/invalid.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">invalid</span></a>
   </div>
 </li>
@@ -216,9 +217,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/invalid.html">invalid</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/count.html">count</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">invalid</h1>
+<h1 class="title">count</h1>
 </div>
 
 
@@ -235,13 +236,152 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Bei der Verarbeitung von PICA-Daten kann es vorkommen, dass Zeilen in der Eingabe nicht als normalisiertes PICA+ dekodiert werden können. Diese ungültigen Zeilen lassen sich bei vielen Kommandos mit der Option <code>--skip-invalid</code> / <code>-s</code> überspringen, wobei die Anzahl der übersprungenen Zeilen nicht angezeigt wird. Es ist zu empfehlen, die Anzahl invalider Datensätze zu kontrollieren und einer Prüfung zu unterziehen, um diese ggf. zu korrigieren. Das <code>invalid</code>-Kommando findet diese Zeilen in der Eingabe und gibt diese wieder auf der Standardausgabe (<code>stdout</code>) aus. Durch Angabe der Option <code>--output</code> / <code>-o</code> kann die Ausgabe in eine Datei geschrieben werden.</p>
-<section id="beispiel" class="level2">
-<h2 class="anchored" data-anchor-id="beispiel">Beispiel</h2>
-<p>Der folgende Befehl findet alle ungültigen Datensätze aus der Datei <code>DUMP.dat.gz</code> und schreibt diese Zeile in die Datei <code>invalid.dat</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica invalid DUMP.dat.gz <span class="at">-o</span> invalid.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Soll die Anzahl der Datensätze und deren Felder sowie Unterfelder ermittelt werden, kann dies mit dem <code>count</code>-Kommando erfolgen. Ungültige Datensätze können mit dem Flag <code>--skip-invalid</code> (bzw. <code>-s</code>) übersprungen werden. Im folgenden Beispiel wird die Datei <code>DUMP.dat.gz</code> eingelesen und die Anzahl der in der Datei enthaltenen Datensätzes (<em>records</em>), Felder (_fields) und Unterfelder (<em>subfields</em>) ausgegeben:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> DUMP.dat.gz</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">records:</span> 12</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">fields:</span> 1035</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">subfields:</span> 3973</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="optionen" class="level2">
+<h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
+<dl>
+<dt><code>-s</code>, <code>--skip-invalid</code></dt>
+<dd>
+Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+</dd>
+<dt><code>-i</code>, <code>--ignore-case</code></dt>
+<dd>
+Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+</dd>
+<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
+</dd>
+<dt><code>--append</code></dt>
+<dd>
+Wenn die Ausgabedatei bereits existiert, wird die Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine bestehende Datei standardmäßig überschrieben.
+</dd>
+<dt><code>--records</code></dt>
+<dd>
+Gibt nur die Anzahl der vorhandenen Datensätze aus. Dieses Flag ist nicht mit den Optionen <code>--fields</code>, <code>--subfields</code>, <code>--csv</code>, <code>--tsv</code> und <code>--no-header</code> kombinierbar.
+</dd>
+<dt><code>--fields</code></dt>
+<dd>
+Gibt nur die Anzahl der vorhandenen Felder aus. Dieses Flag ist nicht mit den Optionen <code>--records</code>, <code>--subfields</code>, <code>--csv</code>, <code>--tsv</code> und <code>--no-header</code> kombinierbar.
+</dd>
+<dt><code>--subfields</code></dt>
+<dd>
+Gibt nur die Anzahl der vorhandenen Unterfelder aus. Dieses Flag ist nicht mit den Optionen <code>--records</code>, <code>--fields</code>, <code>--csv</code>, <code>--tsv</code> und <code>--no-header</code> kombinierbar.
+</dd>
+<dt><code>--csv</code></dt>
+<dd>
+Die Ausgabe erfolgt im CSV-Format.
+</dd>
+<dt><code>--tsv</code></dt>
+<dd>
+Die Ausgabe erfolgt im TSV-Format.
+</dd>
+<dt><code>--no-header</code></dt>
+<dd>
+Es wird keine Kopfzeile in die Ausgabe geschrieben.
+</dd>
+<dt><code>--where &lt;expr&gt;</code></dt>
+<dd>
+Angabe eines Filters, um Datensätze aus der Eingabe auszuwählen.
+</dd>
+<dt><code>--and &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>&amp;&amp;</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; &lt;expr&gt;</code>.
+</dd>
+<dt><code>--or &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>||</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; || &lt;expr&gt;</code>.
+</dd>
+<dt><code>--not &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; !(&lt;expr&gt;)</code>.
+</dd>
+<dt><code>-p</code>, <code>--progress</code></dt>
+<dd>
+Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels <code>-o</code> bzw. <code>--output</code>.
+</dd>
+<dt><code>-o</code>, <code>--output</code></dt>
+<dd>
+Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe <code>stdout</code> geschrieben.
+</dd>
+</dl>
+</section>
+<section id="beispiele" class="level2">
+<h2 class="anchored" data-anchor-id="beispiele">Beispiele</h2>
+<section id="ausgabe-im-csvtsv-format" class="level3">
+<h3 class="anchored" data-anchor-id="ausgabe-im-csvtsv-format">Ausgabe im CSV/TSV-Format</h3>
+<p>Die Ausgabe des Kommandos kann auch im Format <em>CSV</em> bzw. <em>TSV</em> erfolgen, was die Weiterverarbeitung in anderen Programmen erleichtert. Die Ausgabe der Kopfzeile lässt sich mit dem Flag <code>--no-header</code> ausschalten.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--csv</span> DUMP.dat.gz</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">records,fields,subfields</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">12,1035,3973</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--tsv</span> DUMP.dat.gz</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">records</span> fields  subfields</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">12</span>  1035    3973</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--csv</span> <span class="at">--no-header</span> DUMP.dat.gz</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ex">12,1035,3973</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="ausgabe-in-eine-datei" class="level3">
+<h3 class="anchored" data-anchor-id="ausgabe-in-eine-datei">Ausgabe in eine Datei</h3>
+<p>Die Ausgabe des Kommandos wird standardmäßig auf der Konsole ausgegeben. Diese kann mit der Option <code>--output</code> (bzw. <code>-o</code>) in eine Datei umgeleitet werden. Soll diese Datei eine neue Zeile erhalten und nicht bei jedem Aufruf überschrieben werden, kann dies mit dem Flag <code>--append</code> erzielt werden.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--csv</span> <span class="at">-o</span> count.csv DUMP.dat.gz</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat count.csv</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">records,fields,subfields</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">12,1035,3973</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--csv</span> <span class="at">--append</span> <span class="at">-o</span> count.csv DUMP.dat.gz</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat count.csv</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ex">records,fields,subfields</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ex">12,1035,3973</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">12,1035,3973</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="ausgabe-von-einzelwerten" class="level3">
+<h3 class="anchored" data-anchor-id="ausgabe-von-einzelwerten">Ausgabe von Einzelwerten</h3>
+<p>Soll entweder die Anzahl von Datensätzen, Feldern oder Unterfeldern ausgegeben werden, kann dies mit den Flags <code>--records</code>, <code>--fields</code> bzw. <code>--subfields</code> erfolgen. Diese Flags schließen sich gegenseitig aus und können nicht mit den Flags <code>--csv</code>, <code>--tsv</code> und <code>--no-header</code> kombiniert werden.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--records</span> DUMP.dat.gz</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">12</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--fields</span> DUMP.dat.gz</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">1035</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--subfields</span> DUMP.dat.gz</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">3973</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="anwendungsbeispiel" class="level3">
+<h3 class="anchored" data-anchor-id="anwendungsbeispiel">Anwendungsbeispiel</h3>
+<p>Soll die Veränderung (Anzahl Datensätze, Felder, Unterfelder) eines PICA-Abzugs über die Zeit verfolgt werden, könnte dies wie folgt erreicht werden:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> echo <span class="st">"date,records,fields,subfields"</span> <span class="op">&gt;</span> count.csv <span class="co"># Kopfzeile</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> dump_20220222.dat.gz <span class="at">--append</span> <span class="at">-o</span> count.csv <span class="co"># Initialer Aufruf</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> dump_20220223.dat.gz <span class="at">--append</span> <span class="at">-o</span> count.csv <span class="co"># Aufruf nach x Tagen</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat count.csv</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> records,fields,subfields</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">7,247,549</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">9,347,1022</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Soll auch das aktuelle Datum vor die Zeile geschrieben werden, könnten bspw. folgende Unix-Kommandos genutzt werden:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Schreiben der Kopfzeile</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> echo <span class="st">"date,records,fields,subfields"</span> <span class="op">&gt;</span> count.csv</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Aufruf am 22.02.2022</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--no-header</span> <span class="at">--csv</span> dump_20220222.dat.gz <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xargs</span> <span class="at">-d</span><span class="st">"\n"</span> <span class="at">-I</span> {} date +<span class="st">"%Y-%m-%d,{}"</span> <span class="op">&gt;&gt;</span> count.csv</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Aufruf am 23.02.2022</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica count <span class="at">-s</span> <span class="at">--no-header</span> <span class="at">--csv</span> dump_20220223.dat.gz <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xargs</span> <span class="at">-d</span><span class="st">"\n"</span> <span class="at">-I</span> {} date +<span class="st">"%Y-%m-%d,{}"</span> <span class="op">&gt;&gt;</span> count.csv</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat count.csv</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> date,records,fields,subfields</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ex">2022-02-22,7,247,549</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ex">2022-02-23,9,347,1022</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -664,11 +804,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/count.html" class="pagination-link" aria-label="count">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">count</span>
+      <a href="../commands/config.html" class="pagination-link" aria-label="config">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">config</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../commands/invalid.html" class="pagination-link" aria-label="invalid">
+        <span class="nav-page-text">invalid</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->

@@ -186,6 +186,39 @@
     ]
   },
   {
+    "objectID": "commands/count.html",
+    "href": "commands/count.html",
+    "title": "count",
+    "section": "",
+    "text": "Optionen\nSoll die Anzahl der Datensätze und deren Felder sowie Unterfelder ermittelt werden, kann dies mit dem count-Kommando erfolgen. Ungültige Datensätze können mit dem Flag --skip-invalid (bzw. -s) übersprungen werden. Im folgenden Beispiel wird die Datei DUMP.dat.gz eingelesen und die Anzahl der in der Datei enthaltenen Datensätzes (records), Felder (_fields) und Unterfelder (subfields) ausgegeben:",
+    "crumbs": [
+      "Kommandos",
+      "count"
+    ]
+  },
+  {
+    "objectID": "commands/count.html#optionen",
+    "href": "commands/count.html#optionen",
+    "title": "count",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-i, --ignore-case\n\nGroß- und Kleinschreibung wird bei Vergleichen ignoriert.\n\n--strsim-threshold &lt;value&gt;\n\nFestlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels =*.\n\n--append\n\nWenn die Ausgabedatei bereits existiert, wird die Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine bestehende Datei standardmäßig überschrieben.\n\n--records\n\nGibt nur die Anzahl der vorhandenen Datensätze aus. Dieses Flag ist nicht mit den Optionen --fields, --subfields, --csv, --tsv und --no-header kombinierbar.\n\n--fields\n\nGibt nur die Anzahl der vorhandenen Felder aus. Dieses Flag ist nicht mit den Optionen --records, --subfields, --csv, --tsv und --no-header kombinierbar.\n\n--subfields\n\nGibt nur die Anzahl der vorhandenen Unterfelder aus. Dieses Flag ist nicht mit den Optionen --records, --fields, --csv, --tsv und --no-header kombinierbar.\n\n--csv\n\nDie Ausgabe erfolgt im CSV-Format.\n\n--tsv\n\nDie Ausgabe erfolgt im TSV-Format.\n\n--no-header\n\nEs wird keine Kopfzeile in die Ausgabe geschrieben.\n\n--where &lt;expr&gt;\n\nAngabe eines Filters, um Datensätze aus der Eingabe auszuwählen.\n\n--and &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen &&-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && &lt;expr&gt;.\n\n--or &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen ||-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; || &lt;expr&gt;.\n\n--not &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && !(&lt;expr&gt;).\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-o, --output\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe stdout geschrieben.",
+    "crumbs": [
+      "Kommandos",
+      "count"
+    ]
+  },
+  {
+    "objectID": "commands/count.html#beispiele",
+    "href": "commands/count.html#beispiele",
+    "title": "count",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nAusgabe im CSV/TSV-Format\nDie Ausgabe des Kommandos kann auch im Format CSV bzw. TSV erfolgen, was die Weiterverarbeitung in anderen Programmen erleichtert. Die Ausgabe der Kopfzeile lässt sich mit dem Flag --no-header ausschalten.\n$ pica count -s --csv DUMP.dat.gz\nrecords,fields,subfields\n12,1035,3973\n\n$ pica count -s --tsv DUMP.dat.gz\nrecords fields  subfields\n12  1035    3973\n\n$ pica count -s --csv --no-header DUMP.dat.gz\n12,1035,3973\n\n\nAusgabe in eine Datei\nDie Ausgabe des Kommandos wird standardmäßig auf der Konsole ausgegeben. Diese kann mit der Option --output (bzw. -o) in eine Datei umgeleitet werden. Soll diese Datei eine neue Zeile erhalten und nicht bei jedem Aufruf überschrieben werden, kann dies mit dem Flag --append erzielt werden.\n$ pica count -s --csv -o count.csv DUMP.dat.gz\n$ cat count.csv\nrecords,fields,subfields\n12,1035,3973\n\n$ pica count -s --csv --append -o count.csv DUMP.dat.gz\n$ cat count.csv\nrecords,fields,subfields\n12,1035,3973\n12,1035,3973\n\n\nAusgabe von Einzelwerten\nSoll entweder die Anzahl von Datensätzen, Feldern oder Unterfeldern ausgegeben werden, kann dies mit den Flags --records, --fields bzw. --subfields erfolgen. Diese Flags schließen sich gegenseitig aus und können nicht mit den Flags --csv, --tsv und --no-header kombiniert werden.\n$ pica count -s --records DUMP.dat.gz\n12\n\n$ pica count -s --fields DUMP.dat.gz\n1035\n\n$ pica count -s --subfields DUMP.dat.gz\n3973\n\n\nAnwendungsbeispiel\nSoll die Veränderung (Anzahl Datensätze, Felder, Unterfelder) eines PICA-Abzugs über die Zeit verfolgt werden, könnte dies wie folgt erreicht werden:\n$ echo \"date,records,fields,subfields\" &gt; count.csv # Kopfzeile\n$ pica count -s dump_20220222.dat.gz --append -o count.csv # Initialer Aufruf\n$ pica count -s dump_20220223.dat.gz --append -o count.csv # Aufruf nach x Tagen\n\n$ cat count.csv\n$ records,fields,subfields\n7,247,549\n9,347,1022\nSoll auch das aktuelle Datum vor die Zeile geschrieben werden, könnten bspw. folgende Unix-Kommandos genutzt werden:\n# Schreiben der Kopfzeile\n$ echo \"date,records,fields,subfields\" &gt; count.csv\n\n# Aufruf am 22.02.2022\n$ pica count -s --no-header --csv dump_20220222.dat.gz | \\\n    xargs -d\"\\n\" -I {} date +\"%Y-%m-%d,{}\" &gt;&gt; count.csv\n\n# Aufruf am 23.02.2022\n$ pica count -s --no-header --csv dump_20220223.dat.gz | \\\n    xargs -d\"\\n\" -I {} date +\"%Y-%m-%d,{}\" &gt;&gt; count.csv\n\n$ cat count.csv\n$ date,records,fields,subfields\n2022-02-22,7,247,549\n2022-02-23,9,347,1022",
+    "crumbs": [
+      "Kommandos",
+      "count"
+    ]
+  },
+  {
     "objectID": "commands/invalid.html",
     "href": "commands/invalid.html",
     "title": "invalid",
