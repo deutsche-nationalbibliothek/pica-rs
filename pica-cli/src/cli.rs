@@ -24,5 +24,6 @@ pub(crate) enum Command {
     #[cfg(feature = "unstable")]
     Config(Config),
     Count(Count),
+    Hash(Hash),
     Invalid(Invalid),
 }
