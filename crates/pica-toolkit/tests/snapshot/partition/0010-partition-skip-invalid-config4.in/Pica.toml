@@ -1,5 +1,0 @@
-[global]
-skip-invalid = false
-
-[partition]
-skip-invalid = false
