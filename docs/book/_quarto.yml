@@ -26,6 +26,7 @@ book:
         - commands/count.qmd
         - commands/hash.qmd
         - commands/invalid.qmd
+        - commands/split.qmd
     # - summary.qmd
     # - references.qmd
   sidebar:
