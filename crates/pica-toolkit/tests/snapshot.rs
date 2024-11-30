@@ -1,8 +1,6 @@
 #[test]
 fn cli_tests() {
     trycmd::TestCases::new()
-        .case("tests/snapshot/count/*.toml")
-        .case("tests/snapshot/count/*.trycmd")
         .case("tests/snapshot/explode/*.toml")
         .case("tests/snapshot/explode/*.trycmd")
         .case("tests/snapshot/filter/*.toml")

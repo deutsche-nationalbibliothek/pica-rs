@@ -1,4 +1,0 @@
-bin.name = "pica-v1"
-args = "count -s --tsv --no-header"
-status = "success"
-stderr = ""

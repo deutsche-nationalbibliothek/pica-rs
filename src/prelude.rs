@@ -19,7 +19,8 @@ pub use crate::fmt::{Format, FormatExt, FormatOptions};
 pub use crate::matcher::field::FieldMatcher;
 pub use crate::matcher::subfield::SubfieldMatcher;
 pub use crate::matcher::{
-    MatcherOptions, OccurrenceMatcher, RecordMatcher, TagMatcher,
+    MatcherOptions, OccurrenceMatcher, RecordMatcher,
+    RecordMatcherBuilder, TagMatcher,
 };
 pub use crate::path::{Path, PathExt};
 pub use crate::query::{Query, QueryExt, QueryOptions};

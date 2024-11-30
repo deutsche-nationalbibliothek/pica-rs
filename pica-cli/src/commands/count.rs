@@ -1,28 +1,19 @@
 use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
+use std::process::ExitCode;
 
 use clap::{value_parser, Parser};
-use pica_matcher::{MatcherBuilder, MatcherOptions};
-use pica_record_v1::io::{ReaderBuilder, RecordsIterator};
-use serde::{Deserialize, Serialize};
+use pica_record::prelude::*;
 
 use crate::config::Config;
 use crate::error::CliResult;
 use crate::progress::Progress;
-use crate::skip_invalid_flag;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct CountConfig {
-    /// Skip invalid records that can't be decoded.
-    pub(crate) skip_invalid: Option<bool>,
-}
 
 /// Count records, fields and subfields
 #[derive(Parser, Debug)]
 pub(crate) struct Count {
-    /// Skip invalid records that can't be decoded
+    /// Whether to skip invalid records or not
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -31,7 +22,7 @@ pub(crate) struct Count {
     append: bool,
 
     /// Prints only the number of records
-    #[arg(long,
+    #[arg(long, short,
           conflicts_with_all = ["fields", "subfields", "csv", "tsv", "no_header"])]
     records: bool,
 
@@ -57,14 +48,14 @@ pub(crate) struct Count {
     strsim_threshold: u8,
 
     /// A filter expression used for searching
-    #[arg(long = "where")]
+    #[arg(long = "where", value_name = "FILTER")]
     filter: Option<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
-    /// This option can't be combined with `--or` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
@@ -78,7 +69,7 @@ pub(crate) struct Count {
     /// logical NOT-operator (negation)
     ///
     /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
 
     /// Write output comma-separated (CSV)
@@ -107,12 +98,9 @@ pub(crate) struct Count {
 }
 
 impl Count {
-    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let skip_invalid = skip_invalid_flag!(
-            self.skip_invalid,
-            config.count,
-            config.global
-        );
+    pub(crate) fn execute(self, config: &Config) -> CliResult {
+        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let mut progress = Progress::new(self.progress);
 
         let mut writer: Box<dyn Write> = match self.output {
             Some(path) => Box::new(
@@ -123,22 +111,19 @@ impl Count {
                     .append(self.append)
                     .open(path)?,
             ),
-            None => Box::new(io::stdout()),
-        };
-
-        let nf = if let Some(ref global) = config.global {
-            global.translit
-        } else {
-            None
+            None => Box::new(io::stdout().lock()),
         };
 
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                MatcherBuilder::new(matcher, nf)?
-                    .and(self.and)?
-                    .not(self.not)?
-                    .or(self.or)?
-                    .build(),
+                RecordMatcherBuilder::new(
+                    matcher,
+                    config.normalization.clone(),
+                )?
+                .and(self.and)?
+                .or(self.or)?
+                .not(self.not)?
+                .build(),
             )
         } else {
             None
@@ -152,37 +137,34 @@ impl Count {
         let mut fields = 0;
         let mut subfields = 0;
 
-        let mut progress = Progress::new(self.progress);
-
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next() {
-                if let Err(e) = result {
-                    if e.is_invalid_record() && skip_invalid {
-                        progress.invalid();
-                        continue;
-                    } else {
-                        return Err(e.into());
-                    }
-                }
-
-                let record = result.unwrap();
-                progress.record();
-
-                if let Some(ref matcher) = matcher {
-                    if !matcher.is_match(&record, &options) {
+            while let Some(result) = reader.next_byte_record() {
+                match result {
+                    Err(e) if e.skip_parse_err(skip_invalid) => {
+                        progress.update(true);
                         continue;
                     }
-                }
+                    Err(e) => return Err(e.into()),
+                    Ok(record) => {
+                        progress.update(false);
+                        if let Some(ref matcher) = matcher {
+                            if !matcher.is_match(&record, &options) {
+                                continue;
+                            }
+                        }
 
-                records += 1;
-                fields += record.iter().len();
-                subfields += record
-                    .iter()
-                    .map(|field| field.subfields().len())
-                    .sum::<usize>();
+                        records += 1;
+                        fields += record.fields().len();
+                        subfields += record
+                            .fields()
+                            .iter()
+                            .map(|field| field.subfields().len())
+                            .sum::<usize>();
+                    }
+                }
             }
         }
 
@@ -210,6 +192,7 @@ impl Count {
 
         progress.finish();
         writer.flush()?;
-        Ok(())
+
+        Ok(ExitCode::SUCCESS)
     }
 }

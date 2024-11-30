@@ -2,9 +2,8 @@ use std::path::{Path, PathBuf};
 use std::{fs, io};
 
 use directories::ProjectDirs;
+use pica_record::matcher::NormalizationForm;
 use serde::{Deserialize, Serialize};
-
-use crate::unicode::NormalizationForm;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]

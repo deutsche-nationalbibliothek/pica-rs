@@ -16,6 +16,7 @@ sha2 = { version = "0.10" }
 smallvec = { version = "1.13.2" }
 strsim = { version = "0.11.1" }
 thiserror = { version = "2.0" }
+unicode-normalization = { version = "0.1.24" }
 winnow = { version = "0.6.18" }
 
 [features]

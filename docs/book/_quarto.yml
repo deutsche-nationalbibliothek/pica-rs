@@ -23,6 +23,7 @@ book:
         - commands/completions.qmd
         - commands/concat.qmd
         - commands/config.qmd
+        - commands/count.qmd
         - commands/invalid.qmd
     # - summary.qmd
     # - references.qmd

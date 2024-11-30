@@ -1,3 +1,0 @@
-records: 6
-fields: 295
-subfields: 677
