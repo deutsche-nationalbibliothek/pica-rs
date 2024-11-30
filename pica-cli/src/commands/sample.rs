@@ -14,7 +14,7 @@ use crate::progress::Progress;
 /// using reservoir sampling.
 #[derive(Parser, Debug)]
 pub(crate) struct Sample {
-    /// Skip invalid records that can't be decoded as normalized PICA+
+    /// Whether to skip invalid records or not
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -78,7 +78,6 @@ impl Sample {
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
                         progress.update(false);
-
                         let mut data = Vec::<u8>::new();
                         record.write_to(&mut data)?;
 

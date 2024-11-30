@@ -9,8 +9,6 @@ fn cli_tests() {
         .case("tests/snapshot/frequency/*.trycmd")
         .case("tests/snapshot/print/*.toml")
         .case("tests/snapshot/print/*.trycmd")
-        .case("tests/snapshot/sample/*.toml")
-        .case("tests/snapshot/sample/*.trycmd")
         .case("tests/snapshot/select/*.toml")
         .case("tests/snapshot/select/*.trycmd")
         .case("tests/snapshot/slice/*.toml")
