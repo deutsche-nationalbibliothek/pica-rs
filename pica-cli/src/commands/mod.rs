@@ -5,6 +5,7 @@ pub(crate) use config::Config;
 pub(crate) use count::Count;
 pub(crate) use hash::Hash;
 pub(crate) use invalid::Invalid;
+pub(crate) use split::Split;
 
 mod completions;
 mod concat;
@@ -13,3 +14,4 @@ mod config;
 mod count;
 mod hash;
 mod invalid;
+mod split;

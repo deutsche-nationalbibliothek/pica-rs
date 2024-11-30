@@ -7,7 +7,6 @@ mod print;
 mod sample;
 mod select;
 mod slice;
-mod split;
 
 pub(crate) use convert::{Convert, ConvertConfig};
 pub(crate) use explode::{Explode, ExplodeConfig};
@@ -18,4 +17,3 @@ pub(crate) use print::{Print, PrintConfig};
 pub(crate) use sample::{Sample, SampleConfig};
 pub(crate) use select::{Select, SelectConfig};
 pub(crate) use slice::{Slice, SliceConfig};
-pub(crate) use split::{Split, SplitConfig};
