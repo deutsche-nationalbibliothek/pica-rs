@@ -10,7 +10,5 @@ fn cli_tests() {
         .case("tests/snapshot/print/*.toml")
         .case("tests/snapshot/print/*.trycmd")
         .case("tests/snapshot/select/*.toml")
-        .case("tests/snapshot/select/*.trycmd")
-        .case("tests/snapshot/slice/*.toml")
-        .case("tests/snapshot/slice/*.trycmd");
+        .case("tests/snapshot/select/*.trycmd");
 }

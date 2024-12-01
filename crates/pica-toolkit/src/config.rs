@@ -25,7 +25,6 @@ pub(crate) struct Config {
     pub(crate) global: Option<GlobalConfig>,
     pub(crate) print: Option<PrintConfig>,
     pub(crate) select: Option<SelectConfig>,
-    pub(crate) slice: Option<SliceConfig>,
 }
 
 impl Config {

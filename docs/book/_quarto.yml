@@ -28,6 +28,7 @@ book:
         - commands/invalid.qmd
         - commands/partition.qmd
         - commands/sample.qmd
+        - commands/slice.qmd
         - commands/split.qmd
     # - summary.qmd
     # - references.qmd

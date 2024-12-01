@@ -7,6 +7,7 @@ mod hash;
 mod invalid;
 mod partition;
 mod sample;
+mod slice;
 mod split;
 
 pub(crate) mod prelude;

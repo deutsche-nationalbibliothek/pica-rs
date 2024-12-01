@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "slice -s --length 2 dump.dat.gz -o slice.dat"
-status = "success"
-stdout = ""
-stderr = ""

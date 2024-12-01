@@ -28,5 +28,6 @@ pub(crate) enum Command {
     Invalid(Invalid),
     Partition(Partition),
     Sample(Sample),
+    Slice(Slice),
     Split(Split),
 }
