@@ -1,22 +1,12 @@
 use std::ffi::OsString;
+use std::process::ExitCode;
 
 use clap::Parser;
-use pica_record_v1::io::{
-    ReaderBuilder, RecordsIterator, WriterBuilder,
-};
-use serde::{Deserialize, Serialize};
+use pica_record::prelude::*;
 
 use crate::config::Config;
 use crate::error::CliResult;
 use crate::progress::Progress;
-use crate::{gzip_flag, skip_invalid_flag};
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct SliceConfig {
-    pub(crate) skip_invalid: Option<bool>,
-    pub(crate) gzip: Option<bool>,
-}
 
 /// Return records within a range
 ///
@@ -94,16 +84,10 @@ pub(crate) struct Slice {
 }
 
 impl Slice {
-    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let gzip_compression = gzip_flag!(self.gzip, config.slice);
-        let skip_invalid = skip_invalid_flag!(
-            self.skip_invalid,
-            config.slice,
-            config.global
-        );
-
+    pub(crate) fn execute(self, config: &Config) -> CliResult {
+        let skip_invalid = self.skip_invalid || config.skip_invalid;
         let mut writer = WriterBuilder::new()
-            .gzip(gzip_compression)
+            .gzip(self.gzip)
             .append(self.append)
             .from_path_or_stdout(self.output)?;
 
@@ -122,30 +106,26 @@ impl Slice {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next() {
+            while let Some(result) = reader.next_byte_record() {
                 match result {
-                    Ok(record) => {
-                        progress.record();
+                    Err(e) if e.skip_parse_err(skip_invalid) => {
+                        progress.update(true);
+                        if self.length > 0 && range.end < usize::MAX {
+                            range.end += 1;
+                        }
+                        continue;
+                    }
+                    Err(e) => return Err(e.into()),
+                    Ok(ref record) => {
+                        progress.update(false);
 
                         if range.contains(&i) {
-                            writer.write_byte_record(&record)?;
+                            writer.write_byte_record(record)?;
                         } else if i < range.start {
                             i += 1;
                             continue;
                         } else {
                             break 'outer;
-                        }
-                    }
-                    Err(e) => {
-                        if e.is_invalid_record() && skip_invalid {
-                            progress.invalid();
-
-                            if self.length > 0 && range.end < usize::MAX
-                            {
-                                range.end += 1;
-                            }
-                        } else {
-                            return Err(e.into());
                         }
                     }
                 }
@@ -157,6 +137,6 @@ impl Slice {
         progress.finish();
         writer.finish()?;
 
-        Ok(())
+        Ok(ExitCode::SUCCESS)
     }
 }
