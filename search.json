@@ -351,6 +351,39 @@
     ]
   },
   {
+    "objectID": "commands/slice.html",
+    "href": "commands/slice.html",
+    "title": "slice",
+    "section": "",
+    "text": "Optionen\nMittels des slice-Kommandos kann ein zusammenhängender Teilbereich aus der Eingabe ausgeschnitten werden. Dabei wird der Teilbereich als halb-offenes Intervall angegeben, wobei die Positionen von 0 an gezählt werden. Beim Auftreten eines ungültigen Datensatzes wird die Position weitergezählt. Enthält bspw. die Eingabe 1.000 Zeilen, mit 990 Datensätzen und 10 ungültigen Zeilen, dann sind die Positionen von 0 bis 999 durchnummeriert.\nDas folgende Beispiel extrahiert alle (gültigen) Datensätze aus den Positionen 2 bis 4:",
+    "crumbs": [
+      "Kommandos",
+      "slice"
+    ]
+  },
+  {
+    "objectID": "commands/slice.html#optionen",
+    "href": "commands/slice.html#optionen",
+    "title": "slice",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n--start &lt;number&gt;\n\nStartposition des Teilbereichs (Voreinstellung: 0).\n\n--end &lt;number&gt;\n\nEndposition des Teilbereichs; diese Position ist nicht mehr Teil der Ausgabe. Ist keine Endposition angegeben, wird der Teilbereich bis zum Ende der Eingabe fortgeführt. Diese Option ist nicht kombinierbar mit --length.\n\n--length &lt;number&gt;\n\nFestlegen der maximalen Anzahl an Datensätzen, die in der Ausgabe enthalten sind. Diese Option kann nicht mit --end kombiniert werden.\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n--append\n\nWenn die Ausgabedatei bereits existiert, wird die Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine bestehende Datei standardmäßig überschrieben.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-o, --output\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe stdout geschrieben.",
+    "crumbs": [
+      "Kommandos",
+      "slice"
+    ]
+  },
+  {
+    "objectID": "commands/slice.html#beispiele",
+    "href": "commands/slice.html#beispiele",
+    "title": "slice",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nAusschneiden eines Teilbereichs fester Größe\nWenn die Eingabe ausreichend Datensätze enthält, kann beginnend bei einer festen Position (--start) ein Teilbereich mit einer festen Länge (--length) ausgeschnitten werden.\nIm folgenden Beispiel wird beginnend beim dritten Datensatz (Position 2) ein Teilbereich mit einer Länge von zwei ausgeschnitten:\n$ pica slice -s --start 2 --length 2 DUMP.dat.gz -o slice.dat\n$ pica count --records slice.dat\n2",
+    "crumbs": [
+      "Kommandos",
+      "slice"
+    ]
+  },
+  {
     "objectID": "commands/split.html",
     "href": "commands/split.html",
     "title": "split",
