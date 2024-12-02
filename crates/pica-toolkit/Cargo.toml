@@ -26,7 +26,6 @@ regex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 strsim = { workspace = true }
-termcolor = { version = "1.4" }
 thiserror = { workspace = true }
 toml = { workspace = true }
 unicode-normalization = { version = "0.1" }

@@ -2,7 +2,6 @@ extern crate clap;
 extern crate csv;
 extern crate regex;
 extern crate serde;
-extern crate termcolor;
 
 mod commands;
 mod config;
@@ -15,7 +14,7 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{Parser, Subcommand};
-use commands::{Convert, Explode, Filter, Frequency, Print, Select};
+use commands::{Convert, Explode, Filter, Frequency, Select};
 use config::Config;
 use error::{CliError, CliResult};
 
@@ -39,7 +38,6 @@ enum Commands {
     Explode(Explode),
     Filter(Filter),
     Frequency(Frequency),
-    Print(Print),
     Select(Select),
 }
 
@@ -52,7 +50,6 @@ fn run() -> CliResult<()> {
         Commands::Explode(cmd) => cmd.run(&config),
         Commands::Filter(cmd) => cmd.run(&config),
         Commands::Frequency(cmd) => cmd.run(&config),
-        Commands::Print(cmd) => cmd.run(&config),
         Commands::Select(cmd) => cmd.run(&config),
     }
 }

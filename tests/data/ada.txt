@@ -1,0 +1,56 @@
+001A $0 0386:16-03-95
+001B $0 8999:20-07-20 $t 13:19:49.000
+001D $0 9999:06-04-08
+001U $0 utf8
+001X $0 0
+002@ $0 Tp1
+003@ $0 119232022
+003U $a http://d-nb.info/gnd/119232022 $z http://d-nb.info/gnd/172642531
+004B $a pik
+007K $a gnd $0 119232022
+007N $a gnd $0 172642531
+007N $a pnd $0 172642531 $v zg
+007N $a pnd $0 119232022 $v zg
+007N $a swd $0 4370325-2 $v zg
+008A $a s $a z $a f
+008B $a w $a k $a v
+010E $e rda
+028@ $d Ada K. $c of $a Lovelace
+028@ $d Augusta Ada $c of $a Lovelace
+028@ $d Ada Augusta $c of $a Lovelace
+028@ $d Ada $a Byron
+028@ $d Augusta Ada $a Byron King
+028@ $d Augusta Ada $a King
+028@ $d Ada $a King
+028@ $d Ada Augusta $a Byron $4 nafr
+028@ $d Augusta Ada $a Byron
+028@ $d Ada $a Byron Lovelace
+028@ $d Ada $a Lovelace
+028@ $d Ada King, Countess of $a Lovelace
+028@ $d Augusta Ada King $a Lovelace
+028@ $d Augusta Ada $a Lovelace
+028A $d Ada King $c of $a Lovelace
+028R $9 118518208 $7 Tp1 $V piz $A gnd $0 118518208 $E 1788 $G 1824 $d George Gordon Byron $a Byron $l Baron $4 bezf $v Vater
+028R $9 118638130 $7 Tp1 $V piz $A gnd $0 118638130 $E 1792 $G 1860 $d Anne Isabella Milbanke Byron $a Byron $4 bezf $v Mutter
+028R $9 119389991 $7 Tp1 $V piz $A gnd $0 119389991 $E 1837 $G 1917 $d Anne Isabella $a Blunt $4 bezf $v Tochter
+028R $d william $a king $4 bezf
+032T $a f
+041R $9 042527880 $7 Ts1 $V saz $A gnd $0 4252788-0 $a Mathematikerin $4 berc
+042A $a 28p $a 9.5p
+042B $a XA-GB
+047A/03 $e DE-386
+047A/03 $r DE-576
+047C $S pnd $i a $a Lovelace, Ada King /of $0 119232022
+047C $S pnd $i a $a Lovelace, Ada K. /of $0 172642531
+050C $a Der Ehemann Baron William King (1805-1893) wurde 1838 zum 1. Earl of Lovelace erhoben.
+050E $a LoC-Na gegen Modern Engl. biogr.
+050E $a https://de.wikipedia.org/wiki/Ada_Lovelace
+050E $a LCAuth, (OGND)
+050G $b Brit. Mathematikerin; Countess of Lovelace
+050G $b Informatikerin, Mathematikerin, Grossbritannien
+060R $a 10.12.1815 $b 27.12.1852 $4 datx
+060R $a 1815 $b 1852 $4 datl
+065R $9 040743357 $7 Tgz $V gik $A gnd $0 4074335-4 $a London $4 ortg
+065R $9 040743357 $7 Tgz $V gik $A gnd $0 4074335-4 $a London $4 orts
+070A/03 $0 (DE-588)119232022
+

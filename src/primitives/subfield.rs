@@ -1,3 +1,4 @@
+use std::fmt::{self, Display};
 use std::io::{self, Write};
 use std::iter;
 use std::ops::Deref;
@@ -131,6 +132,12 @@ impl PartialEq<char> for &SubfieldCode {
     #[inline]
     fn eq(&self, other: &char) -> bool {
         self.0 == *other
+    }
+}
+
+impl Display for SubfieldCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
