@@ -4,7 +4,6 @@ use assert_cmd::Command;
 use assert_fs::prelude::*;
 use assert_fs::TempDir;
 use pica_record::matcher::{translit, NormalizationForm};
-use predicates::prelude::*;
 
 use crate::prelude::*;
 
@@ -13,12 +12,16 @@ fn print_stdout() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert =
         cmd.arg("print").arg(data_dir().join("ada.dat")).assert();
-    let expected = read_to_string(data_dir().join("ada.txt"))?;
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(target_os = "windows") {
+        expected = expected.replace('\n', "\r\n");
+    }
 
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected).normalize())
+        .stdout(predicates::ord::eq(expected))
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -42,9 +45,13 @@ fn print_output() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let expected = read_to_string(data_dir().join("ada.txt"))?;
     let actual = read_to_string(out.path())?;
-    assert!(predicate::eq(expected).normalize().eval(&actual));
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(target_os = "windows") {
+        expected = expected.replace('\n', "\r\n");
+    }
+
+    assert_eq!(expected, actual);
 
     temp_dir.close().unwrap();
 
@@ -60,15 +67,19 @@ fn print_translit_nfc() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let expected = translit(
+    let mut expected = translit(
         read_to_string(data_dir().join("algebra.txt"))?,
         Some(&NormalizationForm::Nfc),
     );
 
+    if cfg!(target_os = "windows") {
+        expected = expected.replace('\n', "\r\n");
+    }
+
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected).normalize())
+        .stdout(predicates::ord::eq(expected))
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -83,15 +94,19 @@ fn print_translit_nfkc() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let expected = translit(
+    let mut expected = translit(
         read_to_string(data_dir().join("algebra.txt"))?,
         Some(&NormalizationForm::Nfkc),
     );
 
+    if cfg!(target_os = "windows") {
+        expected = expected.replace('\n', "\r\n");
+    }
+
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected).normalize())
+        .stdout(predicates::ord::eq(expected))
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -106,15 +121,19 @@ fn print_translit_nfd() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let expected = translit(
+    let mut expected = translit(
         read_to_string(data_dir().join("algebra.txt"))?,
         Some(&NormalizationForm::Nfd),
     );
 
+    if cfg!(target_os = "windows") {
+        expected = expected.replace('\n', "\r\n");
+    }
+
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected).normalize())
+        .stdout(predicates::ord::eq(expected))
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -129,15 +148,19 @@ fn print_translit_nfkd() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let expected = translit(
+    let mut expected = translit(
         read_to_string(data_dir().join("algebra.txt"))?,
         Some(&NormalizationForm::Nfkd),
     );
 
+    if cfg!(target_os = "windows") {
+        expected = expected.replace('\n', "\r\n");
+    }
+
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected).normalize())
+        .stdout(predicates::ord::eq(expected))
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -152,12 +175,15 @@ fn print_skip_invalid() -> TestResult {
         .arg(data_dir().join("ada.dat"))
         .assert();
 
-    let expected = read_to_string(data_dir().join("ada.txt"))?;
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(target_os = "windows") {
+        expected = expected.replace('\n', "\r\n");
+    }
 
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected).normalize())
+        .stdout(predicates::ord::eq(expected))
         .stderr(predicates::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
