@@ -318,6 +318,39 @@
     ]
   },
   {
+    "objectID": "commands/print.html",
+    "href": "commands/print.html",
+    "title": "print",
+    "section": "",
+    "text": "Optionen\nMithilfe des print-Kommandos können Datensätze in einer menschenlesbaren Form auf dem Terminal ausgegeben oder in eine Datei geschrieben werden. Das Format ist an die Darstellung in der WinIBW angelehnt: Felder werden zeilenweise ausgegeben; zuerst wird das Feld (bspw. 003@), dann - sofern vorhanden - die Okkurrenz (bspw. /01), und schließlich die Liste von Unterfeldern ausgegeben. Dem Unterfeld-Code wird ein Dollarzeichen vorangestellt. Die Unterfeldwerte werden genau so ausgegeben, wie sie im Datensatz vorhanden sind; es findet kein [Escaping] von Sonderzeichen statt. Einzelne Datensätze werden durch eine Leerzeile voneinander getrennt.\nDer folgende Befehl gibt den ersten Datensatz aus:",
+    "crumbs": [
+      "Kommandos",
+      "print"
+    ]
+  },
+  {
+    "objectID": "commands/print.html#optionen",
+    "href": "commands/print.html#optionen",
+    "title": "print",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-l &lt;number&gt;, --limit &lt;number&gt;\n\nEingrenzung der Ausgabe auf die ersten n Datensätze.\n\n--translit &lt;nf&gt;\n\nAusgabe wird in die angegebene Normalform transliteriert. Mögliche Werte: nfd, nfkd, nfc und nfkc.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-o, --output\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe stdout geschrieben.",
+    "crumbs": [
+      "Kommandos",
+      "print"
+    ]
+  },
+  {
+    "objectID": "commands/print.html#beispiele",
+    "href": "commands/print.html#beispiele",
+    "title": "print",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nTransliteration der Ausgabe\nStandardmäßig werden die Unterfeldwerte so ausgegeben, wie sie im Datensatz vorkommen. Mit der Option --translit werden die Werte in die angegebene Unicode-Normalform transliteriert.\n$ pica print -s -l1 --translit nfc DUMP.dat.gz\n...\n028@ $d Yohan Wolfgang $a Gete\n028@ $d Yôhân Wôlfgang $c fôn $a Gete\n028@ $d Yôhan Wolfgang $a Gête\n028@ $d Yohann Volfqanq $a Gete\n028@ $d Yogann Volʹfgang $a Gete\n...\n028@ $T 01 $U Cyrl $L uzb $d Йоҳанн Волфганг $a Гёте\n028@ $T 01 $U Hans $P 歌德 $5 DE-576\n028@ $T 01 $U Hant $P 約翰・沃爾夫岡・馮・歌德 $5 DE-576\n028@ $T 01 $U Hans $P 约翰・沃尔夫冈・冯・歌德 $5 DE-576\n028@ $T 01 $U Jpan $d ヨハン・ヴォルフガング・フォン $a ゲーテ $5 DE-576\n028@ $T 01 $U Hebr $d יוהן וולפגנג פון $a גתה\n028@ $T 01 $U Hans $P 歌德\n028@ $T 01 $U Jpan $d ヨハン・ヴォルフガング・フォン $a ゲーテ\n028@ $T 01 $U Geor $d იოჰან ვოლფგანგ ფონ $a გოეთე\n028A $d Johann Wolfgang $c von $a Goethe\n...",
+    "crumbs": [
+      "Kommandos",
+      "print"
+    ]
+  },
+  {
     "objectID": "commands/sample.html",
     "href": "commands/sample.html",
     "title": "sample",
