@@ -18,7 +18,7 @@ fn print_stdout() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected))
+        .stdout(predicates::ord::eq(expected).normalize())
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -42,8 +42,9 @@ fn print_output() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.txt"))
-        .eval(out.path()));
+    let expected = read_to_string(data_dir().join("ada.txt"))?;
+    let actual = read_to_string(out.path())?;
+    assert!(predicate::eq(expected).normalize().eval(&actual));
 
     temp_dir.close().unwrap();
 
@@ -67,7 +68,7 @@ fn print_translit_nfc() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected))
+        .stdout(predicates::ord::eq(expected).normalize())
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -90,7 +91,7 @@ fn print_translit_nfkc() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected))
+        .stdout(predicates::ord::eq(expected).normalize())
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -113,7 +114,7 @@ fn print_translit_nfd() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected))
+        .stdout(predicates::ord::eq(expected).normalize())
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -136,7 +137,7 @@ fn print_translit_nfkd() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected))
+        .stdout(predicates::ord::eq(expected).normalize())
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -156,7 +157,7 @@ fn print_skip_invalid() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected))
+        .stdout(predicates::ord::eq(expected).normalize())
         .stderr(predicates::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
