@@ -4,6 +4,7 @@ use assert_cmd::Command;
 use assert_fs::prelude::*;
 use assert_fs::TempDir;
 use pica_record::matcher::{translit, NormalizationForm};
+use predicates::str::PredicateStrExt;
 
 use crate::prelude::*;
 
@@ -21,7 +22,7 @@ fn print_stdout() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected))
+        .stdout(predicates::ord::eq(expected).normalize())
         .stderr(predicates::str::is_empty());
 
     Ok(())
