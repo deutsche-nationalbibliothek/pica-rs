@@ -46,10 +46,10 @@ fn print_output() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     let expected = read_to_string(data_dir().join("ada.txt"))?;
-    let mut actual = read_to_string(out.path())?;
-    if cfg!(windows) {
-        actual = actual.replace('\r', "");
-    }
+    let actual = read_to_string(out.path())?;
+    // if cfg!(windows) {
+    //     actual = actual.replace('\r', "");
+    // }
 
     assert_eq!(expected, actual);
 
