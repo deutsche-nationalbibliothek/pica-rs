@@ -14,15 +14,15 @@ fn print_stdout() -> TestResult {
     let assert =
         cmd.arg("print").arg(data_dir().join("ada.dat")).assert();
 
-    let expected = read_to_string(data_dir().join("ada.txt"))?;
-    // if cfg!(windows) {
-    //     expected = expected.replace("\r\r", "\r\n");
-    // }
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
 
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq(expected).normalize())
+        .stdout(predicates::ord::eq(expected))
         .stderr(predicates::str::is_empty());
 
     Ok(())
@@ -48,14 +48,13 @@ fn print_output() -> TestResult {
 
     let actual = read_to_string(out.path())?;
     let mut expected = read_to_string(data_dir().join("ada.txt"))?;
-    if cfg!(target_os = "windows") {
-        expected = expected.replace('\n', "\r\n");
+    if cfg!(windows) {
+        expected = expected.replace('\n', "");
     }
 
     assert_eq!(expected, actual);
 
     temp_dir.close().unwrap();
-
     Ok(())
 }
 
@@ -73,8 +72,8 @@ fn print_translit_nfc() -> TestResult {
         Some(&NormalizationForm::Nfc),
     );
 
-    if cfg!(target_os = "windows") {
-        expected = expected.replace('\n', "\r\n");
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
     }
 
     assert
@@ -100,8 +99,8 @@ fn print_translit_nfkc() -> TestResult {
         Some(&NormalizationForm::Nfkc),
     );
 
-    if cfg!(target_os = "windows") {
-        expected = expected.replace('\n', "\r\n");
+    if cfg!(windows) {
+        expected = expected.replace('\n', "");
     }
 
     assert
@@ -127,8 +126,8 @@ fn print_translit_nfd() -> TestResult {
         Some(&NormalizationForm::Nfd),
     );
 
-    if cfg!(target_os = "windows") {
-        expected = expected.replace('\n', "\r\n");
+    if cfg!(windows) {
+        expected = expected.replace('\n', "");
     }
 
     assert
@@ -154,8 +153,8 @@ fn print_translit_nfkd() -> TestResult {
         Some(&NormalizationForm::Nfkd),
     );
 
-    if cfg!(target_os = "windows") {
-        expected = expected.replace('\n', "\r\n");
+    if cfg!(windows) {
+        expected = expected.replace('\n', "");
     }
 
     assert
@@ -177,8 +176,8 @@ fn print_skip_invalid() -> TestResult {
         .assert();
 
     let mut expected = read_to_string(data_dir().join("ada.txt"))?;
-    if cfg!(target_os = "windows") {
-        expected = expected.replace('\n', "\r\n");
+    if cfg!(windows) {
+        expected = expected.replace('\n', "");
     }
 
     assert
