@@ -6,6 +6,7 @@ mod count;
 mod hash;
 mod invalid;
 mod partition;
+mod print;
 mod sample;
 mod slice;
 mod split;

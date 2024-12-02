@@ -27,6 +27,7 @@ book:
         - commands/hash.qmd
         - commands/invalid.qmd
         - commands/partition.qmd
+        - commands/print.qmd
         - commands/sample.qmd
         - commands/slice.qmd
         - commands/split.qmd

@@ -89,8 +89,10 @@ pub enum NormalizationForm {
     Nfkd,
 }
 
-#[inline(always)]
-fn translit<S>(s: S, normalizion: Option<&NormalizationForm>) -> String
+pub fn translit<S>(
+    s: S,
+    normalizion: Option<&NormalizationForm>,
+) -> String
 where
     S: AsRef<str>,
 {
@@ -104,7 +106,7 @@ where
 }
 
 impl FromStr for NormalizationForm {
-    type Err = ();
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -112,7 +114,7 @@ impl FromStr for NormalizationForm {
             "nfkc" => Ok(Self::Nfkc),
             "nfd" => Ok(Self::Nfd),
             "nfkd" => Ok(Self::Nfkd),
-            _ => Err(()),
+            _ => Err("invalid normalizion form".into()),
         }
     }
 }
