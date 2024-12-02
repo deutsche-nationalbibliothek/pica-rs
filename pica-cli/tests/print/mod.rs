@@ -45,10 +45,10 @@ fn print_output() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let actual = read_to_string(out.path())?;
-    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    let expected = read_to_string(data_dir().join("ada.txt"))?;
+    let mut actual = read_to_string(out.path())?;
     if cfg!(windows) {
-        expected = expected.replace('\n', "");
+        actual = actual.replace('\r', "");
     }
 
     assert_eq!(expected, actual);
@@ -99,7 +99,7 @@ fn print_translit_nfkc() -> TestResult {
     );
 
     if cfg!(windows) {
-        expected = expected.replace('\n', "");
+        expected = expected.replace('\r', "");
     }
 
     assert
@@ -126,7 +126,7 @@ fn print_translit_nfd() -> TestResult {
     );
 
     if cfg!(windows) {
-        expected = expected.replace('\n', "");
+        expected = expected.replace('\r', "");
     }
 
     assert
@@ -153,7 +153,7 @@ fn print_translit_nfkd() -> TestResult {
     );
 
     if cfg!(windows) {
-        expected = expected.replace('\n', "");
+        expected = expected.replace('\r', "");
     }
 
     assert
@@ -176,7 +176,7 @@ fn print_skip_invalid() -> TestResult {
 
     let mut expected = read_to_string(data_dir().join("ada.txt"))?;
     if cfg!(windows) {
-        expected = expected.replace('\n', "");
+        expected = expected.replace('\r', "");
     }
 
     assert
