@@ -4,7 +4,6 @@ use assert_cmd::Command;
 use assert_fs::prelude::*;
 use assert_fs::TempDir;
 use pica_record::matcher::{translit, NormalizationForm};
-use predicates::str::PredicateStrExt;
 
 use crate::prelude::*;
 
