@@ -13,10 +13,10 @@ fn print_stdout() -> TestResult {
     let assert =
         cmd.arg("print").arg(data_dir().join("ada.dat")).assert();
 
-    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
-    if cfg!(windows) {
-        expected = expected.replace("\r\r", "\r\n");
-    }
+    let expected = read_to_string(data_dir().join("ada.txt"))?;
+    // if cfg!(windows) {
+    //     expected = expected.replace("\r\r", "\r\n");
+    // }
 
     assert
         .success()
