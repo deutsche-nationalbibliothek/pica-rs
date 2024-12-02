@@ -15,7 +15,7 @@ fn print_stdout() -> TestResult {
 
     let mut expected = read_to_string(data_dir().join("ada.txt"))?;
     if cfg!(windows) {
-        expected = expected.replace('\n', "\r\n");
+        expected = expected.replace('\n', "ABC");
     }
 
     assert
