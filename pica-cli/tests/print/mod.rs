@@ -31,7 +31,7 @@ fn print_stdout() -> TestResult {
 fn print_output() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let temp_dir = TempDir::new().unwrap();
-    let out = temp_dir.child("out.dat");
+    let out = temp_dir.child("out.txt");
 
     let assert = cmd
         .arg("print")
@@ -45,11 +45,11 @@ fn print_output() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let expected = read_to_string(data_dir().join("ada.txt"))?;
     let actual = read_to_string(out.path())?;
-    // if cfg!(windows) {
-    //     actual = actual.replace('\r', "");
-    // }
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
 
     assert_eq!(expected, actual);
 
