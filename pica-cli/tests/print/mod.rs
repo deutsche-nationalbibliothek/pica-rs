@@ -14,7 +14,7 @@ fn print_stdout() -> TestResult {
         cmd.arg("print").arg(data_dir().join("ada.dat")).assert();
 
     let mut expected = read_to_string(data_dir().join("ada.txt"))?;
-    if cfg!(target_os = "windows") {
+    if cfg!(windows) {
         expected = expected.replace('\n', "\r\n");
     }
 
