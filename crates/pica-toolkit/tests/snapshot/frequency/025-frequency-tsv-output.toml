@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "frequency --tsv -s \"002@.0\" dump.dat.gz"
-status = "success"
-stdout = "Ts1\t2\nTg1\t1\nTp1\t1\nTsz\t1\nTu1\t1\n"
-stderr = ""

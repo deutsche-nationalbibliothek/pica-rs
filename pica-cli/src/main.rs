@@ -10,7 +10,9 @@ mod cli;
 mod commands;
 mod config;
 mod error;
+pub(crate) mod prelude;
 mod progress;
+mod utils;
 
 fn run() -> CliResult {
     let args = Args::parse();
@@ -28,6 +30,7 @@ fn run() -> CliResult {
         #[cfg(feature = "unstable")]
         Command::Config(cmd) => cmd.execute(&mut config),
         Command::Count(cmd) => cmd.execute(&config),
+        Command::Frequency(cmd) => cmd.execute(&config),
         Command::Hash(cmd) => cmd.execute(&config),
         Command::Invalid(cmd) => cmd.execute(&config),
         Command::Partition(cmd) => cmd.execute(&config),
