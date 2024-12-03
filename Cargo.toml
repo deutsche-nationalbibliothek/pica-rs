@@ -5,7 +5,7 @@ authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "EUPL-1.2"
 keywords = ["PICA+", "code4lib"]
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.83"
 
 [dependencies]
 bstr = { version = "1.11" }
