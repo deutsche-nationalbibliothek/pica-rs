@@ -219,6 +219,50 @@
     ]
   },
   {
+    "objectID": "commands/frequency.html",
+    "href": "commands/frequency.html",
+    "title": "frequency",
+    "section": "",
+    "text": "Optionen\nDas Kommando frequency wird dazu genutzt, um die Häufigkeiten der Werte ein oder mehrerer Unterfelder zu bestimmen. Ist das zu untersuchende Feld bzw. Unterfeld wiederholbar, gehen alle Wertausprägungen eines Datensatzes in die Häufigkeitsverteilung ein. Die Ausgabe erfolgt standardmäßig im CSV-Format. Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds 002@.0 (Satzart) ermittelt:\n-H &lt;header&gt;, --header &lt;header&gt; Kopfzeile, die den Ergebnissen vorangestellt wird; Spaltennamen werde mit einem Komma separiert.\n-t, --tsv Ausgabe erfolgt im TSV-Format.",
+    "crumbs": [
+      "Kommandos",
+      "frequency"
+    ]
+  },
+  {
+    "objectID": "commands/frequency.html#optionen",
+    "href": "commands/frequency.html#optionen",
+    "title": "frequency",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-i, --ignore-case\n\nGroß- und Kleinschreibung wird bei Vergleichen ignoriert.\n\n--strsim-threshold &lt;value&gt;\n\nFestlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels =*.\n\n--unique, -u\n\nDoppelte Werte eines Datensatzes werden ignorieren.\n\n--reverse\n\nErgebnisse werden in aufsteigender Reihenfolge ausgegeben.\n\n-A &lt;file&gt;, --allow-list &lt;file&gt;\n\nEs werden alle Datensätze ignoriert, die nicht explizit in der Positivliste1 auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-D &lt;file&gt;, --deny-list &lt;file&gt;\n\nEs werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-l &lt;n&gt;, --limit &lt;n&gt;\n\nEingrenzung der Ausgabe auf die häufigsten &lt;n&gt; Unterfeldwerte.\n\n-t &lt;n&gt;, --threshold &lt;n&gt;\n\nZeilen mit einer Häufigkeit \\(&lt;\\) &lt;n&gt; ignorieren.\n\n--where &lt;filter&gt;\n\nAngabe eines Filters, der auf die erzeugten Datensätze angewandt wird.\n\n--and &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen &&-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && &lt;expr&gt;.\n\n--or &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen ||-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; || &lt;expr&gt;.\n\n--not &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && !(&lt;expr&gt;).\n\n\n\n\n\n--translit &lt;normalization&gt;\n\nAusgabe wird in die angegebene Normalform transliteriert. Mögliche Werte: nfd, nfkd, nfc und nfkc.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-o, --output\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe stdout geschrieben.",
+    "crumbs": [
+      "Kommandos",
+      "frequency"
+    ]
+  },
+  {
+    "objectID": "commands/frequency.html#beispiele",
+    "href": "commands/frequency.html#beispiele",
+    "title": "frequency",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nHinzufügen einer Kopfzeile\nFür die Dokumentation sowie die Verwendung in anderen Programmiersprachen ist es häufig sinnvoll, eine Kopfzeile hinzuzufügen. Dies erfolgt mit der Option --header bzw. -H. Die Namen der Spalten werden kommasepariert angegeben. Eine Angabe von mehr als zwei Spalten ist nicht erlaubt.\n$ pica frequency -s --header \"satzart,anzahl\" \"002@.0\" DUMP.dat.gz\nsatzart,anzahl\nTu1,6\nTsz,2\nTg1,1\nTp1,1\nTpz,1\nTs1,1\n\n\nAuswertung mehrerer Felder bzw. Unterfelder\nDurch die Angabe von mehreren Pfadausdrücken lässt sich eine Häufigkeitsverteilung über mehrere Untefelder ermitteln. Das folgende Beispiel berechnet die Häufigkeit der Kombination aus Satzart (002@.0) und dem Entitätencode(s) (004B.a):\n$ pica frequency -s -H \"bbg,ent,count\" \"002@.0, 004B.a\" DUMP.dat.gz\nbbg,ent,count\nTu1,wit,6\nTsz,saz,2\nTg1,gik,1\nTp1,piz,1\nTpz,piz,1\nTs1,saz,1\nEbenfalls können auch mehrere Unterfelder ausgewertet werden. Eine Auswertung der Häufigkeiten von verknüpften Sachbegriffen (Level 1) und dem GND-Code für Beziehungen im Feld 041R (Sachbegriff - Beziehung) wird wie folgt ermittelt:\n$ pica frequency -s '041R{(7,4) | 7 == \"Ts1\"}' DUMP.dat.gz\nTs1,beru,12\nTs1,obal,5\nTs1,vbal,3\nTs1,obge,1\nTs1,stud,1\n\n\nEingrenzung auf bestimmte Felder\nOftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten miteinbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in {}-Notation können nur die Felder ausgewählt werden, die einem bestimmten Kriterium entsprechen.\nDas folgende Beispiel bezieht nur die Felder 041R in die Auswertung mit ein, bei denen ein Unterfeld 4 existiert, das entweder berc oder beru ist; Felder die diesem Kriterium nicht entsprechen, werden ignoriert.\n$ pica frequency -s \"041R{ 9 | 4 in ['berc', 'beru'] }\" DUMP.dat.gz\n040533093,2\n040250989,1\n040252434,1\n040290506,1\n...\n\n\nEingrenzen der Treffermenge\nSoll die Ergebnismenge auf die häufigsten n Unterfeldwerte eingeschränkt werden, wird dies mit der Option --limit bzw. -l erreicht. Das nachfolgende Beispeil ermittelt die 3 häufigsten Werte im Feld 041R.4.\n$ pica frequency -s --limit 3 \"041R.4\" DUMP.dat.gz\nberu,12\nobal,5\nvbal,4\n\n\nEingrenzen der Treffermenge (Schwellenwert)\nDie Treffermenge kann auch mittels der Angabe eines Schwellenwerts eingeschänkt werden. Sollen nur die Werte angezeigt werden, die ab einem Schwellenwert vorkommen, dann kann dies mit der Option --threshold/-t erzielt werden:\n$ pica frequency -s --threshold 4 \"041R.4\" DUMP.dat.gz\nberu,12\nobal,5\nvbal,4\n\n\nÄnderung der Sortierreihenfolge (Limit)\nStandardmäßig wird die Häufigkeitsverteilung absteigend ausgegeben, d.h., der häufigste Wert steht in der Ausgabe oben. Soll das Verhalten so geändert werden, dass die Ausgabe aufsteigend sortiert wird, kann dies mit der Option --reverse bzw. -r erfolgen. Das folgende Kommando sucht nach den vier Satzarten, die am wenigsten vorkommen:\n$ pica frequency -s -l 4 --reverse \"002@.0\" DUMP.dat.gz\nTg1,1\nTp1,1\nTpz,1\nTs1,1\n\n\nAusgabe im TSV-Format\nDie Ausgabe lässt sich mittels der Option --tsv (bzw. -t) in das TSV-Format ändern.\n$ pica frequency -s -l3 --tsv tests/data/dump.dat.gz\nTu1 6\nTsz 2\n...",
+    "crumbs": [
+      "Kommandos",
+      "frequency"
+    ]
+  },
+  {
+    "objectID": "commands/frequency.html#footnotes",
+    "href": "commands/frequency.html#footnotes",
+    "title": "frequency",
+    "section": "",
+    "text": "Alle Werte mit gleicher Häufigkeit werden immer in lexikographisch aufsteigender Reihenfolge sortiert. Dies erfolgt unabhängig vom Parameter --reverse.↩︎",
+    "crumbs": [
+      "Kommandos",
+      "frequency"
+    ]
+  },
+  {
     "objectID": "commands/hash.html",
     "href": "commands/hash.html",
     "title": "hash",
