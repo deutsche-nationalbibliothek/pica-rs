@@ -14,7 +14,7 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{Parser, Subcommand};
-use commands::{Convert, Explode, Filter, Frequency, Select};
+use commands::{Convert, Explode, Filter, Select};
 use config::Config;
 use error::{CliError, CliResult};
 
@@ -37,7 +37,6 @@ enum Commands {
     Convert(Convert),
     Explode(Explode),
     Filter(Filter),
-    Frequency(Frequency),
     Select(Select),
 }
 
@@ -49,7 +48,6 @@ fn run() -> CliResult<()> {
         Commands::Convert(cmd) => cmd.run(&config),
         Commands::Explode(cmd) => cmd.run(&config),
         Commands::Filter(cmd) => cmd.run(&config),
-        Commands::Frequency(cmd) => cmd.run(&config),
         Commands::Select(cmd) => cmd.run(&config),
     }
 }

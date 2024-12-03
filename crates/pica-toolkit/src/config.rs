@@ -21,7 +21,6 @@ pub(crate) struct Config {
     pub(crate) convert: Option<ConvertConfig>,
     pub(crate) explode: Option<ExplodeConfig>,
     pub(crate) filter: Option<FilterConfig>,
-    pub(crate) frequency: Option<FrequencyConfig>,
     pub(crate) global: Option<GlobalConfig>,
     pub(crate) select: Option<SelectConfig>,
 }

@@ -232,6 +232,14 @@ impl Default for QueryOptions {
     }
 }
 
+impl From<QueryOptions> for MatcherOptions {
+    fn from(options: QueryOptions) -> Self {
+        MatcherOptions::new()
+            .strsim_threshold(options.strsim_threshold)
+            .case_ignore(options.case_ignore)
+    }
+}
+
 impl QueryOptions {
     /// Create new matcher flags.
     pub fn new() -> Self {

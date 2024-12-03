@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "frequency -s \"008B.a\""
-status = "success"
-stdout = "o,1\nw,1\nz,1\n"
-stderr = ""

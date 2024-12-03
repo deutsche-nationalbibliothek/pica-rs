@@ -1,30 +1,16 @@
 use std::cmp::Ordering;
-use std::collections::{BTreeSet, HashMap};
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{self, Write};
 use std::path::PathBuf;
-use std::str::FromStr;
+use std::process::ExitCode;
 
 use clap::{value_parser, Parser};
-use pica_matcher::{MatcherBuilder, MatcherOptions};
-use pica_path::PathExt;
-use pica_record_v1::io::{ReaderBuilder, RecordsIterator};
-use pica_select::{Query, QueryExt, QueryOptions};
-use pica_utils::NormalizationForm;
-use serde::{Deserialize, Serialize};
+use hashbrown::{HashMap, HashSet};
+use pica_record::matcher::{translit, NormalizationForm};
+use pica_record::prelude::*;
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::filter_list::FilterList;
-use crate::progress::Progress;
-use crate::skip_invalid_flag;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct FrequencyConfig {
-    pub(crate) skip_invalid: Option<bool>,
-}
+use crate::prelude::*;
 
 /// Compute a frequency table of a subfield
 ///
@@ -72,7 +58,7 @@ pub(crate) struct Frequency {
     /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
     /// `.tsv.gz` is interpreted as CSV/TSV.
     #[arg(long = "allow-list", short = 'A')]
-    allow_lists: Vec<PathBuf>,
+    allow: Vec<PathBuf>,
 
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
@@ -83,7 +69,7 @@ pub(crate) struct Frequency {
     /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
     /// `.tsv.gz` is interpreted as CSV/TSV.
     #[arg(long = "deny-list", short = 'D')]
-    deny_lists: Vec<PathBuf>,
+    deny: Vec<PathBuf>,
 
     /// Limit result to the <n> most frequent subfield values.
     #[arg(
@@ -111,8 +97,8 @@ pub(crate) struct Frequency {
     /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
-    /// This option can't be combined with `--or` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
@@ -125,8 +111,8 @@ pub(crate) struct Frequency {
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
-    /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
 
     /// Comma-separated list of column names.
@@ -140,7 +126,7 @@ pub(crate) struct Frequency {
     /// Transliterate output into the selected normal form <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
     #[arg(long = "translit", value_name = "NF")]
-    nf: Option<NormalizationForm>,
+    normalization: Option<NormalizationForm>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -162,49 +148,38 @@ pub(crate) struct Frequency {
 }
 
 impl Frequency {
-    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let skip_invalid = skip_invalid_flag!(
-            self.skip_invalid,
-            config.frequency,
-            config.global
-        );
+    pub(crate) fn execute(self, config: &Config) -> CliResult {
+        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let mut progress = Progress::new(self.progress);
+        let mut seen = HashSet::new();
 
-        let query = if let Some(ref global) = config.global {
-            NormalizationForm::translit_opt(self.query, global.translit)
-        } else {
-            self.query.to_string()
-        };
-
-        let query = Query::from_str(&query)?;
-
-        let nf = if let Some(ref global) = config.global {
-            global.translit
-        } else {
-            None
-        };
+        let query = Query::new(&translit(
+            self.query,
+            self.normalization.as_ref(),
+        ))?;
 
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                MatcherBuilder::new(matcher, nf)?
-                    .and(self.and)?
-                    .not(self.not)?
-                    .or(self.or)?
-                    .build(),
+                RecordMatcherBuilder::new(
+                    matcher,
+                    self.normalization.clone(),
+                )?
+                .and(self.and)?
+                .not(self.not)?
+                .or(self.or)?
+                .build(),
             )
         } else {
             None
         };
 
-        let filter_list = FilterList::new()
-            .allow(self.allow_lists)
-            .unwrap()
-            .deny(self.deny_lists)
-            .unwrap();
-
         let mut ftable: HashMap<Vec<String>, u64> = HashMap::new();
         let options = QueryOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case);
+
+        let filter_set = FilterSet::new(self.allow, self.deny)?;
+        let matcher_options = MatcherOptions::from(&options);
 
         let writer: Box<dyn Write> = match self.output {
             Some(filename) => Box::new(File::create(filename)?),
@@ -215,53 +190,48 @@ impl Frequency {
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
 
-        let mut progress = Progress::new(self.progress);
-        let mut seen = BTreeSet::new();
-
         for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next() {
-                if let Err(e) = result {
-                    if e.is_invalid_record() && skip_invalid {
-                        progress.invalid();
-                        continue;
-                    } else {
-                        return Err(e.into());
-                    }
-                }
-
-                let record = result.unwrap();
-                progress.record();
-
-                if !filter_list.check(record.idn()) {
-                    continue;
-                }
-
-                if let Some(ref matcher) = matcher {
-                    if !matcher.is_match(
-                        &record,
-                        &MatcherOptions::from(&options),
-                    ) {
+            while let Some(result) = reader.next_string_record() {
+                match result {
+                    Err(e) if e.skip_parse_err(skip_invalid) => {
+                        progress.update(true);
                         continue;
                     }
-                }
+                    Err(e) => return Err(e.into()),
+                    Ok(ref record) => {
+                        progress.update(false);
 
-                seen.clear();
-
-                let outcome = record.query(&query, &options);
-                for key in outcome.clone().into_iter() {
-                    if key.iter().any(|e| !e.is_empty()) {
-                        if self.unique {
-                            if seen.contains(&key) {
-                                continue;
-                            }
-
-                            seen.insert(key.clone());
+                        if !filter_set.check(record.ppn().into()) {
+                            continue;
                         }
 
-                        *ftable.entry(key).or_insert(0) += 1;
+                        if let Some(ref matcher) = matcher {
+                            if !matcher
+                                .is_match(record, &matcher_options)
+                            {
+                                continue;
+                            }
+                        }
+
+                        let outcome = record.query(&query, &options);
+                        seen.clear();
+
+                        for key in outcome.clone().into_iter() {
+                            if key.iter().any(|e| !e.is_empty()) {
+                                if self.unique {
+                                    if seen.contains(&key) {
+                                        continue;
+                                    }
+
+                                    seen.insert(key.clone());
+                                }
+
+                                *ftable.entry(key).or_insert(0) += 1;
+                            }
+                        }
                     }
                 }
             }
@@ -297,7 +267,7 @@ impl Frequency {
 
             let mut record = values
                 .iter()
-                .map(|s| NormalizationForm::translit_opt(s, self.nf))
+                .map(|s| translit(s, self.normalization.as_ref()))
                 .collect::<Vec<_>>();
 
             record.push(freq.to_string());
@@ -306,6 +276,7 @@ impl Frequency {
 
         progress.finish();
         writer.flush()?;
-        Ok(())
+
+        Ok(ExitCode::SUCCESS)
     }
 }

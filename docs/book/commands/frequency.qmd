@@ -1,0 +1,221 @@
+# frequency {.unnumbered}
+
+Das Kommando `frequency` wird dazu genutzt, um die Häufigkeiten der Werte ein
+oder mehrerer Unterfelder zu bestimmen. Ist das zu untersuchende Feld bzw.
+Unterfeld wiederholbar, gehen alle Wertausprägungen eines Datensatzes in die
+Häufigkeitsverteilung ein. Die Ausgabe erfolgt standardmäßig im CSV-Format. Im
+folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds `002@.0`
+(Satzart) ermittelt:
+
+```{.bash}
+$ pica frequency -s "002@.0" DUMP.dat.gz
+Tu1,6
+Tsz,2
+Tg1,1
+Tp1,1
+Tpz,1
+Ts1,1
+```
+
+## Optionen
+
+`-s`, `--skip-invalid`
+: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+
+`-i`, `--ignore-case`
+: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+
+`--strsim-threshold <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
+mittels `=*`.
+
+`--unique`, `-u`
+: Doppelte Werte eines Datensatzes werden ignorieren.
+
+`--reverse`
+: Ergebnisse werden in aufsteigender Reihenfolge ausgegeben.
+
+`-A <file>`, `--allow-list` `<file>`
+: Es werden alle Datensätze ignoriert, die nicht explizit in der
+Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben, wird die
+Mengenvereinigung aus allen Listen gebildet.
+
+`-D <file>`, `--deny-list` `<file>`
+: Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen.
+Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen
+Listen gebildet.
+
+`-l <n>`, `--limit` `<n>`
+: Eingrenzung der Ausgabe auf die häufigsten `<n>` Unterfeldwerte.
+
+`-t <n>`, `--threshold` `<n>`
+: Zeilen mit einer Häufigkeit $<$ `<n>` ignorieren.
+
+`--where <filter>`
+: Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
+
+`--and <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> && <expr>`.
+
+`--or <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> || <expr>`.
+
+`--not <expr>`
+: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
+`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
+
+`-H <header>`, `--header` `<header>`
+Kopfzeile, die den Ergebnissen vorangestellt wird; Spaltennamen werde mit einem
+Komma separiert.
+
+`-t`, `--tsv`
+Ausgabe erfolgt im TSV-Format.
+
+`--translit <normalization>`
+: Ausgabe wird in die angegebene Normalform transliteriert. Mögliche Werte:
+`nfd`, `nfkd`, `nfc` und `nfkc`.
+
+`-p`, `--progress`
+: Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
+invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben
+der Datensätze in eine Datei mittels `-o` bzw. `--output`.
+
+`-o`, `--output`
+: Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig
+wird die Ausgabe in die Standardausgabe `stdout` geschrieben.
+
+
+## Beispiele
+
+### Hinzufügen einer Kopfzeile
+
+Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen ist
+es häufig sinnvoll, eine Kopfzeile hinzuzufügen. Dies erfolgt mit der Option
+`--header` bzw. `-H`. Die Namen der Spalten werden kommasepariert angegeben.
+Eine Angabe von mehr als zwei Spalten ist nicht erlaubt.
+
+```{.bash}
+$ pica frequency -s --header "satzart,anzahl" "002@.0" DUMP.dat.gz
+satzart,anzahl
+Tu1,6
+Tsz,2
+Tg1,1
+Tp1,1
+Tpz,1
+Ts1,1
+```
+
+### Auswertung mehrerer Felder bzw. Unterfelder
+
+Durch die Angabe von mehreren Pfadausdrücken lässt sich eine
+Häufigkeitsverteilung über mehrere Untefelder ermitteln. Das folgende Beispiel
+berechnet die Häufigkeit der Kombination aus Satzart (`002@.0`) und dem
+Entitätencode(s) (`004B.a`):
+
+```{.bash}
+$ pica frequency -s -H "bbg,ent,count" "002@.0, 004B.a" DUMP.dat.gz
+bbg,ent,count
+Tu1,wit,6
+Tsz,saz,2
+Tg1,gik,1
+Tp1,piz,1
+Tpz,piz,1
+Ts1,saz,1
+```
+
+Ebenfalls können auch mehrere Unterfelder ausgewertet werden. Eine Auswertung
+der Häufigkeiten von verknüpften Sachbegriffen (Level 1) und dem GND-Code für
+Beziehungen im Feld `041R` (Sachbegriff - Beziehung) wird wie folgt ermittelt:
+
+```{.bash}
+$ pica frequency -s '041R{(7,4) | 7 == "Ts1"}' DUMP.dat.gz
+Ts1,beru,12
+Ts1,obal,5
+Ts1,vbal,3
+Ts1,obge,1
+Ts1,stud,1
+```
+
+### Eingrenzung auf bestimmte Felder
+
+Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten
+miteinbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand
+eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der
+Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in `{}`-Notation können
+nur die Felder ausgewählt werden, die einem bestimmten Kriterium entsprechen.
+
+Das folgende Beispiel bezieht nur die Felder `041R` in die Auswertung mit ein,
+bei denen ein Unterfeld `4` existiert, das entweder `berc` oder `beru` ist;
+Felder die diesem Kriterium nicht entsprechen, werden ignoriert.
+
+```{.bash}
+$ pica frequency -s "041R{ 9 | 4 in ['berc', 'beru'] }" DUMP.dat.gz
+040533093,2
+040250989,1
+040252434,1
+040290506,1
+...
+```
+
+### Eingrenzen der Treffermenge
+
+Soll die Ergebnismenge auf die häufigsten _n_ Unterfeldwerte eingeschränkt
+werden, wird dies mit der Option `--limit` bzw. `-l` erreicht. Das nachfolgende
+Beispeil ermittelt die 3 häufigsten Werte im
+Feld `041R.4`.
+
+```{.bash}
+$ pica frequency -s --limit 3 "041R.4" DUMP.dat.gz
+beru,12
+obal,5
+vbal,4
+```
+
+### Eingrenzen der Treffermenge (Schwellenwert)
+
+Die Treffermenge kann auch mittels der Angabe eines Schwellenwerts eingeschänkt
+werden. Sollen nur die Werte angezeigt werden, die ab einem Schwellenwert
+vorkommen, dann kann dies mit der Option `--threshold`/`-t` erzielt werden:
+
+```{.bash}
+$ pica frequency -s --threshold 4 "041R.4" DUMP.dat.gz
+beru,12
+obal,5
+vbal,4
+```
+
+### Änderung der Sortierreihenfolge (Limit)
+
+Standardmäßig wird die Häufigkeitsverteilung absteigend ausgegeben, d.h., der
+häufigste Wert steht in der Ausgabe oben. Soll das Verhalten so geändert
+werden, dass die Ausgabe aufsteigend sortiert wird, kann dies mit der Option
+`--reverse` bzw. `-r` erfolgen. Das folgende Kommando sucht nach den vier
+Satzarten, die am wenigsten vorkommen:
+
+```{.bash}
+$ pica frequency -s -l 4 --reverse "002@.0" DUMP.dat.gz
+Tg1,1
+Tp1,1
+Tpz,1
+Ts1,1
+```
+
+### Ausgabe im TSV-Format
+
+Die Ausgabe lässt sich mittels der Option `--tsv` (bzw. `-t`) in das TSV-Format
+ändern.
+
+```{.bash}
+$ pica frequency -s -l3 --tsv tests/data/dump.dat.gz
+Tu1	6
+Tsz	2
+...
+```
+
+[^1]: Alle Werte mit gleicher Häufigkeit werden immer in lexikographisch
+    aufsteigender Reihenfolge sortiert. Dies erfolgt unabhängig vom
+    Parameter `--reverse`.
