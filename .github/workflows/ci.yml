@@ -179,14 +179,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   outdated:
-    continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: dtolnay/install@cargo-outdated
-      - uses: Swatinem/rust-cache@v2
       - run: cargo update
       - run: cargo outdated --workspace --exit-code 1
 
