@@ -18,7 +18,7 @@ flate2 = { workspace = true }
 hashbrown = { version = "0.15" }
 indicatif = { version = "0.17.9", features = ["improved_unicode"] }
 pica-record = { workspace = true, features = ["serde"] }
-polars = { version = "0.44.2", features = ["ipc", "decompress", "lazy"] }
+polars = { version = "0.45", features = ["ipc", "decompress", "lazy"] }
 rand = { version = "0.8.5" }
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
