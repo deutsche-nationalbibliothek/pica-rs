@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>print – pica-rs</title>
+<title>select – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,8 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/sample.html" rel="next">
-<link href="../commands/partition.html" rel="prev">
+<link href="../commands/slice.html" rel="next">
+<link href="../commands/sample.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/print.html">print</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/select.html">select</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -226,7 +226,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/print.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/print.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">print</span></a>
   </div>
 </li>
@@ -238,7 +238,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/select.html" class="sidebar-item-text sidebar-link">
+  <a href="../commands/select.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">select</span></a>
   </div>
 </li>
@@ -265,9 +265,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/print.html">print</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/select.html">select</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">print</h1>
+<h1 class="title">select</h1>
 </div>
 
 
@@ -284,21 +284,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Mithilfe des <code>print</code>-Kommandos können Datensätze in einer menschenlesbaren Form auf dem Terminal ausgegeben oder in eine Datei geschrieben werden. Das Format ist an die Darstellung in der WinIBW angelehnt: Felder werden zeilenweise ausgegeben; zuerst wird das Feld (bspw. <code>003@</code>), dann - sofern vorhanden - die Okkurrenz (bspw. <code>/01</code>), und schließlich die Liste von Unterfeldern ausgegeben. Dem Unterfeld-Code wird ein Dollarzeichen vorangestellt. Die Unterfeldwerte werden genau so ausgegeben, wie sie im Datensatz vorhanden sind; es findet kein [<em>Escaping</em>] von Sonderzeichen statt. Einzelne Datensätze werden durch eine Leerzeile voneinander getrennt.</p>
-<p>Der folgende Befehl gibt den ersten Datensatz aus:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-s</span> <span class="at">-l</span> 1 DUMP.dat.gz</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">001A</span> <span class="va">$0</span> 1250:01-07-88</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">001B</span> <span class="va">$0</span> 9999:15-04-22 <span class="va">$t</span> 15:15:00.000</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">001D</span> <span class="va">$0</span> 0292:01-08-19</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">001U</span> <span class="va">$0</span> utf8</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">001X</span> <span class="va">$0</span> 0</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tpz</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118540238</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">003U</span> <span class="va">$a</span> http://d-nb.info/gnd/118540238 <span class="va">$z</span> http://d-nb.info/gnd/185808069 <span class="va">$z</span> http://d-nb.info/gnd/185848826 <span class="va">$z</span> http://d-nb.info/gnd/101488358X <span class="va">$z</span> http://d-nb.info/gnd/1014927390 <span class="va">$z</span> http://d-nb.info/gnd/1022736213 <span class="va">$z</span> http://d-nb.info/gnd/1095607278 <span class="va">$z</span> http://d-nb.info/gnd/1131918517</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">004B</span> <span class="va">$a</span> piz</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">006Y</span> <span class="va">$S</span> isni <span class="va">$0</span> 0000 0001 2099 9104</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">006Y</span> <span class="va">$S</span> wikidata <span class="va">$0</span> Q5879</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Mit dem <code>select</code>-Kommando werden Werte eines unter mehrerer Unterfelder tabelliert. Dies ermöglicht weiterführende Datenanalysen in Excel, Python oder R.</p>
+<p>Im folgenden Beispiel wird die PPN eines Datensatzes (Feld <code>003@.0</code>) und die dazugehörige Satzart Feld (<code>002@.0</code>) in einer Tabelle im CSV-Format erzeugt:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica select <span class="at">-s</span> <span class="st">"003@.0, 002@.0"</span> DUMP.dat.gz</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,Tpz</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">118607626,Tp1</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">040993396,Tu1</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">04099337X,Tu1</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Ist ein Feld oder Unterfeld mehrfach vorhanden, werden pro Datensatz alle Zeilen mit diesen Werten kombiniert, indem das <a href="https://de.wikipedia.org/wiki/Kartesisches_Produkt">Kartesische Produkt</a> gebildet wird. Dadurch ist es möglich für jede wiederholte Wertausprägung eine Zeile zu erzeugen. In Kombination mit einem nicht-wiederholten Feld (bspw. der PPN im Feld <code>003@.0</code> lassen sich Tabellen, im Sinne des <a href="https://de.wikipedia.org/wiki/Entity-Relationship-Modell">Entity-Relationship-Modell</a>, erzeugen. Im Folgenden wird eine Tabelle erstellt, die in der ersten Spalte die PPN und in der zweiten Spalte, die dazugehörigen Teilbestandskennzeichen aus dem Feld <code>008A.a</code> enthält. Jede Kombination von einer PPN mit einem Teilbestandskennzeichen erzeugt eine neue Zeile:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica select <span class="at">-s</span> <span class="st">'003@.0, 004B.a'</span> DUMP.dat.gz</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,s</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,a</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,f</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,z</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,h</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,l</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">118540238,d</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="optionen" class="level2">
 <h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
 <dl>
@@ -306,11 +309,66 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <dd>
 Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
 </dd>
-<dt><code>-l &lt;number&gt;</code>, <code>--limit &lt;number&gt;</code></dt>
+<dt><code>--squash</code></dt>
 <dd>
-Eingrenzung der Ausgabe auf die ersten <em>n</em> Datensätze.
+Wenn das Flag gesetzt ist, werden wiederholte Unterfelder als eine Zeichenkette zusammengefasst. Die einzelnen Werte werden durch einen Separator (siehe <code>--separator</code>) getrennt.
 </dd>
-<dt><code>--translit</code> <code>&lt;nf&gt;</code></dt>
+<dt><code>--merge</code></dt>
+<dd>
+In jeder Spalte werden alle Zeilen zu einer Zeile zusammengefasst. Die einzelnen Werte werden durch einen Separator (siehe <code>--separator</code>) getrennt. Ist die Option gesetzt wird für jeden Datensatz maximal eine Zeile erzeugt.
+</dd>
+<dt><code>--separator &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Separators, der für <code>--squash</code> und <code>--merge</code> genutzt wird. Standardmäßig wird der Separator <code>|</code> verwendet.
+</dd>
+<dt><code>--no-empty-columns</code></dt>
+<dd>
+Ist die Option gesetzt, werden nur Zeilen geschrieben, in denen jede Spalte einen nicht-leeren Wert enthält.
+</dd>
+<dt><code>--unique</code>, <code>-u</code></dt>
+<dd>
+Mehrfach vorkommende Zeilen werden ignorieren.
+</dd>
+<dt><code>-i</code>, <code>--ignore-case</code></dt>
+<dd>
+Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+</dd>
+<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
+</dd>
+<dt><code>-A &lt;file&gt;</code>, <code>--allow-list</code> <code>&lt;file&gt;</code></dt>
+<dd>
+Es werden alle Datensätze ignoriert, die nicht explizit in der Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
+</dd>
+<dt><code>-D &lt;file&gt;</code>, <code>--deny-list</code> <code>&lt;file&gt;</code></dt>
+<dd>
+Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
+</dd>
+<dt><code>--where &lt;filter&gt;</code></dt>
+<dd>
+Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
+</dd>
+<dt><code>--and &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>&amp;&amp;</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; &lt;expr&gt;</code>.
+</dd>
+<dt><code>--or &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>||</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; || &lt;expr&gt;</code>.
+</dd>
+<dt><code>--not &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; !(&lt;expr&gt;)</code>.
+</dd>
+<dt><code>-H &lt;header&gt;</code>, <code>--header</code> <code>&lt;header&gt;</code></dt>
+<dd>
+Kopfzeile, die den Ergebnissen vorangestellt wird; Spaltennamen werde mit einem Komma separiert.
+</dd>
+</dl>
+<p><code>-t</code>, <code>--tsv</code> Ausgabe erfolgt im TSV-Format.</p>
+<dl>
+<dt><code>--translit &lt;normalization&gt;</code></dt>
 <dd>
 Ausgabe wird in die angegebene Normalform transliteriert. Mögliche Werte: <code>nfd</code>, <code>nfkd</code>, <code>nfc</code> und <code>nfkc</code>.
 </dd>
@@ -318,39 +376,21 @@ Ausgabe wird in die angegebene Normalform transliteriert. Mögliche Werte: <code
 <dd>
 Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels <code>-o</code> bzw. <code>--output</code>.
 </dd>
+<dt><code>--limit &lt;n&gt;</code></dt>
+<dd>
+Limitiert die Aufbereitung auf die ersten <code>&lt;n&gt;</code> Datensätze.
+</dd>
+<dt><code>--append</code></dt>
+<dd>
+Ist die Option gesetzt, wird die Ausgabe an das Ende der Ausgabedatei geschrieben, anstatt diese zu überschreiben.
+</dd>
 <dt><code>-o</code>, <code>--output</code></dt>
 <dd>
 Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe <code>stdout</code> geschrieben.
 </dd>
 </dl>
-</section>
-<section id="beispiele" class="level2">
-<h2 class="anchored" data-anchor-id="beispiele">Beispiele</h2>
-<section id="transliteration-der-ausgabe" class="level3">
-<h3 class="anchored" data-anchor-id="transliteration-der-ausgabe">Transliteration der Ausgabe</h3>
-<p>Standardmäßig werden die Unterfeldwerte so ausgegeben, wie sie im Datensatz vorkommen. Mit der Option <code>--translit</code> werden die Werte in die angegebene <a href="https://de.wikipedia.org/wiki/Normalisierung_(Unicode)">Unicode-Normalform</a> transliteriert.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-s</span> <span class="at">-l1</span> <span class="at">--translit</span> nfc DUMP.dat.gz</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$d</span> Yohan Wolfgang <span class="va">$a</span> Gete</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$d</span> Yôhân Wôlfgang <span class="va">$c</span> fôn <span class="va">$a</span> Gete</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$d</span> Yôhan Wolfgang <span class="va">$a</span> Gête</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$d</span> Yohann Volfqanq <span class="va">$a</span> Gete</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$d</span> Yogann Volʹfgang <span class="va">$a</span> Gete</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Cyrl <span class="va">$L</span> uzb <span class="va">$d</span> Йоҳанн Волфганг <span class="va">$a</span> Гёте</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Hans <span class="va">$P</span> 歌德 <span class="va">$5</span> DE-576</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Hant <span class="va">$P</span> 約翰・沃爾夫岡・馮・歌德 <span class="va">$5</span> DE-576</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Hans <span class="va">$P</span> 约翰・沃尔夫冈・冯・歌德 <span class="va">$5</span> DE-576</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Jpan <span class="va">$d</span> ヨハン・ヴォルフガング・フォン <span class="va">$a</span> ゲーテ <span class="va">$5</span> DE-576</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Hebr <span class="va">$d</span> יוהן וולפגנג פון <span class="va">$a</span> גתה</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Hans <span class="va">$P</span> 歌德</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Jpan <span class="va">$d</span> ヨハン・ヴォルフガング・フォン <span class="va">$a</span> ゲーテ</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Geor <span class="va">$d</span> იოჰან ვოლფგანგ ფონ <span class="va">$a</span> გოეთე</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="ex">028A</span> <span class="va">$d</span> Johann Wolfgang <span class="va">$c</span> von <span class="va">$a</span> Goethe</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -773,13 +813,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/partition.html" class="pagination-link" aria-label="partition">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">partition</span>
+      <a href="../commands/sample.html" class="pagination-link" aria-label="sample">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">sample</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../commands/sample.html" class="pagination-link" aria-label="sample">
-        <span class="nav-page-text">sample</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../commands/slice.html" class="pagination-link" aria-label="slice">
+        <span class="nav-page-text">slice</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
