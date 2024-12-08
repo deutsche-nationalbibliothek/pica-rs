@@ -1,33 +1,16 @@
 use std::ffi::OsString;
 
 use clap::{value_parser, Parser};
-use pica_matcher::{MatcherBuilder, MatcherOptions};
-use pica_record_v1::io::{
-    ReaderBuilder, RecordsIterator, WriterBuilder,
-};
-use pica_record_v1::{ByteRecord, FieldRef, Level};
-use serde::{Deserialize, Serialize};
+use pica_record::prelude::*;
 
-use super::filter::parse_predicates;
 use crate::config::Config;
 use crate::error::CliResult;
 use crate::progress::Progress;
-use crate::{gzip_flag, skip_invalid_flag};
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct ExplodeConfig {
-    /// Skip invalid records that can't be decoded.
-    pub(crate) skip_invalid: Option<bool>,
-
-    /// Compress output in gzip format
-    pub(crate) gzip: Option<bool>,
-}
 
 /// Split records at main, local or copy level.
 #[derive(Parser, Debug)]
 pub(crate) struct Explode {
-    /// Skip invalid records that can't be decoded.
+    /// Whether to skip invalid records or not.
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -48,8 +31,8 @@ pub(crate) struct Explode {
     /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
-    /// This option can't be combined with `--or` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
@@ -62,8 +45,8 @@ pub(crate) struct Explode {
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
-    /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
 
     /// When this flag is provided, comparison operations will be

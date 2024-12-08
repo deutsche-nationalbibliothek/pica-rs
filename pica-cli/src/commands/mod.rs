@@ -3,6 +3,7 @@ pub(crate) use concat::Concat;
 #[cfg(feature = "unstable")]
 pub(crate) use config::Config;
 pub(crate) use count::Count;
+pub(crate) use explode::Explode;
 pub(crate) use frequency::Frequency;
 pub(crate) use hash::Hash;
 pub(crate) use invalid::Invalid;
@@ -18,6 +19,7 @@ mod concat;
 #[cfg(feature = "unstable")]
 mod config;
 mod count;
+mod explode;
 mod frequency;
 mod hash;
 mod invalid;
