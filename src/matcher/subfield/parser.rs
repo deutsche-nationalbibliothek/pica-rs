@@ -45,7 +45,10 @@ pub(crate) fn parse_relation_matcher(
         alt((
             ws(parse_subfield_codes),
             #[cfg(feature = "compat")]
-            ws(crate::parser::parse_subfield_codes_compat),
+            preceded(
+                ws('$'),
+                ws(crate::parser::parse_subfield_codes_compat),
+            ),
         )),
         ws(parse_relational_operator)
             .verify(RelationalOp::is_str_applicable),

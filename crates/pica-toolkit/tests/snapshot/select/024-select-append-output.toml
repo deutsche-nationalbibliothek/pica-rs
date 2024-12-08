@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "select \"003@.0, 002@.0\" --append -o out.csv"
-status = "success"
-stdout = ""
-stderr = ""

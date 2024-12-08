@@ -1,6 +1,0 @@
-bin.name = "pica-v1"
-args = "select '012A.*'"
-status = "success"
-stdin = "012A \u001fa123\u001fa456\u001e\n"
-stdout = "123\n456\n"
-stderr = ""

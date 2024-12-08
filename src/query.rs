@@ -49,6 +49,7 @@ impl Query {
         })
     }
 }
+
 fn parse_query(i: &mut &[u8]) -> PResult<Query> {
     separated(1.., parse_fragment, ws(','))
         .with_taken()

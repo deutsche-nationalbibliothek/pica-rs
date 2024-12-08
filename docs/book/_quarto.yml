@@ -30,6 +30,7 @@ book:
         - commands/partition.qmd
         - commands/print.qmd
         - commands/sample.qmd
+        - commands/select.qmd
         - commands/slice.qmd
         - commands/split.qmd
     # - summary.qmd

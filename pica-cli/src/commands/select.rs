@@ -1,36 +1,22 @@
 use std::collections::hash_map::DefaultHasher;
-use std::collections::BTreeSet;
 use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 use std::path::PathBuf;
-use std::str::FromStr;
+use std::process::ExitCode;
 
-use clap::Parser;
-use pica_matcher::{MatcherBuilder, MatcherOptions};
-use pica_path::PathExt;
-use pica_record_v1::io::{ReaderBuilder, RecordsIterator};
-use pica_select::{Query, QueryExt, QueryOptions};
-use pica_utils::NormalizationForm;
-use serde::{Deserialize, Serialize};
+use clap::{value_parser, Parser};
+use hashbrown::HashSet;
+use pica_record::matcher::{translit, NormalizationForm};
+use pica_record::prelude::*;
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::filter_list::FilterList;
-use crate::progress::Progress;
-use crate::skip_invalid_flag;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct SelectConfig {
-    pub(crate) skip_invalid: Option<bool>,
-}
+use crate::prelude::*;
 
 /// Select subfield values from records
 #[derive(Parser, Debug)]
 pub(crate) struct Select {
-    /// Skip invalid records that can't be decoded as normalized PICA+
+    /// Whether to skip invalid records or not.
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -68,6 +54,12 @@ pub(crate) struct Select {
     #[arg(long, short)]
     ignore_case: bool,
 
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+          default_value = "75")]
+    strsim_threshold: u8,
+
     /// Write output tab-separated (TSV)
     #[arg(long, short)]
     tsv: bool,
@@ -98,8 +90,8 @@ pub(crate) struct Select {
     /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
-    /// This option can't be combined with `--or` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
@@ -112,8 +104,8 @@ pub(crate) struct Select {
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
-    /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
 
     /// Ignore records which are *not* explicitly listed in one of the
@@ -125,7 +117,7 @@ pub(crate) struct Select {
     /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
     /// `.tsv.gz` is interpreted as CSV/TSV.
     #[arg(long = "allow-list", short = 'A')]
-    allow_lists: Vec<PathBuf>,
+    allow: Vec<PathBuf>,
 
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
@@ -136,7 +128,7 @@ pub(crate) struct Select {
     /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
     /// `.tsv.gz` is interpreted as CSV/TSV.
     #[arg(long = "deny-list", short = 'D')]
-    deny_lists: Vec<PathBuf>,
+    deny: Vec<PathBuf>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -160,7 +152,7 @@ pub(crate) struct Select {
 fn writer(
     filename: Option<OsString>,
     append: bool,
-) -> CliResult<Box<dyn Write>> {
+) -> io::Result<Box<dyn Write>> {
     Ok(match filename {
         Some(filename) => Box::new(
             OpenOptions::new()
@@ -170,36 +162,28 @@ fn writer(
                 .append(append)
                 .open(filename)?,
         ),
-        None => Box::new(io::stdout()),
+        None => Box::new(io::stdout().lock()),
     })
 }
 
 impl Select {
-    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let skip_invalid = skip_invalid_flag!(
-            self.skip_invalid,
-            config.select,
-            config.global
-        );
-
-        let mut seen = BTreeSet::new();
+    pub(crate) fn execute(self, config: &Config) -> CliResult {
+        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let mut progress = Progress::new(self.progress);
+        let mut seen = HashSet::new();
         let mut count = 0;
 
-        let nf = if let Some(ref global) = config.global {
-            global.translit
-        } else {
-            None
-        };
-
         let options = QueryOptions::default()
+            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case)
             .separator(self.separator)
             .squash(self.squash)
             .merge(self.merge);
 
+        let matcher_options = MatcherOptions::from(&options);
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                MatcherBuilder::new(matcher, nf)?
+                RecordMatcherBuilder::new(matcher, self.nf.clone())?
                     .and(self.and)?
                     .not(self.not)?
                     .or(self.or)?
@@ -209,14 +193,9 @@ impl Select {
             None
         };
 
-        let filter_list = FilterList::new()
-            .allow(self.allow_lists)
-            .unwrap()
-            .deny(self.deny_lists)
-            .unwrap();
-
-        let query = NormalizationForm::translit_opt(&self.query, nf);
-        let query = Query::from_str(&query)?;
+        let query =
+            Query::new(&translit(self.query, self.nf.as_ref()))?;
+        let filter_set = FilterSet::new(self.allow, self.deny)?;
 
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
@@ -226,78 +205,80 @@ impl Select {
             writer.write_record(header.split(',').map(str::trim))?;
         }
 
-        let mut progress = Progress::new(self.progress);
-
         'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next() {
-                if let Err(e) = result {
-                    if e.is_invalid_record() && skip_invalid {
-                        progress.invalid();
-                        continue;
-                    } else {
-                        return Err(e.into());
-                    }
-                }
-
-                let record = result.unwrap();
-                progress.record();
-
-                if !filter_list.check(record.idn()) {
-                    continue;
-                }
-
-                if let Some(ref matcher) = matcher {
-                    if !matcher.is_match(
-                        &record,
-                        &MatcherOptions::from(&options),
-                    ) {
+            while let Some(result) = reader.next_string_record() {
+                match result {
+                    Err(e) if e.skip_parse_err(skip_invalid) => {
+                        progress.update(true);
                         continue;
                     }
-                }
+                    Err(e) => return Err(e.into()),
+                    Ok(ref record) => {
+                        progress.update(false);
 
-                let outcome = record.query(&query, &options);
-                for row in outcome.iter() {
-                    if self.no_empty_columns
-                        && row.iter().any(String::is_empty)
-                    {
-                        continue;
-                    }
-
-                    if self.unique {
-                        let mut hasher = DefaultHasher::new();
-                        row.hash(&mut hasher);
-                        let hash = hasher.finish();
-
-                        if seen.contains(&hash) {
+                        if !filter_set.check(record.ppn().into()) {
                             continue;
                         }
 
-                        seen.insert(hash);
-                    }
+                        if let Some(ref matcher) = matcher {
+                            if !matcher
+                                .is_match(record, &matcher_options)
+                            {
+                                continue;
+                            }
+                        }
 
-                    if !row.iter().all(String::is_empty) {
-                        if let Some(nf) = self.nf {
-                            writer.write_record(
-                                row.iter().map(|s| nf.translit(s)),
-                            )?;
-                        } else {
-                            writer.write_record(row)?;
-                        };
-                    }
-                }
+                        let outcome = record.query(&query, &options);
+                        for row in outcome.iter() {
+                            if self.no_empty_columns
+                                && row.iter().any(String::is_empty)
+                            {
+                                continue;
+                            }
 
-                count += 1;
-                if self.limit > 0 && count >= self.limit {
-                    break 'outer;
+                            if self.unique {
+                                let mut hasher = DefaultHasher::new();
+                                row.hash(&mut hasher);
+                                let hash = hasher.finish();
+
+                                if seen.contains(&hash) {
+                                    continue;
+                                }
+
+                                seen.insert(hash);
+                            }
+
+                            if !row.iter().all(String::is_empty) {
+                                if self.nf.is_none() {
+                                    writer.write_record(row)?;
+                                } else {
+                                    writer.write_record(
+                                        row.iter().map(|s| {
+                                            translit(
+                                                s,
+                                                self.nf.as_ref(),
+                                            )
+                                        }),
+                                    )?;
+                                };
+                            }
+                        }
+
+                        count += 1;
+                        if self.limit > 0 && count >= self.limit {
+                            break 'outer;
+                        }
+                    }
                 }
             }
         }
 
         progress.finish();
         writer.flush()?;
-        Ok(())
+
+        Ok(ExitCode::SUCCESS)
     }
 }
