@@ -14,7 +14,7 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{Parser, Subcommand};
-use commands::{Convert, Explode, Filter};
+use commands::{Convert, Filter};
 use config::Config;
 use error::{CliError, CliResult};
 
@@ -33,9 +33,9 @@ struct Cli {
 }
 
 #[derive(Debug, Subcommand)]
+#[allow(clippy::large_enum_variant)]
 enum Commands {
     Convert(Convert),
-    Explode(Explode),
     Filter(Filter),
 }
 
@@ -45,7 +45,6 @@ fn run() -> CliResult<()> {
 
     match args.command {
         Commands::Convert(cmd) => cmd.run(&config),
-        Commands::Explode(cmd) => cmd.run(&config),
         Commands::Filter(cmd) => cmd.run(&config),
     }
 }

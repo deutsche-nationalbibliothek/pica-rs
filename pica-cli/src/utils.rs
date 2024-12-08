@@ -4,6 +4,8 @@ use std::path::Path;
 
 use bstr::{BStr, BString};
 use hashbrown::HashSet;
+use pica_record::matcher::ParseMatcherError;
+use pica_record::prelude::*;
 use polars::prelude::*;
 use thiserror::Error;
 
@@ -101,4 +103,35 @@ fn read_df<P: AsRef<Path>>(
             .try_into_reader_with_file_path(Some(path))?
             .finish()?)
     }
+}
+
+pub(crate) fn parse_predicates<S: AsRef<str>>(
+    predicates: Option<S>,
+) -> Result<Vec<(TagMatcher, OccurrenceMatcher)>, ParseMatcherError> {
+    let Some(predicates) = predicates else {
+        return Ok(vec![]);
+    };
+
+    let mut result = vec![];
+    let items = predicates
+        .as_ref()
+        .split(',')
+        .map(str::trim)
+        .filter(|s| !s.is_empty());
+
+    for item in items {
+        if let Some(pos) = item.rfind('/') {
+            result.push((
+                TagMatcher::new(&item[0..pos])?,
+                OccurrenceMatcher::new(&item[pos..])?,
+            ));
+        } else {
+            result.push((
+                TagMatcher::new(item)?,
+                OccurrenceMatcher::None,
+            ));
+        }
+    }
+
+    Ok(result)
 }

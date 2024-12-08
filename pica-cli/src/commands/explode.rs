@@ -1,33 +1,16 @@
 use std::ffi::OsString;
+use std::process::ExitCode;
 
 use clap::{value_parser, Parser};
-use pica_matcher::{MatcherBuilder, MatcherOptions};
-use pica_record_v1::io::{
-    ReaderBuilder, RecordsIterator, WriterBuilder,
-};
-use pica_record_v1::{ByteRecord, FieldRef, Level};
-use serde::{Deserialize, Serialize};
+use pica_record::prelude::*;
+use pica_record::primitives::{FieldRef, Level};
 
-use super::filter::parse_predicates;
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::progress::Progress;
-use crate::{gzip_flag, skip_invalid_flag};
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) struct ExplodeConfig {
-    /// Skip invalid records that can't be decoded.
-    pub(crate) skip_invalid: Option<bool>,
-
-    /// Compress output in gzip format
-    pub(crate) gzip: Option<bool>,
-}
+use crate::prelude::*;
 
 /// Split records at main, local or copy level.
 #[derive(Parser, Debug)]
 pub(crate) struct Explode {
-    /// Skip invalid records that can't be decoded.
+    /// Whether to skip invalid records or not.
     #[arg(short, long)]
     skip_invalid: bool,
 
@@ -48,8 +31,8 @@ pub(crate) struct Explode {
     /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
-    /// This option can't be combined with `--or` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["or", "not"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
@@ -62,8 +45,8 @@ pub(crate) struct Explode {
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
-    /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "or"])]
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
 
     /// When this flag is provided, comparison operations will be
@@ -124,17 +107,17 @@ macro_rules! push_record {
     };
 }
 
-#[inline]
+#[inline(always)]
 fn process_main<'a>(
     record: &'a ByteRecord<'a>,
 ) -> Vec<Vec<&'a FieldRef<'a>>> {
-    vec![record.iter().collect()]
+    vec![record.fields().iter().collect()]
 }
 
 fn process_local<'a>(
     record: &'a ByteRecord<'a>,
 ) -> Vec<Vec<&'a FieldRef<'a>>> {
-    let mut iter = record.iter().peekable();
+    let mut iter = record.fields().iter().peekable();
     let mut records = vec![];
     let mut main = vec![];
     let mut acc = vec![];
@@ -163,7 +146,7 @@ fn process_local<'a>(
 fn process_copy<'a>(
     record: &'a ByteRecord<'a>,
 ) -> Vec<Vec<&'a FieldRef<'a>>> {
-    let mut iter = record.iter().peekable();
+    let mut iter = record.fields().iter().peekable();
     let mut records = vec![];
     let mut main = vec![];
     let mut local = vec![];
@@ -202,48 +185,37 @@ fn process_copy<'a>(
 }
 
 impl Explode {
-    pub(crate) fn run(self, config: &Config) -> CliResult<()> {
-        let gzip_compression = gzip_flag!(self.gzip, config.explode);
-        let skip_invalid = skip_invalid_flag!(
-            self.skip_invalid,
-            config.explode,
-            config.global
-        );
+    pub(crate) fn execute(self, config: &Config) -> CliResult {
+        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let mut progress = Progress::new(self.progress);
+        let discard = parse_predicates(self.discard)?;
+        let keep = parse_predicates(self.keep)?;
+
+        let mut data = Vec::<u8>::new();
+        let mut count = 0;
+
+        let mut writer = WriterBuilder::new()
+            .gzip(self.gzip)
+            .from_path_or_stdout(self.output)?;
 
         let options = MatcherOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100.0)
             .case_ignore(self.ignore_case);
 
-        let nf = if let Some(ref global) = config.global {
-            global.translit
-        } else {
-            None
-        };
-
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                MatcherBuilder::new(matcher, nf)?
-                    .and(self.and)?
-                    .not(self.not)?
-                    .or(self.or)?
-                    .build(),
+                RecordMatcherBuilder::new(
+                    matcher,
+                    config.normalization.clone(),
+                )?
+                .and(self.and)?
+                .not(self.not)?
+                .or(self.or)?
+                .build(),
             )
         } else {
             None
         };
-
-        let discard = self.discard.unwrap_or_default();
-        let discard_predicates = parse_predicates(&discard)?;
-
-        let keep = self.keep.unwrap_or_default();
-        let keep_predicates = parse_predicates(&keep)?;
-
-        let mut progress = Progress::new(self.progress);
-        let mut count = 0;
-
-        let mut writer = WriterBuilder::new()
-            .gzip(gzip_compression)
-            .from_path_or_stdout(self.output)?;
 
         let process = match self.level {
             Level::Main => process_main,
@@ -251,77 +223,84 @@ impl Explode {
             Level::Copy => process_copy,
         };
 
-        'outer: for filename in self.filenames {
-            let mut reader =
-                ReaderBuilder::new().from_path(filename)?;
+        'outer: for path in self.filenames {
+            let mut reader = ReaderBuilder::new().from_path(path)?;
 
-            while let Some(result) = reader.next() {
-                if let Err(e) = result {
-                    if e.is_invalid_record() && skip_invalid {
-                        progress.invalid();
+            while let Some(result) = reader.next_byte_record() {
+                match result {
+                    Err(e) if e.skip_parse_err(skip_invalid) => {
+                        progress.update(true);
                         continue;
-                    } else {
-                        return Err(e.into());
                     }
-                }
+                    Err(e) => return Err(e.into()),
+                    Ok(ref record) => {
+                        progress.update(false);
 
-                let record = result.unwrap();
-                progress.record();
+                        for record in process(record) {
+                            data.clear();
 
-                for record in process(&record) {
-                    let mut data = Vec::<u8>::new();
-                    for field in record.iter() {
-                        let _ = field.write_to(&mut data);
-                    }
-                    data.push(b'\n');
+                            for field in record.iter() {
+                                let _ = field.write_to(&mut data);
+                            }
+                            data.push(b'\n');
 
-                    let mut record = ByteRecord::from_bytes(&data)
-                        .expect("valid record");
+                            let mut record =
+                                ByteRecord::from_bytes(&data).unwrap();
 
-                    if let Some(ref matcher) = matcher {
-                        if !matcher.is_match(&record, &options) {
-                            continue;
+                            if let Some(ref matcher) = matcher {
+                                if !matcher.is_match(&record, &options)
+                                {
+                                    continue;
+                                }
+                            }
+
+                            if !keep.is_empty() {
+                                record.retain(|field| {
+                                    for (t, o) in keep.iter() {
+                                        if t.is_match(field.tag())
+                                            && o.is_match(
+                                                field.occurrence(),
+                                            )
+                                        {
+                                            return true;
+                                        }
+                                    }
+
+                                    false
+                                });
+                            }
+
+                            if !discard.is_empty() {
+                                record.retain(|field| {
+                                    for (t, o) in discard.iter() {
+                                        if t.is_match(field.tag())
+                                            && o.is_match(
+                                                field.occurrence(),
+                                            )
+                                        {
+                                            return false;
+                                        }
+                                    }
+
+                                    true
+                                });
+                            }
+
+                            writer.write_byte_record(&record)?;
+                            count += 1;
+
+                            if self.limit > 0 && count >= self.limit {
+                                break 'outer;
+                            }
                         }
-                    }
-
-                    if !keep_predicates.is_empty() {
-                        record.retain(|field| {
-                            for (t, o) in keep_predicates.iter() {
-                                if t.is_match(field.tag())
-                                    && *o == field.occurrence()
-                                {
-                                    return true;
-                                }
-                            }
-                            false
-                        });
-                    }
-
-                    if !discard_predicates.is_empty() {
-                        record.retain(|field| {
-                            for (t, o) in discard_predicates.iter() {
-                                if t.is_match(field.tag())
-                                    && *o == field.occurrence()
-                                {
-                                    return false;
-                                }
-                            }
-                            true
-                        });
-                    }
-
-                    writer.write_byte_record(&record)?;
-                    count += 1;
-
-                    if self.limit > 0 && count >= self.limit {
-                        break 'outer;
                     }
                 }
             }
         }
 
-        progress.record();
+        progress.finish();
         writer.finish()?;
-        Ok(())
+
+        Ok(ExitCode::SUCCESS)
     }
 }

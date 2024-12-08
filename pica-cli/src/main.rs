@@ -30,6 +30,7 @@ fn run() -> CliResult {
         #[cfg(feature = "unstable")]
         Command::Config(cmd) => cmd.execute(&mut config),
         Command::Count(cmd) => cmd.execute(&config),
+        Command::Explode(cmd) => cmd.execute(&config),
         Command::Frequency(cmd) => cmd.execute(&config),
         Command::Hash(cmd) => cmd.execute(&config),
         Command::Invalid(cmd) => cmd.execute(&config),
