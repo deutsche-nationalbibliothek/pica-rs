@@ -1,6 +1,7 @@
 use std::fmt::{self, Display};
 use std::io::{self, Write};
 use std::ops::Index;
+use std::str::FromStr;
 
 use bstr::{BStr, BString};
 #[cfg(feature = "serde")]
@@ -18,6 +19,19 @@ pub enum Level {
     Main,
     Local,
     Copy,
+}
+
+impl FromStr for Level {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "main" => Ok(Self::Main),
+            "local" => Ok(Self::Local),
+            "copy" => Ok(Self::Copy),
+            _ => Err("invalid level".into()),
+        }
+    }
 }
 
 /// An immutable tag.
