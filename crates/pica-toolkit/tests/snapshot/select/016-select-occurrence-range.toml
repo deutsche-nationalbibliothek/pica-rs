@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "select \"047A/01-03.e\""
-status = "success"
-stdout = "DE-101\n"
-stderr = ""

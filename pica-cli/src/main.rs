@@ -38,6 +38,7 @@ fn run() -> CliResult {
         Command::Sample(cmd) => cmd.execute(&config),
         Command::Slice(cmd) => cmd.execute(&config),
         Command::Split(cmd) => cmd.execute(&config),
+        Command::Select(cmd) => cmd.execute(&config),
     }
 }
 

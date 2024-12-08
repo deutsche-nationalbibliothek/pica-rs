@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "select \"001[AB].0\""
-status = "success"
-stdout = "1250:01-07-88\n1250:24-04-19\n"
-stderr = ""

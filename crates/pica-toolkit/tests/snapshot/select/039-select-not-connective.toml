@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "select -s \"003@.0\" --where \"002@.0 =^ 'Ts'\" --not \"002@.0 == 'Ts1'\" dump.dat.gz"
-status = "success"
-stdout = "040379442\n"
-stderr = ""

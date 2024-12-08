@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "select --translit nfc \"041P.a\""
-status = "success"
-stdout = "Algebra\nAlg\u00e8bre\n"
-stderr = ""

@@ -22,7 +22,6 @@ pub(crate) struct Config {
     pub(crate) explode: Option<ExplodeConfig>,
     pub(crate) filter: Option<FilterConfig>,
     pub(crate) global: Option<GlobalConfig>,
-    pub(crate) select: Option<SelectConfig>,
 }
 
 impl Config {

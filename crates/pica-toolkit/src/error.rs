@@ -22,9 +22,6 @@ pub(crate) enum CliError {
     #[error(transparent)]
     ParseMatcher(#[from] pica_matcher::ParseMatcherError),
 
-    #[error(transparent)]
-    ParseQuery(#[from] pica_select::ParseQueryError),
-
     #[error("{0}")]
     Other(String),
 }

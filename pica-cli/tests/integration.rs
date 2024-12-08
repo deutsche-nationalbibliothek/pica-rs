@@ -9,6 +9,7 @@ mod invalid;
 mod partition;
 mod print;
 mod sample;
+mod select;
 mod slice;
 mod split;
 

@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "select --no-empty-columns \"003@.0, 001[AB]{0,t}\""
-status = "success"
-stdout = "040011569,1250:24-04-19,15:55:35.000\n"
-stderr = ""

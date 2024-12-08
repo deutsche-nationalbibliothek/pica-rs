@@ -7,6 +7,7 @@ use crate::commands::*;
 /// pica is a fast command-line tool to process bibliographic records
 /// encoded in PICA+.
 #[derive(Debug, Parser)]
+#[clap(version, author, infer_subcommands = true, max_term_width = 72)]
 #[command(name = "pica", version, about, long_about = None)]
 pub(crate) struct Args {
     /// Sets a custom config file
@@ -32,4 +33,5 @@ pub(crate) enum Command {
     Sample(Sample),
     Slice(Slice),
     Split(Split),
+    Select(Select),
 }

@@ -1,0 +1,130 @@
+# select {.unnumbered}
+
+Mit dem `select`-Kommando werden Werte eines unter mehrerer Unterfelder
+tabelliert. Dies ermöglicht weiterführende Datenanalysen in Excel, Python
+oder R.
+
+Im folgenden Beispiel wird die PPN eines Datensatzes (Feld `003@.0`) und die
+dazugehörige Satzart Feld (`002@.0`) in einer Tabelle im CSV-Format erzeugt:
+
+```{.bash}
+$ pica select -s "003@.0, 002@.0" DUMP.dat.gz
+118540238,Tpz
+118607626,Tp1
+040993396,Tu1
+04099337X,Tu1
+...
+```
+
+Ist ein Feld oder Unterfeld mehrfach vorhanden, werden pro Datensatz alle
+Zeilen mit diesen Werten kombiniert, indem das [Kartesische Produkt] gebildet
+wird. Dadurch ist es möglich für jede wiederholte Wertausprägung eine Zeile zu
+erzeugen. In Kombination mit einem nicht-wiederholten Feld (bspw. der PPN im
+Feld `003@.0` lassen sich Tabellen, im Sinne des [Entity-Relationship-Modell],
+erzeugen. Im Folgenden wird eine Tabelle erstellt, die in der ersten Spalte
+die PPN und in der zweiten Spalte, die dazugehörigen Teilbestandskennzeichen
+aus dem Feld `008A.a` enthält. Jede Kombination von einer PPN mit einem
+Teilbestandskennzeichen erzeugt eine neue Zeile:
+
+```{.bash}
+$ pica select -s '003@.0, 004B.a' DUMP.dat.gz
+118540238,s
+118540238,a
+118540238,f
+118540238,z
+118540238,h
+118540238,l
+118540238,d
+...
+```
+
+## Optionen
+
+`-s`, `--skip-invalid`
+: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+
+`--squash`
+: Wenn das Flag gesetzt ist, werden wiederholte Unterfelder als eine
+Zeichenkette zusammengefasst. Die einzelnen Werte werden durch einen Separator
+(siehe `--separator`) getrennt.
+
+`--merge`
+: In jeder Spalte werden alle Zeilen zu einer Zeile zusammengefasst. Die
+einzelnen Werte werden durch einen Separator (siehe `--separator`) getrennt.
+Ist die Option gesetzt wird für jeden Datensatz maximal eine Zeile erzeugt.
+
+`--separator <value>`
+: Festlegen des Separators, der für `--squash`  und `--merge` genutzt wird.
+Standardmäßig wird der Separator `|` verwendet.
+
+`--no-empty-columns`
+: Ist die Option gesetzt, werden nur Zeilen geschrieben, in denen jede Spalte
+einen nicht-leeren Wert enthält.
+
+`--unique`, `-u`
+: Mehrfach vorkommende Zeilen werden ignorieren.
+
+`-i`, `--ignore-case`
+: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+
+`--strsim-threshold <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
+mittels `=*`.
+
+`-A <file>`, `--allow-list` `<file>`
+: Es werden alle Datensätze ignoriert, die nicht explizit in der
+Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben, wird die
+Mengenvereinigung aus allen Listen gebildet.
+
+`-D <file>`, `--deny-list` `<file>`
+: Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen.
+Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen
+Listen gebildet.
+
+`--where <filter>`
+: Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
+
+`--and <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> && <expr>`.
+
+`--or <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> || <expr>`.
+
+`--not <expr>`
+: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
+`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
+
+`-H <header>`, `--header` `<header>`
+: Kopfzeile, die den Ergebnissen vorangestellt wird; Spaltennamen werde mit
+einem Komma separiert.
+
+`-t`, `--tsv`
+Ausgabe erfolgt im TSV-Format.
+
+`--translit <normalization>`
+: Ausgabe wird in die angegebene Normalform transliteriert. Mögliche Werte:
+`nfd`, `nfkd`, `nfc` und `nfkc`.
+
+`-p`, `--progress`
+: Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
+invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben
+der Datensätze in eine Datei mittels `-o` bzw. `--output`.
+
+`--limit <n>`
+: Limitiert die Aufbereitung auf die ersten `<n>` Datensätze.
+
+`--append`
+: Ist die Option gesetzt, wird die Ausgabe an das Ende der Ausgabedatei
+geschrieben, anstatt diese zu überschreiben.
+
+`-o`, `--output`
+: Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig
+wird die Ausgabe in die Standardausgabe `stdout` geschrieben.
+
+
+[Kartesische Produkt]: https://de.wikipedia.org/wiki/Kartesisches_Produkt
+[Entity-Relationship-Modell]: https://de.wikipedia.org/wiki/Entity-Relationship-Modell
