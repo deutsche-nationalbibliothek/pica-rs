@@ -37,6 +37,7 @@ path = "tests/lib.rs"
 name = "integration"
 
 [workspace]
+default-members = ["crates/pica-cli"]
 resolver = "2"
 
 members = ["crates/pica-cli"]
