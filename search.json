@@ -186,6 +186,28 @@
     ]
   },
   {
+    "objectID": "commands/convert.html",
+    "href": "commands/convert.html",
+    "title": "convert",
+    "section": "",
+    "text": "Optionen\nDas PICA-Format kann in verschiedene Datenformate serialisiert werden. Das convert-Kommando ermöglicht es, Datensätze von einem Format in ein anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit, Datensätze, die nicht in normalisiertem PICA+ vorliegen, nach PICA+ zu konvertieren, um sie durch andere Kommandos verarbeiten zu können.\nFolgende Formate werden unterstützt:\nDie Angabe der Datenformate erfolgt über die Optionen --from/-f und --to/-t:",
+    "crumbs": [
+      "Kommandos",
+      "convert"
+    ]
+  },
+  {
+    "objectID": "commands/convert.html#optionen",
+    "href": "commands/convert.html#optionen",
+    "title": "convert",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-f &lt;format&gt;, --from &lt;format&gt;\n\nAuswahl des Datenformats der Eingabe.\n\n-t &lt;format&gt;, --to &lt;format&gt;\n\nAuswahl des Datenformats der Ausgabe.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-o &lt;filename&gt;, --output &lt;filename&gt;\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe stdout geschrieben.",
+    "crumbs": [
+      "Kommandos",
+      "convert"
+    ]
+  },
+  {
     "objectID": "commands/count.html",
     "href": "commands/count.html",
     "title": "count",
