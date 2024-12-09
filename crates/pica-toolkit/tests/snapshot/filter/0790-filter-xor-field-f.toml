@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "filter '008A.a == \"s\" ^ 008A.a == \"f\"'"
-status = "success"
-stdout = ""
-stderr = ""

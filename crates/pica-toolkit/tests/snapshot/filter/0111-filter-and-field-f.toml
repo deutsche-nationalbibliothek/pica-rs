@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "filter \"002@.0 == 'Ts1' && #041P{ a? && (a == 'Algebra' && 2 == 'lcsh') && !z?} >= 1 && !!012A? \""
-status = "success"
-stdout = ""
-stderr = ""

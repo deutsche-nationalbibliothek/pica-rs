@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "filter \"041P{ a? && (a == 'Algebra' && 2 == 'lcsh') && !z? && u =~ '^https:.*' }\""
-status = "success"
-stdout = ""
-stderr = ""

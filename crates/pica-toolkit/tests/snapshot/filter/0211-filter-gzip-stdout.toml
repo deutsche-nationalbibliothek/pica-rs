@@ -1,4 +1,0 @@
-bin.name = "pica-v1"
-binary = true
-args = "filter -s --gzip \"002@.0 =^ 'Ts'\""
-status = "success"

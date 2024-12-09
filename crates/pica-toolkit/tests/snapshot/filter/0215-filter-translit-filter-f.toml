@@ -1,5 +1,0 @@
-bin.name = "pica-v1"
-args = "filter \"041@.a == 'Höhere Algebra'\""
-status = "success"
-stdout = ""
-stderr = ""
