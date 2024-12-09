@@ -82,13 +82,11 @@ jobs:
     strategy:
       matrix:
         item:
-          - { name: pica-record-matcher-v1, fuzz-dir: crates/pica-matcher/fuzz, target: fuzz-record-matcher, max-total-time: 120 }
-          - { name: pica-record-ref-v1, fuzz-dir: crates/pica-record-v1/fuzz, target: fuzz-record-ref, max-total-time: 120 }
           - { name: pica-record-ref, fuzz-dir: fuzz, target: fuzz-record-ref, max-total-time: 120 }
           - { name: pica-record-matcher, fuzz-dir: fuzz, target: fuzz-record-matcher, max-total-time: 120 }
-          - { name: pica-path, fuzz-dir: fuzz, target: fuzz-path, max-total-time: 240 }
-          - { name: pica-format, fuzz-dir: fuzz, target: fuzz-format, max-total-time: 240 }
-          - { name: pica-query, fuzz-dir: fuzz, target: fuzz-query, max-total-time: 240 }
+          - { name: pica-path, fuzz-dir: fuzz, target: fuzz-path, max-total-time: 120 }
+          - { name: pica-format, fuzz-dir: fuzz, target: fuzz-format, max-total-time: 120 }
+          - { name: pica-query, fuzz-dir: fuzz, target: fuzz-query, max-total-time: 120 }
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly

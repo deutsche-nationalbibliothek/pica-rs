@@ -23,6 +23,7 @@ book:
         - commands/completions.qmd
         - commands/concat.qmd
         - commands/config.qmd
+        - commands/convert.qmd
         - commands/count.qmd
         - commands/explode.qmd
         - commands/filter.qmd

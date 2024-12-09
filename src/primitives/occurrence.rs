@@ -146,6 +146,12 @@ impl<T: AsRef<[u8]>> PartialEq<T> for OccurrenceRef<'_> {
     }
 }
 
+impl Display for OccurrenceRef<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "/{}", self.0)
+    }
+}
+
 /// A mutable occurrence.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

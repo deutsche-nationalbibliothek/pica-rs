@@ -154,6 +154,12 @@ impl<'a> TagRef<'a> {
     }
 }
 
+impl Display for TagRef<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 impl Index<usize> for TagRef<'_> {
     type Output = u8;
 
