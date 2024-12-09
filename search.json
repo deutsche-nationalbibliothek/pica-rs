@@ -252,6 +252,50 @@
     ]
   },
   {
+    "objectID": "commands/filter.html",
+    "href": "commands/filter.html",
+    "title": "filter",
+    "section": "",
+    "text": "Optionen\nDas filter-Kommando bildet das Herzstück des pica-Tools. Es ermöglicht es, aus einer (mitunter sehr großen) Datenmenge, bspw. dem Gesamtabzug des Katalogsystems, eine kleinere Menge effizient zu extrahieren, um sie anschließend weiterzuverarbeiten. Dies erfolgt über die Angabe eines Filterausdrucks, der darüber entscheidet, ob ein Datensatz in die Zielmenge eingeht oder nicht.\nIm folgenden Beispiel werden alle Datensätze aus der Datei DUMP.dat.gz extrahiert, die ein Feld 003@ enthalten, das ein Unterfeld 0 besitzt, welches mit dem Wert 118540238 belegt ist.",
+    "crumbs": [
+      "Kommandos",
+      "filter"
+    ]
+  },
+  {
+    "objectID": "commands/filter.html#optionen",
+    "href": "commands/filter.html#optionen",
+    "title": "filter",
+    "section": "",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-v, --invert-match\n\nGibt alle Datensätze aus, die nicht dem Filterausdruck entsprechen.\n\n-i, --ignore-case\n\nGroß- und Kleinschreibung wird bei Vergleichen ignoriert.\n\n--strsim-threshold &lt;value&gt;\n\nFestlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels =*.\n\n-k, --keep\n\nEs werden nur die Felder eines Datensatzes beibehalten, die in der Liste aufgeführt werden.\n\n-d, --discard\n\nEs werden die Felder eines Datensatzes verworfen, die in der Liste aufgeführt werden.\n\n-F &lt;filename&gt;, --file &lt;filename&gt;\n\nEs wird der Filterausdruck aus der Datei &lt;filename&gt; eingelesen. Es darf keine weitere Angabe eines Filterausdrucks als Kommandozeilenargument erfolgen!\n\n-A &lt;filename&gt;, --allow-list &lt;filename&gt;\n\nEs werden alle Datensätze ignoriert, die nicht explizit in der Positivliste1 auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-D &lt;filename&gt;, --deny-list &lt;filename&gt;\n\nEs werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-l &lt;n&gt;, --limit &lt;n&gt;\n\nEingrenzung der Ausgabe auf die ersten &lt;n&gt; (gültigen) Datensätze.\n\n--and &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen &&-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && &lt;expr&gt;.\n\n--or &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen ||-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; || &lt;expr&gt;.\n\n--not &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && !(&lt;expr&gt;).\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n--append\n\nWenn die Ausgabedatei bereits existiert, wird die Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine bestehende Datei überschrieben.\n\n--tee &lt;filename&gt;\n\nAbzweigen der Ausgabe in eine zusätzliche Datei.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-o &lt;filename&gt;, --output &lt;filename&gt;\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe stdout geschrieben. Endet der Dateiname mit dem Suffix .gz, wird die Ausgabe automatisch im gzip-Format komprimiert.",
+    "crumbs": [
+      "Kommandos",
+      "filter"
+    ]
+  },
+  {
+    "objectID": "commands/filter.html#beispiele",
+    "href": "commands/filter.html#beispiele",
+    "title": "filter",
+    "section": "Beispiele",
+    "text": "Beispiele\n\nInvertierte Treffermenge (invert match)\nMitunter ist es einfacher, einen Ausdruck zu formulieren, der alle Datensätze umfasst, die nicht in der Treffermenge gewünscht sind. Durch die Option -v/--invert-match werden dann nur die Datensätze ausgegeben, die nicht dem Filterkriterum entsprechen.\nBeispielweise enthält der Abzug DUMP.dat.gz verschiedene Normdatensätze. Werden nur die Datensätze benötigt, die nicht vom Satztyp Werk sind, ist es einfacher, zuerst nach den Werken zu suchen und dann durch das Flag -v alle Datensätze zu erhalten, die nicht dem Filterkriterium entsprechen.\n$ pica filter -s -v '002@.0 =^ \"Tu\"' DUMP.dat.gz -o not-Tu.dat.gz\n$ pica frequency '002@.0' not-Tu.dat.gz\nTsz,2\nTg1,1\nTp1,1\nTpz,1\nTs1,1\n\n\nGroß- und Kleinschreibung ingorieren\nStandardmäßig wird bei Vergleichen von Zeichenketten die Groß- und Kleinschreibung beachtet. Dies lässt sich mit dem Flag -i/--ignore-case deaktivieren:\n$ pica filter -s -i '028A.a == \"GOETHE\"' DUMP.dat.gz -o goethe.dat\n$ pica print goethe.dat\n...\n028A $d Johann Wolfgang $c von $a Goethe\n...\n\n\nFelder eines Datensatzes reduzieren\nTeilweise ist die Anzahl der Felder pro Datensatz sehr groß, was zu erheblichen Laufzeiteinbußen nachfolgender Datenanalysen führen kann. Mittels der Optionen -k/--keep bzw. -d/--discard lassen sich Datensätze auf eine Teilmenge der Felder reduzieren.\nWerden für eine Datenanalyse nur die IDN/PPN (003@), die Satzart (002@) und die Entitätenkodierung (004B) benötigt, können die Datensätze wie folgt auf die Felder reduziert werden:\n$ pica filter -s --keep '00[23]@,004B' \"003@?\" DUMP.dat.gz -o out.dat\n$ pica print out.dat\n002@ $0 Tpz\n003@ $0 118540238\n004B $a piz\n\n002@ $0 Tp1\n003@ $0 118607626\n004B $a piz\n...\nSollen bestimmte Felder entfernt werden, kann dies mit der Option -d/--discard erfolgen. Der folgende Aufruf entfernt das Feld 004B, sofern vorhanden, aus allen Datensätzen:\n$ pica filter -s --keep '00[23]@,004B' \"003@?\" DUMP.dat.gz -o out.dat\n$ pica filter --discard '004B' \"003@?\" out.dat -o out2.dat\n$ pica print out2.dat\n002@ $0 Tpz\n003@ $0 118540238\n\n002@ $0 Tp1\n003@ $0 118607626\n...",
+    "crumbs": [
+      "Kommandos",
+      "filter"
+    ]
+  },
+  {
+    "objectID": "commands/filter.html#footnotes",
+    "href": "commands/filter.html#footnotes",
+    "title": "filter",
+    "section": "",
+    "text": "Eine Positiv- oder Negativliste muss entweder als CSV-Datei vorliegen oder als eine Arrow-Datei, die eine ppn- oder idn-Spalte enthält. Alle Dateien werden automatisch als CSV-Datei interpretiert, es sei denn, die Datei endet mit .ipc oder .arrow, dann erfolgt die Interpretation im Arrow-Format. CSV- bzw. TSV-Dateien mit der Ending .csv.gz bzw. .tsv.gz werden automatisch entpackt.↩︎",
+    "crumbs": [
+      "Kommandos",
+      "filter"
+    ]
+  },
+  {
     "objectID": "commands/frequency.html",
     "href": "commands/frequency.html",
     "title": "frequency",

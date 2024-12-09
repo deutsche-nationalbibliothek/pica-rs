@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>frequency – pica-rs</title>
+<title>filter – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,8 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/hash.html" rel="next">
-<link href="../commands/filter.html" rel="prev">
+<link href="../commands/frequency.html" rel="next">
+<link href="../commands/explode.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -103,35 +103,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../assets/css/style.css">
 </head>
@@ -145,7 +116,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/frequency.html">frequency</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/filter.html">filter</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -237,13 +208,13 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/filter.html" class="sidebar-item-text sidebar-link">
+  <a href="../commands/filter.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">filter</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/frequency.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/frequency.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">frequency</span></a>
   </div>
 </li>
@@ -306,9 +277,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/frequency.html">frequency</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/filter.html">filter</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">frequency</h1>
+<h1 class="title">filter</h1>
 </div>
 
 
@@ -325,20 +296,34 @@ window.Quarto = {
 </header>
 
 
-<p>Das Kommando <code>frequency</code> wird dazu genutzt, um die Häufigkeiten der Werte ein oder mehrerer Unterfelder zu bestimmen. Ist das zu untersuchende Feld bzw. Unterfeld wiederholbar, gehen alle Wertausprägungen eines Datensatzes in die Häufigkeitsverteilung ein. Die Ausgabe erfolgt standardmäßig im CSV-Format. Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds <code>002@.0</code> (Satzart) ermittelt:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="st">"002@.0"</span> DUMP.dat.gz</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Tu1,6</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Tsz,2</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Tg1,1</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Tp1,1</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Tpz,1</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,1</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Das <code>filter</code>-Kommando bildet das Herzstück des <code>pica</code>-Tools. Es ermöglicht es, aus einer (mitunter sehr großen) Datenmenge, bspw. dem Gesamtabzug des Katalogsystems, eine kleinere Menge effizient zu extrahieren, um sie anschließend weiterzuverarbeiten. Dies erfolgt über die Angabe eines Filterausdrucks, der darüber entscheidet, ob ein Datensatz in die Zielmenge eingeht oder nicht.</p>
+<p>Im folgenden Beispiel werden alle Datensätze aus der Datei <code>DUMP.dat.gz</code> extrahiert, die ein Feld <code>003@</code> enthalten, das ein Unterfeld <code>0</code> besitzt, welches mit dem Wert <code>118540238</code> belegt ist.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="st">'003@.0 == "118540238"'</span> DUMP.dat.gz <span class="at">-o</span> goethe.dat</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print goethe.dat</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">001A</span> <span class="va">$0</span> 1250:01-07-88</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">001B</span> <span class="va">$0</span> 9999:15-04-22 <span class="va">$t</span> 15:15:00.000</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">001D</span> <span class="va">$0</span> 0292:01-08-19</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">001U</span> <span class="va">$0</span> utf8</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">001X</span> <span class="va">$0</span> 0</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tpz</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118540238</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">003U</span> <span class="va">$a</span> http://d-nb.info/gnd/118540238 <span class="va">$z</span> http://d-nb.info/gnd/185808069 <span class="va">$z</span> http://d-nb.info/gnd/185848826 <span class="va">$z</span> http://d-nb.info/gnd/101488358X <span class="va">$z</span> http://d-nb.info/gnd/1014927390 <span class="va">$z</span> http://d-nb.info/gnd/1022736213 <span class="va">$z</span> http://d-nb.info/gnd/1095607278 <span class="va">$z</span> http://d-nb.info/gnd/1131918517</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">004B</span> <span class="va">$a</span> piz</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">006Y</span> <span class="va">$S</span> isni <span class="va">$0</span> 0000 0001 2099 9104</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">006Y</span> <span class="va">$S</span> wikidata <span class="va">$0</span> Q5879</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ex">028A</span> <span class="va">$d</span> Johann Wolfgang <span class="va">$c</span> von <span class="va">$a</span> Goethe</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="optionen" class="level2">
 <h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
 <dl>
 <dt><code>-s</code>, <code>--skip-invalid</code></dt>
 <dd>
 Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+</dd>
+<dt><code>-v</code>, <code>--invert-match</code></dt>
+<dd>
+Gibt alle Datensätze aus, die <strong>nicht</strong> dem Filterausdruck entsprechen.
 </dd>
 <dt><code>-i</code>, <code>--ignore-case</code></dt>
 <dd>
@@ -348,33 +333,29 @@ Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
 <dd>
 Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
 </dd>
-<dt><code>--unique</code>, <code>-u</code></dt>
+<dt><code>-k</code>, <code>--keep</code></dt>
 <dd>
-Doppelte Werte eines Datensatzes werden ignorieren.
+Es werden nur die Felder eines Datensatzes beibehalten, die in der Liste aufgeführt werden.
 </dd>
-<dt><code>--reverse</code></dt>
+<dt><code>-d</code>, <code>--discard</code></dt>
 <dd>
-Ergebnisse werden in aufsteigender Reihenfolge ausgegeben.
+Es werden die Felder eines Datensatzes verworfen, die in der Liste aufgeführt werden.
 </dd>
-<dt><code>-A &lt;file&gt;</code>, <code>--allow-list</code> <code>&lt;file&gt;</code></dt>
+<dt><code>-F &lt;filename&gt;</code>, <code>--file</code> <code>&lt;filename&gt;</code></dt>
+<dd>
+Es wird der Filterausdruck aus der Datei <code>&lt;filename&gt;</code> eingelesen. Es darf <strong>keine</strong> weitere Angabe eines Filterausdrucks als Kommandozeilenargument erfolgen!
+</dd>
+<dt><code>-A &lt;filename&gt;</code>, <code>--allow-list</code> <code>&lt;filename&gt;</code></dt>
 <dd>
 Es werden alle Datensätze ignoriert, die nicht explizit in der Positivliste<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
 </dd>
-<dt><code>-D &lt;file&gt;</code>, <code>--deny-list</code> <code>&lt;file&gt;</code></dt>
+<dt><code>-D &lt;filename&gt;</code>, <code>--deny-list</code> <code>&lt;filename&gt;</code></dt>
 <dd>
 Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
 </dd>
 <dt><code>-l &lt;n&gt;</code>, <code>--limit</code> <code>&lt;n&gt;</code></dt>
 <dd>
-Eingrenzung der Ausgabe auf die häufigsten <code>&lt;n&gt;</code> Unterfeldwerte.
-</dd>
-<dt><code>-t &lt;n&gt;</code>, <code>--threshold</code> <code>&lt;n&gt;</code></dt>
-<dd>
-Zeilen mit einer Häufigkeit <span class="math inline">\(&lt;\)</span> <code>&lt;n&gt;</code> ignorieren.
-</dd>
-<dt><code>--where &lt;filter&gt;</code></dt>
-<dd>
-Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
+Eingrenzung der Ausgabe auf die ersten <code>&lt;n&gt;</code> (gültigen) Datensätze.
 </dd>
 <dt><code>--and &lt;expr&gt;</code></dt>
 <dd>
@@ -388,100 +369,75 @@ Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>||</code>-V
 <dd>
 Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; !(&lt;expr&gt;)</code>.
 </dd>
-</dl>
-<p><code>-H &lt;header&gt;</code>, <code>--header</code> <code>&lt;header&gt;</code> Kopfzeile, die den Ergebnissen vorangestellt wird; Spaltennamen werde mit einem Komma separiert.</p>
-<p><code>-t</code>, <code>--tsv</code> Ausgabe erfolgt im TSV-Format.</p>
-<dl>
-<dt><code>--translit &lt;normalization&gt;</code></dt>
+<dt><code>-g</code>, <code>--gzip</code></dt>
 <dd>
-Ausgabe wird in die angegebene Normalform transliteriert. Mögliche Werte: <code>nfd</code>, <code>nfkd</code>, <code>nfc</code> und <code>nfkc</code>.
+Komprimieren der Ausgabe im <a href="https://de.wikipedia.org/wiki/Gzip">Gzip</a>-Format.
+</dd>
+<dt><code>--append</code></dt>
+<dd>
+Wenn die Ausgabedatei bereits existiert, wird die Ausgabe an die Datei angehangen. Ist das Flag nicht gesetzt, wird eine bestehende Datei überschrieben.
+</dd>
+<dt><code>--tee &lt;filename&gt;</code></dt>
+<dd>
+Abzweigen der Ausgabe in eine zusätzliche Datei.
 </dd>
 <dt><code>-p</code>, <code>--progress</code></dt>
 <dd>
 Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels <code>-o</code> bzw. <code>--output</code>.
 </dd>
-<dt><code>-o</code>, <code>--output</code></dt>
+<dt><code>-o &lt;filename&gt;</code>, <code>--output &lt;filename&gt;</code></dt>
 <dd>
-Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe <code>stdout</code> geschrieben.
+Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe <code>stdout</code> geschrieben. Endet der Dateiname mit dem Suffix <code>.gz</code>, wird die Ausgabe automatisch im gzip-Format komprimiert.
 </dd>
 </dl>
 </section>
 <section id="beispiele" class="level2">
 <h2 class="anchored" data-anchor-id="beispiele">Beispiele</h2>
-<section id="hinzufügen-einer-kopfzeile" class="level3">
-<h3 class="anchored" data-anchor-id="hinzufügen-einer-kopfzeile">Hinzufügen einer Kopfzeile</h3>
-<p>Für die Dokumentation sowie die Verwendung in anderen Programmiersprachen ist es häufig sinnvoll, eine Kopfzeile hinzuzufügen. Dies erfolgt mit der Option <code>--header</code> bzw. <code>-H</code>. Die Namen der Spalten werden kommasepariert angegeben. Eine Angabe von mehr als zwei Spalten ist nicht erlaubt.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="at">--header</span> <span class="st">"satzart,anzahl"</span> <span class="st">"002@.0"</span> DUMP.dat.gz</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">satzart,anzahl</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Tu1,6</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Tsz,2</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Tg1,1</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Tp1,1</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Tpz,1</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,1</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="invertierte-treffermenge-invert-match" class="level3">
+<h3 class="anchored" data-anchor-id="invertierte-treffermenge-invert-match">Invertierte Treffermenge (<em>invert match</em>)</h3>
+<p>Mitunter ist es einfacher, einen Ausdruck zu formulieren, der alle Datensätze umfasst, die nicht in der Treffermenge gewünscht sind. Durch die Option <code>-v</code>/<code>--invert-match</code> werden dann nur die Datensätze ausgegeben, die nicht dem Filterkriterum entsprechen.</p>
+<p>Beispielweise enthält der Abzug <code>DUMP.dat.gz</code> verschiedene Normdatensätze. Werden nur die Datensätze benötigt, die <strong>nicht</strong> vom Satztyp Werk sind, ist es einfacher, zuerst nach den Werken zu suchen und dann durch das Flag <code>-v</code> alle Datensätze zu erhalten, die nicht dem Filterkriterium entsprechen.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">-v</span> <span class="st">'002@.0 =^ "Tu"'</span> DUMP.dat.gz <span class="at">-o</span> not-Tu.dat.gz</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="st">'002@.0'</span> not-Tu.dat.gz</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Tsz,2</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Tg1,1</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Tp1,1</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Tpz,1</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,1</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="auswertung-mehrerer-felder-bzw.-unterfelder" class="level3">
-<h3 class="anchored" data-anchor-id="auswertung-mehrerer-felder-bzw.-unterfelder">Auswertung mehrerer Felder bzw. Unterfelder</h3>
-<p>Durch die Angabe von mehreren Pfadausdrücken lässt sich eine Häufigkeitsverteilung über mehrere Untefelder ermitteln. Das folgende Beispiel berechnet die Häufigkeit der Kombination aus Satzart (<code>002@.0</code>) und dem Entitätencode(s) (<code>004B.a</code>):</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="at">-H</span> <span class="st">"bbg,ent,count"</span> <span class="st">"002@.0, 004B.a"</span> DUMP.dat.gz</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">bbg,ent,count</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Tu1,wit,6</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Tsz,saz,2</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Tg1,gik,1</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Tp1,piz,1</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Tpz,piz,1</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,saz,1</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Ebenfalls können auch mehrere Unterfelder ausgewertet werden. Eine Auswertung der Häufigkeiten von verknüpften Sachbegriffen (Level 1) und dem GND-Code für Beziehungen im Feld <code>041R</code> (Sachbegriff - Beziehung) wird wie folgt ermittelt:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="st">'041R{(7,4) | 7 == "Ts1"}'</span> DUMP.dat.gz</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,beru,12</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,obal,5</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,vbal,3</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,obge,1</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,stud,1</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="groß--und-kleinschreibung-ingorieren" class="level3">
+<h3 class="anchored" data-anchor-id="groß--und-kleinschreibung-ingorieren">Groß- und Kleinschreibung ingorieren</h3>
+<p>Standardmäßig wird bei Vergleichen von Zeichenketten die Groß- und Kleinschreibung beachtet. Dies lässt sich mit dem Flag <code>-i</code>/<code>--ignore-case</code> deaktivieren:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">-i</span> <span class="st">'028A.a == "GOETHE"'</span> DUMP.dat.gz <span class="at">-o</span> goethe.dat</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print goethe.dat</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">028A</span> <span class="va">$d</span> Johann Wolfgang <span class="va">$c</span> von <span class="va">$a</span> Goethe</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="eingrenzung-auf-bestimmte-felder" class="level3">
-<h3 class="anchored" data-anchor-id="eingrenzung-auf-bestimmte-felder">Eingrenzung auf bestimmte Felder</h3>
-<p>Oftmals sollen nicht alle Felder in die Berechnung der Häufigkeiten miteinbezogen werden. Dies ist bspw. dann der Fall, wenn sich Felder anhand eines Unterfelds unterschieden lassen, wie etwa durch die Angabe der Metadatenherkunft. Durch Verwenden eines Pfad-Ausdrucks in <code>{}</code>-Notation können nur die Felder ausgewählt werden, die einem bestimmten Kriterium entsprechen.</p>
-<p>Das folgende Beispiel bezieht nur die Felder <code>041R</code> in die Auswertung mit ein, bei denen ein Unterfeld <code>4</code> existiert, das entweder <code>berc</code> oder <code>beru</code> ist; Felder die diesem Kriterium nicht entsprechen, werden ignoriert.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="st">"041R{ 9 | 4 in ['berc', 'beru'] }"</span> DUMP.dat.gz</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">040533093,2</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">040250989,1</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">040252434,1</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">040290506,1</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="eingrenzen-der-treffermenge" class="level3">
-<h3 class="anchored" data-anchor-id="eingrenzen-der-treffermenge">Eingrenzen der Treffermenge</h3>
-<p>Soll die Ergebnismenge auf die häufigsten <em>n</em> Unterfeldwerte eingeschränkt werden, wird dies mit der Option <code>--limit</code> bzw. <code>-l</code> erreicht. Das nachfolgende Beispeil ermittelt die 3 häufigsten Werte im Feld <code>041R.4</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="at">--limit</span> 3 <span class="st">"041R.4"</span> DUMP.dat.gz</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">beru,12</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">obal,5</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">vbal,4</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="eingrenzen-der-treffermenge-schwellenwert" class="level3">
-<h3 class="anchored" data-anchor-id="eingrenzen-der-treffermenge-schwellenwert">Eingrenzen der Treffermenge (Schwellenwert)</h3>
-<p>Die Treffermenge kann auch mittels der Angabe eines Schwellenwerts eingeschänkt werden. Sollen nur die Werte angezeigt werden, die ab einem Schwellenwert vorkommen, dann kann dies mit der Option <code>--threshold</code>/<code>-t</code> erzielt werden:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="at">--threshold</span> 4 <span class="st">"041R.4"</span> DUMP.dat.gz</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">beru,12</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">obal,5</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">vbal,4</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="änderung-der-sortierreihenfolge-limit" class="level3">
-<h3 class="anchored" data-anchor-id="änderung-der-sortierreihenfolge-limit">Änderung der Sortierreihenfolge (Limit)</h3>
-<p>Standardmäßig wird die Häufigkeitsverteilung absteigend ausgegeben, d.h., der häufigste Wert steht in der Ausgabe oben. Soll das Verhalten so geändert werden, dass die Ausgabe aufsteigend sortiert wird, kann dies mit der Option <code>--reverse</code> bzw. <code>-r</code> erfolgen. Das folgende Kommando sucht nach den vier Satzarten, die am wenigsten vorkommen:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="at">-l</span> 4 <span class="at">--reverse</span> <span class="st">"002@.0"</span> DUMP.dat.gz</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Tg1,1</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Tp1,1</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Tpz,1</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,1</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="ausgabe-im-tsv-format" class="level3">
-<h3 class="anchored" data-anchor-id="ausgabe-im-tsv-format">Ausgabe im TSV-Format</h3>
-<p>Die Ausgabe lässt sich mittels der Option <code>--tsv</code> (bzw. <code>-t</code>) in das TSV-Format ändern.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="at">-s</span> <span class="at">-l3</span> <span class="at">--tsv</span> tests/data/dump.dat.gz</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Tu1</span> 6</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Tsz</span> 2</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="felder-eines-datensatzes-reduzieren" class="level3">
+<h3 class="anchored" data-anchor-id="felder-eines-datensatzes-reduzieren">Felder eines Datensatzes reduzieren</h3>
+<p>Teilweise ist die Anzahl der Felder pro Datensatz sehr groß, was zu erheblichen Laufzeiteinbußen nachfolgender Datenanalysen führen kann. Mittels der Optionen <code>-k</code>/<code>--keep</code> bzw. <code>-d</code>/<code>--discard</code> lassen sich Datensätze auf eine Teilmenge der Felder reduzieren.</p>
+<p>Werden für eine Datenanalyse nur die IDN/PPN (<code>003@</code>), die Satzart (<code>002@</code>) und die Entitätenkodierung (<code>004B</code>) benötigt, können die Datensätze wie folgt auf die Felder reduziert werden:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">--keep</span> <span class="st">'00[23]@,004B'</span> <span class="st">"003@?"</span> DUMP.dat.gz <span class="at">-o</span> out.dat</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print out.dat</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tpz</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118540238</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">004B</span> <span class="va">$a</span> piz</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tp1</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118607626</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">004B</span> <span class="va">$a</span> piz</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Sollen bestimmte Felder entfernt werden, kann dies mit der Option <code>-d</code>/<code>--discard</code> erfolgen. Der folgende Aufruf entfernt das Feld <code>004B</code>, sofern vorhanden, aus allen Datensätzen:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">--keep</span> <span class="st">'00[23]@,004B'</span> <span class="st">"003@?"</span> DUMP.dat.gz <span class="at">-o</span> out.dat</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">--discard</span> <span class="st">'004B'</span> <span class="st">"003@?"</span> out.dat <span class="at">-o</span> out2.dat</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print out2.dat</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tpz</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118540238</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tp1</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118607626</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
@@ -489,7 +445,7 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>Alle Werte mit gleicher Häufigkeit werden immer in lexikographisch aufsteigender Reihenfolge sortiert. Dies erfolgt unabhängig vom Parameter <code>--reverse</code>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>Eine Positiv- oder Negativliste muss entweder als <a href="https://de.wikipedia.org/wiki/CSV_(Dateiformat)">CSV</a>-Datei vorliegen oder als eine <a href="https://arrow.apache.org/">Arrow</a>-Datei, die eine <code>ppn</code>- oder <code>idn</code>-Spalte enthält. Alle Dateien werden automatisch als <a href="https://de.wikipedia.org/wiki/CSV_(Dateiformat)">CSV</a>-Datei interpretiert, es sei denn, die Datei endet mit <code>.ipc</code> oder <code>.arrow</code>, dann erfolgt die Interpretation im <a href="https://arrow.apache.org/">Arrow</a>-Format. CSV- bzw. TSV-Dateien mit der Ending <code>.csv.gz</code> bzw. <code>.tsv.gz</code> werden automatisch entpackt.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
@@ -913,13 +869,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/filter.html" class="pagination-link" aria-label="filter">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">filter</span>
+      <a href="../commands/explode.html" class="pagination-link" aria-label="explode">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">explode</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../commands/hash.html" class="pagination-link" aria-label="hash">
-        <span class="nav-page-text">hash</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../commands/frequency.html" class="pagination-link" aria-label="frequency">
+        <span class="nav-page-text">frequency</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
