@@ -25,6 +25,7 @@ book:
         - commands/config.qmd
         - commands/count.qmd
         - commands/explode.qmd
+        - commands/filter.qmd
         - commands/frequency.qmd
         - commands/hash.qmd
         - commands/invalid.qmd

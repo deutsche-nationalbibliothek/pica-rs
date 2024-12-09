@@ -1,9 +1,12 @@
+pub(crate) mod prelude;
+
 mod completions;
 mod concat;
 #[cfg(feature = "unstable")]
 mod config;
 mod count;
 mod explode;
+mod filter;
 mod frequency;
 mod hash;
 mod invalid;
@@ -13,5 +16,3 @@ mod sample;
 mod select;
 mod slice;
 mod split;
-
-pub(crate) mod prelude;

@@ -6,7 +6,6 @@ extern crate serde;
 mod commands;
 mod config;
 mod error;
-mod filter_list;
 mod macros;
 mod progress;
 
@@ -14,7 +13,7 @@ use std::path::PathBuf;
 use std::{io, process};
 
 use clap::{Parser, Subcommand};
-use commands::{Convert, Filter};
+use commands::Convert;
 use config::Config;
 use error::{CliError, CliResult};
 
@@ -36,7 +35,6 @@ struct Cli {
 #[allow(clippy::large_enum_variant)]
 enum Commands {
     Convert(Convert),
-    Filter(Filter),
 }
 
 fn run() -> CliResult<()> {
@@ -45,7 +43,6 @@ fn run() -> CliResult<()> {
 
     match args.command {
         Commands::Convert(cmd) => cmd.run(&config),
-        Commands::Filter(cmd) => cmd.run(&config),
     }
 }
 
