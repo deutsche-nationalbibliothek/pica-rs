@@ -26,10 +26,12 @@ fn convert_from_plus_to_xml() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert_eq!(
-        read_to_string(data_dir().join("ada.xml"))?,
-        read_to_string(out.path())?
-    );
+    let mut expected = read_to_string(data_dir().join("ada.xml"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert_eq!(expected, read_to_string(out.path())?);
 
     temp_dir.close().unwrap();
     Ok(())
@@ -54,10 +56,8 @@ fn convert_from_plus_to_json() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert_eq!(
-        read_to_string(data_dir().join("ada.json"))?,
-        read_to_string(out.path())?
-    );
+    let expected = read_to_string(data_dir().join("ada.json"))?;
+    assert_eq!(expected, read_to_string(out.path())?);
 
     temp_dir.close().unwrap();
     Ok(())
@@ -110,10 +110,12 @@ fn convert_from_plus_to_plain() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert_eq!(
-        read_to_string(data_dir().join("ada.plain"))?,
-        read_to_string(out.path())?
-    );
+    let mut expected = read_to_string(data_dir().join("ada.plain"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert_eq!(expected, read_to_string(out.path())?);
 
     temp_dir.close().unwrap();
     Ok(())
