@@ -1,0 +1,47 @@
+# convert {.unnumbered}
+
+Das PICA-Format kann in verschiedene Datenformate serialisiert werden.
+Das `convert`-Kommando ermöglicht es, Datensätze von einem Format in ein
+anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit,
+Datensätze, die nicht in normalisiertem PICA+ vorliegen, nach PICA+ zu
+konvertieren, um sie durch andere Kommandos verarbeiten zu können.
+
+Folgende Formate werden unterstützt:
+
+* normalisiertes PICA+ (`plus`)
+* binäres PICA (`binary`)
+* PICA-Importformat (`import`)
+* PICA-Plain (`plain`)
+* PICA-JSON (`json`)
+* PICA-XML (`xml`)
+
+Die Angabe der Datenformate erfolgt über die Optionen `--from`/`-f` und
+`--to`/`-t`:
+
+```{.bash}
+$ pica convert --from plus --to binary DUMP.dat.gz -o dump.bin
+$ pica convert --from plus --to json DUMP.dat.gz -o dump.json
+$ pica convert --from plus --to plain DUMP.dat.gz -o dump.plain
+$ pica convert --from plus --to plus DUMP.dat.gz -o dump.dat
+$ pica convert --from plus --to xml DUMP.dat.gz -o dump.xml
+```
+
+## Optionen
+
+`-s`, `--skip-invalid`
+: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+
+`-f <format>`, `--from <format>`
+: Auswahl des Datenformats der Eingabe.
+
+`-t <format>`, `--to <format>`
+: Auswahl des Datenformats der Ausgabe.
+
+`-p`, `--progress`
+: Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
+invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das
+Schreiben der Datensätze in eine Datei mittels `-o` bzw. `--output`.
+
+`-o <filename>`, `--output <filename>`
+: Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig
+wird die Ausgabe in die Standardausgabe `stdout` geschrieben.

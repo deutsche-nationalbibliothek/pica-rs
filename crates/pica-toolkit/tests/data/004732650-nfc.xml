@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<collection xmlns="info:srw/schema/5/picaXML-v1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="info:srw/schema/5/picaXML-v1.0">
-  <record>
-    <datafield tag="029A">
-      <subfield code="a">Goethe-Universität Frankfurt am Main</subfield>
-      <subfield code="b">Institut für Sozialforschung</subfield>
-    </datafield>
-  </record>
-</collection>
