@@ -15,9 +15,8 @@ bibliografischen Metadaten, die in PICA+, dem internen Format des
 [OCLC]-Katalogsystems, kodiert sind. Mithilfe verschiedener [Kommandos]
 können aus den Metadaten elementare statistische Größen ermittelt und
 aufbereitet werden. Zudem kann das Toolkit als Brückentechnologie
-fungieren, um Metadaten für populäre Frameworks wie [Pandas] oder
-[Polars] (Python), in Programmiersprachen wie [R] oder für Excel nutzbar
-zu machen.
+fungieren, um Metadaten für populäre Frameworks wie [Polars] (Python), in
+Programmiersprachen wie [R] oder für Excel nutzbar zu machen.
 
 Das Projekt ist eine Entwicklung des Referats _Automatische
 Erschließungsverfahren; Netzpublikationen_ (AEN) der [Deutschen
@@ -39,7 +38,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 
 ### Kommandos
 
-* [cat] — Zusammenfügen (Konkatenieren) von Datensätzen
+* [concat] — Zusammenfügen (Konkatenieren) von Datensätzen
 * [completions] — Erzeugung von Shell-Skripten zur Autovervollständigung
 * [convert] — Konvertierung zwischen verschiedenen PICA-Formaten
 * [count] — Zählen von Datensätzen, Feldern und Unterfeldern
@@ -51,8 +50,8 @@ Die Installation des Toolkits und alle Kommandos sind in der
 * [invalid] — Findet ungültige Zeilen in der Eingabe
 * [partition] — Partitioniert Datensätze anhand eines Unterfelds
 * [print] — Gibt Datensätze in einer menschenlesbaren Form aus
-* sample — Wählt eine Zufallsstichprobe eines bestimmten Umfangs aus
-* select — Selektiert ein oder mehrere Unterfelder und gibt die Daten im
+* [sample] — Wählt eine Zufallsstichprobe eines bestimmten Umfangs aus
+* [select] — Selektiert ein oder mehrere Unterfelder und gibt die Daten im
   CSV- bzw. TSV-Format aus
 * [slice] — Ausschneiden eines zusammenhängenden Teilbereichs aus der
   Eingabe
@@ -69,27 +68,28 @@ Die Installation des Toolkits und alle Kommandos sind in der
 [DNB]: https://www.dnb.de/
 [Dokumentation]: https://deutsche-nationalbibliothek.github.io/pica-rs/
 [Issues]: https://github.com/deutsche-nationalbibliothek/pica-rs/issues
-[KI]: https://www.dnb.de/DE/Professionell/ProjekteKooperationen/Projekte/KI/ki_node.html
+[KI]: https://www.dnb.de/ki-projekt
 [metadaten.community]: https://metadaten.community/c/software-und-tools/pica-rs/31
 [Kommandos]: #kommandos
 [OCLC]: https://www.oclc.org/
-[Pandas]: https://pandas.pydata.org/
 [Polars]: https://www.pola.rs/
 [R]: https://www.r-project.org/
 
-[cat]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/cat/
-[completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/completions/
-[convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/convert/
-[count]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/count/
-[explode]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/explode/
-[filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/filter/
-[frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/frequency/
-[hash]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/hash/
+[concat]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/concat.html
+[completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/completions.html
+[convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/convert.html
+[count]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/count.html
+[explode]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/explode.html
+[filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/filter.html
+[frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/frequency.html
+[hash]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/hash.html
 [invalid]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/invalid.html
-[partition]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/partition/
-[print]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/print/
-[slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/slice/
-[split]: https://deutsche-nationalbibliothek.github.io/pica-rs/book/docs/kommandos/split/
+[partition]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/partition.html
+[print]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/print.html
+[sample]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/sample.html
+[select]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/select.html
+[slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/slice.html
+[split]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/split.html
 
 ## Lizenz
 
