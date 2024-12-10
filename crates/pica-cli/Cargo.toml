@@ -25,6 +25,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { version = "1.0" }
 thiserror = { workspace = true }
 toml = { version = "0.8.19", features = ["preserve_order"] }
+unicode-normalization = { version = "0.1.24" }
 
 [dev-dependencies]
 anyhow = { workspace = true }

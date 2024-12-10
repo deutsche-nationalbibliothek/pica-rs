@@ -133,6 +133,7 @@ impl Filter {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
         let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut progress = Progress::new(self.progress);
+        let translit = translit(config.normalization.as_ref());
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
 
@@ -170,14 +171,12 @@ impl Filter {
             self.filter
         };
 
-        let matcher = RecordMatcherBuilder::new(
-            filter_str,
-            config.normalization.clone(),
-        )?
-        .and(self.and)?
-        .or(self.or)?
-        .not(self.not)?
-        .build();
+        let matcher =
+            RecordMatcherBuilder::with_transform(filter_str, translit)?
+                .and(self.and)?
+                .or(self.or)?
+                .not(self.not)?
+                .build();
 
         let mut count = 0;
         let options = MatcherOptions::new()
