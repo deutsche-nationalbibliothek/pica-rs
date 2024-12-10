@@ -3,13 +3,11 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::process::ExitCode;
 
+use bstr::ByteSlice;
 use clap::Parser;
-use pica_record::matcher::{translit, NormalizationForm};
 use pica_record::prelude::*;
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Print records in human readable format
 #[derive(Parser, Debug)]
@@ -24,7 +22,7 @@ pub(crate) struct Print {
 
     /// Transliterate output into the selected normal form <NF>
     #[arg(long = "translit", value_name = "NF")]
-    normalization: Option<NormalizationForm>,
+    nf: Option<NormalizationForm>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -64,7 +62,9 @@ impl Print {
                     }
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
+                        let translit = translit(self.nf.as_ref());
                         progress.update(false);
+
                         for field in record.fields() {
                             field.tag().write_to(&mut writer)?;
                             if let Some(occ) = field.occurrence() {
@@ -76,10 +76,8 @@ impl Print {
                                 write!(writer, " ${code}")?;
 
                                 let value = translit(
-                                    subfield.value().to_string(),
-                                    self.normalization.as_ref(),
+                                    subfield.value().to_str().unwrap(),
                                 );
-
                                 write!(writer, " {value}")?;
                             }
 

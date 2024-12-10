@@ -1,10 +1,8 @@
 use std::process::ExitCode;
 
 use clap::Parser;
-use pica_record::matcher::NormalizationForm;
 
-use crate::config;
-use crate::error::{bail, CliError, CliResult};
+use crate::prelude::*;
 
 /// Get and set configuration options.
 #[derive(Debug, Parser)]
@@ -43,7 +41,7 @@ fn print_option<T: ToString>(value: Option<T>) {
 impl Config {
     pub(crate) fn execute(
         self,
-        config: &mut config::Config,
+        config: &mut crate::config::Config,
     ) -> CliResult {
         let name = match self.name.as_str() {
             name if name == "skip-invalid" => name,

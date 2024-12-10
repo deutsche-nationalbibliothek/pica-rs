@@ -32,7 +32,10 @@ impl RecordMatcher {
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn new(matcher: &str) -> Result<Self, ParseMatcherError> {
+    pub fn new<S: AsRef<str>>(
+        matcher: S,
+    ) -> Result<Self, ParseMatcherError> {
+        let matcher = matcher.as_ref();
         let matcher = parse_field_matcher
             .parse(matcher.as_bytes())
             .map_err(|_| {

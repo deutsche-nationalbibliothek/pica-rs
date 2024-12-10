@@ -8,6 +8,7 @@ use pica_record::prelude::*;
 
 use crate::config::Config;
 use crate::error::CliResult;
+use crate::prelude::translit;
 use crate::progress::Progress;
 
 /// Count records, fields and subfields
@@ -101,6 +102,7 @@ impl Count {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
+        let translit = translit(config.normalization.as_ref());
 
         let mut writer: Box<dyn Write> = match self.output {
             Some(path) => Box::new(
@@ -116,9 +118,8 @@ impl Count {
 
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                RecordMatcherBuilder::new(
-                    matcher,
-                    config.normalization.clone(),
+                RecordMatcherBuilder::with_transform(
+                    matcher, translit,
                 )?
                 .and(self.and)?
                 .or(self.or)?

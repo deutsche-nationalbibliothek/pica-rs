@@ -43,7 +43,10 @@ impl Query {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
-    pub fn new(query: &str) -> Result<Self, ParseQueryError> {
+    pub fn new<S: AsRef<str>>(
+        query: S,
+    ) -> Result<Self, ParseQueryError> {
+        let query = query.as_ref();
         parse_query.parse(query.as_bytes()).map_err(|_| {
             ParseQueryError(format!("invalid query '{query}'"))
         })
