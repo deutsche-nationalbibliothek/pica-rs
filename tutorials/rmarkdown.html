@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>convert – pica-rs</title>
+<title>Datenanalyse mit RMarkdown – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,8 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/count.html" rel="next">
-<link href="../commands/config.html" rel="prev">
+<link href="../commands/completions.html" rel="next">
+<link href="../install.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/convert.html">convert</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/rmarkdown.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/rmarkdown.html">Datenanalyse mit RMarkdown</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -178,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tutorials/rmarkdown.html" class="sidebar-item-text sidebar-link">
+  <a href="../tutorials/rmarkdown.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Datenanalyse mit RMarkdown</span></a>
   </div>
 </li>
@@ -213,7 +213,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/convert.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/convert.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">convert</span></a>
   </div>
 </li>
@@ -300,9 +300,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/convert.html">convert</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/rmarkdown.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/rmarkdown.html">Datenanalyse mit RMarkdown</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">convert</h1>
+<h1 class="title">Datenanalyse mit RMarkdown</h1>
 </div>
 
 
@@ -319,46 +319,137 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Das PICA-Format kann in verschiedene Datenformate serialisiert werden. Das <code>convert</code>-Kommando ermöglicht es, Datensätze von einem Format in ein anderes Format zu konvertieren. Es bietet insbesondere die Möglichkeit, Datensätze, die nicht in normalisiertem PICA+ vorliegen, nach PICA+ zu konvertieren, um sie durch andere Kommandos verarbeiten zu können.</p>
-<p>Folgende Formate werden unterstützt:</p>
-<ul>
-<li>normalisiertes PICA+ (<code>plus</code>)</li>
-<li>binäres PICA (<code>binary</code>)</li>
-<li>PICA-Importformat (<code>import</code>)</li>
-<li>PICA-Plain (<code>plain</code>)</li>
-<li>PICA-JSON (<code>json</code>)</li>
-<li>PICA-XML (<code>xml</code>)</li>
-</ul>
-<p>Die Angabe der Datenformate erfolgt über die Optionen <code>--from</code>/<code>-f</code> und <code>--to</code>/<code>-t</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica convert <span class="at">--from</span> plus <span class="at">--to</span> binary DUMP.dat.gz <span class="at">-o</span> dump.bin</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica convert <span class="at">--from</span> plus <span class="at">--to</span> json DUMP.dat.gz <span class="at">-o</span> dump.json</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica convert <span class="at">--from</span> plus <span class="at">--to</span> plain DUMP.dat.gz <span class="at">-o</span> dump.plain</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica convert <span class="at">--from</span> plus <span class="at">--to</span> plus DUMP.dat.gz <span class="at">-o</span> dump.dat</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica convert <span class="at">--from</span> plus <span class="at">--to</span> xml DUMP.dat.gz <span class="at">-o</span> dump.xml</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<section id="optionen" class="level2">
-<h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
-<dl>
-<dt><code>-s</code>, <code>--skip-invalid</code></dt>
-<dd>
-Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-</dd>
-<dt><code>-f &lt;format&gt;</code>, <code>--from &lt;format&gt;</code></dt>
-<dd>
-Auswahl des Datenformats der Eingabe.
-</dd>
-<dt><code>-t &lt;format&gt;</code>, <code>--to &lt;format&gt;</code></dt>
-<dd>
-Auswahl des Datenformats der Ausgabe.
-</dd>
-<dt><code>-p</code>, <code>--progress</code></dt>
-<dd>
-Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels <code>-o</code> bzw. <code>--output</code>.
-</dd>
-<dt><code>-o &lt;filename&gt;</code>, <code>--output &lt;filename&gt;</code></dt>
-<dd>
-Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe <code>stdout</code> geschrieben.
-</dd>
-</dl>
+<p>Beispielhaft wird in diesem Tutorial demonstriert, wie Datenanalysen mit <a href="https://rmarkdown.rstudio.com/">RMarkdown</a> mithilfe von <code>pica</code> durchgeführt wird. Datenabfrage mit <code>pica</code> und Datenanalyse mit <code>R</code> können so in einem gemeinsamen Dokument kombiniert werden.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Setup: Globale Einstellungen für das Ausführen von Code-Blöcken durch knitr</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">message =</span> <span class="cn">FALSE</span>, <span class="at">dev=</span><span class="st">"jpeg"</span>, <span class="at">dpi =</span> <span class="dv">300</span>, <span class="at">fig.path =</span> <span class="st">"plots/"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Laden von R-Paketen</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co"># beinhaltet u.a. readr, dplyr und ggplot2</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="datenabfrage" class="level2">
+<h2 class="anchored" data-anchor-id="datenabfrage">Datenabfrage</h2>
+<p>Zunächst erzeugen wir mit folgender Pica-Abfrage von der Datei <code>TEST.dat.gz</code> eine CSV-Datei mit allen Tupeln aus der IDN des Titels und IDN der GND-Entität. Um die GND-Entitäten abzurufen, die mit einem Titeldatensatz verknüpft sind, muss das Feld <code>041A</code> mit <a href="../commands/select.html">select</a>-Kommando ausgelesen werden. Sind mehrere GND-Entitäten in einem Titel-Datensatz vohanden, expandiert das <a href="../commands/select.html">select</a>-Kommando diese automatisch, d.h. in der Ausgabe <code>title_idn_gnd_idn.csv</code> kommen auch IDN-Nummern von Titeln ggf. mehrfach vor (je eine Zeile pro GND-Entität).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica select <span class="at">-s</span> <span class="at">--no-empty-columns</span> <span class="at">-H</span> <span class="st">"idn_titel, idn_sw"</span> <span class="st">"003@.0,041A/*.9"</span> <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  ../TEST.dat.gz <span class="at">-o</span> title_idn_gnd_idn.csv</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Die Datei <code>title_idn_gnd_idn.csv</code> kann ggf. auch nur temporär erzeugt werden, wenn ein Zwischenspeichern des Outputs von <code>pica</code> nicht gewünscht ist. Das Einlesen der Date in R erfolgt über die üblichen Funktionen, z.B. aus dem <code>tidyverse</code>-Unterpaket <code>readr</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>title_idn_gnd_idn <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"title_idn_gnd_idn.csv"</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_types =</span> <span class="fu">list</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">idn_titel =</span> <span class="fu">col_factor</span>(),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">idn_sw =</span> <span class="fu">col_factor</span>()))</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="datenanalyse" class="level2">
+<h2 class="anchored" data-anchor-id="datenanalyse">Datenanalyse</h2>
+<p>Wir wollen die abgefragten Daten im Folgenden beispielhaft analysieren. Zunächst erzeugen wir eine zusammenfassende Zählstatistik:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>count_summary <span class="ot">&lt;-</span> title_idn_gnd_idn <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">n_title =</span> <span class="fu">n_distinct</span>(idn_titel),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">n_terms =</span> <span class="fu">n_distinct</span>(idn_sw)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In dem so erzeugten Datensatz gibt es 245 verschiedene GND-Entitäten, die an mindestens einen von 103 verschiedenen Titel-Datensätzen vergeben wurden.</p>
+<p>Als nächstes beantworten wir die Frage, wie viele GND-Entitäten pro Titel im Durchschnitt verwendet werden:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sw_per_title <span class="ot">&lt;-</span> title_idn_gnd_idn <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(idn_titel) <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">n_sw =</span> <span class="fu">n</span>())</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>card_d <span class="ot">&lt;-</span> sw_per_title <span class="sc">|&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">n_title =</span> <span class="fu">n</span>(),</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">avg_count =</span> <span class="fu">sum</span>(n_sw)<span class="sc">/</span>n_title</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(avg_count)</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Im Mittel liegen 2.77 GND-Entitäten pro Titel vor.</p>
+<p>Wir wollen nun die IDN-Nummern der am häufigsten verwendeten GND-Entitäten ausgeben:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>gnd_term_freq <span class="ot">&lt;-</span> title_idn_gnd_idn <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(idn_sw) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">freq =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(freq))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(gnd_term_freq, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table-striped table-hover caption-top table">
+<caption>Häufigkeitsverteilung GND-Entitäten pro Titel</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">idn_sw</th>
+<th style="text-align: right;">freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">040118827</td>
+<td style="text-align: right;">10</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">040305503</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">040538818</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">041245113</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">041248538</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">041879635</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">040509265</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">040013073</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">118636405</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">040526925</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="datenvisualisierung" class="level2">
+<h2 class="anchored" data-anchor-id="datenvisualisierung">Datenvisualisierung</h2>
+<p>Über alle Schlagwörter betrachtet sieht die Verteilung der GND-Entitäten-Verwendung wie folgt aus:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(gnd_term_freq, <span class="fu">aes</span>(<span class="at">x =</span> freq)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">y =</span> (..count..)<span class="sc">/</span><span class="fu">sum</span>(..count..)), <span class="at">binwidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent, <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">8</span>,<span class="dv">10</span>)) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Häufigkeit GND-Entitäten-Verwendung"</span>) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Anteil an allen GND-Entität"</span>) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Verteilung GND-Entitäten-Verwendung"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>g</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="plots/term_dist-1.jpeg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+<p>Das Histogramm zeigt, dass die meisten GND-Entitäten nur einmal verwendet werden. Einzelne Terme werden aber auch bis zu 10-mal verwendet.</p>
+<p>Eine andere Visualisierungsform des gleichen Sachverhalts ist Folgende:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>gnd_term_freq <span class="ot">&lt;-</span> gnd_term_freq <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">index =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(gnd_term_freq, <span class="fu">aes</span>(<span class="at">x =</span> index, <span class="at">y =</span> freq)) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Häufigkeit je GND-Entität"</span>) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xlab</span>(<span class="st">"Index GND-Entitäten (sortiert nach Häufigkeit)"</span>) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="st">"Long-Tail Darstellung"</span>)</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="plots/plot_freq_-1.jpeg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
 
 
 </section>
@@ -783,13 +874,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/config.html" class="pagination-link" aria-label="config">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">config</span>
+      <a href="../install.html" class="pagination-link" aria-label="Installation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Installation</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../commands/count.html" class="pagination-link" aria-label="count">
-        <span class="nav-page-text">count</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../commands/completions.html" class="pagination-link" aria-label="completions">
+        <span class="nav-page-text">completions</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
