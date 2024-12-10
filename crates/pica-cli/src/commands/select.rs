@@ -8,7 +8,6 @@ use std::process::ExitCode;
 
 use clap::{value_parser, Parser};
 use hashbrown::HashSet;
-use pica_record::matcher::{translit, NormalizationForm};
 use pica_record::prelude::*;
 
 use crate::prelude::*;
@@ -183,18 +182,21 @@ impl Select {
         let matcher_options = MatcherOptions::from(&options);
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                RecordMatcherBuilder::new(matcher, self.nf.clone())?
-                    .and(self.and)?
-                    .not(self.not)?
-                    .or(self.or)?
-                    .build(),
+                RecordMatcherBuilder::with_transform(
+                    matcher,
+                    translit(config.normalization.as_ref()),
+                )?
+                .and(self.and)?
+                .not(self.not)?
+                .or(self.or)?
+                .build(),
             )
         } else {
             None
         };
 
-        let query =
-            Query::new(&translit(self.query, self.nf.as_ref()))?;
+        let translit = translit(config.normalization.as_ref());
+        let query = Query::new(translit(self.query))?;
         let filter_set = FilterSet::new(self.allow, self.deny)?;
 
         let mut writer = csv::WriterBuilder::new()
@@ -257,9 +259,10 @@ impl Select {
                                 } else {
                                     writer.write_record(
                                         row.iter().map(|s| {
-                                            translit(
-                                                s,
+                                            (crate::translit::translit(
                                                 self.nf.as_ref(),
+                                            ))(
+                                                s
                                             )
                                         }),
                                     )?;

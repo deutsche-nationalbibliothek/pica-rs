@@ -12,6 +12,7 @@ mod config;
 mod error;
 pub(crate) mod prelude;
 mod progress;
+mod translit;
 mod utils;
 
 fn run() -> CliResult {

@@ -7,7 +7,6 @@ use std::process::ExitCode;
 
 use clap::{value_parser, Parser};
 use hashbrown::{HashMap, HashSet};
-use pica_record::matcher::{translit, NormalizationForm};
 use pica_record::prelude::*;
 
 use crate::prelude::*;
@@ -126,7 +125,7 @@ pub(crate) struct Frequency {
     /// Transliterate output into the selected normal form <NF>
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
     #[arg(long = "translit", value_name = "NF")]
-    normalization: Option<NormalizationForm>,
+    nf: Option<NormalizationForm>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -153,16 +152,13 @@ impl Frequency {
         let mut progress = Progress::new(self.progress);
         let mut seen = HashSet::new();
 
-        let query = Query::new(&translit(
-            self.query,
-            self.normalization.as_ref(),
-        ))?;
-
+        let translit =
+            crate::translit::translit(config.normalization.as_ref());
+        let query = Query::new(translit(self.query))?;
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                RecordMatcherBuilder::new(
-                    matcher,
-                    self.normalization.clone(),
+                RecordMatcherBuilder::with_transform(
+                    matcher, translit,
                 )?
                 .and(self.and)?
                 .not(self.not)?
@@ -256,6 +252,7 @@ impl Frequency {
             });
         }
 
+        let translit = crate::translit::translit(self.nf.as_ref());
         for (i, (values, freq)) in ftable_sorted.iter().enumerate() {
             if self.limit > 0 && i >= self.limit {
                 break;
@@ -265,10 +262,8 @@ impl Frequency {
                 break;
             }
 
-            let mut record = values
-                .iter()
-                .map(|s| translit(s, self.normalization.as_ref()))
-                .collect::<Vec<_>>();
+            let mut record =
+                values.iter().map(&translit).collect::<Vec<_>>();
 
             record.push(freq.to_string());
             writer.write_record(record)?;

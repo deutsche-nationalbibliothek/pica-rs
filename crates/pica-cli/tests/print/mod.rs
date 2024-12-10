@@ -3,7 +3,7 @@ use std::fs::read_to_string;
 use assert_cmd::Command;
 use assert_fs::prelude::*;
 use assert_fs::TempDir;
-use pica_record::matcher::{translit, NormalizationForm};
+use unicode_normalization::UnicodeNormalization;
 
 use crate::prelude::*;
 
@@ -66,10 +66,10 @@ fn print_translit_nfc() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let mut expected = translit(
-        read_to_string(data_dir().join("algebra.txt"))?,
-        Some(&NormalizationForm::Nfc),
-    );
+    let mut expected = read_to_string(data_dir().join("algebra.txt"))?
+        .chars()
+        .nfc()
+        .collect::<String>();
 
     if cfg!(windows) {
         expected = expected.replace('\r', "");
@@ -93,10 +93,10 @@ fn print_translit_nfkc() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let mut expected = translit(
-        read_to_string(data_dir().join("algebra.txt"))?,
-        Some(&NormalizationForm::Nfkc),
-    );
+    let mut expected = read_to_string(data_dir().join("algebra.txt"))?
+        .chars()
+        .nfkc()
+        .collect::<String>();
 
     if cfg!(windows) {
         expected = expected.replace('\r', "");
@@ -120,10 +120,10 @@ fn print_translit_nfd() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let mut expected = translit(
-        read_to_string(data_dir().join("algebra.txt"))?,
-        Some(&NormalizationForm::Nfd),
-    );
+    let mut expected = read_to_string(data_dir().join("algebra.txt"))?
+        .chars()
+        .nfd()
+        .collect::<String>();
 
     if cfg!(windows) {
         expected = expected.replace('\r', "");
@@ -147,10 +147,10 @@ fn print_translit_nfkd() -> TestResult {
         .arg(data_dir().join("algebra.dat"))
         .assert();
 
-    let mut expected = translit(
-        read_to_string(data_dir().join("algebra.txt"))?,
-        Some(&NormalizationForm::Nfkd),
-    );
+    let mut expected = read_to_string(data_dir().join("algebra.txt"))?
+        .chars()
+        .nfkd()
+        .collect::<String>();
 
     if cfg!(windows) {
         expected = expected.replace('\r', "");

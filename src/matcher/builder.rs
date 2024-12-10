@@ -1,67 +1,61 @@
-use std::fmt::{self, Display};
-use std::str::FromStr;
-
-use unicode_normalization::UnicodeNormalization;
-
 use crate::matcher::{ParseMatcherError, RecordMatcher};
 
-pub struct RecordMatcherBuilder {
-    normalization: Option<NormalizationForm>,
+pub struct RecordMatcherBuilder<S> {
+    transform: Box<dyn Fn(S) -> String>,
     matcher: RecordMatcher,
 }
 
-impl RecordMatcherBuilder {
-    pub fn new<S: AsRef<str>>(
+impl<S: AsRef<str>> RecordMatcherBuilder<S> {
+    pub fn new(matcher: S) -> Result<Self, ParseMatcherError> {
+        let matcher = RecordMatcher::new(matcher.as_ref())?;
+        let transform = Box::new(|s: S| s.as_ref().to_string());
+        Ok(Self { matcher, transform })
+    }
+
+    pub fn with_transform<F>(
         matcher: S,
-        normalization: Option<NormalizationForm>,
-    ) -> Result<Self, ParseMatcherError> {
-        let matcher = RecordMatcher::new(&translit(
-            matcher,
-            normalization.as_ref(),
-        ))?;
-        Ok(Self {
-            matcher,
-            normalization,
-        })
+        transform: F,
+    ) -> Result<Self, ParseMatcherError>
+    where
+        F: Fn(S) -> String + 'static,
+    {
+        let transform = Box::new(transform);
+        let matcher = RecordMatcher::new(transform(matcher))?;
+
+        Ok(Self { matcher, transform })
     }
 
-    pub fn and<S: AsRef<str>>(
+    pub fn and(
         mut self,
         predicates: Vec<S>,
     ) -> Result<Self, ParseMatcherError> {
         for predicate in predicates {
-            self.matcher &= RecordMatcher::new(&translit(
-                predicate,
-                self.normalization.as_ref(),
-            ))?;
+            self.matcher &=
+                RecordMatcher::new((self.transform)(predicate))?;
         }
 
         Ok(self)
     }
 
-    pub fn or<S: AsRef<str>>(
+    pub fn or(
         mut self,
         predicates: Vec<S>,
     ) -> Result<Self, ParseMatcherError> {
         for predicate in predicates {
-            self.matcher |= RecordMatcher::new(&translit(
-                predicate,
-                self.normalization.as_ref(),
-            ))?;
+            self.matcher |=
+                RecordMatcher::new((self.transform)(predicate))?;
         }
 
         Ok(self)
     }
 
-    pub fn not<S: AsRef<str>>(
+    pub fn not(
         mut self,
         predicates: Vec<S>,
     ) -> Result<Self, ParseMatcherError> {
         for predicate in predicates {
-            self.matcher &= !RecordMatcher::new(&translit(
-                predicate,
-                self.normalization.as_ref(),
-            ))?;
+            self.matcher &=
+                !RecordMatcher::new((self.transform)(predicate))?;
         }
 
         Ok(self)
@@ -69,130 +63,5 @@ impl RecordMatcherBuilder {
 
     pub fn build(self) -> RecordMatcher {
         self.matcher
-    }
-}
-
-#[derive(Debug, PartialEq, Default, Clone)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-pub enum NormalizationForm {
-    #[default]
-    #[cfg_attr(feature = "serde", serde(alias = "nfc"))]
-    Nfc,
-    #[cfg_attr(feature = "serde", serde(alias = "nfkc"))]
-    Nfkc,
-    #[cfg_attr(feature = "serde", serde(alias = "nfd"))]
-    Nfd,
-    #[cfg_attr(feature = "serde", serde(alias = "nfkd"))]
-    Nfkd,
-}
-
-pub fn translit<S>(
-    s: S,
-    normalizion: Option<&NormalizationForm>,
-) -> String
-where
-    S: AsRef<str>,
-{
-    match normalizion {
-        Some(NormalizationForm::Nfc) => s.as_ref().nfc().collect(),
-        Some(NormalizationForm::Nfkc) => s.as_ref().nfkc().collect(),
-        Some(NormalizationForm::Nfd) => s.as_ref().nfd().collect(),
-        Some(NormalizationForm::Nfkd) => s.as_ref().nfkd().collect(),
-        None => s.as_ref().into(),
-    }
-}
-
-impl FromStr for NormalizationForm {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "nfc" => Ok(Self::Nfc),
-            "nfkc" => Ok(Self::Nfkc),
-            "nfd" => Ok(Self::Nfd),
-            "nfkd" => Ok(Self::Nfkd),
-            _ => Err("invalid normalizion form".into()),
-        }
-    }
-}
-
-impl Display for NormalizationForm {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Nfc => write!(f, "nfc"),
-            Self::Nfkc => write!(f, "nfkc"),
-            Self::Nfd => write!(f, "nfd"),
-            Self::Nfkd => write!(f, "nfkd"),
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_nf_from_str() {
-        assert_eq!(NormalizationForm::Nfc, "nfc".parse().unwrap());
-        assert!("NFC".parse::<NormalizationForm>().is_err());
-        assert_eq!(NormalizationForm::Nfkc, "nfkc".parse().unwrap());
-        assert!("NFKC".parse::<NormalizationForm>().is_err());
-        assert_eq!(NormalizationForm::Nfd, "nfd".parse().unwrap());
-        assert!("NFD".parse::<NormalizationForm>().is_err());
-        assert_eq!(NormalizationForm::Nfkd, "nfkd".parse().unwrap());
-        assert!("NFKD".parse::<NormalizationForm>().is_err());
-    }
-
-    #[test]
-    fn test_nf_to_string() {
-        assert_eq!(NormalizationForm::Nfc.to_string(), "nfc");
-        assert_eq!(NormalizationForm::Nfkc.to_string(), "nfkc");
-        assert_eq!(NormalizationForm::Nfd.to_string(), "nfd");
-        assert_eq!(NormalizationForm::Nfkd.to_string(), "nfkd");
-    }
-
-    #[test]
-    fn test_translit() {
-        use NormalizationForm::*;
-
-        assert_eq!(
-            translit("Am\u{0e9}lie", Some(&Nfc)),
-            "Am\u{0e9}lie"
-        );
-        assert_eq!(
-            translit("Am\u{0e9}lie", Some(&Nfkc)),
-            "Am\u{0e9}lie"
-        );
-        assert_eq!(
-            translit("Am\u{0e9}lie", Some(&Nfd)),
-            "Ame\u{301}lie"
-        );
-        assert_eq!(
-            translit("Am\u{0e9}lie", Some(&Nfkd)),
-            "Ame\u{301}lie"
-        );
-        assert_eq!(
-            translit("Ame\u{301}lie", Some(&Nfd)),
-            "Ame\u{301}lie"
-        );
-        assert_eq!(
-            translit("Ame\u{301}lie", Some(&Nfkd)),
-            "Ame\u{301}lie"
-        );
-        assert_eq!(
-            translit("Ame\u{301}lie", Some(&Nfc)),
-            "Am\u{0e9}lie"
-        );
-        assert_eq!(
-            translit("Ame\u{301}lie", Some(&Nfkc)),
-            "Am\u{0e9}lie"
-        );
-
-        assert_eq!(translit("Ame\u{301}lie", None), "Ame\u{301}lie");
-        assert_eq!(translit("Am\u{0e9}lie", None), "Am\u{0e9}lie");
     }
 }

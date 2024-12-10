@@ -188,6 +188,7 @@ impl Explode {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
+        let translit = translit(config.normalization.as_ref());
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
 
@@ -204,9 +205,8 @@ impl Explode {
 
         let matcher = if let Some(matcher) = self.filter {
             Some(
-                RecordMatcherBuilder::new(
-                    matcher,
-                    config.normalization.clone(),
+                RecordMatcherBuilder::with_transform(
+                    matcher, translit,
                 )?
                 .and(self.and)?
                 .not(self.not)?

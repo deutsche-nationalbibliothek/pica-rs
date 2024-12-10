@@ -1,6 +1,6 @@
 //! Various matcher against record primitives.
 
-pub use builder::{translit, NormalizationForm, RecordMatcherBuilder};
+pub use builder::RecordMatcherBuilder;
 pub use error::ParseMatcherError;
 pub use occurrence::OccurrenceMatcher;
 pub use operator::{BooleanOp, RelationalOp};
