@@ -18,6 +18,9 @@ book:
     - part: "Erste Schritte"
       chapters:
         - install.qmd
+    - part: "Tutorials"
+      chapters:
+        - tutorials/beginner.qmd
     - part: "Kommandos"
       chapters:
         - commands/completions.qmd
