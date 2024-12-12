@@ -10,10 +10,10 @@ edition = "2021"
 [features]
 compat = ["pica-record/compat"]
 unstable = ["pica-record/unstable"]
+# nightly = ["polars/simd"]
 performant = [
     "polars/cse",
     "polars/performant",
-    "polars/simd",
 ]
 
 [dependencies]
