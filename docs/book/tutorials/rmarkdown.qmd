@@ -1,13 +1,13 @@
 # Datenanalyse mit RMarkdown {.unnumbered}
 
-Beispielhaft wird in diesem Tutorial demonstriert, wie Datenanalysen mit
+Beispielhaft werden in diesem Tutorial demonstriert, wie Datenanalysen mit
 [RMarkdown](https://rmarkdown.rstudio.com/) mithilfe von `pica` durchgeführt
 wird. Datenabfrage mit `pica` und Datenanalyse mit `R` können so in einem
 gemeinsamen Dokument kombiniert werden.
 
 ```{.r}
 # Setup: Globale Einstellungen für das Ausführen von Code-Blöcken durch knitr
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, dev="jpeg", dpi = 300, fig.path = "plots/")
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, dev = "jpeg", dpi = 300, fig.path = "plots/")
 
 # Laden von R-Paketen
 library(tidyverse) # beinhaltet u.a. readr, dplyr und ggplot2
@@ -15,12 +15,12 @@ library(tidyverse) # beinhaltet u.a. readr, dplyr und ggplot2
 
 ## Datenabfrage
 
-Zunächst erzeugen wir mit folgender Pica-Abfrage von der Datei `TEST.dat.gz`
+Zunächst erzeugen wir mit folgender Pica-Abfrage aus der Datei `TEST.dat.gz`
 eine CSV-Datei mit allen Tupeln aus der IDN des Titels und IDN der GND-Entität.
 Um die GND-Entitäten abzurufen, die mit einem Titeldatensatz verknüpft sind,
-muss das Feld `041A` mit [select]-Kommando ausgelesen werden. Sind mehrere
-GND-Entitäten in einem Titel-Datensatz vohanden, expandiert das
-[select]-Kommando diese automatisch, d.h. in der Ausgabe
+müssen die Felder `041A/*` mit dem [select]-Kommando ausgelesen werden. Sind
+mehrere GND-Entitäten in einem Titel-Datensatz vohanden, expandiert das
+[select]-Kommando diese automatisch, d.h., in der Ausgabe
 `title_idn_gnd_idn.csv` kommen auch IDN-Nummern von Titeln ggf. mehrfach vor
 (je eine Zeile pro GND-Entität).
 
@@ -31,7 +31,7 @@ $ pica select -s --no-empty-columns -H "idn_titel, idn_sw" "003@.0,041A/*.9" \
 
 Die Datei `title_idn_gnd_idn.csv` kann ggf. auch nur temporär erzeugt
 werden, wenn ein Zwischenspeichern des Outputs von `pica` nicht
-gewünscht ist. Das Einlesen der Date in R erfolgt über die üblichen
+gewünscht ist. Das Einlesen der Daten in R erfolgt über die üblichen
 Funktionen, z.B. aus dem `tidyverse`-Unterpaket `readr`.
 
 ```{.r}
@@ -116,7 +116,7 @@ g <- ggplot(gnd_term_freq, aes(x = freq)) +
   scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
   scale_x_continuous(breaks = c(0,2,4,6,8,10)) +
   xlab("Häufigkeit GND-Entitäten-Verwendung") +
-  ylab("Anteil an allen GND-Entität") +
+  ylab("Anteil an allen GND-Entitäten") +
   ggtitle("Verteilung GND-Entitäten-Verwendung")
 
 g
@@ -127,7 +127,7 @@ g
 Das Histogramm zeigt, dass die meisten GND-Entitäten nur einmal verwendet
 werden. Einzelne Terme werden aber auch bis zu 10-mal verwendet.
 
-Eine andere Visualisierungsform des gleichen Sachverhalts ist Folgende:
+Eine andere Visualisierungsform des gleichen Sachverhalts ist folgende:
 
 ```{.r}
 gnd_term_freq <- gnd_term_freq |>
@@ -138,7 +138,7 @@ ggplot(gnd_term_freq, aes(x = index, y = freq)) +
     scale_y_log10() +
     ylab("Häufigkeit je GND-Entität") +
     xlab("Index GND-Entitäten (sortiert nach Häufigkeit)") +
-    ggtitle("Long-Tail Darstellung")
+    ggtitle("Long-Tail-Darstellung")
 ```
 
 ![](plots/plot_freq_-1.jpeg){width=80% fig-align="center"}
