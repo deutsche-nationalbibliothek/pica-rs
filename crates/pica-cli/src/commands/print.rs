@@ -16,11 +16,11 @@ pub(crate) struct Print {
     #[arg(short, long)]
     skip_invalid: bool,
 
-    /// Limit the result to first <n> records
-    #[arg(long, short, value_name = "n", default_value = "0")]
+    /// Limit the result to first N records
+    #[arg(long, short, value_name = "N", default_value = "0")]
     limit: usize,
 
-    /// Transliterate output into the selected normal form <NF>
+    /// Transliterate output into the selected normal form NF
     #[arg(long = "translit", value_name = "NF")]
     nf: Option<NormalizationForm>,
 
@@ -28,8 +28,8 @@ pub(crate) struct Print {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <filename> instead of stdout
-    #[arg(short, long, value_name = "filename")]
+    /// Write output to FILENAME instead of stdout
+    #[arg(short, long, value_name = "FILENAME")]
     output: Option<OsString>,
 
     /// Read one or more files in normalized PICA+ format.

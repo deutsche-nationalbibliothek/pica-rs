@@ -31,8 +31,8 @@ pub(crate) struct Hash {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <OUTPUT> instead of stdout
-    #[arg(short, long)]
+    /// Write output to OUTPUT instead of stdout
+    #[arg(short, long, value_name = "OUTPUT")]
     output: Option<OsString>,
 
     /// Read one or more files in normalized PICA+ format. If no

@@ -38,11 +38,11 @@ pub(crate) struct Filter {
     #[arg(long, short)]
     discard: Option<String>,
 
-    /// Take a filter expression from <EXPR_FILE>
+    /// Take a filter expression from FILENAME
     ///
     /// Note: Do not provide an additional filter expression as an CLI
     /// argument!
-    #[arg(long = "file", short = 'F')]
+    #[arg(long = "file", short = 'F', value_name = "FILENAME")]
     expr_file: Option<PathBuf>,
 
     /// Ignore records which are *not* explicitly listed in one of the
@@ -67,10 +67,10 @@ pub(crate) struct Filter {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
-    /// Limit the result to first <n> records
+    /// Limit the result to first N records
     ///
     /// Note: A limit value `0` means no limit.
-    #[arg(long, short, value_name = "n", default_value = "0")]
+    #[arg(long, short, value_name = "N", default_value = "0")]
     limit: usize,
 
     /// Connects the filter with additional expressions using the
@@ -104,16 +104,16 @@ pub(crate) struct Filter {
     #[arg(long, conflicts_with = "gzip")]
     append: bool,
 
-    /// Write simultaneously to the file <filename> and stdout
-    #[arg(long, value_name = "filename", conflicts_with = "output")]
+    /// Write simultaneously to the file FILENAME and stdout
+    #[arg(long, value_name = "FILENAME", conflicts_with = "output")]
     tee: Option<PathBuf>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <filename> instead of stdout
-    #[arg(short, long, value_name = "filename")]
+    /// Write output to FILENAME instead of stdout
+    #[arg(short, long, value_name = "FILENAME")]
     output: Option<OsString>,
 
     /// A filter expression used for searching

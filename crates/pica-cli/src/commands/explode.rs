@@ -18,10 +18,10 @@ pub(crate) struct Explode {
     #[arg(long, short)]
     gzip: bool,
 
-    /// Limit the result to first <n> records
+    /// Limit the result to first N records
     ///
     /// Note: A limit value `0` means no limit.
-    #[arg(long, short, value_name = "n", default_value = "0")]
+    #[arg(long, short, value_name = "N", default_value = "0")]
     limit: usize,
 
     /// A filter expression used for searching
@@ -72,8 +72,8 @@ pub(crate) struct Explode {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <OUTPUT> instead of stdout
-    #[arg(short, long)]
+    /// Write output to FILENAME instead of stdout
+    #[arg(short, long, value_name = "FILENAME")]
     output: Option<OsString>,
 
     /// Split a record by level (main, local, copy).
