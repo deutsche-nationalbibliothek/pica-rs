@@ -148,7 +148,11 @@ jobs:
         rust-version: stable
 
   publish:
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
     needs:
       - clippy
       - deny
