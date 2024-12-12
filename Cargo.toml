@@ -36,6 +36,9 @@ quickcheck_macros = { version = "1.0" }
 serde_test = { version = "1.0" }
 tempfile = { version = "3.14" }
 
+[lib]
+path = "src/lib.rs"
+
 [[test]]
 path = "tests/lib.rs"
 name = "integration"
