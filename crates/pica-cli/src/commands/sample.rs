@@ -26,7 +26,7 @@ pub(crate) struct Sample {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <filename> instead of stdout
+    /// Write output to FILENAME instead of stdout
     #[arg(short, long, value_name = "filename")]
     output: Option<OsString>,
 

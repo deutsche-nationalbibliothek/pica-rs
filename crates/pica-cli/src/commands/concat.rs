@@ -23,8 +23,8 @@ pub(crate) struct Concat {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write simultaneously to the file <TEE> and stdout
-    #[arg(long)]
+    /// Write simultaneously to the file FILENAME and stdout
+    #[arg(long, value_name = "FILENAME")]
     tee: Option<OsString>,
 
     /// Whether to skip duplicate records or not.

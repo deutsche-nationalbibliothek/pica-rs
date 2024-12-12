@@ -14,8 +14,8 @@ pub(crate) struct Completions {
     /// Output the shell completion file for the given shell.
     shell: Shell,
 
-    /// Write output to <filename> instead of stdout
-    #[arg(short, long, value_name = "filename")]
+    /// Write output to FILENAME instead of stdout
+    #[arg(short, long, value_name = "FILENAME")]
     output: Option<OsString>,
 }
 
