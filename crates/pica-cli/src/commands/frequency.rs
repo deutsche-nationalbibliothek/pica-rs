@@ -70,20 +70,20 @@ pub(crate) struct Frequency {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
-    /// Limit result to the <n> most frequent subfield values.
+    /// Limit result to the N most frequent subfield values.
     #[arg(
         long,
         short,
-        value_name = "n",
+        value_name = "N",
         hide_default_value = true,
         default_value = "0"
     )]
     limit: usize,
 
-    /// Ignore rows with a frequency < <value>.
+    /// Ignore rows with a frequency < VALUE.
     #[arg(
         long,
-        value_name = "value",
+        value_name = "VALUE",
         default_value = "0",
         hide_default_value = true
     )]
@@ -122,7 +122,7 @@ pub(crate) struct Frequency {
     #[arg(long, short)]
     tsv: bool,
 
-    /// Transliterate output into the selected normal form <NF>
+    /// Transliterate output into the selected normal form NF
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc").
     #[arg(long = "translit", value_name = "NF")]
     nf: Option<NormalizationForm>,
@@ -131,8 +131,8 @@ pub(crate) struct Frequency {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <filename> instead of stdout.
-    #[arg(short, long, value_name = "filename")]
+    /// Write output to FILENAME instead of stdout.
+    #[arg(short, long, value_name = "FILENAME")]
     output: Option<OsString>,
 
     /// Query (comma-separated list of path expressions or string

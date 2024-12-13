@@ -63,7 +63,7 @@ pub(crate) struct Select {
     #[arg(long, short)]
     tsv: bool,
 
-    /// Transliterate output into the selected normal form <NF>
+    /// Transliterate output into the selected normal form NF
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
     #[arg(long = "translit", value_name = "NF")]
     nf: Option<NormalizationForm>,
@@ -76,10 +76,10 @@ pub(crate) struct Select {
     #[arg(long)]
     append: bool,
 
-    /// Limit the result to first <n> records (not rows!)
+    /// Limit the result to first N records (not rows!)
     ///
     /// Note: A limit value `0` means no limit.
-    #[arg(long, short, value_name = "n", default_value = "0")]
+    #[arg(long, short, value_name = "N", default_value = "0")]
     limit: usize,
 
     /// A filter expression used for searching
@@ -133,8 +133,8 @@ pub(crate) struct Select {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <filename> instead of stdout
-    #[arg(short, long, value_name = "filename")]
+    /// Write output to FILENAME instead of stdout
+    #[arg(short, long, value_name = "FILENAME")]
     output: Option<OsString>,
 
     /// Query (comma-separated list of path expressions or string

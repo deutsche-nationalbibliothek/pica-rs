@@ -13,9 +13,9 @@ use crate::progress::Progress;
 
 /// Partition records by subfield values
 ///
-/// The files are written to the <outdir> directory with filenames
-/// based on the values of the subfield, which is referenced by the
-/// <PATH> expression.
+/// The files are written to the OUTDIR directory with filenames based
+/// on the values of the subfield, which is referenced by the path
+/// expression.
 ///
 /// If a record doesn't have the field/subfield, the record won't be
 /// written to a partition. A record with multiple values will be
@@ -47,11 +47,11 @@ pub(crate) struct Partition {
     #[arg(short, long)]
     progress: bool,
 
-    /// Write partitions into <outdir>
+    /// Write partitions into OUTDIR
     ///
     /// If the directory doesn't exists, it will be created
     /// automatically.
-    #[arg(long, short, value_name = "outdir", default_value = ".")]
+    #[arg(long, short, value_name = "OUTDIR", default_value = ".")]
     outdir: PathBuf,
 
     /// Filename template ("{}" is replaced by subfield value)

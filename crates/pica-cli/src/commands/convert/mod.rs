@@ -60,8 +60,8 @@ pub(crate) struct Convert {
     #[arg(short, long, requires = "output")]
     progress: bool,
 
-    /// Write output to <filename> instead of stdout
-    #[arg(short, long, value_name = "filename")]
+    /// Write output to FILENAME instead of stdout
+    #[arg(short, long, value_name = "FILENAME")]
     output: Option<OsString>,
 
     /// Read one or more files in normalized PICA+ format.

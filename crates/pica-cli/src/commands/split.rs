@@ -30,7 +30,7 @@ pub(crate) struct Split {
     #[arg(short, long)]
     progress: bool,
 
-    /// Write partitions into <outdir>
+    /// Write partitions into OUTDIR
     #[arg(long, short, value_name = "outdir", default_value = ".")]
     outdir: PathBuf,
 
