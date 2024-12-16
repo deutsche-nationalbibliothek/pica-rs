@@ -12,6 +12,11 @@ book:
       affiliations:
         - name: Deutsche Nationalbibliothek
           url: https://www.dnb.de/
+    - name: Maximilian Kähler
+      orcid: 0000-0003-4695-0565
+      affiliations:
+        - name: Deutsche Nationalbibliothek
+          url: https://www.dnb.de/
   date: "11/6/2024"
   chapters:
     - index.qmd
@@ -21,6 +26,7 @@ book:
     - part: "Tutorials"
       chapters:
         - tutorials/beginner.qmd
+        - tutorials/rmarkdown.qmd
     - part: "Kommandos"
       chapters:
         - commands/completions.qmd

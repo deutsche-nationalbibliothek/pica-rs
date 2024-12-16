@@ -5,6 +5,7 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use bstr::BString;
 use clap::{value_parser, Parser};
 use hashbrown::{HashMap, HashSet};
 use pica_record::prelude::*;
@@ -169,7 +170,7 @@ impl Frequency {
             None
         };
 
-        let mut ftable: HashMap<Vec<String>, u64> = HashMap::new();
+        let mut ftable: HashMap<Vec<BString>, u64> = HashMap::new();
         let options = QueryOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case);
@@ -190,7 +191,7 @@ impl Frequency {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next_string_record() {
+            while let Some(result) = reader.next_byte_record() {
                 match result {
                     Err(e) if e.skip_parse_err(skip_invalid) => {
                         progress.update(true);
@@ -200,7 +201,7 @@ impl Frequency {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if !filter_set.check(record.ppn().into()) {
+                        if !filter_set.check(record.ppn()) {
                             continue;
                         }
 
@@ -237,7 +238,7 @@ impl Frequency {
             writer.write_record(header.split(',').map(str::trim))?;
         }
 
-        let mut ftable_sorted: Vec<(&Vec<String>, &u64)> =
+        let mut ftable_sorted: Vec<(&Vec<BString>, &u64)> =
             ftable.iter().collect();
 
         if self.reverse {
@@ -262,8 +263,11 @@ impl Frequency {
                 break;
             }
 
-            let mut record =
-                values.iter().map(&translit).collect::<Vec<_>>();
+            let mut record = values
+                .iter()
+                .map(ToString::to_string)
+                .map(&translit)
+                .collect::<Vec<_>>();
 
             record.push(freq.to_string());
             writer.write_record(record)?;
