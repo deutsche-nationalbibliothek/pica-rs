@@ -124,9 +124,12 @@ impl Fragment {
         match self {
             Literal(lit) => Outcome(vec![vec![lit.clone()]]),
             #[cfg(feature = "unstable")]
-            Format(fmt) => Outcome(vec![record
-                .format(fmt, &options.into())
-                .collect()]),
+            Format(fmt) => Outcome(
+                record
+                    .format(fmt, &options.into())
+                    .map(|e| vec![e])
+                    .collect::<Vec<Vec<_>>>(),
+            ),
             Path(path) => {
                 let fields = record
                     .fields()
