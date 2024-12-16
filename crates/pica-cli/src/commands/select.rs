@@ -211,7 +211,7 @@ impl Select {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
-            while let Some(result) = reader.next_string_record() {
+            while let Some(result) = reader.next_byte_record() {
                 match result {
                     Err(e) if e.skip_parse_err(skip_invalid) => {
                         progress.update(true);
@@ -221,7 +221,7 @@ impl Select {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if !filter_set.check(record.ppn().into()) {
+                        if !filter_set.check(record.ppn()) {
                             continue;
                         }
 
@@ -236,7 +236,7 @@ impl Select {
                         let outcome = record.query(&query, &options);
                         for row in outcome.iter() {
                             if self.no_empty_columns
-                                && row.iter().any(String::is_empty)
+                                && row.iter().any(|e| e.is_empty())
                             {
                                 continue;
                             }
@@ -253,7 +253,7 @@ impl Select {
                                 seen.insert(hash);
                             }
 
-                            if !row.iter().all(String::is_empty) {
+                            if !row.iter().all(|e| e.is_empty()) {
                                 if self.nf.is_none() {
                                     writer.write_record(row)?;
                                 } else {
@@ -262,7 +262,7 @@ impl Select {
                                             (crate::translit::translit(
                                                 self.nf.as_ref(),
                                             ))(
-                                                s
+                                                s.to_string()
                                             )
                                         }),
                                     )?;
