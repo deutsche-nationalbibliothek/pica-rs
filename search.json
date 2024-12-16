@@ -65,6 +65,50 @@
     ]
   },
   {
+    "objectID": "tutorials/rmarkdown.html",
+    "href": "tutorials/rmarkdown.html",
+    "title": "Datenanalyse mit RMarkdown",
+    "section": "",
+    "text": "Datenabfrage\nBeispielhaft werden in diesem Tutorial demonstriert, wie Datenanalysen mit RMarkdown mithilfe von pica durchgeführt wird. Datenabfrage mit pica und Datenanalyse mit R können so in einem gemeinsamen Dokument kombiniert werden.\nZunächst erzeugen wir mit folgender Pica-Abfrage aus der Datei TEST.dat.gz eine CSV-Datei mit allen Tupeln aus der IDN des Titels und IDN der GND-Entität. Um die GND-Entitäten abzurufen, die mit einem Titeldatensatz verknüpft sind, müssen die Felder 041A/* mit dem select-Kommando ausgelesen werden. Sind mehrere GND-Entitäten in einem Titel-Datensatz vohanden, expandiert das select-Kommando diese automatisch, d.h., in der Ausgabe title_idn_gnd_idn.csv kommen auch IDN-Nummern von Titeln ggf. mehrfach vor (je eine Zeile pro GND-Entität).\nDas Einlesen der Daten in R erfolgt über die üblichen Funktionen, z.B. aus dem tidyverse-Unterpaket readr.\nDas Einlesen der Daten kann auch ohne Zwischenspeichern des Outputs von pica select erfolgen. Die Ausgabe von pica select wird dann direkt als Stream an read_csvübergeben, was bei größeren Datenabfragen deutlich performanter ist:",
+    "crumbs": [
+      "Tutorials",
+      "Datenanalyse mit RMarkdown"
+    ]
+  },
+  {
+    "objectID": "tutorials/rmarkdown.html#datenabfrage",
+    "href": "tutorials/rmarkdown.html#datenabfrage",
+    "title": "Datenanalyse mit RMarkdown",
+    "section": "",
+    "text": "$ pica select -s --no-empty-columns -H \"idn_titel, idn_sw\" \"003@.0,041A/*.9\" \\\n  DUMP.dat.gz -o title_idn_gnd_idn.csv\n\ntitle_idn_gnd_idn &lt;- read_csv(\"title_idn_gnd_idn.csv\",\n    col_types = list(\n        idn_titel = col_factor(),\n        idn_sw = col_factor()))\n\ntitle_idn_gnd_idn &lt;- pipe(\n  'pica select -s --no-empty-columns -H \\\"idn_titel, idn_sw\\\" \\\"003@.0,041A/*.9\\\" DUMP.dat.gz') |&gt;\n  read_csv(col_types = 'cc')",
+    "crumbs": [
+      "Tutorials",
+      "Datenanalyse mit RMarkdown"
+    ]
+  },
+  {
+    "objectID": "tutorials/rmarkdown.html#datenanalyse",
+    "href": "tutorials/rmarkdown.html#datenanalyse",
+    "title": "Datenanalyse mit RMarkdown",
+    "section": "Datenanalyse",
+    "text": "Datenanalyse\nWir wollen die abgefragten Daten im Folgenden beispielhaft analysieren. Zunächst erzeugen wir eine zusammenfassende Zählstatistik:\ncount_summary &lt;- title_idn_gnd_idn |&gt;\n    summarise(\n        n_title = n_distinct(idn_titel),\n        n_terms = n_distinct(idn_sw)\n    )\nIn dem so erzeugten Datensatz gibt es 245 verschiedene GND-Entitäten, die an mindestens einen von 103 verschiedenen Titel-Datensätzen vergeben wurden.\nAls nächstes beantworten wir die Frage, wie viele GND-Entitäten pro Titel im Durchschnitt verwendet werden:\nsw_per_title &lt;- title_idn_gnd_idn |&gt;\n    group_by(idn_titel) |&gt;\n    summarise(n_sw = n())\n\ncard_d &lt;- sw_per_title |&gt;\n    summarise(\n        avg_count = mean(n_sw)\n    ) |&gt;\n    pull(avg_count)\nIm Mittel liegen 2.77 GND-Entitäten pro Titel vor.\nWir wollen nun die IDN-Nummern der am häufigsten verwendeten GND-Entitäten ausgeben:\ngnd_term_freq &lt;- title_idn_gnd_idn |&gt;\n  group_by(idn_sw) |&gt;\n  summarise(freq = n()) |&gt;\n  arrange(desc(freq))\n\nhead(gnd_term_freq, n = 10) |&gt;\n  knitr::kable()\n\nHäufigkeitsverteilung GND-Entitäten pro Titel\n\n\nidn_sw\nfreq\n\n\n\n\n040118827\n10\n\n\n040305503\n5\n\n\n040538818\n4\n\n\n041245113\n3\n\n\n041248538\n3\n\n\n041879635\n3\n\n\n040509265\n2\n\n\n040013073\n2\n\n\n118636405\n2\n\n\n040526925\n2",
+    "crumbs": [
+      "Tutorials",
+      "Datenanalyse mit RMarkdown"
+    ]
+  },
+  {
+    "objectID": "tutorials/rmarkdown.html#datenvisualisierung",
+    "href": "tutorials/rmarkdown.html#datenvisualisierung",
+    "title": "Datenanalyse mit RMarkdown",
+    "section": "Datenvisualisierung",
+    "text": "Datenvisualisierung\nÜber alle Schlagwörter betrachtet sieht die Verteilung der GND-Entitäten-Verwendung wie folgt aus:\ng &lt;- ggplot(gnd_term_freq, aes(x = freq)) +\n  geom_histogram(aes(y = after_stat(density)), binwidth = 1) +\n  scale_y_continuous(labels = scales::percent, limits = c(0,1)) +\n  scale_x_continuous(breaks = c(0,2,4,6,8,10)) +\n  xlab(\"Häufigkeit GND-Entitäten-Verwendung\") +\n  ylab(\"Anteil an allen GND-Entitäten\") +\n  ggtitle(\"Verteilung GND-Entitäten-Verwendung\")\n\ng\n\n\n\n\n\nDas Histogramm zeigt, dass die meisten GND-Entitäten nur einmal verwendet werden. Einzelne Terme werden aber auch bis zu 10-mal verwendet.\nEine andere Visualisierungsform des gleichen Sachverhalts ist folgende:\ngnd_term_freq &lt;- gnd_term_freq |&gt;\n  mutate(index = 1:n())\n\nggplot(gnd_term_freq, aes(x = index, y = freq)) +\n    geom_point() +\n    scale_y_log10() +\n    ylab(\"Häufigkeit je GND-Entität\") +\n    xlab(\"Index GND-Entitäten (sortiert nach Häufigkeit)\") +\n    ggtitle(\"Long-Tail-Darstellung\")",
+    "crumbs": [
+      "Tutorials",
+      "Datenanalyse mit RMarkdown"
+    ]
+  },
+  {
     "objectID": "commands/completions.html",
     "href": "commands/completions.html",
     "title": "completions",
