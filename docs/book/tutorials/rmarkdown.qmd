@@ -26,12 +26,10 @@ mehrere GND-Entitäten in einem Titel-Datensatz vohanden, expandiert das
 
 ```{.bash}
 $ pica select -s --no-empty-columns -H "idn_titel, idn_sw" "003@.0,041A/*.9" \
-  ../TEST.dat.gz -o title_idn_gnd_idn.csv
+  DUMP.dat.gz -o title_idn_gnd_idn.csv
 ```
 
-Die Datei `title_idn_gnd_idn.csv` kann ggf. auch nur temporär erzeugt
-werden, wenn ein Zwischenspeichern des Outputs von `pica` nicht
-gewünscht ist. Das Einlesen der Daten in R erfolgt über die üblichen
+Das Einlesen der Daten in R erfolgt über die üblichen
 Funktionen, z.B. aus dem `tidyverse`-Unterpaket `readr`.
 
 ```{.r}
@@ -41,6 +39,16 @@ title_idn_gnd_idn <- read_csv("title_idn_gnd_idn.csv",
         idn_sw = col_factor()))
 ```
 
+Das Einlesen der Daten kann auch ohne Zwischenspeichern des Outputs 
+von `pica select` erfolgen. Die Ausgabe von `pica select` wird dann
+direkt als Stream an `read_csv`übergeben, was bei größeren Datenabfragen
+deutlich performanter ist:
+
+```{.r}
+title_idn_gnd_idn <- pipe(
+  'pica select -s --no-empty-columns -H \"idn_titel, idn_sw\" \"003@.0,041A/*.9\" DUMP.dat.gz') |>
+  read_csv(col_types = 'cc')
+```
 
 ## Datenanalyse
 
@@ -112,7 +120,7 @@ GND-Entitäten-Verwendung wie folgt aus:
 
 ```{.r}
 g <- ggplot(gnd_term_freq, aes(x = freq)) +
-  geom_histogram(aes(y = (..count..)/sum(..count..)), binwidth = 1) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 1) +
   scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
   scale_x_continuous(breaks = c(0,2,4,6,8,10)) +
   xlab("Häufigkeit GND-Entitäten-Verwendung") +
