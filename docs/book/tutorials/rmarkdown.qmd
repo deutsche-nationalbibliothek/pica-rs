@@ -76,8 +76,7 @@ sw_per_title <- title_idn_gnd_idn |>
 
 card_d <- sw_per_title |>
     summarise(
-        n_title = n(),
-        avg_count = sum(n_sw)/n_title
+        avg_count = mean(n_sw)
     ) |>
     pull(avg_count)
 ```
