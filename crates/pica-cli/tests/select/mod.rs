@@ -793,6 +793,22 @@ fn select_query_format() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("select")
+        .arg("003@.0,028R{a <$> (', ' d <*> ' (' v ')') | v in ['Vater', 'Mutter']}")
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "119232022,\"Byron, George Gordon Byron (Vater)\"\n\
+            119232022,\"Byron, Anne Isabella Milbanke Byron (Mutter)\"\n"
+        ))
+        .stderr(predicates::str::is_empty());
+
     Ok(())
 }
 
