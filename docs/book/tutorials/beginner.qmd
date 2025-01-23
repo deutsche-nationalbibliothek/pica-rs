@@ -1,13 +1,12 @@
 # Anfänger-Tutorial {.unnumbered}
 
-## Was ist pica-rs?
+## Was ist `pica`?
 
 `pica` ist ein Set von Kommandozeilen-Tools zur Arbeit mit
-PICA+-Bibliothekskatalog-Daten. Wenn Sie nicht wissen, was PICA-Daten sind,
-brauchen Sie diese Tools nicht. 😉 Große Datenabzüge bis hin zu Gesamtabzügen
+PICA+-Bibliothekskatalog-Daten. Große Datenabzüge bis hin zu Gesamtabzügen
 können schnell gefiltert werden und es können die Daten einzelner Felder und
 Unterfelder in CSV-Dateien exportiert werden, Häufigkeitsverteilungen des
-Inhalts einzelner Unterfeldern erfasst werden und vieles mehr.
+Inhalts einzelner Unterfelder erfasst werden und vieles mehr.
 
 ## Wie funktioniert `pica`?
 
@@ -29,47 +28,15 @@ Rechner von Rust zu einem lauffähigen Programm kompilieren zu lassen.
 Für die gängigen Windows-, Apple- oder Linux-Systeme, stehen aber fertige
 Programmpakete unter
 [https://github.com/deutsche-nationalbibliothek/pica-rs/releases](https://github.com/deutsche-nationalbibliothek/pica-rs/releases)
-zur Verfügung.
-
-### Windows
-
-Legen Sie die Datei `pica.exe` im Verzeichnis `C:\Users\<IHR
-USERNAME>\AppData\Local\Microsoft\WindowsApps` ab.
-
-Starten Sie die Eingabeaufforderung `cmd.exe`, indem Sie auf den Windows
-Startbutton klicken und dann `cmd` tippen. Ihnen wird das Programm jetzt
-angezeigt. Tippen Sie `pica --version` ein. Sie erhalten jetzt die Version von
-`pica` angezeigt, jetzt wissen aber, dass das Programm korrekt installiert ist.
-
-
-### Linux/Mac OS
-
-Entpacken Sie das Paket und legen es in einen beliebigen Ordner.
-
-In der Konfigurationsdatei Ihres Terminals müssen Sie dann noch den Pfad
-angeben, in dem Sie das Programm abgelegt haben.
-
-Beispiel: ZSH unter Linux oder MacOS
-
-Die versteckte Datei `.zshrc` liegt üblicherweise im Homeverzeichnis des
-aktuellen Benutzers. Dort fügen Sie an beliebiger Stelle folgende Zeile hinzu:
-
-```{.zsh}
-export PATH="/<PFADZUMPROGRAMM>:$PATH"
-```
-
-wobei `<PFADZUMPROGRAMM>` natürlich durch Ihren tatsächlichen Pfad ersetzt werden muss.
-
-Nach einem Neustart des Terminals sollte jetzt der neue Befehl `pica` zur
-Verfügung stehen. Mit `pica -V` können Sie testen, welche Version sie haben.
-
+zur Verfügung. Unter [Installation](../install.qmd) sind für die Betriebssysteme
+Windows, Linux und macOS die Schritte zur Einrichtung des Tools beschrieben.
 
 ## Kommandozeile
 
 `pica` ist auch deswegen sehr schnell, weil es kein grafisches Interface hat.
 Man sollte deshalb einige Basics der Kommandozeilen (auch Terminal oder Shell
 genannt) des jeweiligen Betriebssystems kennen. Alle Befehle werden hier in der
-Fassung für gängige Linux-und Mac OS-Terminals gezeigt, abweichende Befehle der
+Fassung für gängige Linux- und macOS-Terminals gezeigt, abweichende Befehle der
 Windows Power Shell werden meistens in Klammern erwähnt.
 
 ## Pipes
@@ -82,7 +49,7 @@ B. den Inhalt des aktuellen Ordners mit `ls` (Windows: `dir`) auslesen, wird
 eine Liste aller Dateien und Ordner direkt im Terminal ausgegeben.
 
 Sie könnten diese Ausgabe aber auch umleiten: z.B. in eine Datei oder auf einen
-angeschlossenen Drucker etc.
+angeschlossenen Drucker.
 
 Piping nennt man ein Verfahren, bei dem die Ausgabe eines Befehls direkt als
 Eingabe für einen weiteren Befehl verwendet wird. Wie Rohre (pipes) werden die
@@ -121,7 +88,7 @@ erhalten, muss man das dem Befehl mitteilen.
 
 ## Los geht’s
 
-Navigieren Sie im Terminal zu dem Ordner, in dem ihre Daten liegen. Wir gehen
+Navigieren Sie im Terminal zu dem Ordner, in dem Ihre Daten liegen. Wir gehen
 davon aus, dass Sie im Hauptverzeichnis Ihres aktuellen Benutzers (unter Linux
 und Mac OS über das Kürzel `~` zu erreichen) im Verzeichnis `pica-test`
 arbeiten. Das Testdatenpaket heißt `testdaten.dat`.
@@ -142,31 +109,32 @@ drwxr-xr-x+ 76 testuser  staff   2,4K  9 Nov 14:25 ..
 
 ## print
 
-Wir beginnen mit mit [print]. Dieses Tool formatiert die unleserlichen
+Wir beginnen mit [print]. Dieses Kommado formatiert die unleserlichen
 PICA+-Daten zu gut lesbaren Datensätzen. Mit dem Befehl lassen sich die
-teilweise unübersichtlichen Daten gut überblicken. Wir wollen nur einen
+teilweise unübersichtlichen Daten überblicken. Wir wollen nur einen
 Datensatz aus den Testdaten auf dem Bildschirm ausgeben.
 
 ```{.bash}
 $ pica print -l 1 testdaten.dat
 ```
 
-Die Option `-l` steht für Limit und begrenzt die Ausgabe auf einen Datensatz.
-Die folgende Ziffer gibt die Anzahl der auszugebenden Datensätze an.
+Die Option `-l` steht für Limit und begrenzt die Ausgabe auf eine
+bestimmte Anzahl von Datensätzen am Beginn der Datei. Die folgende
+Ziffer gibt die Anzahl der auszugebenden Datensätze an.
 
-Wir können die Ausgabe auch in eine Datei schreiben:
+Wir können die Ausgabe auch mit der Option `-o` in eine Datei schreiben:
 
 ```{.bash}
 $ pica print -l 1 testdaten.dat -o testdatensatz.txt
 ```
 
 Wenn Sie nur einen Dateinamen angeben, wird die Datei im aktuellen Verzeichnis
-abgelegt. Wollen sie in ein anderes Verzeichnis schreiben, müssen sie den
+abgelegt. Wollen Sie in ein anderes Verzeichnis schreiben, müssen Sie den
 kompletten Pfad dorthin angeben.
 
 Im Folgenden gehen wir davon aus, dass Sie grundlegend mit der Struktur von
-Pica-Daten vertraut sind, also z. B. Feldern und Unterfeldern, Satzarten, Codes
-etc.
+Pica-Daten vertraut sind, also z. B. Feldern, Unterfeldern, Satzarten und
+Codes.
 
 ## filter
 
@@ -192,14 +160,13 @@ $ pica filter -s "002@.0 == 'Oa'" testdaten.dat -o oa-test.dat
 Dateien werden ohne Rückfrage überschrieben und werden nicht im Papierkorb
 gesichert. Gewöhnen Sie sich am besten an, in ein eigenes Ausgabeverzeichnis zu
 schreiben oder fügen Sie das aktuelle Datum an den Ausgabedateinamen an, damit
-sie nicht ausversehen eine ältere Datei überschreiben.
+Sie nicht aus Versehen eine ältere Datei überschreiben.
 :::
 
 ### Filter-Ausdrücke
 
-Der Filterausdruck in den doppelten Anführungszeichen ist das mächtigste
-Werkzeug von pica-rs. Mehrere Ausdrücke können zu komplexen Suchfiltern
-kombiniert werden.
+Der Filterausdruck ist das mächtigste Werkzeug von `pica`. Mehrere Ausdrücke
+können zu komplexen Suchfiltern kombiniert werden.
 
 Jeder Filterausdruck besteht immer aus einem Feld wie `002@`, einem
 Unterfeldfilter wie `.0`, einem Operator, der angibt, wie der Inhalt des Feldes
@@ -217,8 +184,8 @@ von Okkurrenzen können ebenfalls eingegrenzt werden: `047A/01-03`
 
 ### Unterfelder
 
-Unterfelder werden mit einem Punkt und ohne Dollarzeichen angehängt: `002@.9`
-meint Unterfeld `$9` von Feld `002@`.
+Unterfelder werden mit einem Punkt und ohne Dollarzeichen angehängt: `002@.0`
+meint Unterfeld `$0` von Feld `002@`.
 
 Um z. B. Unterfeld `9` aller Okkurrenzen von Feld `041A` zu filtern, müsste der
 Feldausdruck lauten: `041A/*.9`.
@@ -230,23 +197,23 @@ Werte können mittels der folgenden Operatoren verglichen werden:
 
 Gleichheit `==`
 : Der `==`-Operator prüft, ob es ein Unterfeld gibt, dass einem Wert
-entspricht. `pica filter "012A.a == 'abc'"` liest sich wie folgt: Es existiert
-ein Feld `012A` mit *einem* Unterfeld `a` das gleich `abc` ist. Es könnten noch
+entspricht. `pica filter "021A.a == 'abc'"` liest sich wie folgt: Es existiert
+ein Feld `021A` mit *einem* Unterfeld `a` das gleich `abc` ist. Es könnten noch
 weitere Unterfelder `a` existieren, die nicht `abc` sind.
 
 Ungleichheit `!=`
 : Das Gegenstück zu `==`. Prüft, ob ein Unterfeld existiert, das nicht einem Wert
 entspricht.
 
-Beginnt mit Prefix `=^` (`!^`)
+Beginnt mit Präfix `=^` (`!^`)
 : Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen
-Prefix beginnt (`=^`) bzw. nicht beginnt (`!^`).
+Präfix beginnt (`=^`) bzw. nicht beginnt (`!^`).
 
 Endet mit Suffix `=$` (`!$`)
 : Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen
 Suffix endet (`=$`) bzw. nicht beginnt (`!$`).
 
-Regulärem Ausdruck `=~` (`!~`)
+Regulären Ausdruck `=~` (`!~`)
 : Prüft ob ein Feld einem regulären Ausdruck entspricht. Die Auswertung dieses
 Operators benötigt die meiste Rechenkapazität. Er sollte deshalb nur dann
 verwendet werden, wenn er wirklich absolut notwendig ist. Es ist z. B.
@@ -255,10 +222,10 @@ regulären Ausdruck.
 
 Enthalten in `in` (`not in`)
 : Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds in der angegebenen
-enthalten ist (`in`) bzw. nicht enthalten ist (`not in`).
+Liste enthalten ist (`in`) bzw. nicht enthalten ist (`not in`).
 
 Teilstring `=?`
-: Der Ausdruck wird dann wahr, wenn der angegebenen Wert ein Teilstring des
+: Der Ausdruck wird dann wahr, wenn der angegebene Wert ein Teilstring des
 Unterfelds ist (`=?`).
 
 Existenz `?`
@@ -269,25 +236,25 @@ Existenz `?`
 Unterfelds ist. Die gewünschte Unschärfe kann über die Option
 `--strsim-threshold` parametrisiert werden.
 
-Die Operatoren können in runden Klammern gruppiert und mit den boolschen
+Die Operatoren können in runden Klammern gruppiert und mit den booleschen
 Operatoren UND `&&`, ODER `||` sowie `XOR` (`^`) verbunden werden.
 
 ### Mehrere Felder adressieren
 
 Es kommt öfters vor, dass sich ein Wert vom gleichen Typ in unterschiedlichen
 Feldern befindet. Z. B. befindet sich im Feld `028A.9` die "Person, Familie -
-1. geistiger Schöpfer" und im Feld `029A.9` "Person, Familie - weitere geistige
+1. geistiger Schöpfer" und im Feld `028C.9` "Person, Familie - weitere geistige
 Schöpfer". Um Datensätze zu filtern, die entweder einen 1. geistigen
 Schöpfer oder einen weiteren geistigen Schöpfer haben, könnte man schreiben:
 
 ```{.bash}
-$ pica filter "028A.9? || 029A.9?" testdaten.dat
+$ pica filter "028A.9? || 028C.9?" testdaten.dat
 ```
 
 Der Ausdruck lässt sich vereinfachen zu:
 
 ```{.bash}
-$ pica filter "02[89]A.9?" testdaten.dat
+$ pica filter "028[AC].9?" testdaten.dat
 ```
 
 An jeder Position in einem Feld kann eine Liste der gültigen Werte angegeben
@@ -321,7 +288,7 @@ Ausdruck.
 Mit [select] können die Werte einzelner Unterfelder in eine CSV-Datei
 exportiert werden. Dabei können mehrere Unterfelder kombiniert werden. Man kann
 aus riesigen Datenbeständen exakt die Daten extrahieren, die man für weitere
-Datenanalyse benötigt.
+Datenanalysen benötigt.
 
 Der Selektionsausdruck enthält eine durch Kommas getrennte Liste von
 Unterfeldern, die ausgelesen werden sollen, z. B.:
@@ -334,21 +301,20 @@ Das Ergebnis ist eine CSV-Datei mit zwei Spalten, in diesem Beispiel einer
 Spalte für die Satzart und einer Spalte für die IDN.
 
 Wenn Felder mehrere Unterfelder haben, können diese in einer Liste in
-geschweiften Klammer an die Feldbezeichnung angehängt werden.
+geschweiften Klammern an die Feldbezeichnung angehängt werden.
 
 ```{.bash}
 $ pica select "002@.0, 003@.0, 021A{a,h}" testdaten.dat -o test-select.csv
 ```
 
 In die Selektionsausdrücke können auch Filterausdrücke eingebaut werden. Dazu
-muss die erste Position der Liste in den geschweiften Klammern mit einem
-Filterausdruck belegt werden.
+muss die erste Position der Liste in den geschweiften Klammern ergänzt werden.
 
 ```{.bash}
 $ pica select "003@.0, 028A{ (9,d,a) | 4 == 'aut' }" testdaten.dat -o test-select.csv
 ```
 
-In diesem Beispiel werden die Angaben zu den beteiligten Personen aus Feld
+In diesem Beispiel werden die Angaben zur Person aus Feld
 `028A` nur übernommen, wenn Unterfeld 4 den Wert `aut` enthält, die Person also
 Autor\*in ist und nicht etwa Herausgeber\*in.
 
@@ -367,7 +333,7 @@ Unterfelder entsprechen.
 
 ```{.bash}
 $ pica select -H "idn, autor-idn, autor-vorname, autor-nachname" \
-    "003@.0, 028A{ (9,d,a) | 4 == 'aut' }" testdaten.dat -o test-select.csv
+    "003@.0, 028A{ 9,d,a | 4 == 'aut' }" testdaten.dat -o test-select.csv
 ```
 
 :::{.callout-note}
