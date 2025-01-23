@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>sample – pica-rs</title>
+<title>Anfänger-Tutorial – pica-rs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,8 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../commands/select.html" rel="next">
-<link href="../commands/print.html" rel="prev">
+<link href="../tutorials/rmarkdown.html" rel="next">
+<link href="../install.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -75,6 +75,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-96bdc52f546e857c951eb75e283fcc9c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/kbd/kbd.js"></script>
+<link href="../site_libs/quarto-contrib/kbd/kbd.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -103,35 +105,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../assets/css/style.css">
 </head>
@@ -145,7 +118,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/sample.html">sample</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/beginner.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/beginner.html">Anfänger-Tutorial</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Seitenleiste umschalten" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Suchen" onclick="window.quartoOpenSearch();">
@@ -207,7 +180,7 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tutorials/beginner.html" class="sidebar-item-text sidebar-link">
+  <a href="../tutorials/beginner.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Anfänger-Tutorial</span></a>
   </div>
 </li>
@@ -302,7 +275,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../commands/sample.html" class="sidebar-item-text sidebar-link active">
+  <a href="../commands/sample.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sample</span></a>
   </div>
 </li>
@@ -335,9 +308,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../commands/completions.html">Kommandos</a></li><li class="breadcrumb-item"><a href="../commands/sample.html">sample</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/beginner.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/beginner.html">Anfänger-Tutorial</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">sample</h1>
+<h1 class="title">Anfänger-Tutorial</h1>
 </div>
 
 
@@ -354,7 +327,169 @@ window.Quarto = {
 </header>
 
 
-<p>Das <code>sample</code>-Kommando zieht nach dem Zufallsprinzip gleichmäßig Datensätze aus der Eingabe.</p>
+<section id="was-ist-pica" class="level2">
+<h2 class="anchored" data-anchor-id="was-ist-pica">Was ist <code>pica</code>?</h2>
+<p><code>pica</code> ist ein Set von Kommandozeilen-Tools zur Arbeit mit PICA+-Bibliothekskatalog-Daten. Große Datenabzüge bis hin zu Gesamtabzügen können schnell gefiltert werden und es können die Daten einzelner Felder und Unterfelder in CSV-Dateien exportiert werden, Häufigkeitsverteilungen des Inhalts einzelner Unterfelder erfasst werden und vieles mehr.</p>
+</section>
+<section id="wie-funktioniert-pica" class="level2">
+<h2 class="anchored" data-anchor-id="wie-funktioniert-pica">Wie funktioniert <code>pica</code>?</h2>
+<p>Das Tool kann mit extrem großen Dateien umgehen, weil es diese sequentiell ausliest und prozessiert. Die Dateien werden nicht geöffnet und in den Arbeitsspeicher geladen, sondern ›häppchenweise‹ ausgewertet. Es ist deswegen kein Rechner mit besonders viel Arbeitsspeicher notwendig. Es empfiehlt sich aber, die Ausgangsdaten auf möglichst schnellen lokalen Laufwerken abzulegen. Netzlaufwerke sind weniger geeignet und verlangsamen das Tool unnötig.</p>
+<p><code>pica</code> läuft unter Windows, Linux und Mac OS.</p>
+</section>
+<section id="installation" class="level2">
+<h2 class="anchored" data-anchor-id="installation">Installation</h2>
+<p>Es ist möglich, die Quelldateien herunterzuladen und direkt auf dem eigenen Rechner von Rust zu einem lauffähigen Programm kompilieren zu lassen.</p>
+<p>Für die gängigen Windows-, Apple- oder Linux-Systeme, stehen aber fertige Programmpakete unter <a href="https://github.com/deutsche-nationalbibliothek/pica-rs/releases">https://github.com/deutsche-nationalbibliothek/pica-rs/releases</a> zur Verfügung. Unter <a href="../install.html">Installation</a> sind für die Betriebssysteme Windows, Linux und macOS die Schritte zur Einrichtung des Tools beschrieben.</p>
+</section>
+<section id="kommandozeile" class="level2">
+<h2 class="anchored" data-anchor-id="kommandozeile">Kommandozeile</h2>
+<p><code>pica</code> ist auch deswegen sehr schnell, weil es kein grafisches Interface hat. Man sollte deshalb einige Basics der Kommandozeilen (auch Terminal oder Shell genannt) des jeweiligen Betriebssystems kennen. Alle Befehle werden hier in der Fassung für gängige Linux- und macOS-Terminals gezeigt, abweichende Befehle der Windows Power Shell werden meistens in Klammern erwähnt.</p>
+</section>
+<section id="pipes" class="level2">
+<h2 class="anchored" data-anchor-id="pipes">Pipes</h2>
+<p>Um das Tool optimal nutzen zu können, sollten Sie verstehen, was <strong>Pipes</strong> sind. Im Terminal wird die Ausgabe ausgeführter Programme oder Befehle üblicherweise in die sogenannte <strong>Standardausgabe</strong> (<code>stdout</code>) geschrieben. Normalerweise ist das die Bildschirmausgabe des Terminals selbst. Wenn sie z. B. den Inhalt des aktuellen Ordners mit <code>ls</code> (Windows: <code>dir</code>) auslesen, wird eine Liste aller Dateien und Ordner direkt im Terminal ausgegeben.</p>
+<p>Sie könnten diese Ausgabe aber auch umleiten: z.B. in eine Datei oder auf einen angeschlossenen Drucker.</p>
+<p>Piping nennt man ein Verfahren, bei dem die Ausgabe eines Befehls direkt als Eingabe für einen weiteren Befehl verwendet wird. Wie Rohre (pipes) werden die Befehle aneinandergesteckt und die Daten fließen von einem Programm zum nächsten.</p>
+<p>Dazu werden die Befehle mit einem senkrechten Strich verbunden: <code>|</code> Unter Linux und Windows ist dieser Strich normalerweise über die Tastenkombination <kbd aria-hidden="true">AltGr-&lt;</kbd><span class="visually-hidden">AltGr-&lt;</span> zu erreichen, unter MacOS über <kbd aria-hidden="true">Alt-7</kbd><span class="visually-hidden">Alt-7</span>.</p>
+<p>Man könnte also z. B. die Ausgabe von <code>ls</code> bzw. <code>dir</code> an einen Befehl weiterleiten, der die Anzahl der ausgegeben Zeilen zählt. Dieser Befehl heißt <code>wc -l</code> (von word count -lines). Das korrekte Piping geht so:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Die Ausgabe von Word Count lässt sich wieder weiterleiten, z.B. in eine Datei:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span> <span class="op">&gt;</span> ordnerinhalt.txt</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Der <code>&gt;</code>-Operator leitet den Inhalt in eine Datei weiter und ist eine Art Sonderfall des Pipings, der nur für das Schreiben in Dateien gilt.</p>
+<p>Man könnte die Ausgabe mit einer weiteren Pipe auch an noch einen weiteren Befehl übergeben.</p>
+<p>Mit Pipes lassen sich die einzelnen pica-rs-Tools (select, filter, frequency usw.) miteinander verknüpfen. Die Ausgabe des einen Tools kann entweder zum nächsten Tool, in eine Datei oder einfach auf den Bildschirm geleitet werden. Alle Tools schreiben immer in die Standardausgabe. Will man die Ausgabe anders erhalten, muss man das dem Befehl mitteilen.</p>
+</section>
+<section id="los-gehts" class="level2">
+<h2 class="anchored" data-anchor-id="los-gehts">Los geht’s</h2>
+<p>Navigieren Sie im Terminal zu dem Ordner, in dem Ihre Daten liegen. Wir gehen davon aus, dass Sie im Hauptverzeichnis Ihres aktuellen Benutzers (unter Linux und Mac OS über das Kürzel <code>~</code> zu erreichen) im Verzeichnis <code>pica-test</code> arbeiten. Das Testdatenpaket heißt <code>testdaten.dat</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd ~/pica-test</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Überprüfen Sie, ob das Testdatenpaket vorhanden ist.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls <span class="co"># (unter Windows: dir)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">total</span> 1872</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">drwxr-xr-x</span>   3 testuser  staff    96B  9 Nov 14:24 .</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">drwxr-xr-x+</span> 76 testuser  staff   2,4K  9 Nov 14:25 ..</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">-rw-r--r--@</span>  1 testuser  staff   935K 14 Sep 18:30 testdaten.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="print" class="level2">
+<h2 class="anchored" data-anchor-id="print">print</h2>
+<p>Wir beginnen mit <a href="../commands/print.html">print</a>. Dieses Kommado formatiert die unleserlichen PICA+-Daten zu gut lesbaren Datensätzen. Mit dem Befehl lassen sich die teilweise unübersichtlichen Daten überblicken. Wir wollen nur einen Datensatz aus den Testdaten auf dem Bildschirm ausgeben.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-l</span> 1 testdaten.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Die Option <code>-l</code> steht für Limit und begrenzt die Ausgabe auf eine bestimmte Anzahl von Datensätzen am Beginn der Datei. Die folgende Ziffer gibt die Anzahl der auszugebenden Datensätze an.</p>
+<p>Wir können die Ausgabe auch mit der Option <code>-o</code> in eine Datei schreiben:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-l</span> 1 testdaten.dat <span class="at">-o</span> testdatensatz.txt</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Wenn Sie nur einen Dateinamen angeben, wird die Datei im aktuellen Verzeichnis abgelegt. Wollen Sie in ein anderes Verzeichnis schreiben, müssen Sie den kompletten Pfad dorthin angeben.</p>
+<p>Im Folgenden gehen wir davon aus, dass Sie grundlegend mit der Struktur von Pica-Daten vertraut sind, also z. B. Feldern, Unterfeldern, Satzarten und Codes.</p>
+</section>
+<section id="filter" class="level2">
+<h2 class="anchored" data-anchor-id="filter">filter</h2>
+<p>Mit <a href="../commands/filter.html">filter</a> können Teilmengen aus einem Daten-Dump nach einem bestimmten Selektionskriterium gebildet werden. <a href="../commands/filter.html">filter</a> gibt grundsätzlich den ganzen Datensatz aus, wenn die angegebenen Filterkriterien erfüllt sind.</p>
+<p>Wir wissen, dass in unseren Testdaten jeweils 100 Datensätze der unterschiedlichen Satzarten enthalten sind. Wir wollen alle Oa-Sätze herausfiltern und den ersten davon mit <a href="../commands/print.html">print</a> ausgeben.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="st">"002@.0 == 'Oa'"</span> testdaten.dat <span class="kw">|</span> <span class="ex">pica</span> print <span class="at">-l</span> 1</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Das Ergebnis könnte man auch wieder in eine Datei schreiben:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="st">"002@.0 == 'Oa'"</span> testdaten.dat <span class="at">-o</span> oa-test.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Vorsicht
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Dateien werden ohne Rückfrage überschrieben und werden nicht im Papierkorb gesichert. Gewöhnen Sie sich am besten an, in ein eigenes Ausgabeverzeichnis zu schreiben oder fügen Sie das aktuelle Datum an den Ausgabedateinamen an, damit Sie nicht aus Versehen eine ältere Datei überschreiben.</p>
+</div>
+</div>
+<section id="filter-ausdrücke" class="level3">
+<h3 class="anchored" data-anchor-id="filter-ausdrücke">Filter-Ausdrücke</h3>
+<p>Der Filterausdruck ist das mächtigste Werkzeug von <code>pica</code>. Mehrere Ausdrücke können zu komplexen Suchfiltern kombiniert werden.</p>
+<p>Jeder Filterausdruck besteht immer aus einem Feld wie <code>002@</code>, einem Unterfeldfilter wie <code>.0</code>, einem Operator, der angibt, wie der Inhalt des Feldes gefiltert werden soll, wie z. B. <code>==</code> und einem Wert, mit dem das Feld verglichen werden soll.</p>
+</section>
+<section id="felder" class="level3">
+<h3 class="anchored" data-anchor-id="felder">Felder</h3>
+<p>Felder können in der einfachsten Form direkt benannt werden: <code>002@</code> oder auch nummerierte Okkurrenzen haben wie <code>/01</code>. Okkurrenzen lassen sich nach ihrem Wert filtern oder alle Okkurrenzen können mit <code>/*</code> durchsucht werden. Bereiche von Okkurrenzen können ebenfalls eingegrenzt werden: <code>047A/01-03</code></p>
+</section>
+<section id="unterfelder" class="level3">
+<h3 class="anchored" data-anchor-id="unterfelder">Unterfelder</h3>
+<p>Unterfelder werden mit einem Punkt und ohne Dollarzeichen angehängt: <code>002@.0</code> meint Unterfeld <code>$0</code> von Feld <code>002@</code>.</p>
+<p>Um z. B. Unterfeld <code>9</code> aller Okkurrenzen von Feld <code>041A</code> zu filtern, müsste der Feldausdruck lauten: <code>041A/*.9</code>.</p>
+</section>
+<section id="operatoren" class="level3">
+<h3 class="anchored" data-anchor-id="operatoren">Operatoren</h3>
+<p>Werte können mittels der folgenden Operatoren verglichen werden:</p>
+<dl>
+<dt>Gleichheit <code>==</code></dt>
+<dd>
+Der <code>==</code>-Operator prüft, ob es ein Unterfeld gibt, dass einem Wert entspricht. <code>pica filter "021A.a == 'abc'"</code> liest sich wie folgt: Es existiert ein Feld <code>021A</code> mit <em>einem</em> Unterfeld <code>a</code> das gleich <code>abc</code> ist. Es könnten noch weitere Unterfelder <code>a</code> existieren, die nicht <code>abc</code> sind.
+</dd>
+<dt>Ungleichheit <code>!=</code></dt>
+<dd>
+Das Gegenstück zu <code>==</code>. Prüft, ob ein Unterfeld existiert, das nicht einem Wert entspricht.
+</dd>
+<dt>Beginnt mit Präfix <code>=^</code> (<code>!^</code>)</dt>
+<dd>
+Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen Präfix beginnt (<code>=^</code>) bzw. nicht beginnt (<code>!^</code>).
+</dd>
+<dt>Endet mit Suffix <code>=$</code> (<code>!$</code>)</dt>
+<dd>
+Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen Suffix endet (<code>=$</code>) bzw. nicht beginnt (<code>!$</code>).
+</dd>
+<dt>Regulären Ausdruck <code>=~</code> (<code>!~</code>)</dt>
+<dd>
+Prüft ob ein Feld einem regulären Ausdruck entspricht. Die Auswertung dieses Operators benötigt die meiste Rechenkapazität. Er sollte deshalb nur dann verwendet werden, wenn er wirklich absolut notwendig ist. Es ist z. B. schneller, nach einer Kombination von <code>=^</code> und <code>=$</code> zu suchen als nach einem regulären Ausdruck.
+</dd>
+<dt>Enthalten in <code>in</code> (<code>not in</code>)</dt>
+<dd>
+Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds in der angegebenen Liste enthalten ist (<code>in</code>) bzw. nicht enthalten ist (<code>not in</code>).
+</dd>
+<dt>Teilstring <code>=?</code></dt>
+<dd>
+Der Ausdruck wird dann wahr, wenn der angegebene Wert ein Teilstring des Unterfelds ist (<code>=?</code>).
+</dd>
+<dt>Existenz <code>?</code></dt>
+<dd>
+Der Ausdruck wird dann wahr, wenn das gesuchte Feld/Unterfeld existiert.
+</dd>
+<dt>Ähnlichkeit <code>=*</code></dt>
+<dd>
+Der Ausdruck wird dann wahr, wenn der angegebene Wert ähnlich dem des Unterfelds ist. Die gewünschte Unschärfe kann über die Option <code>--strsim-threshold</code> parametrisiert werden.
+</dd>
+</dl>
+<p>Die Operatoren können in runden Klammern gruppiert und mit den booleschen Operatoren UND <code>&amp;&amp;</code>, ODER <code>||</code> sowie <code>XOR</code> (<code>^</code>) verbunden werden.</p>
+</section>
+<section id="mehrere-felder-adressieren" class="level3">
+<h3 class="anchored" data-anchor-id="mehrere-felder-adressieren">Mehrere Felder adressieren</h3>
+<p>Es kommt öfters vor, dass sich ein Wert vom gleichen Typ in unterschiedlichen Feldern befindet. Z. B. befindet sich im Feld <code>028A.9</code> die “Person, Familie - 1. geistiger Schöpfer” und im Feld <code>028C.9</code> “Person, Familie - weitere geistige Schöpfer”. Um Datensätze zu filtern, die entweder einen 1. geistigen Schöpfer oder einen weiteren geistigen Schöpfer haben, könnte man schreiben:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="st">"028A.9? || 028C.9?"</span> testdaten.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Der Ausdruck lässt sich vereinfachen zu:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="st">"028[AC].9?"</span> testdaten.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>An jeder Position in einem Feld kann eine Liste der gültigen Werte angegeben werden. Es wird dann jede mögliche Kombination ausprobiert, um einen Match zu finden. Bsp. <code>0[12][34]A</code> führt zu der Liste <code>013A</code>, <code>014A</code>, <code>023A</code> und <code>024A</code>.</p>
+</section>
+<section id="mehrere-unterfelder-adressieren" class="level3">
+<h3 class="anchored" data-anchor-id="mehrere-unterfelder-adressieren">Mehrere Unterfelder adressieren</h3>
+<p>So ähnlich können auch mehrere Unterfelder adressiert werden. Beispiel: Im Feld <code>045E</code> befindet sich die Sachgruppe der Deutschen Nationabibliografie. Im Unterfeld <code>$e</code> die Hauptsachgruppe (HSG) und im Feld <code>$f</code> die Nebensachgruppen (NSG). Ist man an allen Datensätzen interessiert, die zur HSG 100 oder zur NSG 100 gehören, könnte man folgenden Filter schreiben:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="st">"045E.e == '100' || 045E.f == '100'"</span> testdaten.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Der Ausdruck lässt sich verkürzen zu:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="st">"045E.[ef] == '100'"</span> testdaten.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Beide Verfahren sind kombinierbar: <code>0[12]3[AB].[xyz]</code> ist ein gültiger Ausdruck.</p>
+</section>
+</section>
+<section id="select" class="level2">
+<h2 class="anchored" data-anchor-id="select">Select</h2>
+<p>Mit <a href="../commands/select.html">select</a> können die Werte einzelner Unterfelder in eine CSV-Datei exportiert werden. Dabei können mehrere Unterfelder kombiniert werden. Man kann aus riesigen Datenbeständen exakt die Daten extrahieren, die man für weitere Datenanalysen benötigt.</p>
+<p>Der Selektionsausdruck enthält eine durch Kommas getrennte Liste von Unterfeldern, die ausgelesen werden sollen, z. B.:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica select <span class="st">"002@.0, 003@.0"</span> testdaten.dat <span class="at">-o</span> test-select.csv</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Das Ergebnis ist eine CSV-Datei mit zwei Spalten, in diesem Beispiel einer Spalte für die Satzart und einer Spalte für die IDN.</p>
+<p>Wenn Felder mehrere Unterfelder haben, können diese in einer Liste in geschweiften Klammern an die Feldbezeichnung angehängt werden.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica select <span class="st">"002@.0, 003@.0, 021A{a,h}"</span> testdaten.dat <span class="at">-o</span> test-select.csv</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In die Selektionsausdrücke können auch Filterausdrücke eingebaut werden. Dazu muss die erste Position der Liste in den geschweiften Klammern ergänzt werden.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica select <span class="st">"003@.0, 028A{ (9,d,a) | 4 == 'aut' }"</span> testdaten.dat <span class="at">-o</span> test-select.csv</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In diesem Beispiel werden die Angaben zur Person aus Feld <code>028A</code> nur übernommen, wenn Unterfeld 4 den Wert <code>aut</code> enthält, die Person also Autor*in ist und nicht etwa Herausgeber*in.</p>
+<p>Für diese Filterausdrücke gelten dieselben Regeln wie für Filterausdrücke im filter-Tool, die oben beschrieben wurden.</p>
+<p>Wenn Felder wiederholbar sind (z. B. bei Schlagworten), wird pro Wiederholung eine neue Zeile in die CSV ausgegeben. Die ausgegebene CSV-Datei kann also mehr Zeilen enthalten, als Datensätze in den Ausgangsdaten waren. Es empfiehlt sich deshalb einen eindeutigen Identifikator mitzuselektieren, damit die wiederholten Felddaten von neuen Datensätzen unterschieden werden können.</p>
+<p>Es können auch Spaltennamen für die CSV-Ausgabe angegeben werden mit der Option <code>-H</code>. Wichtig: die Anzahl Spaltennamen muss der Anzahl der selektierten Unterfelder entsprechen.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica select <span class="at">-H</span> <span class="st">"idn, autor-idn, autor-vorname, autor-nachname"</span> <span class="dt">\</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"003@.0, 028A{ 9,d,a | 4 == 'aut' }"</span> testdaten.dat <span class="at">-o</span> test-select.csv</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -365,53 +500,16 @@ Hinweis
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Beim Aufruf des Kommandos ist die Anzahl der gültigen Datensätze nicht bekannt. Deshalb wird für die Stichprobenziehen das Verfahren <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">Reservoir sampling</a> eingesetzt. Hierfür wird während der Laufzeit Arbeitsspeicher proportial zum gewünschten Stichprobenumfang <span class="math inline">\(n\)</span> verwendet. Datensätze am Anfang der Eingabe haben eine höhere Wahrscheinlichkeit in der Stichproben enthalten zu sein, als Datensätze am Ende.</p>
+<p>Die doppelte Filtermöglichkeit einmal mit dem <a href="../commands/filter.html">filter</a>-Kommando und einmal im <a href="../commands/select.html">select</a>-Kommando verwirrt auf den ersten Blick etwas. <code>filter</code> prüft eine oder mehrere Felder oder Unterfelder auf Bedingungen und gibt den gesamten Datensatz aus, wenn die Bedingung wahr ist. <code>select</code> prüft ebenfalls auf Bedingungen und selektiert dann die benötigten Teildaten. Man könnte auch sagen: <code>filter</code> arbeitet auf Datensatzebene und <code>select</code> auf Feldebene.</p>
 </div>
 </div>
-<p>Im folgenden Beispiel werden zufällig 200 Datensätze aus der Eingabe ausgewählt und in die Datei <code>samples.dat</code> geschrieben:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica sample 200 DUMP.dat.gz <span class="at">-o</span> samples.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<section id="optionen" class="level2">
-<h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
-<dl>
-<dt><code>-s</code>, <code>--skip-invalid</code></dt>
-<dd>
-Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-</dd>
-<dt><code>-i</code>, <code>--ignore-case</code></dt>
-<dd>
-Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-</dd>
-<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
-<dd>
-Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
-</dd>
-<dt><code>-g</code>, <code>--gzip</code></dt>
-<dd>
-Komprimieren der Ausgabe im [Gzip]-Format.
-</dd>
-<dt><code>--seed &lt;number&gt;</code></dt>
-<dd>
-Initialisiert den Zufallszahlengenerator mit einem <em>seed</em>-Wert, um eine deterministische Auswahl zu erhalten.
-</dd>
-<dt><code>-p</code>, <code>--progress</code></dt>
-<dd>
-Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.
-</dd>
-<dt><code>-o &lt;path&gt;</code>, <code>--outdir &lt;path&gt;</code></dt>
-<dd>
-Angabe, in welches Verzeichnis die Partitionen geschrieben werden sollen. Standardmäßig wird das aktuelle Verzeichnis verwendet.
-</dd>
-</dl>
 </section>
-<section id="beispiele" class="level2">
-<h2 class="anchored" data-anchor-id="beispiele">Beispiele</h2>
-<section id="zufällige-ppn-liste" class="level3">
-<h3 class="anchored" data-anchor-id="zufällige-ppn-liste">Zufällige PPN-Liste</h3>
-<p>In Kombination mit dem <code>select</code>-Kommando kann eine zufällige PPN-Liste erzeugt werden:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica sample 3 DUMP.dat.gz <span class="kw">|</span> <span class="ex">pica</span> select <span class="at">-H</span> <span class="st">'ppn'</span> <span class="st">'003@.0'</span> <span class="at">-o</span> samples.csv</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="arbeit-mit-großen-datenabzügen" class="level2">
+<h2 class="anchored" data-anchor-id="arbeit-mit-großen-datenabzügen">Arbeit mit großen Datenabzügen</h2>
+<p><code>pica</code> parst immer den kompletten Datenbestand, auch wenn man nur wenige Ergebnisse erwartet. Deshalb ist es manchmal sinnvoll, die Ausgangsdatei in kleinere Dateien zu teilen, die dann viel schneller verarbeitet werden können.</p>
+<p>In unseren Testdaten haben wir Titeldaten und Normdaten zusammen. Es könnte z.B. sinnvoll sein, die Normdaten zu extrahieren, wenn man keine Titeldaten braucht oder nur eine bestimmte Satzart zu extrahieren, wenn man nur innerhalb dieser Satzart suchen will.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -834,13 +932,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../commands/print.html" class="pagination-link" aria-label="print">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">print</span>
+      <a href="../install.html" class="pagination-link" aria-label="Installation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Installation</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../commands/select.html" class="pagination-link" aria-label="select">
-        <span class="nav-page-text">select</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../tutorials/rmarkdown.html" class="pagination-link" aria-label="Datenanalyse mit RMarkdown">
+        <span class="nav-page-text">Datenanalyse mit RMarkdown</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
