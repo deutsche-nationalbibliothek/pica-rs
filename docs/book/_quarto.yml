@@ -17,6 +17,11 @@ book:
       affiliations:
         - name: Deutsche Nationalbibliothek
           url: https://www.dnb.de/
+    - name: André Wendler
+      orcid: 0000-0003-2504-829X
+      affiliations:
+        - name: Leipziger Städtische Bibliotheken
+          url: https://stadtbibliothek.leipzig.de/
   date: "11/6/2024"
   chapters:
     - index.qmd
@@ -25,6 +30,7 @@ book:
         - install.qmd
     - part: "Tutorials"
       chapters:
+        - tutorials/beginner.qmd
         - tutorials/rmarkdown.qmd
     - part: "Kommandos"
       chapters:
