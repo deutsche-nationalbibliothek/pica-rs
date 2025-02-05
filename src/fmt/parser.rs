@@ -7,7 +7,7 @@ use winnow::combinator::{
     alt, delimited, empty, opt, preceded, repeat, separated, terminated,
 };
 use winnow::error::ParserError;
-use winnow::{PResult, Parser};
+use winnow::{ModalResult, Parser};
 
 use super::{Format, Fragments, Group, List, Modifier, Value};
 use crate::matcher::occurrence::parse_occurrence_matcher;
@@ -15,7 +15,7 @@ use crate::matcher::subfield::parser::parse_subfield_matcher;
 use crate::matcher::tag::parse_tag_matcher;
 use crate::parser::{parse_string, parse_subfield_codes, ws};
 
-pub(crate) fn parse_format(i: &mut &[u8]) -> PResult<Format> {
+pub(crate) fn parse_format(i: &mut &[u8]) -> ModalResult<Format> {
     (
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -42,7 +42,7 @@ pub(crate) fn parse_format(i: &mut &[u8]) -> PResult<Format> {
         .parse_next(i)
 }
 
-fn parse_fragments(i: &mut &[u8]) -> PResult<Fragments> {
+fn parse_fragments(i: &mut &[u8]) -> ModalResult<Fragments> {
     alt((
         ws(parse_list).map(Fragments::List),
         ws(parse_group).map(Fragments::Group),
@@ -55,14 +55,11 @@ thread_local! {
     pub static GROUP_LEVEL: RefCell<u32> = const { RefCell::new(0) };
 }
 
-fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
+fn group_level_inc(i: &mut &[u8]) -> ModalResult<()> {
     GROUP_LEVEL.with(|level| {
         *level.borrow_mut() += 1;
         if *level.borrow() >= 32 {
-            Err(winnow::error::ErrMode::from_error_kind(
-                i,
-                winnow::error::ErrorKind::Many,
-            ))
+            Err(winnow::error::ErrMode::from_input(i))
         } else {
             Ok(())
         }
@@ -75,7 +72,7 @@ fn group_level_dec() {
     })
 }
 
-fn parse_group(i: &mut &[u8]) -> PResult<Group> {
+fn parse_group(i: &mut &[u8]) -> ModalResult<Group> {
     (
         terminated(ws('('), group_level_inc),
         parse_modifier,
@@ -103,7 +100,7 @@ fn parse_group(i: &mut &[u8]) -> PResult<Group> {
         .parse_next(i)
 }
 
-fn parse_value(i: &mut &[u8]) -> PResult<Value> {
+fn parse_value(i: &mut &[u8]) -> ModalResult<Value> {
     (
         ws(parse_modifier),
         opt(ws(parse_string).map(|s| {
@@ -139,11 +136,11 @@ fn parse_value(i: &mut &[u8]) -> PResult<Value> {
 }
 
 #[inline]
-fn parse_list(i: &mut &[u8]) -> PResult<List> {
+fn parse_list(i: &mut &[u8]) -> ModalResult<List> {
     alt((parse_list_cons, parse_list_and_then)).parse_next(i)
 }
 
-fn parse_list_cons(i: &mut &[u8]) -> PResult<List> {
+fn parse_list_cons(i: &mut &[u8]) -> ModalResult<List> {
     separated(
         2..,
         alt((
@@ -157,7 +154,7 @@ fn parse_list_cons(i: &mut &[u8]) -> PResult<List> {
     .parse_next(i)
 }
 
-fn parse_list_and_then(i: &mut &[u8]) -> PResult<List> {
+fn parse_list_and_then(i: &mut &[u8]) -> ModalResult<List> {
     separated(
         2..,
         alt((
@@ -170,7 +167,7 @@ fn parse_list_and_then(i: &mut &[u8]) -> PResult<List> {
     .parse_next(i)
 }
 
-fn parse_modifier(i: &mut &[u8]) -> PResult<Option<Modifier>> {
+fn parse_modifier(i: &mut &[u8]) -> ModalResult<Option<Modifier>> {
     opt(preceded(
         '?',
         repeat(1.., alt(('l', 'u', 't', 'w'))).map(|codes: Vec<_>| {
