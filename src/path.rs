@@ -5,7 +5,7 @@ use std::sync::LazyLock;
 use bstr::{BStr, ByteSlice};
 use smallvec::SmallVec;
 use winnow::combinator::{alt, delimited, opt, preceded, separated};
-use winnow::{PResult, Parser};
+use winnow::{ModalResult, Parser};
 
 use crate::matcher::occurrence::parse_occurrence_matcher;
 use crate::matcher::subfield::parser::parse_subfield_matcher;
@@ -77,7 +77,7 @@ impl FromStr for Path {
     }
 }
 
-fn parse_path_simple(i: &mut &[u8]) -> PResult<Path> {
+fn parse_path_simple(i: &mut &[u8]) -> ModalResult<Path> {
     ws((
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -104,7 +104,9 @@ fn parse_path_simple(i: &mut &[u8]) -> PResult<Path> {
     .parse_next(i)
 }
 
-fn parse_codes(i: &mut &[u8]) -> PResult<SmallVec<[SubfieldCode; 4]>> {
+fn parse_codes(
+    i: &mut &[u8],
+) -> ModalResult<SmallVec<[SubfieldCode; 4]>> {
     alt((
         parse_subfield_codes,
         #[cfg(feature = "compat")]
@@ -116,7 +118,7 @@ fn parse_codes(i: &mut &[u8]) -> PResult<SmallVec<[SubfieldCode; 4]>> {
     .parse_next(i)
 }
 
-fn parse_path_curly(i: &mut &[u8]) -> PResult<Path> {
+fn parse_path_curly(i: &mut &[u8]) -> ModalResult<Path> {
     ws((
         parse_tag_matcher,
         parse_occurrence_matcher,
@@ -151,7 +153,7 @@ fn parse_path_curly(i: &mut &[u8]) -> PResult<Path> {
 }
 
 #[inline]
-pub(crate) fn parse_path(i: &mut &[u8]) -> PResult<Path> {
+pub(crate) fn parse_path(i: &mut &[u8]) -> ModalResult<Path> {
     alt((parse_path_simple, parse_path_curly)).parse_next(i)
 }
 

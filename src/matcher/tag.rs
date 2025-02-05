@@ -119,7 +119,7 @@ impl<'de> serde::Deserialize<'de> for TagMatcher {
 }
 
 #[inline]
-fn parse_tag_matcher_tag(i: &mut &[u8]) -> PResult<TagMatcher> {
+fn parse_tag_matcher_tag(i: &mut &[u8]) -> ModalResult<TagMatcher> {
     parse_tag_ref
         .map(Tag::from)
         .map(TagMatcher::Tag)
@@ -161,7 +161,7 @@ fn parse_tag_matcher_pattern_fragment<'a, E: ParserError<&'a [u8]>>(
 }
 
 #[inline]
-fn parse_tag_matcher_pattern(i: &mut &[u8]) -> PResult<TagMatcher> {
+fn parse_tag_matcher_pattern(i: &mut &[u8]) -> ModalResult<TagMatcher> {
     (
         parse_tag_matcher_pattern_fragment(b"012"),
         parse_tag_matcher_pattern_fragment(b"0123456789"),
@@ -178,7 +178,9 @@ fn parse_tag_matcher_pattern(i: &mut &[u8]) -> PResult<TagMatcher> {
         .parse_next(i)
 }
 
-pub(crate) fn parse_tag_matcher(i: &mut &[u8]) -> PResult<TagMatcher> {
+pub(crate) fn parse_tag_matcher(
+    i: &mut &[u8],
+) -> ModalResult<TagMatcher> {
     alt((parse_tag_matcher_tag, parse_tag_matcher_pattern))
         .parse_next(i)
 }

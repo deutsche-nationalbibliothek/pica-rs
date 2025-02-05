@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 
 use winnow::combinator::alt;
-use winnow::{PResult, Parser};
+use winnow::{ModalResult, Parser};
 
 /// Relational Operator
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -137,7 +137,7 @@ impl quickcheck::Arbitrary for RelationalOp {
 #[inline]
 pub(crate) fn parse_relational_operator(
     i: &mut &[u8],
-) -> PResult<RelationalOp> {
+) -> ModalResult<RelationalOp> {
     use RelationalOp::*;
 
     alt((

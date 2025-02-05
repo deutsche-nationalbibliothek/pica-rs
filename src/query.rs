@@ -3,7 +3,7 @@ use std::ops::{Add, Deref, Mul};
 
 use bstr::{BString, ByteSlice, ByteVec};
 use winnow::combinator::{alt, separated};
-use winnow::{PResult, Parser};
+use winnow::{ModalResult, Parser};
 
 #[cfg(feature = "unstable")]
 use crate::fmt::{parse_format, Format, FormatExt, FormatOptions};
@@ -53,7 +53,7 @@ impl Query {
     }
 }
 
-fn parse_query(i: &mut &[u8]) -> PResult<Query> {
+fn parse_query(i: &mut &[u8]) -> ModalResult<Query> {
     separated(1.., parse_fragment, ws(','))
         .with_taken()
         .map(|(fragments, raw_query)| {
@@ -207,7 +207,7 @@ impl Fragment {
     }
 }
 
-fn parse_fragment(i: &mut &[u8]) -> PResult<Fragment> {
+fn parse_fragment(i: &mut &[u8]) -> ModalResult<Fragment> {
     alt((
         parse_path.map(Fragment::Path),
         parse_string.map(|s| Fragment::Literal(s.into())),
