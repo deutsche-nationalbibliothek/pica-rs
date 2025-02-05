@@ -4,7 +4,7 @@ use std::process::ExitCode;
 use clap::{value_parser, Parser};
 use pica_record::prelude::*;
 use rand::rngs::StdRng;
-use rand::{thread_rng, Rng, SeedableRng};
+use rand::{rng, Rng, SeedableRng};
 
 use crate::config::Config;
 use crate::error::CliResult;
@@ -54,7 +54,7 @@ impl Sample {
             .from_path_or_stdout(self.output)?;
 
         let mut rng: StdRng = match self.seed {
-            None => StdRng::from_rng(thread_rng()).unwrap(),
+            None => StdRng::from_rng(&mut rng()),
             Some(seed) => StdRng::seed_from_u64(seed),
         };
 
@@ -84,7 +84,7 @@ impl Sample {
                         if i < sample_size {
                             reservoir.push(data);
                         } else {
-                            let j = rng.gen_range(0..i);
+                            let j = rng.random_range(0..i);
                             if j < sample_size {
                                 reservoir[j] = data;
                             }
