@@ -194,10 +194,10 @@ impl Fragment {
                     .fold(Outcome::default(), |acc, e| acc + e);
 
                 if outcome.is_empty() {
-                    outcome = Outcome(vec![std::iter::repeat(
+                    outcome = Outcome(vec![std::iter::repeat_n(
                         BString::from(""),
+                        path.codes.len(),
                     )
-                    .take(path.codes.len())
                     .collect()]);
                 }
 
