@@ -6,7 +6,7 @@ use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{
     alt, delimited, preceded, repeat, separated_pair,
 };
-use winnow::error::{ContextError, ParserError};
+use winnow::error::{ContextError, ErrMode, ParserError};
 use winnow::prelude::*;
 use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
 use winnow::token::take_till;
@@ -212,12 +212,16 @@ where
 
 #[inline]
 fn parse_string_single_quoted(i: &mut &[u8]) -> ModalResult<Vec<u8>> {
-    parse_quoted_string::<ContextError>(Quotes::Single).parse_next(i)
+    parse_quoted_string::<ContextError>(Quotes::Single)
+        .parse_next(i)
+        .map_err(ErrMode::Backtrack)
 }
 
 #[inline]
 fn parse_string_double_quoted(i: &mut &[u8]) -> ModalResult<Vec<u8>> {
-    parse_quoted_string::<ContextError>(Quotes::Double).parse_next(i)
+    parse_quoted_string::<ContextError>(Quotes::Double)
+        .parse_next(i)
+        .map_err(ErrMode::Backtrack)
 }
 
 pub(crate) fn parse_string(i: &mut &[u8]) -> ModalResult<Vec<u8>> {
