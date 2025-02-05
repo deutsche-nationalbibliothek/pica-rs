@@ -26,7 +26,7 @@ flate2 = { version = "1.0" }
 hashbrown = { version = "0.15" }
 indicatif = { version = "0.17", features = ["improved_unicode"] }
 pica-record = { path = "../../", features = ["serde"] }
-polars = { version = "0.45", features = ["ipc", "decompress", "lazy"] }
+polars = { version = "0.46", features = ["ipc", "decompress", "lazy"] }
 quick-xml = { version = "0.37" }
 rand = { version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
