@@ -6,7 +6,7 @@ use winnow::combinator::{
     alt, delimited, opt, preceded, repeat, terminated,
 };
 use winnow::error::ParserError;
-use winnow::{PResult, Parser};
+use winnow::{ModalResult, Parser};
 
 use super::{
     CardinalityMatcher, FieldMatcher, SingletonMatcher,
@@ -25,7 +25,7 @@ use crate::parser::ws;
 
 pub(super) fn parse_exists_matcher(
     i: &mut &[u8],
-) -> PResult<ExistsMatcher> {
+) -> ModalResult<ExistsMatcher> {
     terminated(ws((parse_tag_matcher, parse_occurrence_matcher)), '?')
         .map(|(t, o)| ExistsMatcher {
             tag_matcher: t,
@@ -36,7 +36,7 @@ pub(super) fn parse_exists_matcher(
 
 fn parse_subfields_matcher_dot(
     i: &mut &[u8],
-) -> PResult<SubfieldsMatcher> {
+) -> ModalResult<SubfieldsMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         parse_tag_matcher,
@@ -61,7 +61,7 @@ fn parse_subfields_matcher_dot(
 #[cfg(feature = "compat")]
 fn parse_subfields_matcher_dollar(
     i: &mut &[u8],
-) -> PResult<SubfieldsMatcher> {
+) -> ModalResult<SubfieldsMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         parse_tag_matcher,
@@ -85,7 +85,7 @@ fn parse_subfields_matcher_dollar(
 
 fn parse_subfields_matcher_bracket(
     i: &mut &[u8],
-) -> PResult<SubfieldsMatcher> {
+) -> ModalResult<SubfieldsMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         parse_tag_matcher,
@@ -110,7 +110,7 @@ fn parse_subfields_matcher_bracket(
 #[inline]
 pub(super) fn parse_subfields_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldsMatcher> {
+) -> ModalResult<SubfieldsMatcher> {
     alt((
         parse_subfields_matcher_dot,
         parse_subfields_matcher_bracket,
@@ -124,7 +124,7 @@ pub(super) fn parse_subfields_matcher(
 #[inline]
 pub(super) fn parse_singleton_matcher(
     i: &mut &[u8],
-) -> PResult<SingletonMatcher> {
+) -> ModalResult<SingletonMatcher> {
     alt((
         parse_exists_matcher.map(SingletonMatcher::Exists),
         parse_subfields_matcher.map(SingletonMatcher::Subfields),
@@ -135,7 +135,7 @@ pub(super) fn parse_singleton_matcher(
 /// Parse a [CardinalityMatcher] expression.
 pub(super) fn parse_cardinality_matcher(
     i: &mut &[u8],
-) -> PResult<CardinalityMatcher> {
+) -> ModalResult<CardinalityMatcher> {
     preceded(
         ws('#'),
         (
@@ -167,7 +167,7 @@ pub(super) fn parse_cardinality_matcher(
 #[inline(always)]
 fn parse_field_singleton_matcher(
     i: &mut &[u8],
-) -> PResult<FieldMatcher> {
+) -> ModalResult<FieldMatcher> {
     parse_singleton_matcher
         .map(FieldMatcher::Singleton)
         .parse_next(i)
@@ -176,14 +176,16 @@ fn parse_field_singleton_matcher(
 #[inline(always)]
 fn parse_field_cardinality_matcher(
     i: &mut &[u8],
-) -> PResult<FieldMatcher> {
+) -> ModalResult<FieldMatcher> {
     parse_cardinality_matcher
         .map(FieldMatcher::Cardinality)
         .parse_next(i)
 }
 
 #[inline]
-fn parse_field_exists_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
+fn parse_field_exists_matcher(
+    i: &mut &[u8],
+) -> ModalResult<FieldMatcher> {
     alt((
         parse_exists_matcher.map(|matcher| {
             FieldMatcher::Singleton(SingletonMatcher::Exists(matcher))
@@ -234,14 +236,11 @@ fn group_level_reset() {
     FIELD_MATCHER_GROUP_LEVEL.with(|level| *level.borrow_mut() = 0);
 }
 
-fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
+fn group_level_inc(i: &mut &[u8]) -> ModalResult<()> {
     FIELD_MATCHER_GROUP_LEVEL.with(|level| {
         *level.borrow_mut() += 1;
         if *level.borrow() >= 256 {
-            Err(winnow::error::ErrMode::from_error_kind(
-                i,
-                winnow::error::ErrorKind::Many,
-            ))
+            Err(winnow::error::ErrMode::from_input(i))
         } else {
             Ok(())
         }
@@ -255,7 +254,9 @@ fn group_level_dec() {
 }
 
 #[inline]
-fn parse_field_group_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
+fn parse_field_group_matcher(
+    i: &mut &[u8],
+) -> ModalResult<FieldMatcher> {
     delimited(
         terminated(ws('('), group_level_inc),
         alt((
@@ -272,7 +273,7 @@ fn parse_field_group_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
 }
 
 #[inline]
-fn parse_field_not_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
+fn parse_field_not_matcher(i: &mut &[u8]) -> ModalResult<FieldMatcher> {
     preceded(
         ws('!'),
         alt((
@@ -288,8 +289,8 @@ fn parse_field_not_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
     .parse_next(i)
 }
 
-fn parse_field_or_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
-    let atom = |i: &mut &[u8]| -> PResult<FieldMatcher> {
+fn parse_field_or_matcher(i: &mut &[u8]) -> ModalResult<FieldMatcher> {
+    let atom = |i: &mut &[u8]| -> ModalResult<FieldMatcher> {
         ws(alt((
             parse_field_and_matcher,
             parse_field_xor_matcher,
@@ -309,8 +310,8 @@ fn parse_field_or_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
         .parse_next(i)
 }
 
-fn parse_field_xor_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
-    let atom = |i: &mut &[u8]| -> PResult<FieldMatcher> {
+fn parse_field_xor_matcher(i: &mut &[u8]) -> ModalResult<FieldMatcher> {
+    let atom = |i: &mut &[u8]| -> ModalResult<FieldMatcher> {
         ws(alt((
             parse_field_and_matcher,
             parse_field_group_matcher,
@@ -329,8 +330,8 @@ fn parse_field_xor_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
         .parse_next(i)
 }
 
-fn parse_field_and_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
-    let atom = |i: &mut &[u8]| -> PResult<FieldMatcher> {
+fn parse_field_and_matcher(i: &mut &[u8]) -> ModalResult<FieldMatcher> {
+    let atom = |i: &mut &[u8]| -> ModalResult<FieldMatcher> {
         ws(alt((
             parse_field_group_matcher,
             parse_field_cardinality_matcher,
@@ -351,7 +352,7 @@ fn parse_field_and_matcher(i: &mut &[u8]) -> PResult<FieldMatcher> {
 #[inline(always)]
 fn parse_field_composite_matcher(
     i: &mut &[u8],
-) -> PResult<FieldMatcher> {
+) -> ModalResult<FieldMatcher> {
     alt((
         parse_field_or_matcher,
         parse_field_xor_matcher,
@@ -363,7 +364,7 @@ fn parse_field_composite_matcher(
 /// Parse a [FieldMatcher] expression.
 pub(crate) fn parse_field_matcher(
     i: &mut &[u8],
-) -> PResult<FieldMatcher> {
+) -> ModalResult<FieldMatcher> {
     ws(alt((
         parse_field_composite_matcher,
         parse_field_group_matcher,

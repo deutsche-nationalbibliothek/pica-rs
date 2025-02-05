@@ -24,7 +24,7 @@ use crate::primitives::parse::parse_subfield_code;
 /// Parses a [ExistsMatcher] expression.
 pub(crate) fn parse_exists_matcher(
     i: &mut &[u8],
-) -> PResult<ExistsMatcher> {
+) -> ModalResult<ExistsMatcher> {
     terminated(parse_subfield_codes, '?')
         .with_taken()
         .map(|(codes, raw_data)| {
@@ -38,7 +38,7 @@ pub(crate) fn parse_exists_matcher(
 #[inline]
 pub(crate) fn parse_relation_matcher(
     i: &mut &[u8],
-) -> PResult<RelationMatcher> {
+) -> ModalResult<RelationMatcher> {
     (
         opt(ws(terminated(parse_quantifier, multispace1)))
             .map(Option::unwrap_or_default),
@@ -73,7 +73,7 @@ pub(crate) fn parse_relation_matcher(
 /// Parse a [RegexMatcher] expression.
 pub(crate) fn parse_regex_matcher(
     i: &mut &[u8],
-) -> PResult<RegexMatcher> {
+) -> ModalResult<RegexMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         ws(parse_subfield_codes),
@@ -99,7 +99,7 @@ pub(crate) fn parse_regex_matcher(
 /// Parse a [RegexSetMatcher] expression.
 pub(crate) fn parse_regex_set_matcher(
     i: &mut &[u8],
-) -> PResult<RegexSetMatcher> {
+) -> ModalResult<RegexSetMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         ws(parse_subfield_codes),
@@ -131,7 +131,9 @@ pub(crate) fn parse_regex_set_matcher(
 }
 
 /// Parse a [InMatcher] expression.
-pub(crate) fn parse_in_matcher(i: &mut &[u8]) -> PResult<InMatcher> {
+pub(crate) fn parse_in_matcher(
+    i: &mut &[u8],
+) -> ModalResult<InMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         ws(parse_subfield_codes),
@@ -177,7 +179,7 @@ pub(crate) fn parse_in_matcher(i: &mut &[u8]) -> PResult<InMatcher> {
 /// Parse a [CardinalityMatcher] expression.
 pub(crate) fn parse_cardinality_matcher(
     i: &mut &[u8],
-) -> PResult<CardinalityMatcher> {
+) -> ModalResult<CardinalityMatcher> {
     preceded(
         ws('#'),
         (
@@ -206,7 +208,7 @@ pub(crate) fn parse_cardinality_matcher(
 /// Parse a singleton matcher expression.
 pub(crate) fn parse_singleton_matcher(
     i: &mut &[u8],
-) -> PResult<SingletonMatcher> {
+) -> ModalResult<SingletonMatcher> {
     alt((
         parse_relation_matcher.map(SingletonMatcher::Relation),
         parse_in_matcher.map(SingletonMatcher::In),
@@ -221,7 +223,7 @@ pub(crate) fn parse_singleton_matcher(
 #[inline(always)]
 pub(crate) fn parse_subfield_singleton_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
     parse_singleton_matcher
         .map(SubfieldMatcher::Singleton)
         .parse_next(i)
@@ -236,14 +238,11 @@ fn group_level_reset() {
     SUBFIELD_MATCHER_GROUP_LEVEL.with(|level| *level.borrow_mut() = 0);
 }
 
-fn group_level_inc(i: &mut &[u8]) -> PResult<()> {
+fn group_level_inc(i: &mut &[u8]) -> ModalResult<()> {
     SUBFIELD_MATCHER_GROUP_LEVEL.with(|level| {
         *level.borrow_mut() += 1;
         if *level.borrow() >= 256 {
-            Err(winnow::error::ErrMode::from_error_kind(
-                i,
-                winnow::error::ErrorKind::Many,
-            ))
+            Err(winnow::error::ErrMode::from_input(i))
         } else {
             Ok(())
         }
@@ -259,7 +258,7 @@ fn group_level_dec() {
 #[inline(always)]
 fn parse_subfield_group_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
     delimited(
         terminated(ws('('), group_level_inc),
         alt((
@@ -277,7 +276,7 @@ fn parse_subfield_group_matcher(
 #[inline(always)]
 fn parse_subfield_exists_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
     parse_exists_matcher
         .map(SingletonMatcher::Exists)
         .map(SubfieldMatcher::Singleton)
@@ -287,7 +286,7 @@ fn parse_subfield_exists_matcher(
 #[inline(always)]
 fn parse_subfield_not_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
     preceded(
         ws('!'),
         alt((
@@ -302,8 +301,8 @@ fn parse_subfield_not_matcher(
 
 fn parse_subfield_or_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
-    let atom = |i: &mut &[u8]| -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
+    let atom = |i: &mut &[u8]| -> ModalResult<SubfieldMatcher> {
         ws(alt((
             parse_subfield_and_matcher,
             parse_subfield_xor_matcher,
@@ -323,8 +322,8 @@ fn parse_subfield_or_matcher(
 
 fn parse_subfield_xor_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
-    let atom = |i: &mut &[u8]| -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
+    let atom = |i: &mut &[u8]| -> ModalResult<SubfieldMatcher> {
         ws(alt((
             parse_subfield_and_matcher,
             parse_subfield_group_matcher,
@@ -343,8 +342,8 @@ fn parse_subfield_xor_matcher(
 
 fn parse_subfield_and_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
-    let atom = |i: &mut &[u8]| -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
+    let atom = |i: &mut &[u8]| -> ModalResult<SubfieldMatcher> {
         ws(alt((
             parse_subfield_group_matcher,
             parse_subfield_singleton_matcher,
@@ -363,7 +362,7 @@ fn parse_subfield_and_matcher(
 #[inline(always)]
 fn parse_subfield_composite_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
     alt((
         parse_subfield_or_matcher,
         parse_subfield_xor_matcher,
@@ -374,7 +373,7 @@ fn parse_subfield_composite_matcher(
 
 pub(crate) fn parse_subfield_matcher(
     i: &mut &[u8],
-) -> PResult<SubfieldMatcher> {
+) -> ModalResult<SubfieldMatcher> {
     alt((
         parse_subfield_composite_matcher,
         parse_subfield_singleton_matcher,

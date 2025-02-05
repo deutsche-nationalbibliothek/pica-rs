@@ -18,7 +18,7 @@ use crate::primitives::SubfieldCode;
 #[inline]
 pub(crate) fn parse_subfield_code_range(
     i: &mut &[u8],
-) -> PResult<Vec<SubfieldCode>> {
+) -> ModalResult<Vec<SubfieldCode>> {
     separated_pair(parse_subfield_code, b'-', parse_subfield_code)
         .verify(|(min, max)| min < max)
         .map(|(min, max)| {
@@ -32,7 +32,7 @@ pub(crate) fn parse_subfield_code_range(
 #[inline]
 fn parse_subfield_code_list(
     i: &mut &[u8],
-) -> PResult<Vec<SubfieldCode>> {
+) -> ModalResult<Vec<SubfieldCode>> {
     delimited(
         '[',
         repeat(
@@ -54,7 +54,7 @@ fn parse_subfield_code_list(
 #[inline]
 fn parse_subfield_code_all(
     i: &mut &[u8],
-) -> PResult<Vec<SubfieldCode>> {
+) -> ModalResult<Vec<SubfieldCode>> {
     const SUBFIELD_CODES: &[u8; 62] = b"0123456789\
         abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -70,7 +70,7 @@ fn parse_subfield_code_all(
 /// Parse a list of subfield codes
 pub(crate) fn parse_subfield_codes(
     i: &mut &[u8],
-) -> PResult<SmallVec<[SubfieldCode; 4]>> {
+) -> ModalResult<SmallVec<[SubfieldCode; 4]>> {
     alt((
         parse_subfield_code_list,
         parse_subfield_code.map(|code| vec![code]),
@@ -83,7 +83,7 @@ pub(crate) fn parse_subfield_codes(
 #[cfg(feature = "compat")]
 fn parse_subfield_code_list_compat(
     i: &mut &[u8],
-) -> PResult<Vec<SubfieldCode>> {
+) -> ModalResult<Vec<SubfieldCode>> {
     repeat(1.., parse_subfield_code.map(|code| vec![code]))
         .fold(Vec::new, |mut acc: Vec<_>, item| {
             acc.extend_from_slice(&item);
@@ -95,7 +95,7 @@ fn parse_subfield_code_list_compat(
 #[cfg(feature = "compat")]
 pub(crate) fn parse_subfield_codes_compat(
     i: &mut &[u8],
-) -> PResult<SmallVec<[SubfieldCode; 4]>> {
+) -> ModalResult<SmallVec<[SubfieldCode; 4]>> {
     alt((parse_subfield_code_list_compat, parse_subfield_code_all))
         .map(SmallVec::from_vec)
         .parse_next(i)
@@ -211,16 +211,16 @@ where
 }
 
 #[inline]
-fn parse_string_single_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
+fn parse_string_single_quoted(i: &mut &[u8]) -> ModalResult<Vec<u8>> {
     parse_quoted_string::<ContextError>(Quotes::Single).parse_next(i)
 }
 
 #[inline]
-fn parse_string_double_quoted(i: &mut &[u8]) -> PResult<Vec<u8>> {
+fn parse_string_double_quoted(i: &mut &[u8]) -> ModalResult<Vec<u8>> {
     parse_quoted_string::<ContextError>(Quotes::Double).parse_next(i)
 }
 
-pub(crate) fn parse_string(i: &mut &[u8]) -> PResult<Vec<u8>> {
+pub(crate) fn parse_string(i: &mut &[u8]) -> ModalResult<Vec<u8>> {
     alt((parse_string_single_quoted, parse_string_double_quoted))
         .verify(|s: &[u8]| s.to_str().is_ok())
         .parse_next(i)

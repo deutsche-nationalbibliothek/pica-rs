@@ -12,7 +12,7 @@ use super::{
 #[inline]
 pub(crate) fn parse_subfield_code(
     i: &mut &[u8],
-) -> PResult<SubfieldCode> {
+) -> ModalResult<SubfieldCode> {
     one_of((b'0'..=b'9', b'a'..=b'z', b'A'..=b'Z'))
         .map(SubfieldCode::from_unchecked)
         .parse_next(i)
@@ -22,7 +22,7 @@ pub(crate) fn parse_subfield_code(
 #[inline]
 pub(crate) fn parse_subfield_value_ref<'a>(
     i: &mut &'a [u8],
-) -> PResult<SubfieldValueRef<'a>> {
+) -> ModalResult<SubfieldValueRef<'a>> {
     take_till(0.., |c| c == b'\x1f' || c == b'\x1e')
         .map(SubfieldValueRef::from_unchecked)
         .parse_next(i)
@@ -31,7 +31,7 @@ pub(crate) fn parse_subfield_value_ref<'a>(
 /// Parse a PICA+ subfield.
 pub(crate) fn parse_subfield_ref<'a>(
     i: &mut &'a [u8],
-) -> PResult<SubfieldRef<'a>> {
+) -> ModalResult<SubfieldRef<'a>> {
     preceded(b'\x1f', (parse_subfield_code, parse_subfield_value_ref))
         .map(|(code, value)| SubfieldRef(code, value))
         .parse_next(i)
@@ -40,7 +40,7 @@ pub(crate) fn parse_subfield_ref<'a>(
 /// Parse a PICA+ tag.
 pub(crate) fn parse_tag_ref<'a>(
     i: &mut &'a [u8],
-) -> PResult<TagRef<'a>> {
+) -> ModalResult<TagRef<'a>> {
     (
         one_of([b'0', b'1', b'2']),
         one_of(|c: u8| c.is_ascii_digit()),
@@ -56,7 +56,7 @@ pub(crate) fn parse_tag_ref<'a>(
 #[inline]
 pub(crate) fn parse_occurrence_ref<'a>(
     i: &mut &'a [u8],
-) -> PResult<OccurrenceRef<'a>> {
+) -> ModalResult<OccurrenceRef<'a>> {
     take_while(2..=3, AsChar::is_dec_digit)
         .map(OccurrenceRef::from_unchecked)
         .parse_next(i)
@@ -65,7 +65,7 @@ pub(crate) fn parse_occurrence_ref<'a>(
 /// Parse a PICA+ field.
 pub(crate) fn parse_field_ref<'a>(
     i: &mut &'a [u8],
-) -> PResult<FieldRef<'a>> {
+) -> ModalResult<FieldRef<'a>> {
     (
         parse_tag_ref,
         opt(preceded(b'/', parse_occurrence_ref)),
@@ -85,7 +85,7 @@ pub(crate) fn parse_field_ref<'a>(
 #[inline]
 pub(crate) fn parse_record_ref<'a>(
     i: &mut &'a [u8],
-) -> PResult<RecordRef<'a>> {
+) -> ModalResult<RecordRef<'a>> {
     terminated(repeat(1.., parse_field_ref), b'\n')
         .map(RecordRef)
         .parse_next(i)

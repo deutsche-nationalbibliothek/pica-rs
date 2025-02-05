@@ -110,14 +110,14 @@ impl Display for OccurrenceMatcher {
 #[inline]
 fn parse_occurrence_matcher_inner(
     i: &mut &[u8],
-) -> PResult<Occurrence> {
+) -> ModalResult<Occurrence> {
     parse_occurrence_ref.map(Occurrence::from).parse_next(i)
 }
 
 #[inline]
 fn parse_occurrence_matcher_exact(
     i: &mut &[u8],
-) -> PResult<OccurrenceMatcher> {
+) -> ModalResult<OccurrenceMatcher> {
     parse_occurrence_matcher_inner
         .verify(|occurrence| occurrence.as_bytes() != b"00")
         .map(OccurrenceMatcher::Exact)
@@ -127,7 +127,7 @@ fn parse_occurrence_matcher_exact(
 #[inline]
 fn parse_occurrence_matcher_range(
     i: &mut &[u8],
-) -> PResult<OccurrenceMatcher> {
+) -> ModalResult<OccurrenceMatcher> {
     separated_pair(
         parse_occurrence_matcher_inner,
         '-',
@@ -140,7 +140,7 @@ fn parse_occurrence_matcher_range(
 
 pub(crate) fn parse_occurrence_matcher(
     i: &mut &[u8],
-) -> PResult<OccurrenceMatcher> {
+) -> ModalResult<OccurrenceMatcher> {
     alt((
         preceded(
             '/',
