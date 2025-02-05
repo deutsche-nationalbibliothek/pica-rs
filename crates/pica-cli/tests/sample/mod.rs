@@ -117,7 +117,7 @@ fn sample_skip_invalid() -> TestResult {
 #[test]
 fn sample_seed() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
-    let samples = temp_dir.child("samples.dat.gz");
+    let samples = temp_dir.child("samples.dat");
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -133,10 +133,8 @@ fn sample_seed() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(
-        data_dir().join("samples.dat.gz")
-    )
-    .eval(samples.path()));
+    assert!(predicates::path::eq_file(data_dir().join("samples.dat"))
+        .eval(samples.path()));
 
     temp_dir.close().unwrap();
     Ok(())
