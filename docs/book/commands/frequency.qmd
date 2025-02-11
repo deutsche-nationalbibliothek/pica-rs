@@ -1,11 +1,11 @@
 # frequency {.unnumbered}
 
-Das Kommando `frequency` wird dazu genutzt, um die Häufigkeiten der Werte ein
-oder mehrerer Unterfelder zu bestimmen. Ist das zu untersuchende Feld bzw.
-Unterfeld wiederholbar, gehen alle Wertausprägungen eines Datensatzes in die
-Häufigkeitsverteilung ein. Die Ausgabe erfolgt standardmäßig im CSV-Format. Im
-folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds `002@.0`
-(Satzart) ermittelt:
+Das Kommando `frequency` (Alias `freq`) wird dazu genutzt, um die Häufigkeiten
+der Werte ein oder mehrerer Unterfelder zu bestimmen. Ist das zu untersuchende
+Feld bzw. Unterfeld wiederholbar, gehen alle Wertausprägungen eines Datensatzes
+in die Häufigkeitsverteilung ein. Die Ausgabe erfolgt standardmäßig im
+CSV-Format. Im folgenden Beispiel wird die Häufigkeitsverteilung des Unterfelds
+`002@.0` (Satzart) ermittelt:
 
 ```{.bash}
 $ pica frequency -s "002@.0" DUMP.dat.gz

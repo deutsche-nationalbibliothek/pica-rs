@@ -27,6 +27,26 @@ fn frequency_stdout() -> TestResult {
 }
 
 #[test]
+fn frequency_alias() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["freq", "-s", "002@.0"])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("invalid.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Tp1,2\nTs1,1\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 fn frequency_output() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let temp_dir = TempDir::new().unwrap();
