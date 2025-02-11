@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_TERM_COLOR: always
+  RUSTDOCFLAGS: "-Dwarnings"
+  RUSTUP_MAX_RETRIES: 10
+  RUST_BACKTRACE: 1
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get release version
+        run: |
+          tag=${{ github.ref_name }}
+          echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
+
+          version=${tag#v}
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Show release version
+        run: |
+          echo "tag is $RELEASE_TAG"
+          echo "version is $VERSION"
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$VERSION" --draft --generate-notes --title "v$VERSION"
+    outputs:
+      version: ${{ env.VERSION }}
+
+  release:
+    needs: prepare
+    strategy:
+      matrix:
+        target:
+          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
+          - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc }
+          - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
+    runs-on: ${{ matrix.target.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.target.toolchain }}
+          targets: ${{ matrix.target.triple }}
+      - name: Test workspace packages
+        run: |
+          cargo test -p pica-record --release --all-features
+          cargo test -p pica-cli --release --all-features
+      - name: Build release binary
+        shell: bash
+        run: |
+          cargo build -p pica-cli --release --features performant
+          if [ "${{ matrix.target.os }}" = "windows-latest" ]; then
+            echo "BINARY=target/release/pica.exe" >> $GITHUB_ENV
+          else
+            echo "BINARY=target/release/pica" >> $GITHUB_ENV
+          fi
+      - name: Strip release binary
+        shell: bash
+        if: matrix.target.os == 'macos-latest'
+        run:
+          strip "$BINARY"
+      - name: Prepare archive
+        shell: bash
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          triple="${{ matrix.target.triple }}"
+          ARCHIVE="pica-$version-$triple"
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+          mkdir -p "$ARCHIVE/complete"
+          cp "$BINARY" "$ARCHIVE"/
+          cp "README.md" "$ARCHIVE"/
+          cp "LICENSE" "$ARCHIVE"/
+      - name: Generate completions
+        shell: bash
+        run: |
+          $BINARY completions bash -o "$ARCHIVE/complete/pica.bash"
+          $BINARY completions elvish -o "$ARCHIVE/complete/pica.elv"
+          $BINARY completions fish -o "$ARCHIVE/complete/pica.fish"
+          $BINARY completions powershell -o "$ARCHIVE/complete/_pica.ps1"
+          $BINARY completions zsh -o "$ARCHIVE/complete/_pica"
+      - name: Build Archive (Windows)
+        if: matrix.target.os == 'windows-latest'
+        shell: bash
+        run: |
+          7z a "$ARCHIVE.zip" "$ARCHIVE"
+          certutil -hashfile "$ARCHIVE.zip" SHA256 > "$ARCHIVE.zip.sha256"
+          echo "ASSET_CHECKSUM=$ARCHIVE.zip.sha256" >> $GITHUB_ENV
+          echo "ASSET=$ARCHIVE.zip" >> $GITHUB_ENV
+      - name: Build Archive (Unix)
+        if: matrix.target.os != 'windows-latest'
+        shell: bash
+        run: |
+          tar czf "$ARCHIVE.tar.gz" "$ARCHIVE"
+          shasum -a 256 "$ARCHIVE.tar.gz" > "$ARCHIVE.tar.gz.sha256"
+          echo "ASSET_CHECKSUM=$ARCHIVE.tar.gz.sha256" >> $GITHUB_ENV
+          echo "ASSET=$ARCHIVE.tar.gz" >> $GITHUB_ENV
+      - name: Upload assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          gh release upload "$version" ${{ env.ASSET_CHECKSUM }}
+          gh release upload "$version" ${{ env.ASSET }}
