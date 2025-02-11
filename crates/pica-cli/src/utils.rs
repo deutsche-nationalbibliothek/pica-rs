@@ -20,8 +20,8 @@ pub(crate) enum FilterSetError {
 }
 
 pub(crate) struct FilterSet {
-    allow: HashSet<BString>,
-    deny: HashSet<BString>,
+    allow: Option<HashSet<BString>>,
+    deny: Option<HashSet<BString>>,
 }
 
 impl FilterSet {
@@ -29,29 +29,33 @@ impl FilterSet {
         allow: Vec<P>,
         deny: Vec<P>,
     ) -> Result<Self, FilterSetError> {
-        Ok(Self {
-            allow: read_filter_set(allow)?,
-            deny: read_filter_set(deny)?,
-        })
+        let allow = read_filter_set(allow)?;
+        let deny = read_filter_set(deny)?;
+
+        Ok(Self { allow, deny })
     }
 
     #[inline]
     pub(crate) fn check(&self, ppn: &BStr) -> bool {
-        if self.allow.is_empty() && self.deny.is_empty() {
-            return true;
+        if let Some(ref deny) = self.deny {
+            if deny.contains(ppn) {
+                return false;
+            }
         }
 
-        if !self.allow.is_empty() && !self.allow.contains(ppn) {
-            false
-        } else {
-            !self.deny.contains(ppn)
+        if let Some(ref allow) = self.allow {
+            if !allow.contains(ppn) || allow.is_empty() {
+                return false;
+            }
         }
+
+        true
     }
 }
 
 fn read_filter_set<P: AsRef<Path>>(
     paths: Vec<P>,
-) -> Result<HashSet<BString>, FilterSetError> {
+) -> Result<Option<HashSet<BString>>, FilterSetError> {
     let mut set = HashSet::new();
 
     for path in paths.iter() {
@@ -73,7 +77,7 @@ fn read_filter_set<P: AsRef<Path>>(
         );
     }
 
-    Ok(set)
+    Ok(if !paths.is_empty() { Some(set) } else { None })
 }
 
 fn read_df<P: AsRef<Path>>(

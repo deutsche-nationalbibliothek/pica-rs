@@ -355,6 +355,25 @@ fn filter_allow() -> TestResult {
         .stderr(predicates::str::is_empty());
     temp_dir.close().unwrap();
 
+    // empty allow list
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+    let allow = temp_dir.child("allow.csv");
+    allow.write_str("idn\n").unwrap();
+
+    let assert = cmd
+        .args(["filter", "-s", "003@?"])
+        .args(["-A", allow.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+    temp_dir.close().unwrap();
+
     Ok(())
 }
 
@@ -427,6 +446,25 @@ fn filter_deny() -> TestResult {
         .stdout(predicates::path::eq_file(
             data_dir().join("goethe.dat"),
         ))
+        .stderr(predicates::str::is_empty());
+    temp_dir.close().unwrap();
+
+    // empty deny list
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+    let deny = temp_dir.child("deny.csv");
+    deny.write_str("idn\n").unwrap();
+
+    let assert = cmd
+        .args(["filter", "-s", "003@?"])
+        .args(["-D", deny.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
     temp_dir.close().unwrap();
 
