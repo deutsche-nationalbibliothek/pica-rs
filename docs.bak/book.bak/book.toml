@@ -1,7 +1,0 @@
-[book]
-authors = ["Nico Wagner"]
-src = "src/de"
-title = "pica-rs"
-
-[output.html]
-additional-css = ["custom.css"]
