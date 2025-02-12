@@ -2,7 +2,7 @@
 
 <div align="center" markdown="1">
 
-[![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/ci.yml)
+[![CI](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/deutsche-nationalbibliothek/pica-rs/actions/workflows/rust.yml)
 [![Documentation](https://img.shields.io/badge/Documentation-main-orange.svg)](https://deutsche-nationalbibliothek.github.io/pica-rs/)
 [![dependency status](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs/status.svg)](https://deps.rs/repo/github/deutsche-nationalbibliothek/pica-rs)
 
