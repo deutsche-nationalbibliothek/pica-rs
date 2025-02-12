@@ -25,6 +25,7 @@ use crate::prelude::*;
 /// requires the {}-notation and is expected at the first position (e.g.
 /// "044H/*{b == 'GND' && 9?, 9}").
 #[derive(Parser, Debug)]
+#[clap(visible_alias = "freq")]
 pub(crate) struct Frequency {
     /// Skip invalid records that can't be decoded as normalized PICA+.
     #[arg(long, short)]
