@@ -741,3 +741,19 @@ fn filter_tee() -> TestResult {
     temp_dir.close().unwrap();
     Ok(())
 }
+
+/// https://github.com/deutsche-nationalbibliothek/pica-rs/issues/907
+#[test]
+fn filter_no_ppn() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    let data = "036E/00 \x1faSpringer-Lehrbuch\x1e036E/01 \x1faSpringer-Link\x1fpBücher\x1e\n";
+    let assert =
+        cmd.args(["filter", "....?"]).write_stdin(data).assert();
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(data))
+        .stderr(predicates::str::is_empty());
+    Ok(())
+}

@@ -250,15 +250,15 @@ pub trait PathExt {
     /// use pica_record::prelude::*;
     ///
     /// let record = ByteRecord::from_bytes(b"003@ \x1f0118540238\x1e\n")?;
-    /// assert_eq!(record.ppn(), "118540238");
+    /// assert_eq!(record.ppn().unwrap(), "118540238");
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    fn ppn(&self) -> &Self::Value {
+    fn ppn(&self) -> Option<&Self::Value> {
         static PATH: LazyLock<Path> =
             LazyLock::new(|| Path::new("003@.0").unwrap());
 
-        self.first(&PATH, &Default::default()).unwrap()
+        self.first(&PATH, &Default::default())
     }
 }
 impl PathExt for RecordRef<'_> {
@@ -492,7 +492,7 @@ mod tests {
     fn test_path_ppn() -> TestResult {
         let data = ada_lovelace();
         let record = ByteRecord::from_bytes(&data)?;
-        assert_eq!(record.ppn(), "119232022");
+        assert_eq!(record.ppn().unwrap(), "119232022");
         Ok(())
     }
 }
