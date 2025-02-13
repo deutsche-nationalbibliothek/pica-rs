@@ -1,6 +1,6 @@
 [package]
 name = "pica-record"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "EUPL-1.2"
 keywords = ["PICA+", "code4lib"]
