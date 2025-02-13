@@ -78,7 +78,7 @@ pub(crate) enum Strategy {
 #[inline]
 fn record_key(record: &ByteRecord, strategy: &Strategy) -> String {
     match strategy {
-        Strategy::Idn => record.ppn().to_string(),
+        Strategy::Idn => record.ppn().expect("ppn").to_string(),
         Strategy::Hash => {
             record.sha256().iter().fold(String::new(), |mut out, b| {
                 let _ = write!(out, "{b:02x}");

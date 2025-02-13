@@ -221,8 +221,10 @@ impl Select {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if !filter_set.check(record.ppn()) {
-                            continue;
+                        if let Some(ppn) = record.ppn() {
+                            if !filter_set.check(ppn) {
+                                continue;
+                            }
                         }
 
                         if let Some(ref matcher) = matcher {

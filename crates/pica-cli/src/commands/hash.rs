@@ -80,7 +80,10 @@ impl Hash {
                         );
 
                         writer.write_record(&[
-                            record.ppn().to_string(),
+                            record
+                                .ppn()
+                                .unwrap_or_default()
+                                .to_string(),
                             hash,
                         ])?;
                     }

@@ -196,8 +196,10 @@ impl Filter {
                     Ok(ref mut record) => {
                         progress.update(false);
 
-                        if !filter_set.check(record.ppn()) {
-                            continue;
+                        if let Some(ppn) = record.ppn() {
+                            if !filter_set.check(ppn) {
+                                continue;
+                            }
                         }
 
                         let mut is_match =
