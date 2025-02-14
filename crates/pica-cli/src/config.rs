@@ -82,7 +82,6 @@ impl Config {
     }
 
     /// Saves the config.
-    #[cfg(feature = "unstable")]
     pub(crate) fn save(&self) -> io::Result<()> {
         use std::fs::{create_dir_all, File};
         use std::io::Write;

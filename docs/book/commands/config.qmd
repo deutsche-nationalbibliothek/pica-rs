@@ -1,10 +1,5 @@
 # config {.unnumbered}
 
-::: {.callout-warning}
-Das Kommando `config` ist eine `unstable`-Funktion, die noch nicht in den
-Releases enthalten ist und explizit aktiviert werden muss.
-:::
-
 Mithilfe des `config`-Kommandos lassen sich bestimmte Optionen setzen und das
 Laufzeitverhalten von `pica` beeinflussen. Falls noch keine Konfigurationsdatei
 existiert, wird diese automatisch angelegt und je nach Betriebssystem in den
