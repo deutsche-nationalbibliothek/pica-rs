@@ -40,9 +40,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "$VERSION" --draft --generate-notes --title "v$VERSION"
+          gh release create "$RELEASE_TAG" --verify-tag --draft --generate-notes --title "$RELEASE_TAG"
     outputs:
       version: ${{ env.VERSION }}
+      tag: ${{ env.RELEASE_TAG }}
 
   release:
     needs: prepare
@@ -117,6 +118,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          version="${{ needs.prepare.outputs.version }}"
-          gh release upload "$version" ${{ env.ASSET_CHECKSUM }}
-          gh release upload "$version" ${{ env.ASSET }}
+          gh release upload "${{ needs.prepare.outputs.tag }}" ${{ env.ASSET_CHECKSUM }}
+          gh release upload "${{ needs.prepare.outputs.tag }}" ${{ env.ASSET }}
