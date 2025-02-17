@@ -15,9 +15,9 @@ dafür vorgesehenen Pfaden gespeichert:
 
 Kann eine Zeile in der Eingabe nicht als Datensatz (normalisiertes PICA+)
 dekodiert werden, brechen die meisten Kommandos die Verarbeitung mit einer
-Fehlermeldung ab. Dieses Verhalten kann mit der Option `--skip-invalid`
-geändert werden, sodass diese ungültigen Datensätze übersprungen werden. Dieses
-Verhalten kann auch in der Konfigurationsdatei hinterlegt werden:
+Fehlermeldung ab. Dieses Verhalten kann mit der Option `--skip-invalid` geändert
+werden, sodass diese ungültigen Datensätze übersprungen werden. Dieses Verhalten
+kann auch in der Konfigurationsdatei hinterlegt werden:
 
 ```{.bash}
 $ pica config skip-invalid true
@@ -30,9 +30,9 @@ entfallen. Die Einstellung lässt sich mit `--unset` rückgängig machen:
 $ pica config --unset skip-invalid
 ```
 
-### Ändern der Unicode Normalform
+### Ändern der Unicode-Normalform
 
-Liegen die PICA-Daten in einer anderen [Unicode Normalform] vor, lassen sich
+Liegen die PICA-Daten in einer anderen [Unicode-Normalform] vor, lassen sich
 Filterausdrücke mit der Option `normalization` an die Normalform der Daten
 angleichen:
 
@@ -49,4 +49,4 @@ $ pica config --unset normalization
 ```
 
 
-[Unicode Normalform]: https://de.wikipedia.org/wiki/Normalisierung_(Unicode)
+[Unicode-Normalform]: https://de.wikipedia.org/wiki/Normalisierung_(Unicode)
