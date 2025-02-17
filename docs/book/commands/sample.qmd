@@ -24,13 +24,6 @@ $ pica sample 200 DUMP.dat.gz -o samples.dat
 `-s`, `--skip-invalid`
 : Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
 
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
-mittels `=*`.
-
 `-g`, `--gzip`
 : Komprimieren der Ausgabe im [Gzip]-Format.
 
@@ -41,6 +34,30 @@ deterministische Auswahl zu erhalten.
 `-p`, `--progress`
 : Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
 invaliden Datensätze anzeigt.
+
+`-i`, `--ignore-case`
+: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+
+`--strsim-threshold <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
+mittels `=*`.
+
+`--where <filter>`
+: Angabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.
+
+`--and <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> && <expr>`.
+
+`--or <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> || <expr>`.
+
+`--not <expr>`
+: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
+`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
 
 `-o <path>`, `--outdir <path>`
 : Angabe, in welches Verzeichnis die Partitionen geschrieben werden sollen.
@@ -60,4 +77,5 @@ $ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv
 
 
 [Reservoir sampling]: https://en.wikipedia.org/wiki/Reservoir_sampling
+[Gzip]: https://de.wikipedia.org/wiki/Gzip
 

@@ -139,3 +139,138 @@ fn sample_seed() -> TestResult {
     temp_dir.close().unwrap();
     Ok(())
 }
+
+#[test]
+fn sample_where() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let samples = temp_dir.child("samples.dat");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["sample", "-s", "23"])
+        .args(["--where", "003@.0 == '118540238'"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", samples.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
+        .eval(samples.path()));
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn sample_where_and() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let samples = temp_dir.child("samples.dat");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["sample", "-s", "23"])
+        .args(["--where", "002@.0 =^ 'Tp'"])
+        .args(["--and", "003@.0 == '118540238'"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", samples.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
+        .eval(samples.path()));
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn sample_where_not() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let samples = temp_dir.child("samples.dat");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["sample", "-s", "23"])
+        .args(["--where", "002@.0 =^ 'Tp'"])
+        .args(["--not", "003@.0 == '118607626'"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", samples.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
+        .eval(samples.path()));
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn sample_where_and_not() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let samples = temp_dir.child("samples.dat");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["sample", "-s", "23"])
+        .args(["--where", "002@.0 =^ 'Tp'"])
+        .args(["--and", "003@.0 == '118540238'"])
+        .args(["--not", "002@.0 == 'Tp3'"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", samples.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
+        .eval(samples.path()));
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn sample_where_or() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let samples = temp_dir.child("samples.dat");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["sample", "-s", "23"])
+        .args(["--where", "003@.0 == '118515551'"])
+        .args(["--or", "003@.0 == '118540238'"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", samples.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
+        .eval(samples.path()));
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
