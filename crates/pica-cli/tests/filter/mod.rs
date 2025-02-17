@@ -124,7 +124,7 @@ fn filter_skip_invalid() -> TestResult {
         .code(2)
         .stdout(predicates::str::is_empty().not())
         .stderr(predicates::str::contains(
-            "parse erorr: invalid record on line 12",
+            "parse error: invalid record on line 12",
         ));
 
     let mut cmd = Command::cargo_bin("pica")?;
