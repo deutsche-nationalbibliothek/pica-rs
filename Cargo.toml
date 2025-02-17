@@ -1,5 +1,9 @@
-[package]
-name = "pica-record"
+[workspace]
+default-members = ["crates/pica-cli"]
+members = ["crates/pica-cli"]
+resolver = "2"
+
+[workspace.package]
 version = "1.0.1"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "EUPL-1.2"
@@ -7,10 +11,14 @@ keywords = ["PICA+", "code4lib"]
 rust-version = "1.83"
 edition = "2021"
 
-[workspace]
-default-members = ["crates/pica-cli"]
-members = ["crates/pica-cli"]
-resolver = "2"
+[package]
+name = "pica-record"
+authors.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+rust-version.workspace = true
+version.workspace = true
 
 [features]
 serde = ["dep:serde", "bstr/serde"]
