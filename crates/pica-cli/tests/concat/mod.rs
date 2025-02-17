@@ -207,47 +207,42 @@ fn skip_invalid() -> TestResult {
         .code(2)
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::contains(
-            "parse erorr: invalid record on line 1",
+            "parse error: invalid record on line 1",
         ));
 
     // config
-    #[cfg(feature = "unstable")]
-    {
-        let mut cmd = Command::cargo_bin("pica")?;
-        let temp_dir = TempDir::new().unwrap();
-        let config = temp_dir.child("pica.toml");
-        let filename = config.to_str().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+    let config = temp_dir.child("pica.toml");
+    let filename = config.to_str().unwrap();
 
-        let assert = cmd
-            .args(["--config", filename])
-            .arg("config")
-            .args(["skip-invalid", "true"])
-            .assert();
+    let assert = cmd
+        .args(["--config", filename])
+        .arg("config")
+        .args(["skip-invalid", "true"])
+        .assert();
 
-        assert
-            .success()
-            .code(0)
-            .stdout(predicates::str::is_empty())
-            .stderr(predicates::str::is_empty());
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
 
-        let mut cmd = Command::cargo_bin("pica")?;
-        let assert = cmd
-            .args(["-c", config.to_str().unwrap()])
-            .arg("concat")
-            .arg(data_dir().join("invalid.dat"))
-            .arg(data_dir().join("ada.dat"))
-            .assert();
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["-c", config.to_str().unwrap()])
+        .arg("concat")
+        .arg(data_dir().join("invalid.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
 
-        assert
-            .success()
-            .code(0)
-            .stdout(predicates::path::eq_file(
-                data_dir().join("ada.dat"),
-            ))
-            .stderr(predicates::str::is_empty());
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
+        .stderr(predicates::str::is_empty());
 
-        temp_dir.close().unwrap();
-    }
+    temp_dir.close().unwrap();
     Ok(())
 }
 

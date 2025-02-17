@@ -22,7 +22,6 @@ pub(crate) struct Args {
 pub(crate) enum Command {
     Completions(Completions),
     Concat(Concat),
-    #[cfg(feature = "unstable")]
     Config(Config),
     Convert(Convert),
     Count(Count),

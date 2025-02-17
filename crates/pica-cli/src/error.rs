@@ -8,14 +8,12 @@ use thiserror::Error;
 
 pub(crate) type CliResult = Result<ExitCode, CliError>;
 
-#[cfg(feature = "unstable")]
 macro_rules! bail {
     ($($arg:tt)*) => {{
         return Err(CliError::Other(format!($($arg)*)));
     }};
 }
 
-#[cfg(feature = "unstable")]
 pub(crate) use bail;
 
 use crate::utils::FilterSetError;
