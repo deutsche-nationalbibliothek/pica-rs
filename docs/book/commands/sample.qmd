@@ -5,10 +5,10 @@ der Eingabe.
 
 ::: {.callout-note}
 Beim Aufruf des Kommandos ist die Anzahl der gültigen Datensätze nicht
-bekannt. Deshalb wird für die Stichprobenziehen das Verfahren [Reservoir
+bekannt. Deshalb wird für die Stichprobenziehung das Verfahren [Reservoir
 sampling] eingesetzt. Hierfür wird während der Laufzeit Arbeitsspeicher
 proportial zum gewünschten Stichprobenumfang $n$ verwendet. Datensätze am
-Anfang der Eingabe haben eine höhere Wahrscheinlichkeit in der Stichproben
+Anfang der Eingabe haben eine höhere Wahrscheinlichkeit, in der Stichprobe
 enthalten zu sein, als Datensätze am Ende.
 :::
 
