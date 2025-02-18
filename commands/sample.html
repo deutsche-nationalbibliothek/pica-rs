@@ -365,7 +365,7 @@ Hinweis
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Beim Aufruf des Kommandos ist die Anzahl der gültigen Datensätze nicht bekannt. Deshalb wird für die Stichprobenziehen das Verfahren <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">Reservoir sampling</a> eingesetzt. Hierfür wird während der Laufzeit Arbeitsspeicher proportial zum gewünschten Stichprobenumfang <span class="math inline">\(n\)</span> verwendet. Datensätze am Anfang der Eingabe haben eine höhere Wahrscheinlichkeit in der Stichproben enthalten zu sein, als Datensätze am Ende.</p>
+<p>Beim Aufruf des Kommandos ist die Anzahl der gültigen Datensätze nicht bekannt. Deshalb wird für die Stichprobenziehung das Verfahren <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">Reservoir sampling</a> eingesetzt. Hierfür wird während der Laufzeit Arbeitsspeicher proportial zum gewünschten Stichprobenumfang <span class="math inline">\(n\)</span> verwendet. Datensätze am Anfang der Eingabe haben eine höhere Wahrscheinlichkeit, in der Stichprobe enthalten zu sein, als Datensätze am Ende.</p>
 </div>
 </div>
 <p>Im folgenden Beispiel werden zufällig 200 Datensätze aus der Eingabe ausgewählt und in die Datei <code>samples.dat</code> geschrieben:</p>
@@ -377,17 +377,9 @@ Hinweis
 <dd>
 Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
 </dd>
-<dt><code>-i</code>, <code>--ignore-case</code></dt>
-<dd>
-Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-</dd>
-<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
-<dd>
-Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
-</dd>
 <dt><code>-g</code>, <code>--gzip</code></dt>
 <dd>
-Komprimieren der Ausgabe im [Gzip]-Format.
+Komprimieren der Ausgabe im <a href="https://de.wikipedia.org/wiki/Gzip">Gzip</a>-Format.
 </dd>
 <dt><code>--seed &lt;number&gt;</code></dt>
 <dd>
@@ -396,6 +388,30 @@ Initialisiert den Zufallszahlengenerator mit einem <em>seed</em>-Wert, um eine d
 <dt><code>-p</code>, <code>--progress</code></dt>
 <dd>
 Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.
+</dd>
+<dt><code>-i</code>, <code>--ignore-case</code></dt>
+<dd>
+Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+</dd>
+<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
+</dd>
+<dt><code>--where &lt;filter&gt;</code></dt>
+<dd>
+Angabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.
+</dd>
+<dt><code>--and &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>&amp;&amp;</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; &lt;expr&gt;</code>.
+</dd>
+<dt><code>--or &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>||</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; || &lt;expr&gt;</code>.
+</dd>
+<dt><code>--not &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; !(&lt;expr&gt;)</code>.
 </dd>
 <dt><code>-o &lt;path&gt;</code>, <code>--outdir &lt;path&gt;</code></dt>
 <dd>
