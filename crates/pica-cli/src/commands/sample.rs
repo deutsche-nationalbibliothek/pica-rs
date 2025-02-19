@@ -1,4 +1,5 @@
 use std::ffi::OsString;
+use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::{value_parser, Parser};
@@ -6,10 +7,7 @@ use pica_record::prelude::*;
 use rand::rngs::StdRng;
 use rand::{rng, Rng, SeedableRng};
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::prelude::translit;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Selects a random permutation of records of the given sample size
 /// using reservoir sampling.
@@ -72,6 +70,28 @@ pub(crate) struct Sample {
     #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
 
+    /// Ignore records which are *not* explicitly listed in one of the
+    /// given allow-lists.
+    ///
+    /// A allow-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "allow-list", short = 'A')]
+    allow: Vec<PathBuf>,
+
+    /// Ignore records which are explicitly listed in one of the
+    /// given deny-lists.
+    ///
+    /// A deny-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "deny-list", short = 'D')]
+    deny: Vec<PathBuf>,
+
     /// Number of random records
     #[arg(value_parser = value_parser!(u16).range(1..))]
     sample_size: u16,
@@ -86,6 +106,7 @@ pub(crate) struct Sample {
 impl Sample {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut writer = WriterBuilder::new()
             .gzip(self.gzip)
             .from_path_or_stdout(self.output)?;
@@ -134,6 +155,12 @@ impl Sample {
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
                         progress.update(false);
+
+                        if let Some(ppn) = record.ppn() {
+                            if !filter_set.check(ppn) {
+                                continue;
+                            }
+                        }
 
                         if let Some(ref matcher) = matcher {
                             if !matcher.is_match(record, &options) {
