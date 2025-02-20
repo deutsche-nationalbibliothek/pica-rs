@@ -90,7 +90,7 @@ $ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv
     `idn`-Spalte enthält. Alle Dateien werden automatisch als
     [CSV]-Datei interpretiert, es sei denn, die Datei endet mit `.ipc`
     oder `.arrow`, dann erfolgt die Interpretation im [Arrow]-Format.
-    CSV- bzw. TSV-Dateien mit der Ending `.csv.gz` bzw. `.tsv.gz`
+    CSV- bzw. TSV-Dateien mit der Endung `.csv.gz` bzw. `.tsv.gz`
     werden automatisch entpackt. Ist sowohl eine `ppn`- als auch eine
     `idn`-Spalte vorhanden, wird die `ppn`-Spalte genutzt.
 
