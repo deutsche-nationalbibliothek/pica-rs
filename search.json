@@ -663,7 +663,7 @@
     "href": "commands/sample.html#optionen",
     "title": "sample",
     "section": "",
-    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n--seed &lt;number&gt;\n\nInitialisiert den Zufallszahlengenerator mit einem seed-Wert, um eine deterministische Auswahl zu erhalten.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.\n\n-i, --ignore-case\n\nGroß- und Kleinschreibung wird bei Vergleichen ignoriert.\n\n--strsim-threshold &lt;value&gt;\n\nFestlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels =*.\n\n--where &lt;filter&gt;\n\nAngabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.\n\n--and &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen &&-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && &lt;expr&gt;.\n\n--or &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen ||-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; || &lt;expr&gt;.\n\n--not &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && !(&lt;expr&gt;).\n\n-o &lt;path&gt;, --outdir &lt;path&gt;\n\nAngabe, in welches Verzeichnis die Partitionen geschrieben werden sollen. Standardmäßig wird das aktuelle Verzeichnis verwendet.",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n--seed &lt;number&gt;\n\nInitialisiert den Zufallszahlengenerator mit einem seed-Wert, um eine deterministische Auswahl zu erhalten.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.\n\n-i, --ignore-case\n\nGroß- und Kleinschreibung wird bei Vergleichen ignoriert.\n\n--strsim-threshold &lt;value&gt;\n\nFestlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels =*.\n\n--where &lt;filter&gt;\n\nAngabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.\n\n--and &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen &&-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && &lt;expr&gt;.\n\n--or &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen ||-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; || &lt;expr&gt;.\n\n--not &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && !(&lt;expr&gt;).\n\n-A &lt;file&gt;, --allow-list &lt;file&gt;\n\nEs werden alle Datensätze ignoriert, die nicht explizit in der Positivliste1 auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-D &lt;file&gt;, --deny-list &lt;file&gt;\n\nEs werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-o &lt;path&gt;, --outdir &lt;path&gt;\n\nAngabe, in welches Verzeichnis die Partitionen geschrieben werden sollen. Standardmäßig wird das aktuelle Verzeichnis verwendet.",
     "crumbs": [
       "Kommandos",
       "sample"
@@ -675,6 +675,17 @@
     "title": "sample",
     "section": "Beispiele",
     "text": "Beispiele\n\nZufällige PPN-Liste\nIn Kombination mit dem select-Kommando kann eine zufällige PPN-Liste erzeugt werden:\n$ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv",
+    "crumbs": [
+      "Kommandos",
+      "sample"
+    ]
+  },
+  {
+    "objectID": "commands/sample.html#footnotes",
+    "href": "commands/sample.html#footnotes",
+    "title": "sample",
+    "section": "",
+    "text": "Eine Positiv- oder Negativliste muss entweder als CSV-Datei vorliegen oder als eine [Arrow]-Datei, die eine ppn- oder idn-Spalte enthält. Alle Dateien werden automatisch als CSV-Datei interpretiert, es sei denn, die Datei endet mit .ipc oder .arrow, dann erfolgt die Interpretation im [Arrow]-Format. CSV- bzw. TSV-Dateien mit der Endung .csv.gz bzw. .tsv.gz werden automatisch entpackt. Ist sowohl eine ppn- als auch eine idn-Spalte vorhanden, wird die ppn-Spalte genutzt.↩︎",
     "crumbs": [
       "Kommandos",
       "sample"
