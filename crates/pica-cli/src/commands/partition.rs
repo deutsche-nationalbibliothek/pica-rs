@@ -3,7 +3,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use hashbrown::hash_map::{Entry, HashMap};
 use pica_record::prelude::*;
 

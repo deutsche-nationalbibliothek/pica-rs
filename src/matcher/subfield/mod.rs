@@ -65,8 +65,8 @@ impl ExistsMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::ExistsMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::ExistsMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -105,8 +105,8 @@ impl Display for ExistsMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::ExistsMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::ExistsMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let matcher = ExistsMatcher::new("[a0-3]?")?;
@@ -165,8 +165,8 @@ impl RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -216,8 +216,8 @@ impl RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::new().case_ignore(true);
@@ -250,8 +250,8 @@ impl RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::new();
@@ -291,8 +291,8 @@ impl RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::new();
@@ -334,8 +334,8 @@ impl RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let subfield = SubfieldRef::new('a', "baz")?;
@@ -372,8 +372,8 @@ impl RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -405,8 +405,8 @@ impl Display for RelationMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RelationMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let matcher = RelationMatcher::new("[a0-3] == 'foo'")?;
@@ -461,8 +461,8 @@ impl RegexMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RegexMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RegexMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -566,8 +566,8 @@ impl RegexSetMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RegexSetMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RegexSetMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -615,8 +615,8 @@ impl Display for RegexSetMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::RegexSetMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::RegexSetMatcher;
     ///
     /// let matcher =
     ///     RegexSetMatcher::new("ANY [ab] !~ ['^f.*o$', 'bar']")?;
@@ -669,8 +669,8 @@ impl InMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::InMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::InMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -703,11 +703,7 @@ impl InMatcher {
                 }
             });
 
-            if self.invert {
-                !result
-            } else {
-                result
-            }
+            if self.invert { !result } else { result }
         };
 
         match self.quantifier {
@@ -723,8 +719,8 @@ impl Display for InMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::InMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::InMatcher;
     ///
     /// let matcher = InMatcher::new("ANY [ab] in ['foo', 'bar']")?;
     /// assert_eq!(matcher.to_string(), "ANY [ab] in ['foo', 'bar']");
@@ -780,8 +776,8 @@ impl CardinalityMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::CardinalityMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::CardinalityMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -830,8 +826,8 @@ impl Display for CardinalityMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::CardinalityMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::CardinalityMatcher;
     ///
     /// let matcher = CardinalityMatcher::new("#a >= 3")?;
     /// assert_eq!(matcher.to_string(), "#a >= 3");
@@ -890,8 +886,8 @@ impl SingletonMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::SingletonMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::SingletonMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -994,8 +990,8 @@ impl SubfieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::subfield::SubfieldMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::SubfieldMatcher;
     /// use pica_record::primitives::SubfieldRef;
     ///
     /// let options = MatcherOptions::default();
@@ -1351,7 +1347,7 @@ impl<'de> serde::Deserialize<'de> for SubfieldMatcher {
 
 #[cfg(test)]
 mod tests {
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
 

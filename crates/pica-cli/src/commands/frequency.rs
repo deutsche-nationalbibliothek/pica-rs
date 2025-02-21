@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use bstr::BString;
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use hashbrown::{HashMap, HashSet};
 use pica_record::prelude::*;
 
@@ -155,7 +155,7 @@ impl Frequency {
         let mut seen = HashSet::new();
 
         let translit =
-            crate::translit::translit(config.normalization.as_ref());
+            crate::translit::translit(config.normalization.clone());
         let query = Query::new(translit(self.query))?;
         let matcher = if let Some(matcher) = self.filter {
             Some(
@@ -256,7 +256,7 @@ impl Frequency {
             });
         }
 
-        let translit = crate::translit::translit(self.nf.as_ref());
+        let translit = crate::translit::translit(self.nf.clone());
         for (i, (values, freq)) in ftable_sorted.iter().enumerate() {
             if self.limit > 0 && i >= self.limit {
                 break;

@@ -6,7 +6,7 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use hashbrown::HashSet;
 use pica_record::prelude::*;
 
@@ -184,7 +184,7 @@ impl Select {
             Some(
                 RecordMatcherBuilder::with_transform(
                     matcher,
-                    translit(config.normalization.as_ref()),
+                    translit(config.normalization.clone()),
                 )?
                 .and(self.and)?
                 .not(self.not)?
@@ -195,7 +195,7 @@ impl Select {
             None
         };
 
-        let translit = translit(config.normalization.as_ref());
+        let translit = translit(config.normalization.clone());
         let query = Query::new(translit(self.query))?;
         let filter_set = FilterSet::new(self.allow, self.deny)?;
 
@@ -262,7 +262,7 @@ impl Select {
                                     writer.write_record(
                                         row.iter().map(|s| {
                                             (crate::translit::translit(
-                                                self.nf.as_ref(),
+                                                self.nf.clone(),
                                             ))(
                                                 s.to_string()
                                             )

@@ -4,7 +4,7 @@ use std::io::{self, Write};
 use std::process::ExitCode;
 
 use clap::{Command, Parser};
-use clap_complete::{generate, Shell};
+use clap_complete::{Shell, generate};
 
 use crate::error::CliResult;
 

@@ -1,8 +1,8 @@
 use std::fs::read_to_string;
 
 use assert_cmd::Command;
-use assert_fs::prelude::*;
 use assert_fs::TempDir;
+use assert_fs::prelude::*;
 use predicates::prelude::*;
 
 use crate::prelude::*;
@@ -25,8 +25,10 @@ fn read_file_write_file() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("invalid.dat"))
-        .eval(out.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("invalid.dat"))
+            .eval(out.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -50,8 +52,10 @@ fn read_stdin_write_file() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("invalid.dat"))
-        .eval(out.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("invalid.dat"))
+            .eval(out.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())

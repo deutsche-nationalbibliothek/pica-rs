@@ -1,6 +1,6 @@
 use std::ffi::OsStr;
 use std::fs::File;
-use std::io::{self, stdin, BufRead, BufReader, Read};
+use std::io::{self, BufRead, BufReader, Read, stdin};
 use std::path::Path;
 use std::str::Utf8Error;
 
@@ -133,13 +133,8 @@ impl<R: Read> Reader<R> {
         reader: R,
         source: Option<String>,
     ) -> Self {
-        let source = source.map(|s| {
-            if s == "-" {
-                "<stdin>".to_string()
-            } else {
-                s
-            }
-        });
+        let source = source
+            .map(|s| if s == "-" { "<stdin>".to_string() } else { s });
 
         Self {
             inner: BufReader::new(reader),

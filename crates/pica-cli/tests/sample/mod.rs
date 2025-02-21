@@ -1,6 +1,6 @@
 use assert_cmd::Command;
-use assert_fs::prelude::*;
 use assert_fs::TempDir;
+use assert_fs::prelude::*;
 use predicates::prelude::*;
 
 use crate::prelude::*;
@@ -40,8 +40,10 @@ fn sample_output() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -131,8 +133,10 @@ fn sample_seed() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("samples.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("samples.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -157,8 +161,10 @@ fn sample_where() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("goethe.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -184,8 +190,10 @@ fn sample_where_and() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("goethe.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -211,8 +219,10 @@ fn sample_where_not() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("goethe.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -239,8 +249,10 @@ fn sample_where_and_not() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("goethe.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -266,8 +278,10 @@ fn sample_where_or() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("goethe.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -295,8 +309,10 @@ fn sample_allow() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("goethe.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -338,8 +354,10 @@ fn sample_deny() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("goethe.dat"))
-        .eval(samples.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("goethe.dat"))
+            .eval(samples.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())

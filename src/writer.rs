@@ -3,8 +3,8 @@ use std::fs::OpenOptions;
 use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
-use flate2::write::GzEncoder;
 use flate2::Compression;
+use flate2::write::GzEncoder;
 
 use crate::ByteRecord;
 

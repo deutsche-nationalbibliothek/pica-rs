@@ -5,13 +5,13 @@ use bstr::{BString, ByteSlice, ByteVec};
 use winnow::combinator::{alt, separated};
 use winnow::{ModalResult, Parser};
 
+use crate::StringRecord;
 #[cfg(feature = "unstable")]
-use crate::fmt::{parse_format, Format, FormatExt, FormatOptions};
+use crate::fmt::{Format, FormatExt, FormatOptions, parse_format};
 use crate::matcher::MatcherOptions;
 use crate::parser::{parse_string, ws};
-use crate::path::{parse_path, Path};
+use crate::path::{Path, parse_path};
 use crate::primitives::RecordRef;
-use crate::StringRecord;
 
 /// An error that can occur when parsing a query expression.
 #[derive(thiserror::Error, Debug, Clone, PartialEq)]
@@ -194,11 +194,13 @@ impl Fragment {
                     .fold(Outcome::default(), |acc, e| acc + e);
 
                 if outcome.is_empty() {
-                    outcome = Outcome(vec![std::iter::repeat_n(
-                        BString::from(""),
-                        path.codes.len(),
-                    )
-                    .collect()]);
+                    outcome = Outcome(vec![
+                        std::iter::repeat_n(
+                            BString::from(""),
+                            path.codes.len(),
+                        )
+                        .collect(),
+                    ]);
                 }
 
                 outcome
@@ -495,7 +497,7 @@ mod tests {
     use std::sync::OnceLock;
     use std::{env, fs};
 
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
     use crate::ByteRecord;

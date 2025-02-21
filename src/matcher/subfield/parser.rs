@@ -15,7 +15,7 @@ use super::{
     SubfieldMatcher,
 };
 use crate::matcher::operator::{
-    parse_relational_operator, RelationalOp,
+    RelationalOp, parse_relational_operator,
 };
 use crate::matcher::quantifier::parse_quantifier;
 use crate::parser::{parse_string, parse_subfield_codes, ws};
@@ -152,11 +152,7 @@ pub(crate) fn parse_in_matcher(
                         .map(|c| c.to_string().as_bytes().to_vec())
                         .collect::<Vec<Vec<u8>>>();
 
-                    if values.len() > 1 {
-                        Some(values)
-                    } else {
-                        None
-                    }
+                    if values.len() > 1 { Some(values) } else { None }
                 }),
             )),
         ),
@@ -583,13 +579,17 @@ mod tests {
             true
         );
 
-        assert!(parse_regex_matcher
-            .parse(b"0 =~ ['[[ab]', 'Ts1']")
-            .is_err());
+        assert!(
+            parse_regex_matcher
+                .parse(b"0 =~ ['[[ab]', 'Ts1']")
+                .is_err()
+        );
 
-        assert!(parse_regex_matcher
-            .parse(b"0 !~ ['Tp3', '[[ab]']")
-            .is_err());
+        assert!(
+            parse_regex_matcher
+                .parse(b"0 !~ ['Tp3', '[[ab]']")
+                .is_err()
+        );
     }
 
     #[test]
@@ -808,9 +808,9 @@ mod tests {
         parse_success!("!!a?");
         parse_success!("!a?");
 
-        assert!(parse_subfield_not_matcher
-            .parse(b"!a == 'foo'")
-            .is_err());
+        assert!(
+            parse_subfield_not_matcher.parse(b"!a == 'foo'").is_err()
+        );
     }
 
     #[test]
@@ -864,13 +864,15 @@ mod tests {
         parse_success!("a? && !(b? && c?)");
         parse_success!("!(a? && !(b? && c?)) && d?");
 
-        assert!(parse_subfield_and_matcher
-            .parse(b"a? && b? || c?")
-            .is_err());
+        assert!(
+            parse_subfield_and_matcher
+                .parse(b"a? && b? || c?")
+                .is_err()
+        );
 
-        assert!(parse_subfield_and_matcher
-            .parse(b"a? && b? ^ c?")
-            .is_err());
+        assert!(
+            parse_subfield_and_matcher.parse(b"a? && b? ^ c?").is_err()
+        );
     }
 
     #[test]
@@ -905,9 +907,9 @@ mod tests {
         parse_success!("a? ^ (b? ^ c?) ^ d?");
         parse_success!("a? ^ ((b? ^ c?) ^ d?)");
 
-        assert!(parse_subfield_xor_matcher
-            .parse(b"a? ^ b? || c?")
-            .is_err());
+        assert!(
+            parse_subfield_xor_matcher.parse(b"a? ^ b? || c?").is_err()
+        );
     }
 
     #[test]

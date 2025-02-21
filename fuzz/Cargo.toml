@@ -1,8 +1,10 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "pica-record-ref"
 version = "0.0.0"
 publish = false
-edition = "2021"
+edition = "2024"
 
 [workspace]
 
