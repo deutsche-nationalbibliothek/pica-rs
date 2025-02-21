@@ -1,6 +1,6 @@
 use assert_cmd::Command;
-use assert_fs::prelude::*;
 use assert_fs::TempDir;
+use assert_fs::prelude::*;
 use predicates::prelude::*;
 
 use crate::prelude::*;
@@ -71,8 +71,10 @@ fn split_size() -> TestResult {
         predicates::path::exists().eval(outdir.child("4.dat").path())
     );
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(outdir.child("6.dat").path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(outdir.child("6.dat").path())
+    );
 
     outdir.close().unwrap();
     Ok(())
@@ -96,8 +98,10 @@ fn split_skip_invalid() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(outdir.child("0.dat").path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(outdir.child("0.dat").path())
+    );
     outdir.close().unwrap();
 
     let outdir = TempDir::new().unwrap();

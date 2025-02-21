@@ -84,7 +84,7 @@ impl Config {
     /// Saves the config.
     #[cfg(feature = "unstable")]
     pub(crate) fn save(&self) -> io::Result<()> {
-        use std::fs::{create_dir_all, File};
+        use std::fs::{File, create_dir_all};
         use std::io::Write;
 
         if let Some(parent) = self.path.parent() {

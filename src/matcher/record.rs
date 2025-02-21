@@ -5,8 +5,8 @@ use std::ops::{
 
 use winnow::Parser;
 
-use super::field::parser::parse_field_matcher;
 use super::field::FieldMatcher;
+use super::field::parser::parse_field_matcher;
 use super::{MatcherOptions, ParseMatcherError};
 use crate::primitives::RecordRef;
 
@@ -326,7 +326,7 @@ mod tests {
     use std::sync::OnceLock;
     use std::{env, fs};
 
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
 

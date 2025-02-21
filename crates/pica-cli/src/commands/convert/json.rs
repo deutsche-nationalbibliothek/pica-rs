@@ -1,6 +1,6 @@
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{self, stdout, BufWriter, Write};
+use std::io::{self, BufWriter, Write, stdout};
 
 use pica_record::prelude::*;
 use serde_json::Value;

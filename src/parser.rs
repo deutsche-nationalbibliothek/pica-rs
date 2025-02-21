@@ -2,6 +2,7 @@
 
 use bstr::ByteSlice;
 use smallvec::SmallVec;
+use winnow::Parser;
 use winnow::ascii::{multispace0, multispace1};
 use winnow::combinator::{
     alt, delimited, preceded, repeat, separated_pair,
@@ -10,10 +11,9 @@ use winnow::error::{ContextError, ErrMode, ParserError};
 use winnow::prelude::*;
 use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
 use winnow::token::take_till;
-use winnow::Parser;
 
-use crate::primitives::parse::parse_subfield_code;
 use crate::primitives::SubfieldCode;
+use crate::primitives::parse::parse_subfield_code;
 
 #[inline]
 pub(crate) fn parse_subfield_code_range(
@@ -407,13 +407,16 @@ mod tests {
         /// This bug was found by cargo-fuzz
         #[test]
         fn test_parse_invalid_byte_seq() {
-            assert!(parse_string
-                .parse(&[
-                    39, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                    255, 255, 255, 255, 255, 255, 61, 92, 92, 4, 39,
-                ])
-                .is_err());
+            assert!(
+                parse_string
+                    .parse(&[
+                        39, 255, 255, 255, 255, 255, 255, 255, 255,
+                        255, 255, 255, 255, 255, 255, 255, 255, 255,
+                        255, 255, 255, 255, 255, 255, 255, 255, 61, 92,
+                        92, 4, 39,
+                    ])
+                    .is_err()
+            );
         }
     }
 }

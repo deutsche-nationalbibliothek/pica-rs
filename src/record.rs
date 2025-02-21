@@ -156,8 +156,8 @@ impl PartialEq<ByteRecord<'_>> for ByteRecord<'_> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::primitives::RecordRef;
     /// use pica_record::ByteRecord;
+    /// use pica_record::primitives::RecordRef;
     ///
     /// let record1 = ByteRecord::from_bytes(b"012A \x1fa123\x1e\n")?;
     /// let record2 = ByteRecord::from(RecordRef::new(vec![(
@@ -185,8 +185,8 @@ impl<'a> From<RecordRef<'a>> for ByteRecord<'a> {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::primitives::RecordRef;
     /// use pica_record::ByteRecord;
+    /// use pica_record::primitives::RecordRef;
     ///
     /// let record1 = ByteRecord::from_bytes(b"012A \x1fa123\x1e\n")?;
     /// let record2 = ByteRecord::from(record1);

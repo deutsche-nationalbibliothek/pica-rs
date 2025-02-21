@@ -6,8 +6,8 @@ use bstr::{BStr, BString};
 use serde::{Deserialize, Serialize};
 use winnow::Parser;
 
-use super::parse::parse_occurrence_ref;
 use super::ParsePicaError;
+use super::parse::parse_occurrence_ref;
 
 /// An immutable occurrence.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]

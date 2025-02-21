@@ -7,14 +7,14 @@ use smallvec::SmallVec;
 use winnow::combinator::{alt, delimited, opt, preceded, separated};
 use winnow::{ModalResult, Parser};
 
+use crate::StringRecord;
 use crate::matcher::occurrence::parse_occurrence_matcher;
-use crate::matcher::subfield::parser::parse_subfield_matcher;
 use crate::matcher::subfield::SubfieldMatcher;
+use crate::matcher::subfield::parser::parse_subfield_matcher;
 use crate::matcher::tag::parse_tag_matcher;
 use crate::matcher::{MatcherOptions, OccurrenceMatcher, TagMatcher};
 use crate::parser::{parse_subfield_codes, ws};
 use crate::primitives::{FieldRef, RecordRef, SubfieldCode};
-use crate::StringRecord;
 
 /// An error that can occur when parsing a path expression.
 #[derive(Debug, thiserror::Error)]
@@ -352,7 +352,7 @@ mod tests {
     use std::sync::OnceLock;
     use std::{env, fs};
 
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
     use crate::ByteRecord;

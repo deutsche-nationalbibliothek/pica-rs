@@ -9,8 +9,8 @@ use bstr::{BStr, BString};
 use serde::{Deserialize, Serialize};
 use winnow::Parser;
 
-use super::parse::{parse_subfield_ref, parse_subfield_value_ref};
 use super::ParsePicaError;
+use super::parse::{parse_subfield_ref, parse_subfield_value_ref};
 
 /// A subfield code.
 ///

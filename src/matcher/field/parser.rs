@@ -20,7 +20,7 @@ use crate::matcher::subfield::parser::{
     parse_subfield_matcher, parse_subfield_singleton_matcher,
 };
 use crate::matcher::tag::parse_tag_matcher;
-use crate::matcher::{subfield, RelationalOp};
+use crate::matcher::{RelationalOp, subfield};
 use crate::parser::ws;
 
 pub(super) fn parse_exists_matcher(
