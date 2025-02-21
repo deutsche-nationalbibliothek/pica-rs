@@ -8,8 +8,8 @@ version = "1.0.1"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "EUPL-1.2"
 keywords = ["PICA+", "code4lib"]
-rust-version = "1.83"
-edition = "2021"
+rust-version = "1.85"
+edition = "2024"
 
 [package]
 name = "pica-record"

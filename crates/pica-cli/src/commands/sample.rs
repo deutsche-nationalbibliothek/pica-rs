@@ -2,10 +2,10 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use pica_record::prelude::*;
 use rand::rngs::StdRng;
-use rand::{rng, Rng, SeedableRng};
+use rand::{Rng, SeedableRng, rng};
 
 use crate::prelude::*;
 
@@ -124,7 +124,7 @@ impl Sample {
             Some(
                 RecordMatcherBuilder::with_transform(
                     matcher,
-                    translit(config.normalization.as_ref()),
+                    translit(config.normalization.clone()),
                 )?
                 .and(self.and)?
                 .or(self.or)?

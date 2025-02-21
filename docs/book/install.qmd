@@ -58,8 +58,9 @@ Installationspfad in der `PATH`-Umgebungsvariable mit aufgelistet werden.
 
 ## Aus dem Quellcode installieren
 
-Das Projekt lässt sich auch direkt aus den Quellen kompilieren. Hierfür wird
-eine aktuelle Rust-Version (>= 1.83) mit dem Paketmanager `cargo` benötigt.
+Das Projekt lässt sich auch direkt aus den Quellen kompilieren. Hierfür
+wird eine aktuelle Rust-Version (>= 1.85) mit dem Paketmanager `cargo`
+benötigt.
 
 Der aktuelle Entwicklungsstand lässt sich wie folgt installieren:
 

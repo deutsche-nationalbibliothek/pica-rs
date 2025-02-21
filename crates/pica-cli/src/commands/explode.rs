@@ -1,7 +1,7 @@
 use std::ffi::OsString;
 use std::process::ExitCode;
 
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use pica_record::prelude::*;
 use pica_record::primitives::{FieldRef, Level};
 
@@ -188,7 +188,7 @@ impl Explode {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
-        let translit = translit(config.normalization.as_ref());
+        let translit = translit(config.normalization.clone());
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
 
