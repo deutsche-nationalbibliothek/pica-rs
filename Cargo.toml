@@ -1,3 +1,5 @@
+cargo-features = ["edition2024"]
+
 [workspace]
 default-members = ["crates/pica-cli"]
 members = ["crates/pica-cli"]
