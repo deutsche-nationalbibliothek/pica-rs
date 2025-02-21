@@ -28,7 +28,6 @@ fn run() -> CliResult {
     match args.cmd {
         Command::Completions(cmd) => cmd.execute(&mut Args::command()),
         Command::Concat(cmd) => cmd.execute(&config),
-        #[cfg(feature = "unstable")]
         Command::Config(cmd) => cmd.execute(&mut config),
         Command::Convert(cmd) => cmd.execute(&config),
         Command::Count(cmd) => cmd.execute(&config),

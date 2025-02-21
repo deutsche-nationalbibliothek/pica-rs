@@ -117,7 +117,7 @@ fn split_skip_invalid() -> TestResult {
         .code(2)
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::contains(
-            "parse erorr: invalid record on line 1",
+            "parse error: invalid record on line 1",
         ));
 
     outdir.close().unwrap();
