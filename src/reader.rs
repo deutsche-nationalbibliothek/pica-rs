@@ -12,7 +12,7 @@ use crate::{ByteRecord, StringRecord};
 /// An error that can occur when reading records.
 #[derive(thiserror::Error, Debug)]
 pub enum ReadPicaError {
-    #[error("parse erorr: {msg}")]
+    #[error("parse error: {msg}")]
     Parse { msg: String, err: ParsePicaError },
     #[error("parse erorr: {msg}")]
     Utf8 { msg: String, err: Utf8Error },

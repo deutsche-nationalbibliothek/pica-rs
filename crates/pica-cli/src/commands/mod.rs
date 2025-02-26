@@ -1,6 +1,5 @@
 pub(crate) use completions::Completions;
 pub(crate) use concat::Concat;
-#[cfg(feature = "unstable")]
 pub(crate) use config::Config;
 pub(crate) use convert::Convert;
 pub(crate) use count::Count;
@@ -18,7 +17,6 @@ pub(crate) use split::Split;
 
 mod completions;
 mod concat;
-#[cfg(feature = "unstable")]
 mod config;
 mod convert;
 mod count;

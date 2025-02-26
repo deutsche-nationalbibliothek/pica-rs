@@ -2,7 +2,6 @@ pub(crate) mod prelude;
 
 mod completions;
 mod concat;
-#[cfg(feature = "unstable")]
 mod config;
 mod convert;
 mod count;
