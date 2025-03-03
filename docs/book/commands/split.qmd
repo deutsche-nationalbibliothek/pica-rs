@@ -27,16 +27,33 @@ $ tree
 `-s`, `--skip-invalid`
 : Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
 
+`-p`, `--progress`
+: Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
+invaliden Datensätze anzeigt.
+
+`--where <filter>`
+: Angabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.
+
+`--and <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> && <expr>`.
+
+`--or <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> || <expr>`.
+
+`--not <expr>`
+: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
+`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
+
 `-g`, `--gzip`
 : Komprimieren der Ausgabe im [Gzip]-Format.
 
 `--template`
 : Template für die Dateinamen. Der Platzhalter `{}` wird durch eine
 fortlaufende Nummer ersetzt.
-
-`-p`, `--progress`
-: Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
-invaliden Datensätze anzeigt.
 
 `-o <path>`, `--outdir <path>`
 : Angabe, in welches Verzeichnis die Ausgabe geschrieben werden soll.
