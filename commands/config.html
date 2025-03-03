@@ -74,7 +74,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ea3060166baba8365c537391f187a270.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-99fdde3039a1d9653d006922c699b427.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -325,19 +325,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warnung
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Das Kommando <code>config</code> ist eine <code>unstable</code>-Funktion, die noch nicht in den Releases enthalten ist und explizit aktiviert werden muss.</p>
-</div>
-</div>
 <p>Mithilfe des <code>config</code>-Kommandos lassen sich bestimmte Optionen setzen und das Laufzeitverhalten von <code>pica</code> beeinflussen. Falls noch keine Konfigurationsdatei existiert, wird diese automatisch angelegt und je nach Betriebssystem in den dafür vorgesehenen Pfaden gespeichert:</p>
 <ul>
 <li><code>/home/alice/.config/pica/config.toml</code> (Linux),</li>
@@ -354,8 +341,8 @@ Warnung
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica config <span class="at">--unset</span> skip-invalid</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="ändern-der-unicode-normalform" class="level3">
-<h3 class="anchored" data-anchor-id="ändern-der-unicode-normalform">Ändern der Unicode Normalform</h3>
-<p>Liegen die PICA-Daten in einer anderen <a href="https://de.wikipedia.org/wiki/Normalisierung_(Unicode)">Unicode Normalform</a> vor, lassen sich Filterausdrücke mit der Option <code>normalization</code> an die Normalform der Daten angleichen:</p>
+<h3 class="anchored" data-anchor-id="ändern-der-unicode-normalform">Ändern der Unicode-Normalform</h3>
+<p>Liegen die PICA-Daten in einer anderen <a href="https://de.wikipedia.org/wiki/Normalisierung_(Unicode)">Unicode-Normalform</a> vor, lassen sich Filterausdrücke mit der Option <code>normalization</code> an die Normalform der Daten angleichen:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica config normalization nfd</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Es werden die vier Normalformen <code>nfd</code>, <code>nfc</code>, <code>nfkc</code> und <code>nfkd</code> unterstützt. Nur wenn eine Normalform ausgewählt ist, werden Filterausdrücke immer entsprechend transliteriert. Die Einstellung lässt sich mit <code>--unset</code> rückgängig machen:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica config <span class="at">--unset</span> normalization</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
