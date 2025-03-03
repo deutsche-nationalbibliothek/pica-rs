@@ -1,5 +1,3 @@
-cargo-features = ["edition2024"]
-
 [package]
 name = "pica-cli"
 authors.workspace = true
