@@ -129,8 +129,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
-      - uses: Swatinem/rust-cache@v2
       - run: cargo install --git https://github.com/kbknapp/cargo-outdated.git --branch master
+      - run: cargo update
       - run: cargo outdated --workspace -root-deps-only --exit-code 1
 
   deny:
