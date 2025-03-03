@@ -85,9 +85,10 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install --locked cargo-outdated
-      - run: cargo outdated -w -d 1 --exit-code 1
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install --git https://github.com/kbknapp/cargo-outdated.git --branch main
+      - run: cargo outdated --workspace --root-deps-only --exit-code 1
 
   careful:
     runs-on: ubuntu-latest
