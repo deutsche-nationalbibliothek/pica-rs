@@ -13,8 +13,8 @@ use parser::{
 use winnow::Parser;
 
 use super::{
-    subfield, BooleanOp, MatcherOptions, OccurrenceMatcher,
-    ParseMatcherError, Quantifier, RelationalOp, TagMatcher,
+    BooleanOp, MatcherOptions, OccurrenceMatcher, ParseMatcherError,
+    Quantifier, RelationalOp, TagMatcher, subfield,
 };
 use crate::prelude::SubfieldMatcher;
 use crate::primitives::FieldRef;
@@ -60,8 +60,8 @@ impl ExistsMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::field::ExistsMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::field::ExistsMatcher;
     /// use pica_record::primitives::FieldRef;
     ///
     /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
@@ -146,8 +146,8 @@ impl SubfieldsMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::field::SubfieldsMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::field::SubfieldsMatcher;
     /// use pica_record::primitives::FieldRef;
     ///
     /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
@@ -238,8 +238,8 @@ impl SingletonMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::field::SingletonMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::field::SingletonMatcher;
     /// use pica_record::primitives::FieldRef;
     ///
     /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
@@ -331,8 +331,8 @@ impl CardinalityMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::field::CardinalityMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::field::CardinalityMatcher;
     /// use pica_record::primitives::FieldRef;
     ///
     /// let field = FieldRef::new("003@", None, vec![('0', "123456789X")])?;
@@ -443,8 +443,8 @@ impl FieldMatcher {
     /// # Example
     ///
     /// ```rust
-    /// use pica_record::matcher::field::FieldMatcher;
     /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::field::FieldMatcher;
     /// use pica_record::primitives::FieldRef;
     ///
     /// let field =
@@ -810,7 +810,7 @@ impl<'de> serde::Deserialize<'de> for FieldMatcher {
 
 #[cfg(test)]
 mod tests {
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
     use crate::primitives::FieldRef;

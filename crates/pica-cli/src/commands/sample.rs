@@ -1,14 +1,13 @@
 use std::ffi::OsString;
+use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use pica_record::prelude::*;
 use rand::rngs::StdRng;
-use rand::{rng, Rng, SeedableRng};
+use rand::{Rng, SeedableRng, rng};
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Selects a random permutation of records of the given sample size
 /// using reservoir sampling.
@@ -35,6 +34,64 @@ pub(crate) struct Sample {
     #[arg(long, value_name = "number")]
     seed: Option<u64>,
 
+    /// When this flag is provided, comparison operations will be
+    /// search case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+          default_value = "75")]
+    strsim_threshold: u8,
+
+    /// A filter expression used for searching
+    #[arg(long = "where")]
+    filter: Option<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical AND-operator (conjunction)
+    ///
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
+    and: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical OR-operator (disjunction)
+    ///
+    /// This option can't be combined with `--and` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
+    or: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical NOT-operator (negation)
+    ///
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
+    not: Vec<String>,
+
+    /// Ignore records which are *not* explicitly listed in one of the
+    /// given allow-lists.
+    ///
+    /// A allow-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "allow-list", short = 'A')]
+    allow: Vec<PathBuf>,
+
+    /// Ignore records which are explicitly listed in one of the
+    /// given deny-lists.
+    ///
+    /// A deny-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "deny-list", short = 'D')]
+    deny: Vec<PathBuf>,
+
     /// Number of random records
     #[arg(value_parser = value_parser!(u16).range(1..))]
     sample_size: u16,
@@ -49,6 +106,7 @@ pub(crate) struct Sample {
 impl Sample {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut writer = WriterBuilder::new()
             .gzip(self.gzip)
             .from_path_or_stdout(self.output)?;
@@ -61,6 +119,25 @@ impl Sample {
         let sample_size = self.sample_size as usize;
         let mut reservoir: Vec<Vec<u8>> =
             Vec::with_capacity(sample_size);
+
+        let matcher = if let Some(matcher) = self.filter {
+            Some(
+                RecordMatcherBuilder::with_transform(
+                    matcher,
+                    translit(config.normalization.clone()),
+                )?
+                .and(self.and)?
+                .or(self.or)?
+                .not(self.not)?
+                .build(),
+            )
+        } else {
+            None
+        };
+
+        let options = MatcherOptions::new()
+            .strsim_threshold(self.strsim_threshold as f64 / 100.0)
+            .case_ignore(self.ignore_case);
 
         let mut progress = Progress::new(self.progress);
         let mut i = 0;
@@ -78,6 +155,19 @@ impl Sample {
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
                         progress.update(false);
+
+                        if let Some(ppn) = record.ppn() {
+                            if !filter_set.check(ppn) {
+                                continue;
+                            }
+                        }
+
+                        if let Some(ref matcher) = matcher {
+                            if !matcher.is_match(record, &options) {
+                                continue;
+                            }
+                        }
+
                         let mut data = Vec::<u8>::new();
                         record.write_to(&mut data)?;
 

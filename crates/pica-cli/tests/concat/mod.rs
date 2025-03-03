@@ -1,8 +1,8 @@
 use std::fs::read_to_string;
 
 use assert_cmd::Command;
-use assert_fs::prelude::*;
 use assert_fs::TempDir;
+use assert_fs::prelude::*;
 use predicates::prelude::*;
 
 use crate::prelude::*;
@@ -85,8 +85,10 @@ fn single_file_write_file() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(out.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(out.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())
@@ -141,8 +143,10 @@ fn single_file_write_tee() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(tee.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(tee.path())
+    );
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
@@ -158,10 +162,14 @@ fn single_file_write_tee() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(tee.path()));
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(out.path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(tee.path())
+    );
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(out.path())
+    );
 
     temp_dir.close().unwrap();
     Ok(())

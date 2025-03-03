@@ -1,8 +1,8 @@
 use std::fs::read_to_string;
 
 use assert_cmd::Command;
-use assert_fs::prelude::*;
 use assert_fs::TempDir;
+use assert_fs::prelude::*;
 use predicates::prelude::*;
 
 use crate::prelude::*;
@@ -26,8 +26,10 @@ fn set_option() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::str::contains("skip-invalid = true")
-        .eval(&read_to_string(config).unwrap()));
+    assert!(
+        predicates::str::contains("skip-invalid = true")
+            .eval(&read_to_string(config).unwrap())
+    );
 
     temp_dir.close().unwrap();
 

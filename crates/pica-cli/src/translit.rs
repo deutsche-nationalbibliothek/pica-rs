@@ -44,7 +44,7 @@ impl FromStr for NormalizationForm {
 
 #[allow(unused)]
 pub(crate) fn translit<S: AsRef<str>>(
-    nf: Option<&NormalizationForm>,
+    nf: Option<NormalizationForm>,
 ) -> impl Fn(S) -> String {
     use NormalizationForm::*;
 
@@ -63,28 +63,28 @@ mod tests {
 
     #[test]
     fn test_translit_nfc() {
-        let r#fn = translit(Some(&NormalizationForm::Nfc));
+        let r#fn = translit(Some(NormalizationForm::Nfc));
         assert_eq!(r#fn("Am\u{0e9}lie"), "Am\u{0e9}lie");
         assert_eq!(r#fn("Ame\u{301}lie"), "Am\u{0e9}lie");
     }
 
     #[test]
     fn test_translit_nfkc() {
-        let r#fn = translit(Some(&NormalizationForm::Nfkc));
+        let r#fn = translit(Some(NormalizationForm::Nfkc));
         assert_eq!(r#fn("Am\u{0e9}lie"), "Am\u{0e9}lie");
         assert_eq!(r#fn("Ame\u{301}lie"), "Am\u{0e9}lie");
     }
 
     #[test]
     fn test_translit_nfd() {
-        let r#fn = translit(Some(&NormalizationForm::Nfd));
+        let r#fn = translit(Some(NormalizationForm::Nfd));
         assert_eq!(r#fn("Am\u{0e9}lie"), "Ame\u{301}lie");
         assert_eq!(r#fn("Ame\u{301}lie"), "Ame\u{301}lie");
     }
 
     #[test]
     fn test_translit_nfkd() {
-        let r#fn = translit(Some(&NormalizationForm::Nfd));
+        let r#fn = translit(Some(NormalizationForm::Nfd));
         assert_eq!(r#fn("Am\u{0e9}lie"), "Ame\u{301}lie");
         assert_eq!(r#fn("Ame\u{301}lie"), "Ame\u{301}lie");
     }

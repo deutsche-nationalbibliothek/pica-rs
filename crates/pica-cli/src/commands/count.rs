@@ -3,7 +3,7 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::process::ExitCode;
 
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use pica_record::prelude::*;
 
 use crate::config::Config;
@@ -101,8 +101,8 @@ pub(crate) struct Count {
 impl Count {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let translit = translit(config.normalization.clone());
         let mut progress = Progress::new(self.progress);
-        let translit = translit(config.normalization.as_ref());
 
         let mut writer: Box<dyn Write> = match self.output {
             Some(path) => Box::new(

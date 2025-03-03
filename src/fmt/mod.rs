@@ -6,10 +6,10 @@ pub(crate) use parser::parse_format;
 use smallvec::SmallVec;
 use winnow::prelude::*;
 
+use crate::StringRecord;
 use crate::matcher::subfield::SubfieldMatcher;
 use crate::matcher::{MatcherOptions, OccurrenceMatcher, TagMatcher};
 use crate::primitives::{FieldRef, RecordRef, SubfieldCode};
-use crate::StringRecord;
 
 mod parser;
 
@@ -58,11 +58,7 @@ impl Format {
         options: &FormatOptions,
     ) -> Option<BString> {
         let value = self.fragments.fmt_field(field, options);
-        if !value.is_empty() {
-            Some(value)
-        } else {
-            None
-        }
+        if !value.is_empty() { Some(value) } else { None }
     }
 }
 
@@ -460,7 +456,7 @@ mod tests {
     use std::sync::OnceLock;
     use std::{env, fs};
 
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
 

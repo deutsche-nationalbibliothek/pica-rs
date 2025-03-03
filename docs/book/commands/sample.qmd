@@ -5,10 +5,10 @@ der Eingabe.
 
 ::: {.callout-note}
 Beim Aufruf des Kommandos ist die Anzahl der gültigen Datensätze nicht
-bekannt. Deshalb wird für die Stichprobenziehen das Verfahren [Reservoir
+bekannt. Deshalb wird für die Stichprobenziehung das Verfahren [Reservoir
 sampling] eingesetzt. Hierfür wird während der Laufzeit Arbeitsspeicher
 proportial zum gewünschten Stichprobenumfang $n$ verwendet. Datensätze am
-Anfang der Eingabe haben eine höhere Wahrscheinlichkeit in der Stichproben
+Anfang der Eingabe haben eine höhere Wahrscheinlichkeit, in der Stichprobe
 enthalten zu sein, als Datensätze am Ende.
 :::
 
@@ -24,13 +24,6 @@ $ pica sample 200 DUMP.dat.gz -o samples.dat
 `-s`, `--skip-invalid`
 : Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
 
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
-mittels `=*`.
-
 `-g`, `--gzip`
 : Komprimieren der Ausgabe im [Gzip]-Format.
 
@@ -41,6 +34,40 @@ deterministische Auswahl zu erhalten.
 `-p`, `--progress`
 : Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
 invaliden Datensätze anzeigt.
+
+`-i`, `--ignore-case`
+: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+
+`--strsim-threshold <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
+mittels `=*`.
+
+`--where <filter>`
+: Angabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.
+
+`--and <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> && <expr>`.
+
+`--or <expr>`
+: Hinzufügen eines zusätzlichen Filters mittels der booleschen
+`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
+`<filter> || <expr>`.
+
+`--not <expr>`
+: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
+`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
+
+`-A <file>`, `--allow-list` `<file>`
+: Es werden alle Datensätze ignoriert, die nicht explizit in der
+Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben, wird die
+Mengenvereinigung aus allen Listen gebildet.
+
+`-D <file>`, `--deny-list` `<file>`
+: Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen.
+Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen
+Listen gebildet.
 
 `-o <path>`, `--outdir <path>`
 : Angabe, in welches Verzeichnis die Partitionen geschrieben werden sollen.
@@ -58,6 +85,16 @@ werden:
 $ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv
 ```
 
+[^1]: Eine Positiv- oder Negativliste muss entweder als [CSV]-Datei
+    vorliegen oder als eine [Arrow]-Datei, die eine `ppn`- oder
+    `idn`-Spalte enthält. Alle Dateien werden automatisch als
+    [CSV]-Datei interpretiert, es sei denn, die Datei endet mit `.ipc`
+    oder `.arrow`, dann erfolgt die Interpretation im [Arrow]-Format.
+    CSV- bzw. TSV-Dateien mit der Endung `.csv.gz` bzw. `.tsv.gz`
+    werden automatisch entpackt. Ist sowohl eine `ppn`- als auch eine
+    `idn`-Spalte vorhanden, wird die `ppn`-Spalte genutzt.
 
 [Reservoir sampling]: https://en.wikipedia.org/wiki/Reservoir_sampling
+[CSV]: https://de.wikipedia.org/wiki/CSV_(Dateiformat)
+[Gzip]: https://de.wikipedia.org/wiki/Gzip
 

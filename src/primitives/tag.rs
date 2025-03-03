@@ -8,8 +8,8 @@ use bstr::{BStr, BString};
 use serde::{Deserialize, Serialize};
 use winnow::Parser;
 
-use super::parse::parse_tag_ref;
 use super::ParsePicaError;
+use super::parse::parse_tag_ref;
 
 /// The level (main, local, copy) of a field (or tag).
 #[derive(Debug, Default, Clone, PartialEq, Eq)]

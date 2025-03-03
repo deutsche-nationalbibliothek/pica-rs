@@ -1,7 +1,7 @@
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{
-    self, stdin, BufRead, BufReader, BufWriter, Read, Write,
+    self, BufRead, BufReader, BufWriter, Read, Write, stdin,
 };
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;

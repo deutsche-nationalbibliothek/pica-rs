@@ -62,7 +62,7 @@ impl Print {
                     }
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
-                        let translit = translit(self.nf.as_ref());
+                        let translit = translit(self.nf.clone());
                         progress.update(false);
 
                         for field in record.fields() {

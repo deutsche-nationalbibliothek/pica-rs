@@ -157,8 +157,10 @@ fn partition_stdin() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(outdir.join("119232022.dat").as_path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(outdir.join("119232022.dat").as_path())
+    );
 
     outdir.close().unwrap();
     Ok(())
@@ -202,10 +204,14 @@ fn multiple_partitions() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(outdir.join("28p.dat").as_path()));
-    assert!(predicates::path::eq_file(data_dir().join("ada.dat"))
-        .eval(outdir.join("9.5p.dat").as_path()));
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(outdir.join("28p.dat").as_path())
+    );
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(outdir.join("9.5p.dat").as_path())
+    );
 
     outdir.close().unwrap();
     Ok(())

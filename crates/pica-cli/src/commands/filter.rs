@@ -3,7 +3,7 @@ use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{value_parser, Parser};
+use clap::{Parser, value_parser};
 use pica_record::prelude::*;
 
 use crate::prelude::*;
@@ -133,7 +133,7 @@ impl Filter {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
         let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut progress = Progress::new(self.progress);
-        let translit = translit(config.normalization.as_ref());
+        let translit = translit(config.normalization.clone());
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
 
