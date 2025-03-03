@@ -131,7 +131,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - run: cargo install --git https://github.com/kbknapp/cargo-outdated.git --branch master
       - run: cargo update
-      - run: cargo outdated --workspace -root-deps-only --exit-code 1
+      - run: cargo outdated --workspace --root-deps-only --exit-code 1
 
   deny:
     runs-on: ubuntu-latest
