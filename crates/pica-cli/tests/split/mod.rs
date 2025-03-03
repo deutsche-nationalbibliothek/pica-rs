@@ -214,3 +214,185 @@ fn split_template() -> TestResult {
     outdir.close().unwrap();
     Ok(())
 }
+
+#[test]
+fn split_where() -> TestResult {
+    let outdir = TempDir::new().unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["split", "-s", "100"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["--where", "002@.0 == 'Ts1'"])
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("0.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("040309606\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn split_where_and() -> TestResult {
+    let outdir = TempDir::new().unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["split", "-s", "100"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["--where", "002@.0 == 'Ts1'"])
+        .args(["--and", "004B.a == 'saz'"])
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("0.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("040309606\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn split_where_not() -> TestResult {
+    let outdir = TempDir::new().unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["split", "-s", "100"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["--where", "002@.0 =^ 'Ts'"])
+        .args(["--not", "002@.0 =$ 'z'"])
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("0.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("040309606\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn split_where_and_not() -> TestResult {
+    let outdir = TempDir::new().unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["split", "-s", "100"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["--where", "002@.0 =^ 'Ts'"])
+        .args(["--and", "004B.a == 'saz'"])
+        .args(["--not", "002@.0 =$ 'z'"])
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("0.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("040309606\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn split_where_or() -> TestResult {
+    let outdir = TempDir::new().unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["split", "-s", "1"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["--where", "002@.0 == 'Ts1'"])
+        .args(["--or", "002@.0 == 'Tg1'"])
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("0.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("040309606\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("1.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("040651053\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
