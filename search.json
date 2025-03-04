@@ -685,7 +685,7 @@
     "href": "commands/sample.html#footnotes",
     "title": "sample",
     "section": "",
-    "text": "Eine Positiv- oder Negativliste muss entweder als CSV-Datei vorliegen oder als eine [Arrow]-Datei, die eine ppn- oder idn-Spalte enthält. Alle Dateien werden automatisch als CSV-Datei interpretiert, es sei denn, die Datei endet mit .ipc oder .arrow, dann erfolgt die Interpretation im [Arrow]-Format. CSV- bzw. TSV-Dateien mit der Endung .csv.gz bzw. .tsv.gz werden automatisch entpackt. Ist sowohl eine ppn- als auch eine idn-Spalte vorhanden, wird die ppn-Spalte genutzt.↩︎",
+    "text": "Eine Positiv- oder Negativliste muss entweder als CSV-Datei vorliegen oder als eine Arrow-Datei, die eine ppn- oder idn-Spalte enthält. Alle Dateien werden automatisch als CSV-Datei interpretiert, es sei denn, die Datei endet mit .ipc oder .arrow, dann erfolgt die Interpretation im Arrow-Format. CSV- bzw. TSV-Dateien mit der Endung .csv.gz bzw. .tsv.gz werden automatisch entpackt. Ist sowohl eine ppn- als auch eine idn-Spalte vorhanden, wird die ppn-Spalte genutzt.↩︎",
     "crumbs": [
       "Kommandos",
       "sample"
@@ -762,7 +762,7 @@
     "href": "commands/split.html#optionen",
     "title": "split",
     "section": "",
-    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.\n\n--where &lt;filter&gt;\n\nAngabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.\n\n--and &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen &&-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && &lt;expr&gt;.\n\n--or &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen ||-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; || &lt;expr&gt;.\n\n--not &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && !(&lt;expr&gt;).\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n--template\n\nTemplate für die Dateinamen. Der Platzhalter {} wird durch eine fortlaufende Nummer ersetzt.\n\n-o &lt;path&gt;, --outdir &lt;path&gt;\n\nAngabe, in welches Verzeichnis die Ausgabe geschrieben werden soll. Standardmäßig wird das aktuelle Verzeichnis verwendet.",
+    "text": "-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt.\n\n--where &lt;filter&gt;\n\nAngabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.\n\n--and &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen &&-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && &lt;expr&gt;.\n\n--or &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters mittels der booleschen ||-Verknüpfung. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; || &lt;expr&gt;.\n\n--not &lt;expr&gt;\n\nHinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck &lt;filter&gt; wird zum Ausdruck &lt;filter&gt; && !(&lt;expr&gt;).\n\n-A &lt;file&gt;, --allow-list &lt;file&gt;\n\nEs werden alle Datensätze ignoriert, die nicht explizit in der Positivliste1 auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-D &lt;file&gt;, --deny-list &lt;file&gt;\n\nEs werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.\n\n-g, --gzip\n\nKomprimieren der Ausgabe im Gzip-Format.\n\n--template\n\nTemplate für die Dateinamen. Der Platzhalter {} wird durch eine fortlaufende Nummer ersetzt.\n\n-o &lt;path&gt;, --outdir &lt;path&gt;\n\nAngabe, in welches Verzeichnis die Ausgabe geschrieben werden soll. Standardmäßig wird das aktuelle Verzeichnis verwendet.",
     "crumbs": [
       "Kommandos",
       "split"
@@ -774,6 +774,17 @@
     "title": "split",
     "section": "Beispiele",
     "text": "Beispiele\n\nBenutzerdefinierte Dateinamen\nStandardmäßig werden die erstellten Dateien beginnend bei 0 durchnummeriert. Der Dateiname kann individuell mit der --template-Option angepasst werden. Jedes Vorkommen der Zeichenfolge {} im Template wird durch die aktuelle Nummer ersetzt. Endet die Datei auf der Dateiendung .gz, wird die Ausgabe automatisch im Gzip-Format komprimiert.\n$ pica split -s --template \"CHUNK_{}.dat.gz\" 10 DUMP.dat.gz\n$ tree\n.\n├── CHUNK_0.dat.gz\n├── CHUNK_1.dat.gz\n└── DUMP.dat.gz\n\n$ pica count --records CHUNK_0.dat.gz\n10\n\n$ pica count --records CHUNK_1.dat.gz\n2\n\n\nKomprimierte Ausgabe\nMittels der Option --gzip bzw. -g erfolgt eine Komprimierung der Ausgabe:\n$ pica split -s --gzip 10 DUMP.dat.gz\n$ tree\n.\n├── 0.dat.gz\n├── 1.dat.gz\n└── DUMP.dat.gz\n\n$ pica count --records 0.dat.gz\n10\n\n$ pica count --records 1.dat.gz\n2",
+    "crumbs": [
+      "Kommandos",
+      "split"
+    ]
+  },
+  {
+    "objectID": "commands/split.html#footnotes",
+    "href": "commands/split.html#footnotes",
+    "title": "split",
+    "section": "",
+    "text": "Eine Positiv- oder Negativliste muss entweder als CSV-Datei vorliegen oder als eine Arrow-Datei, die eine ppn- oder idn-Spalte enthält. Alle Dateien werden automatisch als CSV-Datei interpretiert, es sei denn, die Datei endet mit .ipc oder .arrow, dann erfolgt die Interpretation im Arrow-Format. CSV- bzw. TSV-Dateien mit der Endung .csv.gz bzw. .tsv.gz werden automatisch entpackt. Ist sowohl eine ppn- als auch eine idn-Spalte vorhanden, wird die ppn-Spalte genutzt.↩︎",
     "crumbs": [
       "Kommandos",
       "split"
