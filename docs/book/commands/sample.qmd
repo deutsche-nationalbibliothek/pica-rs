@@ -94,7 +94,8 @@ $ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv
     werden automatisch entpackt. Ist sowohl eine `ppn`- als auch eine
     `idn`-Spalte vorhanden, wird die `ppn`-Spalte genutzt.
 
-[Reservoir sampling]: https://en.wikipedia.org/wiki/Reservoir_sampling
+[Arrow]: https://arrow.apache.org/
 [CSV]: https://de.wikipedia.org/wiki/CSV_(Dateiformat)
 [Gzip]: https://de.wikipedia.org/wiki/Gzip
+[Reservoir sampling]: https://en.wikipedia.org/wiki/Reservoir_sampling
 
