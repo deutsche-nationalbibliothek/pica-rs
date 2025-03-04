@@ -34,6 +34,7 @@ book:
         - tutorials/rmarkdown.qmd
     - part: "Kommandos"
       chapters:
+        - commands/check.qmd
         - commands/completions.qmd
         - commands/concat.qmd
         - commands/config.qmd

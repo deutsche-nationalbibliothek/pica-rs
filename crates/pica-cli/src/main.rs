@@ -26,6 +26,8 @@ fn run() -> CliResult {
     };
 
     match args.cmd {
+        #[cfg(feature = "unstable")]
+        Command::Check(cmd) => cmd.execute(&config),
         Command::Completions(cmd) => cmd.execute(&mut Args::command()),
         Command::Concat(cmd) => cmd.execute(&config),
         Command::Config(cmd) => cmd.execute(&mut config),

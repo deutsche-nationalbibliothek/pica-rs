@@ -20,6 +20,8 @@ pub(crate) struct Args {
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
+    #[cfg(feature = "unstable")]
+    Check(Check),
     Completions(Completions),
     Concat(Concat),
     Config(Config),
