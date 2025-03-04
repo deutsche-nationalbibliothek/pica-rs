@@ -64,6 +64,28 @@ pub(crate) struct Split {
     #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
 
+    /// Ignore records which are *not* explicitly listed in one of the
+    /// given allow-lists.
+    ///
+    /// A allow-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "allow-list", short = 'A')]
+    allow: Vec<PathBuf>,
+
+    /// Ignore records which are explicitly listed in one of the
+    /// given deny-lists.
+    ///
+    /// A deny-list must be an CSV/TSV or Apache Arrow file, whereby
+    /// a column `idn` exists. If the file extension is `.feather`,
+    /// `.arrow`, or `.ipc` the file is automatically interpreted
+    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
+    /// `.tsv.gz` is interpreted as CSV/TSV.
+    #[arg(long = "deny-list", short = 'D')]
+    deny: Vec<PathBuf>,
+
     /// Write partitions into OUTDIR
     #[arg(long, short, value_name = "outdir", default_value = ".")]
     outdir: PathBuf,
@@ -87,6 +109,7 @@ pub(crate) struct Split {
 impl Split {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut progress = Progress::new(self.progress);
         let mut chunks: u32 = 0;
         let mut count = 0;
@@ -140,6 +163,12 @@ impl Split {
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
                         progress.update(false);
+
+                        if let Some(ppn) = record.ppn() {
+                            if !filter_set.check(ppn) {
+                                continue;
+                            }
+                        }
 
                         if let Some(ref matcher) = matcher {
                             if !matcher.is_match(record, &options) {

@@ -396,3 +396,97 @@ fn split_where_or() -> TestResult {
 
     Ok(())
 }
+
+#[test]
+fn split_allow() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let outdir = TempDir::new().unwrap();
+
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("idn\n118540238\n118515551\n")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["split", "-s", "10"])
+        .args(["-A", allow.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("0.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("118540238\n"))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    outdir.close().unwrap();
+
+    Ok(())
+}
+
+#[test]
+fn split_deny() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let outdir = TempDir::new().unwrap();
+
+    let deny = temp_dir.child("DENY.csv");
+    deny.write_str(
+        "idn\n\
+        118607626\n\
+        040993396\n\
+        04099337X\n\
+        040991970\n\
+        040991989\n\
+        041274377\n\
+        964262134\n\
+        040533093\n\
+        040309606\n\
+        040128997\n\
+        040651053\n",
+    )
+    .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["split", "-s", "10"])
+        .args(["-D", deny.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "003@.0"])
+        .arg(outdir.join("0.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("118540238\n"))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    outdir.close().unwrap();
+
+    Ok(())
+}
