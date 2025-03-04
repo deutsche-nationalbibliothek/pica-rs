@@ -9,10 +9,20 @@ mod unicode;
 
 #[test]
 fn skip_invalid() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            scope = '003@.0 != "123456789X"'
+        "#,
+        )
+        .unwrap();
+
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("check")
-        .args(["-R", data_dir().join("rules.toml").to_str().unwrap()])
+        .args(["-R", ruleset.to_str().unwrap()])
         .arg(data_dir().join("invalid.dat"))
         .arg(data_dir().join("ada.dat"))
         .assert();
@@ -28,7 +38,7 @@ fn skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .args(["check", "-s"])
-        .args(["-R", data_dir().join("rules.toml").to_str().unwrap()])
+        .args(["-R", ruleset.to_str().unwrap()])
         .arg(data_dir().join("invalid.dat"))
         .arg(data_dir().join("ada.dat"))
         .assert();
@@ -39,6 +49,7 @@ fn skip_invalid() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
+    temp_dir.close().unwrap();
     Ok(())
 }
 
