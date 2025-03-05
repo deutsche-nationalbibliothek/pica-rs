@@ -31,7 +31,7 @@ fn invalid() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,comment\n123456789X,UNICODE,\n",
+            "ppn,rule,level,message\n123456789X,UNICODE,error,\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -51,6 +51,7 @@ fn normalization() -> TestResult {
             [rule.UNICODE]
             check = "unicode"
             normalization = "nfd"
+            message = "invalid value 'ä'"
         "#,
         )
         .unwrap();
@@ -68,7 +69,7 @@ fn normalization() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,comment\n123456789X,UNICODE,invalid value 'ä'\n",
+            "ppn,rule,level,message\n123456789X,UNICODE,error,invalid value 'ä'\n",
         ))
         .stderr(predicates::str::is_empty());
 
