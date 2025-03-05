@@ -1,4 +1,4 @@
 /target
 Cargo.lock
 *.profraw
-/docs/manual/_minted-manual/
+out.csv
