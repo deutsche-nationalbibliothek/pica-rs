@@ -7,10 +7,10 @@ Kommando kann durch Aktivierung der `unstable`-Funktion beim Bauen aus
 den Quellen aktiviert werden.
 :::
 
-Das `check`-Kommando erlaubt es Datensätze auf Konformität mit einem
+Das `check`-Kommando erlaubt es, Datensätze auf Konformität mit einem
 Regelwerk zu überprüfen. In einer (oder mehreren) Konfigurationsdateien
 können Regeln hinterlegt werden, gegen die jeder Datensatz überprüft
-wird. Trifft einen Regel zu, wird diese Regelverletzung unter Angabe
+wird. Trifft eine Regel zu, wird diese Regelverletzung unter Angabe
 der PPN (Feld `003@ $0`) des Datensatzes und ID der Regel in eine
 Ausgabedatei geschrieben. Die ID einer Regel kann von den Nutzenden
 frei gewählt werden.
@@ -35,8 +35,8 @@ scope = '002@.0 =^ "T"'
 ...
 ````
 
-Nicht bei jede Regelverletzung handelt es sich gleich um einen Fehler.
-Deshalb wird zwischen folgenden Level unterschieden:
+Nicht bei jeder Regelverletzung handelt es sich gleich um einen Fehler.
+Deshalb wird zwischen folgenden Levels unterschieden:
 
 *  _Fehler_ --- `error`,
 *  _Warnung_ --- `warning`,
@@ -87,7 +87,7 @@ sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert
 das Schreiben der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 
 `-R <filename>`, `--rule-set <filename>`
-: Angabe eines Regelwerks gegen das die Datensätze aus der Eingabe
+: Angabe eines Regelwerks, gegen das die Datensätze aus der Eingabe
 getestet werden.
 
 `-o`, `--output`
