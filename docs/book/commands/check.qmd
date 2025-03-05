@@ -11,7 +11,7 @@ Das `check`-Kommando erlaubt es, Datensätze auf Konformität mit einem
 Regelwerk zu überprüfen. In einer (oder mehreren) Konfigurationsdateien
 können Regeln hinterlegt werden, gegen die jeder Datensatz überprüft
 wird. Trifft eine Regel zu, wird diese Regelverletzung unter Angabe
-der PPN (Feld `003@ $0`) des Datensatzes und ID der Regel in eine
+der PPN (Feld `003@ $0`) des Datensatzes und der ID der Regel in eine
 Ausgabedatei geschrieben. Die ID einer Regel kann von den Nutzenden
 frei gewählt werden.
 
