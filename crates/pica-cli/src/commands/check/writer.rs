@@ -4,13 +4,15 @@ use std::io::{BufWriter, Write, stdout};
 
 use bstr::BStr;
 
+use super::rule::Level;
 use crate::prelude::*;
 
 #[derive(Debug, serde::Serialize)]
 pub(crate) struct Record<'a, 'b> {
     pub(crate) ppn: Option<&'a BStr>,
     pub(crate) rule: &'b str,
-    pub(crate) comment: Option<String>,
+    pub(crate) level: &'b Level,
+    pub(crate) message: Option<String>,
 }
 
 pub(crate) fn writer(

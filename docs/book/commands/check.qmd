@@ -35,25 +35,44 @@ scope = '002@.0 =^ "T"'
 ...
 ````
 
+Nicht bei jede Regelverletzung handelt es sich gleich um einen Fehler.
+Deshalb wird zwischen folgenden Level unterschieden:
+
+*  _Fehler_ --- `error`,
+*  _Warnung_ --- `warning`,
+* und _Info_ --- `info`.
+
+Konfiguriert wird das Level über die `level`-Option. Ist die Option
+nicht gesetzt, wird automatisch das Level `error` ausgewählt:
+
+```{.toml}
+[rule.XYZ]
+level = "warning"
+````
 
 ## Checks
 
 ### Unicode
 
-Der `unicode`-Check überprüft ob die Unterfeldwerte eines Datensatzes
-gültige Unicode-Zeichenketten sind.
+Der `unicode`-Check überprüft, ob die Werte aller Unterfelder eines
+Datensatzes gültige Unicode-Zeichenketten enthalten.
 
 ```{.toml}
 [rule.UNICODE]
 check = "unicode"
 ```
-Optional kann überprüft werden, ob die Werte in eine der
-Unicode-Normalformen `nfc`, `nfkc`, `nfd` oder `nfkd` vorliegen.
+
+Darüber hinaus kann überprüft werden, ob diese Werte in einer der
+Unicode-Normalformen `nfc`, `nfkc`, `nfd` oder `nfkd` vorliegen. Ein
+gefundener Wert kann über die `message`-Option mit in die Ausgabedatei
+geschrieben werden. Der Platzhalter `{}` wird durch den ungültigen Wert
+ersetzt:
 
 ```{.toml}
 [rule.UNICODE]
 check = "unicode"
 normalization = "nfd"
+message = "Ungültiger Wert '{}'!"
 ```
 
 ## Optionen

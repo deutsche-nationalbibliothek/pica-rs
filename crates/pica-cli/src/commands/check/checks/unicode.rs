@@ -8,6 +8,7 @@ use crate::prelude::*;
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct Unicode {
     normalization: Option<NormalizationForm>,
+    message: Option<String>,
 }
 
 impl Unicode {
@@ -32,8 +33,13 @@ impl Unicode {
                     let value = subfield.value().to_str().unwrap();
                     if !r#fn(value) {
                         let comment =
-                            format!("invalid value '{value}'");
-                        return (true, Some(comment));
+                            if let Some(ref message) = self.message {
+                                Some(message.replace("{}", value))
+                            } else {
+                                None
+                            };
+
+                        return (true, comment);
                     }
                 }
             }

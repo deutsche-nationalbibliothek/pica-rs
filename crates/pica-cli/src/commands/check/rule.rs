@@ -1,17 +1,29 @@
 use std::io::Write;
 
 use pica_record::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use super::checks::Checks;
 use super::writer::Record;
 use crate::prelude::*;
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum Level {
+    #[default]
+    Error,
+    Warning,
+    Info,
+}
+
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
-#[allow(dead_code)]
 pub(crate) struct Rule {
     #[serde(skip)]
     pub(crate) id: String,
+
+    #[serde(default)]
+    pub(crate) level: Level,
 
     #[serde(flatten)]
     pub(crate) check: Checks,
@@ -27,7 +39,7 @@ impl Rule {
         record: &ByteRecord,
         writer: &mut csv::Writer<W>,
     ) -> Result<(), CliError> {
-        let (result, comment) = match self.check {
+        let (result, message) = match self.check {
             Checks::Unicode(ref check) => check.check(record),
         };
 
@@ -35,7 +47,8 @@ impl Rule {
             writer.serialize(Record {
                 ppn: record.ppn(),
                 rule: &self.id,
-                comment,
+                level: &self.level,
+                message,
             })?;
         }
 
