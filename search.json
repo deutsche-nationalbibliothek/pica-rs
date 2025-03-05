@@ -219,6 +219,39 @@
     ]
   },
   {
+    "objectID": "commands/check.html",
+    "href": "commands/check.html",
+    "title": "check",
+    "section": "",
+    "text": "Checks\nDas check-Kommando erlaubt es, Datensätze auf Konformität mit einem Regelwerk zu überprüfen. In einer (oder mehreren) Konfigurationsdateien können Regeln hinterlegt werden, gegen die jeder Datensatz überprüft wird. Trifft eine Regel zu, wird diese Regelverletzung unter Angabe der PPN (Feld 003@ $0) des Datensatzes und der ID der Regel in eine Ausgabedatei geschrieben. Die ID einer Regel kann von den Nutzenden frei gewählt werden.\nBefinden sich die spezifizierten Regeln in der Datei rules.toml, kann mit dem folgenden Befehl die Datei DUMP.dat.gz gegen das Regelwerk überprüft werden. Die Ausgabe erfolgt im CSV-Format in die Ausgabedatei out.csv:\nSoll ein Regelwerk nur gegen eine Teilmenge der Eingabe getestet werden, erfolgt dies durch Einschränkung des Geltungsbereichs (scope) mithilfe eines Filterausdrucks:\nNicht bei jeder Regelverletzung handelt es sich gleich um einen Fehler. Deshalb wird zwischen folgenden Levels unterschieden:\nKonfiguriert wird das Level über die level-Option. Ist die Option nicht gesetzt, wird automatisch das Level error ausgewählt:",
+    "crumbs": [
+      "Kommandos",
+      "check"
+    ]
+  },
+  {
+    "objectID": "commands/check.html#checks",
+    "href": "commands/check.html#checks",
+    "title": "check",
+    "section": "",
+    "text": "Unicode\nDer unicode-Check überprüft, ob die Werte aller Unterfelder eines Datensatzes gültige Unicode-Zeichenketten enthalten.\n[rule.UNICODE]\ncheck = \"unicode\"\nDarüber hinaus kann überprüft werden, ob diese Werte in einer der Unicode-Normalformen nfc, nfkc, nfd oder nfkd vorliegen. Ein gefundener Wert kann über die message-Option mit in die Ausgabedatei geschrieben werden. Der Platzhalter {} wird durch den ungültigen Wert ersetzt:\n[rule.UNICODE]\ncheck = \"unicode\"\nnormalization = \"nfd\"\nmessage = \"Ungültiger Wert '{}'!\"",
+    "crumbs": [
+      "Kommandos",
+      "check"
+    ]
+  },
+  {
+    "objectID": "commands/check.html#optionen",
+    "href": "commands/check.html#optionen",
+    "title": "check",
+    "section": "Optionen",
+    "text": "Optionen\n\n-s, --skip-invalid\n\nÜberspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.\n\n-p, --progress\n\nAnzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels -o bzw. --output.\n\n-R &lt;filename&gt;, --rule-set &lt;filename&gt;\n\nAngabe eines Regelwerks, gegen das die Datensätze aus der Eingabe getestet werden.\n\n-o, --output\n\nAngabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe stdout geschrieben.",
+    "crumbs": [
+      "Kommandos",
+      "check"
+    ]
+  },
+  {
     "objectID": "commands/completions.html",
     "href": "commands/completions.html",
     "title": "completions",
