@@ -33,11 +33,9 @@ impl Unicode {
                     let value = subfield.value().to_str().unwrap();
                     if !r#fn(value) {
                         let comment =
-                            if let Some(ref message) = self.message {
-                                Some(message.replace("{}", value))
-                            } else {
-                                None
-                            };
+                            self.message.as_ref().map(|message| {
+                                message.replace("{}", value)
+                            });
 
                         return (true, comment);
                     }
