@@ -12,7 +12,7 @@ mod rule;
 mod set;
 mod writer;
 
-/// Count records, fields and subfields
+/// Checks records against rule sets.
 #[derive(clap::Parser, Debug)]
 pub(crate) struct Check {
     /// Whether to skip invalid records or not
