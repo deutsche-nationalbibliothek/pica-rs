@@ -88,8 +88,8 @@ Vergleichen von Werten ignoriert.
 Zeichenketten mittels des `=*`-Operators.
 
 `invert-match = true | false`
-: Ist die Option gesetzt, werden Datensätze gefunden, die nicht* dem
-*Filterausdruck entsprechen.
+: Ist die Option gesetzt, werden Datensätze gefunden, die *nicht* dem
+Filterausdruck entsprechen.
 
 
 ### Unicode
