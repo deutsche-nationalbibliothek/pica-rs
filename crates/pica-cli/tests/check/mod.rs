@@ -5,6 +5,7 @@ use assert_fs::prelude::*;
 // use predicates::prelude::*;
 use crate::prelude::*;
 
+mod filter;
 mod unicode;
 
 #[test]

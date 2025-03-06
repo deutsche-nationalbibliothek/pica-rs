@@ -15,6 +15,7 @@ impl Unicode {
     pub(crate) fn check(
         &self,
         record: &ByteRecord,
+        _config: &Config,
     ) -> (bool, Option<String>) {
         if record.validate().is_err() {
             return (true, None);
