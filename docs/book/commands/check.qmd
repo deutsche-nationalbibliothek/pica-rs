@@ -24,9 +24,9 @@ mit dem folgenden Befehl die Datei `DUMP.dat.gz` gegen das Regelwerk
 $ pica check -R rules.toml DUMP.dat.gz -o out.csv
 ```
 
-Soll ein Regelwerk nur gegen eine Teilmenge der Eingabe getestet werden,
-erfolgt dies durch Einschränkung des Geltungsbereichs (`scope`) mithilfe
-eines Filterausdrucks:
+Soll ein Regelwerk nur gegen eine Teilmenge der Eingabe getestet
+werden, erfolgt dies durch Einschränkung des (globalen) Geltungsbereichs
+(`scope`) mithilfe eines Filterausdrucks:
 
 ```{.toml}
 scope = '002@.0 =^ "T"'
@@ -50,7 +50,47 @@ nicht gesetzt, wird automatisch das Level `error` ausgewählt:
 level = "warning"
 ````
 
+Zur Nachvollziehbarkeit und Dokumentation kann eine Regel mit einer
+Beschreibung (`description`) und einem Link (`link`) ausgezeichnet
+werden:
+
+```{.toml}
+[rule.XYZ]
+description = "Findet Datensätze, die gegen die Regel XYZ verstoßen."
+link = "https://www.example.org/XYZ"
+````
+
 ## Checks
+
+### Filter
+
+Mittels des `filter`-Checks können Datensätze gefunden werden, die einem
+Filterausdruck entsprechen. Zum Beispiel können mit der folgenden Regel
+Datensätze gefunden werden, die einen ungültigen Projektcode im Feld
+`017C $a` enthalten:
+
+```{.toml}
+[rule.TITLE-017C-001]
+check = "filter"
+description = "Findet ungültige Projektcodes im Feld 017C $a."
+link = "https://wiki.dnb.de/display/ILTIS/0602"
+filter = '017C.a not in ["a","d","f","i","m","n","t"]'
+```
+
+Folgende Optionen können zusätzlich gesetzt werden:
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
+
+`invert-match = true | false`
+: Ist die Option gesetzt, werden Datensätze gefunden, die *nicht* dem
+Filterausdruck entsprechen.
+
 
 ### Unicode
 

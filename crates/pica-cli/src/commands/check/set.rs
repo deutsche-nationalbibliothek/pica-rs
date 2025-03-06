@@ -47,6 +47,7 @@ impl RuleSet {
     pub(crate) fn check<W: Write>(
         &mut self,
         record: &ByteRecord,
+        config: &Config,
         writer: &mut csv::Writer<W>,
     ) -> Result<(), CliError> {
         if let Some(ref matcher) = self.scope {
@@ -56,7 +57,7 @@ impl RuleSet {
         }
 
         for (_, rule) in self.rules.iter_mut() {
-            rule.check(record, writer)?;
+            rule.check(record, config, writer)?;
         }
 
         Ok(())

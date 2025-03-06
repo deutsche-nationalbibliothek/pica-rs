@@ -22,6 +22,12 @@ pub(crate) struct Rule {
     #[serde(skip)]
     pub(crate) id: String,
 
+    #[allow(dead_code)]
+    pub(crate) description: Option<String>,
+
+    #[allow(dead_code)]
+    pub(crate) link: Option<String>,
+
     #[serde(default)]
     pub(crate) level: Level,
 
@@ -33,14 +39,15 @@ impl Rule {
     #[inline(always)]
     pub(crate) fn preprocess(&mut self, _record: &ByteRecord) {}
 
-    #[inline(always)]
     pub(crate) fn check<W: Write>(
         &mut self,
         record: &ByteRecord,
+        config: &Config,
         writer: &mut csv::Writer<W>,
     ) -> Result<(), CliError> {
         let (result, message) = match self.check {
-            Checks::Unicode(ref check) => check.check(record),
+            Checks::Filter(ref check) => check.check(record, config),
+            Checks::Unicode(ref check) => check.check(record, config),
         };
 
         if result {
