@@ -1,7 +1,5 @@
 use pica_record::prelude::*;
 
-use crate::prelude::*;
-
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct Filter {
@@ -24,7 +22,6 @@ impl Filter {
     pub(crate) fn check(
         &self,
         record: &ByteRecord,
-        _config: &Config,
     ) -> (bool, Option<String>) {
         let options = MatcherOptions::new()
             .strsim_threshold(self.strsim_threshold.unwrap_or(0.8))

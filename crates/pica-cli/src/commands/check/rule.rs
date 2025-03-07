@@ -42,12 +42,12 @@ impl Rule {
     pub(crate) fn check<W: Write>(
         &mut self,
         record: &ByteRecord,
-        config: &Config,
         writer: &mut csv::Writer<W>,
     ) -> Result<(), CliError> {
         let (result, message) = match self.check {
-            Checks::Filter(ref check) => check.check(record, config),
-            Checks::Unicode(ref check) => check.check(record, config),
+            Checks::DateTime(ref c) => c.check(record),
+            Checks::Filter(ref c) => c.check(record),
+            Checks::Unicode(ref c) => c.check(record),
         };
 
         if result {

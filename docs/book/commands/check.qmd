@@ -62,6 +62,41 @@ link = "https://www.example.org/XYZ"
 
 ## Checks
 
+
+### Datetime
+
+Der `datetime`-Check überprüft, ob in einem Feld ein gültiges Datum bzw.
+Zeitangabe steht. Die Angabe der zu überprüfenden Feder erfolgt mittels
+der Option `path`, die eine Pfadausdruck erwartet.
+
+<!-- TODO: Link zu Pfad-Spezifikation setzen. -->
+
+```{.toml}
+[rule.DATETIME]
+check = "datetime"
+description = "Findet ungültige Datumsangaben im Feld 010@ $D."
+link = "https://wiki.dnb.de/display/ILTIS/1500"
+format = "%Y-%m-%d"
+path = "010@.D"
+```
+
+Folgende Optionen können zusätzlich gesetzt werden:
+
+`format = <string>`
+: Angabe des Format-Strings, der das Format der Datums- bzw. Zeitangabe
+festlegt. Ist die Option nicht gesetzt, wird standardmäßig der Format-
+String `%Y-%m-%d` verwedet.
+
+`message = <string>`
+: Angabe eines Strings, der in die Spalte `message` der Ausgabedatei
+geschrieben wird. Der Platzhalter `{}` wird durch den ungültigen Wert
+ersetzt.
+
+`offset = <n>`
+: Mit der `offset`-Option können die ersten `<n>` Zeichen übersprungen
+werden, wenn die Datums- bzw. Zeitangabe nich am Anfang des zu
+überprüfenden Feldes steht.
+
 ### Filter
 
 Mittels des `filter`-Checks können Datensätze gefunden werden, die einem

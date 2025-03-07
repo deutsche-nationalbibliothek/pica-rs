@@ -62,7 +62,7 @@ impl Check {
                     Ok(ref record) => {
                         for rs in rulesets.iter_mut() {
                             rs.preprocess(record);
-                            rs.check(record, config, &mut writer)?;
+                            rs.check(record, &mut writer)?;
                         }
 
                         progress.update(false);
@@ -72,6 +72,7 @@ impl Check {
         }
 
         progress.finish();
+        writer.flush()?;
 
         Ok(ExitCode::SUCCESS)
     }
