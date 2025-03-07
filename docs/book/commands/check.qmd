@@ -66,8 +66,8 @@ link = "https://www.example.org/XYZ"
 ### Datetime
 
 Der `datetime`-Check überprüft, ob in einem Feld ein gültiges Datum bzw.
-Zeitangabe steht. Die Angabe der zu überprüfenden Feder erfolgt mittels
-der Option `path`, die eine Pfadausdruck erwartet.
+Zeitangabe steht. Die Angabe der zu überprüfenden Felder erfolgt mittels
+der Option `path`, welche einen Pfadausdruck erwartet.
 
 <!-- TODO: Link zu Pfad-Spezifikation setzen. -->
 
@@ -85,7 +85,7 @@ Folgende Optionen können zusätzlich gesetzt werden:
 `format = <string>`
 : Angabe des Format-Strings, der das Format der Datums- bzw. Zeitangabe
 festlegt. Ist die Option nicht gesetzt, wird standardmäßig der Format-
-String `%Y-%m-%d` verwedet.
+String `%Y-%m-%d` verwendet.
 
 `message = <string>`
 : Angabe eines Strings, der in die Spalte `message` der Ausgabedatei
@@ -94,7 +94,7 @@ ersetzt.
 
 `offset = <n>`
 : Mit der `offset`-Option können die ersten `<n>` Zeichen übersprungen
-werden, wenn die Datums- bzw. Zeitangabe nich am Anfang des zu
+werden, wenn die Datums- bzw. Zeitangabe nicht am Anfang des zu
 überprüfenden Feldes steht.
 
 ### Filter
