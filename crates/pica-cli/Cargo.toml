@@ -9,7 +9,7 @@ version.workspace = true
 
 [features]
 compat = ["pica-record/compat"]
-unstable = ["pica-record/unstable"]
+unstable = ["pica-record/unstable", "jiff"]
 # nightly = ["polars/simd"]
 performant = [
     "polars/cse",
@@ -25,6 +25,7 @@ directories = { version = "6.0" }
 flate2 = { version = "1.0" }
 hashbrown = { version = "0.15" }
 indicatif = { version = "0.17", features = ["improved_unicode"] }
+jiff = { version = "0.2", optional = true }
 pica-record = { path = "../../", features = ["serde"] }
 polars = { version = "0.46", features = ["ipc", "decompress", "lazy"] }
 quick-xml = { version = "0.37" }
