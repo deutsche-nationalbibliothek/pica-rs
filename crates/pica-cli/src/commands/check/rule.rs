@@ -47,6 +47,7 @@ impl Rule {
         let (result, message) = match self.check {
             Checks::DateTime(ref c) => c.check(record),
             Checks::Filter(ref c) => c.check(record),
+            Checks::Isni(ref c) => c.check(record),
             Checks::Unicode(ref c) => c.check(record),
         };
 

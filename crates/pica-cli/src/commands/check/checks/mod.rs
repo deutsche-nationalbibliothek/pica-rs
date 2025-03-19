@@ -1,5 +1,6 @@
 mod datetime;
 mod filter;
+mod isni;
 mod unicode;
 
 #[derive(Debug, serde::Deserialize)]
@@ -9,5 +10,6 @@ pub(crate) enum Checks {
     #[serde(rename = "datetime")]
     DateTime(Box<datetime::DateTime>),
     Filter(Box<filter::Filter>),
+    Isni(Box<isni::Isni>),
     Unicode(Box<unicode::Unicode>),
 }
