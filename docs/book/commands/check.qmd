@@ -139,7 +139,7 @@ beginnen:
 ```{.toml}
 [rule.ORCID]
 check = 'isni'
-description = 'Findet ungültig ORCID-Einträge im Feld 028A $y.'
+description = 'Findet ungültige ORCID-Einträge im Feld 028A $y.'
 link = 'https://wiki.dnb.de/display/ILTIS/3000'
 path = '028A{ y | y =^ "(orcid)" }'
 prefix = '(orcid)'
