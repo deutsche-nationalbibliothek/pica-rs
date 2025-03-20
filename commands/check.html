@@ -417,16 +417,42 @@ Ist die Option gesetzt, werden Datensätze gefunden, die <em>nicht</em> dem Filt
 </dd>
 </dl>
 </section>
+<section id="isni" class="level3">
+<h3 class="anchored" data-anchor-id="isni">ISNI</h3>
+<p>Die Gültigkeit eines <a href="https://de.wikipedia.org/wiki/International_Standard_Name_Identifier">ISNI</a>-Identifikators, bspw. einer <a href="https://de.wikipedia.org/wiki/ORCID">ORCID</a>, lässt sich mit dem <code>isni</code>-Check überprüfen.</p>
+<p>Die folgende Regel findet ungültige ORCID-Identifikatoren im Feld <code>028A $y</code>, wobei nur die Werte überprüft werden, die mit dem Prefix <code>(orcid)</code> beginnen:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.ORCID]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">isni</span><span class="st">'</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">'</span><span class="vs">Findet ungültige ORCID-Einträge im Feld 028A $y.</span><span class="st">'</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">'</span><span class="vs">https://wiki.dnb.de/display/ILTIS/3000</span><span class="st">'</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">028A{ y | y =^ "(orcid)" }</span><span class="st">'</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">prefix</span> <span class="op">=</span> <span class="st">'</span><span class="vs">(orcid)</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Weitere Optionen:</p>
+<dl>
+<dt><code>case-ignore = true | false</code></dt>
+<dd>
+Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim Vergleichen von Werten ignoriert.
+</dd>
+<dt><code>strsim-threshold = &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels des <code>=*</code>-Operators.
+</dd>
+<dt><code>prefix = '&lt;prefix&gt;'</code></dt>
+<dd>
+Es werden nur Werte überprüft, die mit dem Prefix <code>&lt;prefix&gt;</code> beginnen. Wird kein Prefix angegeben, werden alle Werte des <code>path</code>-Ausdrucks überprüft.
+</dd>
+</dl>
+</section>
 <section id="unicode" class="level3">
 <h3 class="anchored" data-anchor-id="unicode">Unicode</h3>
 <p>Der <code>unicode</code>-Check überprüft, ob die Werte aller Unterfelder eines Datensatzes gültige Unicode-Zeichenketten enthalten.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE]</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Darüber hinaus kann überprüft werden, ob diese Werte in einer der Unicode-Normalformen <code>nfc</code>, <code>nfkc</code>, <code>nfd</code> oder <code>nfkd</code> vorliegen. Ein gefundener Wert kann über die <code>message</code>-Option mit in die Ausgabedatei geschrieben werden. Der Platzhalter <code>{}</code> wird durch den ungültigen Wert ersetzt:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE]</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="dt">message</span> <span class="op">=</span> <span class="st">"Ungültiger Wert '{}'!"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Darüber hinaus kann überprüft werden, ob diese Werte in einer der Unicode-Normalformen <code>nfc</code>, <code>nfkc</code>, <code>nfd</code> oder <code>nfkd</code> vorliegen. Ein gefundener Wert kann über die <code>message</code>-Option mit in die Ausgabedatei geschrieben werden. Der Platzhalter <code>{}</code> wird durch den ungültigen Wert ersetzt:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="dt">message</span> <span class="op">=</span> <span class="st">"Ungültiger Wert '{}'!"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="optionen" class="level2">
