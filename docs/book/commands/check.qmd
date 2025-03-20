@@ -127,6 +127,40 @@ Zeichenketten mittels des `=*`-Operators.
 Filterausdruck entsprechen.
 
 
+### ISNI
+
+Die Gültigkeit eines [ISNI]-Identifikators, bspw. einer [ORCID], lässt
+sich mit dem `isni`-Check überprüfen.
+
+Die folgende Regel findet ungültige ORCID-Identifikatoren im Feld `028A
+$y`, wobei nur die Werte überprüft werden, die mit dem Prefix `(orcid)`
+beginnen:
+
+```{.toml}
+[rule.ORCID]
+check = 'isni'
+description = 'Findet ungültige ORCID-Einträge im Feld 028A $y.'
+link = 'https://wiki.dnb.de/display/ILTIS/3000'
+path = '028A{ y | y =^ "(orcid)" }'
+prefix = '(orcid)'
+```
+
+Weitere Optionen:
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
+
+`prefix = '<prefix>'`
+: Es werden nur Werte überprüft, die mit dem Prefix `<prefix>` beginnen.
+Wird kein Prefix angegeben, werden alle Werte des `path`-Ausdrucks
+überprüft.
+
+
 ### Unicode
 
 Der `unicode`-Check überprüft, ob die Werte aller Unterfelder eines
@@ -169,3 +203,6 @@ getestet werden.
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll.
 Standardmäßig wird die Ausgabe in die Standardausgabe `stdout`
 geschrieben.
+
+[ISNI]: https://de.wikipedia.org/wiki/International_Standard_Name_Identifier
+[ORCID]: https://de.wikipedia.org/wiki/ORCID
