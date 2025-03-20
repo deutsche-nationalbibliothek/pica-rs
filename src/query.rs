@@ -107,10 +107,10 @@ impl<'de> serde::Deserialize<'de> for Query {
 
 #[derive(Debug, Clone, PartialEq)]
 enum Fragment {
-    Path(Path),
+    Path(Box<Path>),
     Literal(BString),
     #[cfg(feature = "unstable")]
-    Format(Format),
+    Format(Box<Format>),
 }
 
 impl Fragment {
@@ -211,10 +211,10 @@ impl Fragment {
 
 fn parse_fragment(i: &mut &[u8]) -> ModalResult<Fragment> {
     alt((
-        parse_path.map(Fragment::Path),
+        parse_path.map(|path| Fragment::Path(Box::new(path))),
         parse_string.map(|s| Fragment::Literal(s.into())),
         #[cfg(feature = "unstable")]
-        parse_format.map(Fragment::Format),
+        parse_format.map(|format| Fragment::Format(Box::new(format))),
     ))
     .parse_next(i)
 }

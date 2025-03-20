@@ -30,7 +30,7 @@ Ts1,1
 mittels `=*`.
 
 `--unique`, `-u`
-: Doppelte Werte eines Datensatzes werden ignorieren.
+: Doppelte Werte eines Datensatzes werden ignoriert.
 
 `--reverse`
 : Ergebnisse werden in aufsteigender Reihenfolge ausgegeben.

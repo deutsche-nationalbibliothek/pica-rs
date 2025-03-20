@@ -62,7 +62,7 @@ Standardmäßig wird der Separator `|` verwendet.
 einen nicht-leeren Wert enthält.
 
 `--unique`, `-u`
-: Mehrfach vorkommende Zeilen werden ignorieren.
+: Mehrfach vorkommende Zeilen werden ignoriert.
 
 `-i`, `--ignore-case`
 : Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
