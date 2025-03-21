@@ -71,6 +71,10 @@ impl Check {
             }
         }
 
+        for rs in rulesets.iter_mut() {
+            rs.finish(&mut writer)?;
+        }
+
         progress.finish();
         writer.flush()?;
 

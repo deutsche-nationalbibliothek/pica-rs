@@ -10,7 +10,6 @@ use crate::prelude::*;
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
-#[allow(dead_code)]
 pub(crate) struct RuleSet {
     pub(crate) scope: Option<RecordMatcher>,
 
@@ -57,6 +56,17 @@ impl RuleSet {
 
         for (_, rule) in self.rules.iter_mut() {
             rule.check(record, writer)?;
+        }
+
+        Ok(())
+    }
+
+    pub(crate) fn finish<W: Write>(
+        &mut self,
+        writer: &mut csv::Writer<W>,
+    ) -> Result<(), CliError> {
+        for (_, rule) in self.rules.iter_mut() {
+            rule.finish(writer)?;
         }
 
         Ok(())

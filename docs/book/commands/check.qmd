@@ -161,6 +161,94 @@ Wird kein Prefix angegeben, werden alle Werte des `path`-Ausdrucks
 überprüft.
 
 
+### Link
+
+Der `link`-Check überprüft, ob Verknüpfungen zwischen Datensätzen
+existieren. Zur Erläuterung der Funktionsweise, soll ein Beispiel
+dienen: Die beiden Normdatensätze _Goethe_ und _Schiller_ sind im
+Feld `065R` mit einem Geografikum in Beziehung gesetzt. Der verknüpfte
+Datensatz ist im Feld `$9` hinterlegt und die Art der Beziehung
+ist im Unterfeld `$4` kodiert. Im folgenden Beispiel sind nur die
+Beziehungen _Sterbeort_ (`orts`), Geburtsort (`ortg`) und Wirkungsort
+(`ortw`) relevant. In der folgenden Grafik ist das Beziehungsgeflecht
+dargestellt:
+
+![](link.png){width=80% fig-align="center"}
+
+Goethes Normdatensatz, reduziert auf die relevanten Felder, sieht wie
+folgt aus:
+
+```{.bash}
+$ pica filter -k '003@, 065R' '003@.0 == "118540238"' DUMP.dat.gz | pica print
+003@ $0 118540238
+065R $9 040181189 $7 Tg1 $V gik $A gnd $0 4018118-2 $a Frankfurt am Main $4 ortg
+065R $9 040651053 $7 Tg1 $V gik $A gnd $0 4065105-8 $a Weimar $4 orts
+065R $9 040651053 $7 Tg1 $V gik $A gnd $0 4065105-8 $a Weimar $4 ortw
+```
+
+Der einfachste Test, der sich mit dem `link`-Check formulieren lässt,
+ist zu überprüfen, ob die Zieldatensätze in der Menge der Datensätze
+existieren. Hierzu muss ein Pfad-Ausdruck `source` angegeben werden,
+mit dem alle Identifikatoren ermittelt werden, die in den Zieldatensätzen
+gesucht werden. In unserem Beispiel ist dies der Ausdruck `065R.9`, der
+die PPNs der Zieldatensätze ermittelt. Als zweites wird noch ein Pfad-
+Ausdruck benötigt, der die Werte im Zieldatensatz adressiert. Da der
+Abgleich über die PPN eines Datensatzes erfolgt, wird der Ausdruck
+`003@.0` als Ziel (`destination`) benötigt. Es ergibt sich folgende
+Regel:
+
+```{.toml}
+[rule.LINK1]
+check = 'link'
+source = '065R.9'
+destination = '003@.0'
+````
+
+Zur Ermittlung der Ziel-Identifikatoren `source` können alle Funktionen
+der Pfad-Ausdrücke genutzt werden. Sollen nur `ortw`-Relationen getestet
+werden, kann die Regel wie folgt modifiziert werden:
+
+```{.toml}
+[rule.LINK2]
+check = 'link'
+source = '065R{ 9  | 4 == "ortw" }'
+destination = '003@.0'
+````
+
+Darüber hinaus können Kriterien formuliert werden, die der Zieldatensatz
+erfüllen muss. Zum Beispiel könnte die Anforderung an die verknüpften
+Datensätze gestellt werden, dass es sich auch um ein Geografikum
+`Tg*` handelt. Dies lässt sich durch die Angabe eines Filer-Ausdrucks
+`condition` erreichen:
+
+```{.toml}
+[rule.LINK3]
+check = 'link'
+source = '065R{ 9  | 4 == "ortw" }'
+destination = '003@.0'
+condition = '002@.0 =^ "Tg"'
+```
+
+Sollte ein globaler Geltungsbereich `scope` für alle Regeln definiert
+sein, dann werden nur die Zielwerte `source` der Datensätze, die zum
+spezifizierten Geltungsbereich gehören, überprüft. Der Geltungsbereich
+wird aber nicht zur Bestimmung der Zieldatesätze verwendet. Besteht die
+Eingabe sowohl aus Personen `Tp*` und Geografika `Tg*`, dann kann der
+Geltungsbereich auf Personen eingeschränkt werden (`scope = '002@.0 =^
+"Tp"'`). Ein Abgleich mit den Geografika kann aber trotzdem erfolgen,
+da diese nicht dem Geltungsbereich unterliegen.
+
+Weitere Optionen:
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
+
+
 ### Unicode
 
 Der `unicode`-Check überprüft, ob die Werte aller Unterfelder eines
