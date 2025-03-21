@@ -10,7 +10,6 @@ use crate::prelude::*;
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
-#[allow(dead_code)]
 pub(crate) struct RuleSet {
     pub(crate) scope: Option<RecordMatcher>,
 
