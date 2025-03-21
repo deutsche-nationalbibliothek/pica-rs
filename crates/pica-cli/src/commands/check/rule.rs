@@ -1,5 +1,6 @@
 use std::io::Write;
 
+use bstr::ByteSlice;
 use pica_record::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +38,11 @@ pub(crate) struct Rule {
 
 impl Rule {
     #[inline(always)]
-    pub(crate) fn preprocess(&mut self, _record: &ByteRecord) {}
+    pub(crate) fn preprocess(&mut self, record: &ByteRecord) {
+        if let Checks::Link(ref mut c) = self.check {
+            c.preprocess(record);
+        }
+    }
 
     pub(crate) fn check<W: Write>(
         &mut self,
@@ -48,6 +53,7 @@ impl Rule {
             Checks::DateTime(ref c) => c.check(record),
             Checks::Filter(ref c) => c.check(record),
             Checks::Isni(ref c) => c.check(record),
+            Checks::Link(ref mut c) => c.check(record),
             Checks::Unicode(ref c) => c.check(record),
         };
 
@@ -58,6 +64,30 @@ impl Rule {
                 level: &self.level,
                 message,
             })?;
+        }
+
+        Ok(())
+    }
+
+    pub(crate) fn finish<W: Write>(
+        &mut self,
+        writer: &mut csv::Writer<W>,
+    ) -> Result<(), CliError> {
+        if let Checks::Link(ref mut c) = self.check {
+            for (ppn, message) in c.finish() {
+                let ppn = if !ppn.is_empty() {
+                    Some(ppn.as_bstr())
+                } else {
+                    None
+                };
+
+                writer.serialize(Record {
+                    rule: &self.id,
+                    level: &self.level,
+                    message,
+                    ppn,
+                })?;
+            }
         }
 
         Ok(())

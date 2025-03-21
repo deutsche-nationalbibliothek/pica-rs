@@ -61,4 +61,15 @@ impl RuleSet {
 
         Ok(())
     }
+
+    pub(crate) fn finish<W: Write>(
+        &mut self,
+        writer: &mut csv::Writer<W>,
+    ) -> Result<(), CliError> {
+        for (_, rule) in self.rules.iter_mut() {
+            rule.finish(writer)?;
+        }
+
+        Ok(())
+    }
 }
