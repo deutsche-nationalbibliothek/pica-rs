@@ -1,11 +1,11 @@
 use std::ffi::OsString;
+use std::fs::File;
 use std::process::ExitCode;
 
 use clap::{Parser, value_parser};
-use comfy_table::Table;
-use comfy_table::presets::UTF8_FULL_CONDENSED;
 use hashbrown::HashMap;
 use pica_record::prelude::*;
+use polars::prelude::*;
 
 use crate::prelude::*;
 
@@ -63,6 +63,10 @@ pub(crate) struct Describe {
     /// This option can't be combined with `--or`.
     #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
+
+    /// Write output tab-separated (TSV)
+    #[arg(long, short, requires = "output")]
+    tsv: bool,
 
     /// Write output to FILENAME instead of stdout
     #[arg(short, long, value_name = "FILENAME")]
@@ -177,32 +181,70 @@ impl Describe {
         codes.sort_unstable();
         codes.dedup();
 
-        let mut header = vec!["Field".to_string()];
-        header.extend(codes.iter().map(ToString::to_string));
+        let tags =
+            fields.keys().map(ToString::to_string).collect::<Vec<_>>();
 
-        let mut tags = fields.keys().collect::<Vec<_>>();
-        tags.sort_unstable();
+        let mut columns = vec![];
+        columns.push(Column::new("field".into(), tags.clone()));
 
-        let mut table = Table::new();
-        table
-            .load_preset(UTF8_FULL_CONDENSED)
-            .set_width(72)
-            .set_header(header);
+        for code in codes.iter() {
+            let mut values = vec![];
 
-        for tag in tags {
-            let counts = fields.get(tag).unwrap();
-            let mut row = vec![tag.to_string()];
-
-            for code in codes.iter() {
+            for tag in tags.iter() {
+                let counts = fields.get(tag).unwrap();
                 let count = counts.get(*code).unwrap_or(&0);
-                row.push(count.to_string());
+                values.push(*count as u64);
             }
 
-            table.add_row(row);
+            columns.push(Column::new(code.to_string().into(), values));
+        }
+
+        let mut df = DataFrame::new(columns)?
+            .lazy()
+            .sort(["field"], SortMultipleOptions::default())
+            .collect()?;
+
+        match self.output {
+            None => {
+                let _tmp_env = (
+                    tmp_env::set_var(
+                        "POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION",
+                        "1",
+                    ),
+                    tmp_env::set_var(
+                        "POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES",
+                        "1",
+                    ),
+                    tmp_env::set_var(
+                        "POLARS_FMT_TABLE_CELL_NUMERIC_ALIGNMENT",
+                        "1",
+                    ),
+                    tmp_env::set_var("POLARS_FMT_MAX_COLS", "20"),
+                    tmp_env::set_var("POLARS_FMT_MAX_ROWS", "50"),
+                );
+
+                println!("{df}");
+            }
+            Some(path)
+                if path.to_string_lossy().ends_with(".tsv")
+                    || self.tsv =>
+            {
+                let mut writer = CsvWriter::new(File::create(path)?)
+                    .with_separator(b'\t');
+                writer.finish(&mut df)?;
+            }
+            Some(path) if path.to_string_lossy().ends_with(".csv") => {
+                let mut writer = CsvWriter::new(File::create(path)?);
+                writer.finish(&mut df)?;
+            }
+            Some(path) => {
+                let mut writer = IpcWriter::new(File::create(path)?)
+                    .with_compression(Some(IpcCompression::ZSTD));
+                writer.finish(&mut df)?;
+            }
         }
 
         progress.finish();
-        println!("{table}");
 
         Ok(ExitCode::SUCCESS)
     }
