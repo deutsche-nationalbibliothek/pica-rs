@@ -9,7 +9,7 @@ use polars::prelude::*;
 
 use crate::prelude::*;
 
-/// Creates a summary statistics of (sub-)fields.
+/// Creates a frequency table for all subfield codes used.
 #[derive(Parser, Debug)]
 pub(crate) struct Describe {
     /// Skip invalid records that can't be decoded
