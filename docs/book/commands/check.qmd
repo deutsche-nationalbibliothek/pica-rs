@@ -162,9 +162,9 @@ Wird kein Prefix angegeben, werden alle Werte des `path`-Ausdrucks
 
 ### ISO 639-2B
 
-Ob ein Unterfeld einen gültigen [ISO 639-2B]-Code enthält, lässt sich
-mit dem `iso639-2b`-Check testen. Die zu überprüfenden Werte werden mit
-`path` adressiert:
+Ob ein Unterfeld einen gültigen Sprachencode nach [ISO 639-2B] enthält,
+lässt sich mit dem `iso639-2b`-Check testen. Die zu überprüfenden Werte
+werden mit `path` adressiert:
 
 ```{.toml}
 [rule.SPRACHENCODE]
