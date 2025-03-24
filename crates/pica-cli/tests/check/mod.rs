@@ -7,6 +7,7 @@ use crate::prelude::*;
 mod datetime;
 mod filter;
 mod isni;
+mod iso639;
 mod link;
 mod unicode;
 

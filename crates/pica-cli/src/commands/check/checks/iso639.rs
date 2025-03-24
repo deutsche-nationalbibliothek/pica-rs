@@ -1,16 +1,25 @@
-use std::collections::BTreeSet;
-use std::sync::Mutex;
+use std::sync::LazyLock;
 
-use once_cell::sync::Lazy;
-use pica_path::{Path, PathExt};
-use pica_record_v1::ByteRecord;
-use serde::Deserialize;
+use bstr::ByteSlice;
+use hashbrown::HashSet;
+use pica_record::prelude::*;
 
-use super::{Lint, Status};
-
-#[derive(Debug, Deserialize)]
-pub struct Iso639 {
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) struct Iso639 {
     path: Path,
+
+    /// The minimum score for string similarity comparisons
+    #[serde(default = "strsim_threshold")]
+    strsim_threshold: f64,
+
+    /// If set, comparison operations will be search case insensitive
+    #[serde(default)]
+    case_ignore: bool,
+}
+
+const fn strsim_threshold() -> f64 {
+    0.8
 }
 
 macro_rules! codes {
@@ -19,8 +28,8 @@ macro_rules! codes {
     );
 }
 
-static ISO639_CODES: Lazy<Mutex<BTreeSet<Vec<u8>>>> = Lazy::new(|| {
-    let codes = BTreeSet::from_iter(codes![
+static CODES: LazyLock<HashSet<Vec<u8>>> = LazyLock::new(|| {
+    HashSet::from_iter(codes![
         "aar", "abk", "ace", "ach", "ada", "ady", "afa", "afh", "afr",
         "ain", "aka", "akk", "alb", "ale", "alg", "alt", "amh", "ang",
         "anp", "apa", "ara", "arc", "arg", "arm", "arn", "arp", "art",
@@ -78,18 +87,29 @@ static ISO639_CODES: Lazy<Mutex<BTreeSet<Vec<u8>>>> = Lazy::new(|| {
         "wln", "wol", "xal", "xho", "yao", "yap", "yid", "yor", "ypk",
         "zap", "zbl", "zen", "zgh", "zha", "chi", "znd", "zul", "zun",
         "zxx", "zza",
-    ]);
-
-    Mutex::new(codes)
+    ])
 });
 
-impl Lint for Iso639 {
-    fn check(&mut self, record: &ByteRecord) -> Status {
-        let codes = ISO639_CODES.lock().unwrap();
-        record
-            .path(&self.path, &Default::default())
-            .iter()
-            .any(|value| !codes.contains(&value.to_vec()))
-            .into()
+impl Iso639 {
+    pub(crate) fn check(
+        &self,
+        record: &ByteRecord,
+    ) -> (bool, Option<String>) {
+        let options = MatcherOptions::new()
+            .strsim_threshold(self.strsim_threshold)
+            .case_ignore(self.case_ignore);
+
+        let message = record
+            .path(&self.path, &options)
+            .filter(|value| !CODES.contains(value.as_bstr()))
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        if !message.is_empty() {
+            (true, Some(message))
+        } else {
+            (false, None)
+        }
     }
 }
