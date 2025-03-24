@@ -160,6 +160,30 @@ Zeichenketten mittels des `=*`-Operators.
 Wird kein Prefix angegeben, werden alle Werte des `path`-Ausdrucks
 überprüft.
 
+### ISO 639-2B
+
+Ob ein Unterfeld einen gültigen [ISO 639-2B]-Code enthält, lässt sich
+mit dem `iso639-2b`-Check testen. Die zu überprüfenden Werte werden mit
+`path` adressiert:
+
+```{.toml}
+[rule.SPRACHENCODE]
+check = 'iso639-2b'
+description = 'Findet ungültige Sprachencodes im Feld 010@ $a.'
+link = 'https://wiki.dnb.de/display/ILTIS/1500'
+path = '010@.a'
+```
+
+Weitere Optionen:
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
+
 
 ### Link
 
@@ -293,4 +317,5 @@ Standardmäßig wird die Ausgabe in die Standardausgabe `stdout`
 geschrieben.
 
 [ISNI]: https://de.wikipedia.org/wiki/International_Standard_Name_Identifier
+[ISO 639-2B]: https://wiki.dnb.de/download/attachments/90411323/sprachenCodesIso6392.pdf
 [ORCID]: https://de.wikipedia.org/wiki/ORCID
