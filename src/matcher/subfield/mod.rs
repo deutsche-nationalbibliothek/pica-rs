@@ -8,6 +8,7 @@ use std::ops::{
 };
 
 use bstr::ByteSlice;
+#[cfg(feature = "unstable")]
 use either::Either::{self, Left, Right};
 #[cfg(feature = "unstable")]
 use parser::parse_contains_matcher;
