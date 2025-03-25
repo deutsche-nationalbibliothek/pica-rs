@@ -1,6 +1,8 @@
 use std::cell::RefCell;
 
 use bstr::ByteSlice;
+#[cfg(feature = "unstable")]
+use either::Right;
 use regex::bytes::Regex;
 use winnow::ascii::{digit1, multispace1};
 use winnow::combinator::{
@@ -9,6 +11,8 @@ use winnow::combinator::{
 use winnow::error::ParserError;
 use winnow::prelude::*;
 
+#[cfg(feature = "unstable")]
+use super::ContainsMatcher;
 use super::{
     CardinalityMatcher, ExistsMatcher, InMatcher, RegexMatcher,
     RegexSetMatcher, RelationMatcher, SingletonMatcher,
@@ -64,6 +68,47 @@ pub(crate) fn parse_relation_matcher(
                 codes,
                 op,
                 value,
+                raw_data,
+            }
+        })
+        .parse_next(i)
+}
+
+/// Parse a [ContainsMatcher] expression.
+#[cfg(feature = "unstable")]
+pub(crate) fn parse_contains_matcher(
+    i: &mut &[u8],
+) -> ModalResult<ContainsMatcher> {
+    use std::collections::BTreeSet;
+
+    (
+        opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
+        alt((
+            ws(parse_subfield_codes),
+            #[cfg(feature = "compat")]
+            preceded(
+                ws('$'),
+                ws(crate::parser::parse_subfield_codes_compat),
+            ),
+        )),
+        ws("=?"),
+        alt((delimited(
+            ws('['),
+            separated(1.., parse_string, ws(',')).map(
+                |values: Vec<Vec<u8>>| {
+                    Right(BTreeSet::<Vec<u8>>::from_iter(values))
+                },
+            ),
+            ws(']'),
+        ),)),
+    )
+        .with_taken()
+        .map(|((quantifier, codes, _, values), raw_data)| {
+            let raw_data = raw_data.to_str().unwrap().to_string();
+            ContainsMatcher {
+                quantifier,
+                codes,
+                values,
                 raw_data,
             }
         })
@@ -207,6 +252,8 @@ pub(crate) fn parse_singleton_matcher(
 ) -> ModalResult<SingletonMatcher> {
     alt((
         parse_relation_matcher.map(SingletonMatcher::Relation),
+        #[cfg(feature = "unstable")]
+        parse_contains_matcher.map(SingletonMatcher::Contains),
         parse_in_matcher.map(SingletonMatcher::In),
         parse_exists_matcher.map(SingletonMatcher::Exists),
         parse_cardinality_matcher.map(SingletonMatcher::Cardinality),
@@ -467,6 +514,62 @@ mod tests {
         parse_success!("a !$ 'abc'", Any, "a", EndsNotWith, b"abc");
         parse_success!("a =* 'abc'", Any, "a", Similar, b"abc");
         parse_success!("a =? 'abc'", Any, "a", Contains, b"abc");
+    }
+
+    #[test]
+    #[cfg(feature = "unstable")]
+    fn test_parse_contains_matcher() {
+        use std::collections::BTreeSet;
+
+        use Quantifier::*;
+
+        macro_rules! parse_success {
+            ($i:expr, $q:expr, $codes:expr, $values:expr) => {
+                let matcher = parse_contains_matcher
+                    .parse($i.as_bytes())
+                    .unwrap();
+
+                assert_eq!(matcher.quantifier, $q);
+                assert_eq!(matcher.raw_data, $i);
+                assert_eq!(
+                    matcher.codes,
+                    SmallVec::<[SubfieldCode; 4]>::from_iter(
+                        $codes
+                            .chars()
+                            .map(SubfieldCode::from_unchecked)
+                    )
+                );
+
+                assert_eq!(
+                    matcher.values,
+                    Right(BTreeSet::from_iter(
+                        $values
+                            .iter()
+                            .map(|value| value.as_bytes().to_vec())
+                    ))
+                );
+            };
+        }
+
+        parse_success!("a =? ['foo']", Any, "a", vec!["foo"]);
+        parse_success!("ANY a =? ['foo']", Any, "a", vec!["foo"]);
+        parse_success!("ALL a =? ['foo']", All, "a", vec!["foo"]);
+        parse_success!("[a-c] =? ['foo']", Any, "abc", vec!["foo"]);
+        parse_success!("ANY [ab] =? ['foo']", Any, "ab", vec!["foo"]);
+
+        parse_success!(
+            "ALL [a-d] =? ['foo']",
+            All,
+            "abcd",
+            vec!["foo"]
+        );
+
+        parse_success!(
+            "a =? ['foo','bar']",
+            Any,
+            "a",
+            vec!["foo", "bar"]
+        );
     }
 
     #[test]

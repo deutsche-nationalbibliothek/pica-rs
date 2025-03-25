@@ -27,6 +27,7 @@ compat = []
 
 [dependencies]
 bstr = { version = "1.11" }
+either = { version = "1.15" }
 flate2 = { version = "1.0" }
 regex = { version = "1.11" }
 serde = { version = "1.0", optional = true, features = ["derive"] }
