@@ -1,11 +1,16 @@
 //! Matcher that can be applied on a list of [SubfieldRef].
 
+#[cfg(feature = "unstable")]
+use std::collections::BTreeSet;
 use std::fmt::{self, Display};
 use std::ops::{
     BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not,
 };
 
 use bstr::ByteSlice;
+use either::Either::{self, Left, Right};
+#[cfg(feature = "unstable")]
+use parser::parse_contains_matcher;
 use parser::{
     parse_cardinality_matcher, parse_exists_matcher, parse_in_matcher,
     parse_regex_matcher, parse_regex_set_matcher,
@@ -411,6 +416,125 @@ impl Display for RelationMatcher {
     ///
     /// let matcher = RelationMatcher::new("[a0-3] == 'foo'")?;
     /// assert_eq!(matcher.to_string(), "[a0-3] == 'foo'");
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.raw_data)
+    }
+}
+
+/// A matcher that checks if subfield value is contained in the given
+/// set.
+#[derive(Debug, Clone, PartialEq)]
+#[cfg(feature = "unstable")]
+pub struct ContainsMatcher {
+    pub(crate) quantifier: Quantifier,
+    pub(crate) codes: SmallVec<[SubfieldCode; 4]>,
+    pub(crate) values: Either<(), BTreeSet<Vec<u8>>>,
+    pub(crate) raw_data: String,
+}
+
+#[cfg(feature = "unstable")]
+impl ContainsMatcher {
+    /// Creates a new [ContainsMatcher].
+    ///
+    /// # Errors
+    ///
+    /// This function fails if the given expression is not a valid
+    /// contains set matcher.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::matcher::subfield::ContainsMatcher;
+    ///
+    /// let _matcher = ContainsMatcher::new("0 =? ['Olfo','Oa']")?;
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new(matcher: &str) -> Result<Self, ParseMatcherError> {
+        parse_contains_matcher
+            .parse(matcher.as_bytes())
+            .map_err(|_| {
+                ParseMatcherError(format!(
+                    "invalid regex matcher '{matcher}'"
+                ))
+            })
+    }
+
+    /// Returns true if at least one (ANY) or all (ALL) subfield values
+    /// is/are members of the given set.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::ContainsMatcher;
+    /// use pica_record::primitives::SubfieldRef;
+    ///
+    /// let options = MatcherOptions::default();
+    /// let subfield = SubfieldRef::new('0', "foobar")?;
+    ///
+    /// let matcher = ContainsMatcher::new("0 =? ['foo','bar']")?;
+    /// assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # let matcher = ContainsMatcher::new("0 =? ['baz','bar']")?;
+    /// # assert!(matcher.is_match(&subfield, &options));
+    ///
+    /// # let matcher = ContainsMatcher::new("0 =? ['frob','baz']")?;
+    /// # assert!(!matcher.is_match(&subfield, &options));
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn is_match<'a>(
+        &self,
+        subfields: impl IntoIterator<Item = &'a SubfieldRef<'a>>,
+        options: &MatcherOptions,
+    ) -> bool {
+        let mut subfields = subfields
+            .into_iter()
+            .filter(|s| self.codes.contains(s.code()));
+
+        let r#fn = |subfield: &SubfieldRef| -> bool {
+            match self.values {
+                Right(ref values) => {
+                    if !options.case_ignore {
+                        let haystack = subfield.value();
+                        values
+                            .iter()
+                            .any(|needle| haystack.contains_str(needle))
+                    } else {
+                        let haystack = subfield.value().to_lowercase();
+                        values.iter().any(|needle| {
+                            haystack.contains_str(needle.to_lowercase())
+                        })
+                    }
+                }
+                Left(_) => unreachable!(),
+            }
+        };
+
+        match self.quantifier {
+            Quantifier::All => subfields.all(r#fn),
+            Quantifier::Any => subfields.any(r#fn),
+        }
+    }
+}
+
+#[cfg(feature = "unstable")]
+impl Display for ContainsMatcher {
+    /// Format the in-matcher as a human-readable string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::matcher::MatcherOptions;
+    /// use pica_record::matcher::subfield::ContainsMatcher;
+    ///
+    /// let matcher = ContainsMatcher::new("ANY [ab] =? ['foo', 'bar']")?;
+    /// assert_eq!(matcher.to_string(), "ANY [ab] =? ['foo', 'bar']");
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
@@ -850,6 +974,8 @@ pub enum SingletonMatcher {
     Regex(RegexMatcher),
     RegexSet(RegexSetMatcher),
     Relation(RelationMatcher),
+    #[cfg(feature = "unstable")]
+    Contains(ContainsMatcher),
     Exists(ExistsMatcher),
     In(InMatcher),
 }
@@ -912,6 +1038,8 @@ impl SingletonMatcher {
             Self::Regex(m) => m.is_match(subfields, options),
             Self::RegexSet(m) => m.is_match(subfields, options),
             Self::Relation(m) => m.is_match(subfields, options),
+            #[cfg(feature = "unstable")]
+            Self::Contains(m) => m.is_match(subfields, options),
             Self::Exists(m) => m.is_match(subfields, options),
             Self::In(m) => m.is_match(subfields, options),
         }
@@ -940,6 +1068,8 @@ impl Display for SingletonMatcher {
             Self::Regex(m) => write!(f, "{m}"),
             Self::RegexSet(m) => write!(f, "{m}"),
             Self::Relation(m) => write!(f, "{m}"),
+            #[cfg(feature = "unstable")]
+            Self::Contains(m) => write!(f, "{m}"),
         }
     }
 }
@@ -1583,6 +1713,63 @@ mod tests {
         let options = MatcherOptions::default().case_ignore(true);
         let matcher = InMatcher::new("a in ['FOO', 'BAZ']")?;
         assert!(matcher.is_match(&subfields, &options));
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "unstable")]
+    fn test_contains_set_matcher() -> TestResult {
+        let subfields = vec![
+            SubfieldRef::new('a', "foo")?,
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('b', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? ['foo', 'baz']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? ['xy', 'ba']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? ['xy', '']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? ['xy', 'yz']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? ['xy', 'OO']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().case_ignore(true);
+        let matcher = ContainsMatcher::new("a =? ['xy', 'OO']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let subfields = vec![
+            SubfieldRef::new('a', "bar")?,
+            SubfieldRef::new('a', "baz")?,
+        ];
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ANY a =? ['xy','ba']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ALL a =? ['xy','ba']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ANY a =? ['xy','bar']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ALL a =? ['xy','bar']")?;
+        assert!(!matcher.is_match(&subfields, &options));
 
         Ok(())
     }
