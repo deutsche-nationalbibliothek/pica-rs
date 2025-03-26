@@ -87,15 +87,11 @@ Folgende Optionen können zusätzlich gesetzt werden:
 festlegt. Ist die Option nicht gesetzt, wird standardmäßig der Format-
 String `%Y-%m-%d` verwendet.
 
-`message = <string>`
-: Angabe eines Strings, der in die Spalte `message` der Ausgabedatei
-geschrieben wird. Der Platzhalter `{}` wird durch den ungültigen Wert
-ersetzt.
-
 `offset = <n>`
 : Mit der `offset`-Option können die ersten `<n>` Zeichen übersprungen
 werden, wenn die Datums- bzw. Zeitangabe nicht am Anfang des zu
 überprüfenden Feldes steht.
+
 
 ### Filter
 
@@ -284,16 +280,14 @@ check = "unicode"
 ```
 
 Darüber hinaus kann überprüft werden, ob diese Werte in einer der
-Unicode-Normalformen `nfc`, `nfkc`, `nfd` oder `nfkd` vorliegen. Ein
-gefundener Wert kann über die `message`-Option mit in die Ausgabedatei
-geschrieben werden. Der Platzhalter `{}` wird durch den ungültigen Wert
-ersetzt:
+Unicode-Normalformen `nfc`, `nfkc`, `nfd` oder `nfkd` vorliegen. Alle
+nicht konformen Werte werden in der `message`-Spalte der Ausgabedatei
+aufgeführt.
 
 ```{.toml}
 [rule.UNICODE]
 check = "unicode"
 normalization = "nfd"
-message = "Ungültiger Wert '{}'!"
 ```
 
 ## Optionen
