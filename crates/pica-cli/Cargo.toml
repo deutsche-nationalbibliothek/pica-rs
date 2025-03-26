@@ -9,12 +9,10 @@ version.workspace = true
 
 [features]
 compat = ["pica-record/compat"]
+default = ["performant"]
+performant = ["polars/cse", "polars/performant"]
 unstable = ["pica-record/unstable", "jiff"]
 # nightly = ["polars/simd"]
-performant = [
-    "polars/cse",
-    "polars/performant",
-]
 
 [dependencies]
 bstr = { version = "1.11" }
