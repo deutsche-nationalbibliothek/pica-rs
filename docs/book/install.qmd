@@ -102,7 +102,7 @@ aktiviert werden.Die folgenden Funktionen können mit der
   Entwicklung sind und für eine der nächsten Versionen vorgesehen sind,
   zu aktivieren
 - `nightly`, um weitere Optimierungen zu aktivieren (benötigt Rust
-  `nightly`)
+  `nightly`),
 - und `compat`, um eine höhere Kompatibilität mit der Abfragesprache
   [PICA Path] zu erhalten.
   
