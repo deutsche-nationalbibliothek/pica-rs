@@ -383,10 +383,6 @@ Warnung
 <dd>
 Angabe des Format-Strings, der das Format der Datums- bzw. Zeitangabe festlegt. Ist die Option nicht gesetzt, wird standardmäßig der Format- String <code>%Y-%m-%d</code> verwendet.
 </dd>
-<dt><code>message = &lt;string&gt;</code></dt>
-<dd>
-Angabe eines Strings, der in die Spalte <code>message</code> der Ausgabedatei geschrieben wird. Der Platzhalter <code>{}</code> wird durch den ungültigen Wert ersetzt.
-</dd>
 <dt><code>offset = &lt;n&gt;</code></dt>
 <dd>
 Mit der <code>offset</code>-Option können die ersten <code>&lt;n&gt;</code> Zeichen übersprungen werden, wenn die Datums- bzw. Zeitangabe nicht am Anfang des zu überprüfenden Feldes steht.
@@ -511,11 +507,10 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 <p>Der <code>unicode</code>-Check überprüft, ob die Werte aller Unterfelder eines Datensatzes gültige Unicode-Zeichenketten enthalten.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE]</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Darüber hinaus kann überprüft werden, ob diese Werte in einer der Unicode-Normalformen <code>nfc</code>, <code>nfkc</code>, <code>nfd</code> oder <code>nfkd</code> vorliegen. Ein gefundener Wert kann über die <code>message</code>-Option mit in die Ausgabedatei geschrieben werden. Der Platzhalter <code>{}</code> wird durch den ungültigen Wert ersetzt:</p>
+<p>Darüber hinaus kann überprüft werden, ob diese Werte in einer der Unicode-Normalformen <code>nfc</code>, <code>nfkc</code>, <code>nfd</code> oder <code>nfkd</code> vorliegen. Alle nicht konformen Werte werden in der <code>message</code>-Spalte der Ausgabedatei aufgeführt.</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE]</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="dt">message</span> <span class="op">=</span> <span class="st">"Ungültiger Wert '{}'!"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="optionen" class="level2">
