@@ -99,8 +99,10 @@ aktiviert werden.Die folgenden Funktionen können mit der
 `cargo`-Option `--features` aktiviert werden:
 
 - `unstable`, um die neuesten Funktionalitäten, die noch in der
-  Entwicklung sind und für eine der nächsten Versionen vorgesehen
-  sind, zu aktivieren
+  Entwicklung sind und für eine der nächsten Versionen vorgesehen sind,
+  zu aktivieren
+- `nightly`, um weitere Optimierungen zu aktivieren (benötigt Rust
+  `nightly`)
 - und `compat`, um eine höhere Kompatibilität mit der Abfragesprache
   [PICA Path] zu erhalten.
   
