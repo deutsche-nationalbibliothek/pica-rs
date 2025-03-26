@@ -8,18 +8,11 @@ rust-version.workspace = true
 version.workspace = true
 
 [features]
+default = ["performant"]
 compat = ["pica-record/compat"]
-unstable = [
-    "jiff",
-    "pica-record/unstable",
-    "tmp_env",
-    "polars/fmt",
-]
-# nightly = ["polars/simd"]
-performant = [
-    "polars/cse",
-    "polars/performant",
-]
+nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
+performant = ["polars/cse", "polars/performant"]
+unstable = ["pica-record/unstable", "jiff", "tmp_env", "polars/fmt"]
 
 [dependencies]
 bstr = { version = "1.11" }

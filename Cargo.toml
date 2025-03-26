@@ -22,6 +22,7 @@ version.workspace = true
 
 [features]
 serde = ["dep:serde", "bstr/serde"]
+nightly = ["smallvec/specialization"]
 unstable = []
 compat = []
 
