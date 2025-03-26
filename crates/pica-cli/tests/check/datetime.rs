@@ -31,7 +31,7 @@ fn invalid() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R1,error,\n",
+            "ppn,rule,level,message\n123456789X,R1,error,2025-02-29\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -64,7 +64,6 @@ fn message() -> TestResult {
             r#"
             [rule.R1]
             check = "datetime"
-            message = "invalid '{}'"
             path = "010@.D"
         "#,
         )
@@ -74,14 +73,16 @@ fn message() -> TestResult {
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
-        .write_stdin(b"003@ \x1f0123456789X\x1e010@ \x1fDXYZ\x1e\n")
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e010@ \x1fDXYZ\x1fDABC\x1e\n",
+        )
         .assert();
 
     assert
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R1,error,invalid 'XYZ'\n",
+            "ppn,rule,level,message\n123456789X,R1,error,\"XYZ, ABC\"\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -117,7 +118,7 @@ fn offset() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R3,error,\n",
+            "ppn,rule,level,message\n123456789X,R3,error,XYZ2025-02-29\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -168,7 +169,7 @@ fn format() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R4,error,\n",
+            "ppn,rule,level,message\n123456789X,R4,error,25-02-29\n",
         ))
         .stderr(predicates::str::is_empty());
 
