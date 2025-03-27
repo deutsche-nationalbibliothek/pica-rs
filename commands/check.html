@@ -377,8 +377,17 @@ Warnung
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://wiki.dnb.de/display/ILTIS/1500"</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">format</span> <span class="op">=</span> <span class="st">"%Y-%m-%d"</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"010@.D"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Folgende Optionen können zusätzlich gesetzt werden:</p>
+<section id="optionen" class="level4">
+<h4 class="anchored" data-anchor-id="optionen">Optionen</h4>
 <dl>
+<dt><code>case-ignore = true | false</code></dt>
+<dd>
+Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim Vergleichen von Werten ignoriert.
+</dd>
+<dt><code>strsim-threshold = &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels des <code>=*</code>-Operators.
+</dd>
 <dt><code>format = &lt;string&gt;</code></dt>
 <dd>
 Angabe des Format-Strings, der das Format der Datums- bzw. Zeitangabe festlegt. Ist die Option nicht gesetzt, wird standardmäßig der Format- String <code>%Y-%m-%d</code> verwendet.
@@ -389,6 +398,7 @@ Mit der <code>offset</code>-Option können die ersten <code>&lt;n&gt;</code> Zei
 </dd>
 </dl>
 </section>
+</section>
 <section id="filter" class="level3">
 <h3 class="anchored" data-anchor-id="filter">Filter</h3>
 <p>Mittels des <code>filter</code>-Checks können Datensätze gefunden werden, die einem Filterausdruck entsprechen. Zum Beispiel können mit der folgenden Regel Datensätze gefunden werden, die einen ungültigen Projektcode im Feld <code>017C $a</code> enthalten:</p>
@@ -397,7 +407,8 @@ Mit der <code>offset</code>-Option können die ersten <code>&lt;n&gt;</code> Zei
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">"Findet ungültige Projektcodes im Feld 017C $a."</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://wiki.dnb.de/display/ILTIS/0602"</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">filter</span> <span class="op">=</span> <span class="st">'</span><span class="vs">017C.a not in ["a","d","f","i","m","n","t"]</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Folgende Optionen können zusätzlich gesetzt werden:</p>
+<section id="optionen-1" class="level4">
+<h4 class="anchored" data-anchor-id="optionen-1">Optionen</h4>
 <dl>
 <dt><code>case-ignore = true | false</code></dt>
 <dd>
@@ -413,6 +424,7 @@ Ist die Option gesetzt, werden Datensätze gefunden, die <em>nicht</em> dem Filt
 </dd>
 </dl>
 </section>
+</section>
 <section id="isni" class="level3">
 <h3 class="anchored" data-anchor-id="isni">ISNI</h3>
 <p>Die Gültigkeit eines <a href="https://de.wikipedia.org/wiki/International_Standard_Name_Identifier">ISNI</a>-Identifikators, bspw. einer <a href="https://de.wikipedia.org/wiki/ORCID">ORCID</a>, lässt sich mit dem <code>isni</code>-Check überprüfen.</p>
@@ -423,7 +435,8 @@ Ist die Option gesetzt, werden Datensätze gefunden, die <em>nicht</em> dem Filt
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">'</span><span class="vs">https://wiki.dnb.de/display/ILTIS/3000</span><span class="st">'</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">028A{ y | y =^ "(orcid)" }</span><span class="st">'</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">prefix</span> <span class="op">=</span> <span class="st">'</span><span class="vs">(orcid)</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Weitere Optionen:</p>
+<section id="optionen-2" class="level4">
+<h4 class="anchored" data-anchor-id="optionen-2">Optionen</h4>
 <dl>
 <dt><code>case-ignore = true | false</code></dt>
 <dd>
@@ -439,6 +452,7 @@ Es werden nur Werte überprüft, die mit dem Prefix <code>&lt;prefix&gt;</code> 
 </dd>
 </dl>
 </section>
+</section>
 <section id="iso-639-2b" class="level3">
 <h3 class="anchored" data-anchor-id="iso-639-2b">ISO 639-2B</h3>
 <p>Ob ein Unterfeld einen gültigen Sprachencode nach <a href="https://wiki.dnb.de/download/attachments/90411323/sprachenCodesIso6392.pdf">ISO 639-2B</a> enthält, lässt sich mit dem <code>iso639-2b</code>-Check testen. Die zu überprüfenden Werte werden mit <code>path</code> adressiert:</p>
@@ -447,7 +461,8 @@ Es werden nur Werte überprüft, die mit dem Prefix <code>&lt;prefix&gt;</code> 
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">'</span><span class="vs">Findet ungültige Sprachencodes im Feld 010@ $a.</span><span class="st">'</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">'</span><span class="vs">https://wiki.dnb.de/display/ILTIS/1500</span><span class="st">'</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">010@.a</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Weitere Optionen:</p>
+<section id="optionen-3" class="level4">
+<h4 class="anchored" data-anchor-id="optionen-3">Optionen</h4>
 <dl>
 <dt><code>case-ignore = true | false</code></dt>
 <dd>
@@ -458,6 +473,7 @@ Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim Vergleichen von
 Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels des <code>=*</code>-Operators.
 </dd>
 </dl>
+</section>
 </section>
 <section id="link" class="level3">
 <h3 class="anchored" data-anchor-id="link">Link</h3>
@@ -490,7 +506,8 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="dt">destination</span> <span class="op">=</span> <span class="st">'</span><span class="vs">003@.0</span><span class="st">'</span></span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="dt">condition</span> <span class="op">=</span> <span class="st">'</span><span class="vs">002@.0 =^ "Tg"</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Sollte ein globaler Geltungsbereich <code>scope</code> für alle Regeln definiert sein, dann werden nur die Zielwerte <code>source</code> der Datensätze, die zum spezifizierten Geltungsbereich gehören, überprüft. Der Geltungsbereich wird aber nicht zur Bestimmung der Zieldatesätze verwendet. Besteht die Eingabe sowohl aus Personen <code>Tp*</code> und Geografika <code>Tg*</code>, dann kann der Geltungsbereich auf Personen eingeschränkt werden (<code>scope = '002@.0 =^ "Tp"'</code>). Ein Abgleich mit den Geografika kann aber trotzdem erfolgen, da diese nicht dem Geltungsbereich unterliegen.</p>
-<p>Weitere Optionen:</p>
+<section id="optionen-4" class="level4">
+<h4 class="anchored" data-anchor-id="optionen-4">Optionen</h4>
 <dl>
 <dt><code>case-ignore = true | false</code></dt>
 <dd>
@@ -502,6 +519,7 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 </dd>
 </dl>
 </section>
+</section>
 <section id="unicode" class="level3">
 <h3 class="anchored" data-anchor-id="unicode">Unicode</h3>
 <p>Der <code>unicode</code>-Check überprüft, ob die Werte aller Unterfelder eines Datensatzes gültige Unicode-Zeichenketten enthalten.</p>
@@ -511,10 +529,19 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 <div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE]</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="optionen-5" class="level4">
+<h4 class="anchored" data-anchor-id="optionen-5">Optionen</h4>
+<dl>
+<dt><code>normalization = &lt;value&gt;</code></dt>
+<dd>
+Auswahl einer Unicode-Normalform, auf die zusätzlich überprüft werden soll. Es können die Werte <code>nfc</code>, <code>nfkc</code>, <code>nfd</code> oder <code>nfkd</code> ausgewählt werden.
+</dd>
+</dl>
 </section>
 </section>
-<section id="optionen" class="level2">
-<h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
+</section>
+<section id="optionen-6" class="level2">
+<h2 class="anchored" data-anchor-id="optionen-6">Optionen</h2>
 <dl>
 <dt><code>-s</code>, <code>--skip-invalid</code></dt>
 <dd>
