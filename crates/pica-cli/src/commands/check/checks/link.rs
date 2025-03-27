@@ -17,7 +17,7 @@ pub(crate) struct Link {
     condition: Option<RecordMatcher>,
 
     /// The minimum score for string similarity comparisons
-    #[serde(default = "strsim_threshold")]
+    #[serde(default = "super::strsim_threshold")]
     strsim_threshold: f64,
 
     /// If set, comparison operations will be search case insensitive
@@ -29,10 +29,6 @@ pub(crate) struct Link {
 
     #[serde(skip, default)]
     seen: HashSet<BString>,
-}
-
-const fn strsim_threshold() -> f64 {
-    0.8
 }
 
 impl Link {

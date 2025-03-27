@@ -5,6 +5,10 @@ mod iso639;
 mod link;
 mod unicode;
 
+pub(crate) const fn strsim_threshold() -> f64 {
+    0.8
+}
+
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 #[serde(tag = "check")]
