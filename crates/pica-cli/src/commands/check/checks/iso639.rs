@@ -9,17 +9,11 @@ use pica_record::prelude::*;
 pub(crate) struct Iso639 {
     path: Path,
 
-    /// The minimum score for string similarity comparisons
-    #[serde(default = "strsim_threshold")]
+    #[serde(default = "super::strsim_threshold")]
     strsim_threshold: f64,
 
-    /// If set, comparison operations will be search case insensitive
     #[serde(default)]
     case_ignore: bool,
-}
-
-const fn strsim_threshold() -> f64 {
-    0.8
 }
 
 macro_rules! codes {

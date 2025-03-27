@@ -4,18 +4,16 @@ use pica_record::prelude::*;
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct Filter {
     #[serde(rename = "filter")]
-    pub(crate) matcher: RecordMatcher,
+    matcher: RecordMatcher,
 
-    /// The threshold for string similarity comparisons.
-    pub(crate) strsim_threshold: Option<f64>,
+    #[serde(default = "super::strsim_threshold")]
+    strsim_threshold: f64,
 
-    /// Whether to ignore case when comparing strings or not.
     #[serde(default)]
-    pub(crate) case_ignore: bool,
+    case_ignore: bool,
 
-    /// Whther to find records that did not match
     #[serde(default)]
-    pub(crate) invert_match: bool,
+    invert_match: bool,
 }
 
 impl Filter {
@@ -24,7 +22,7 @@ impl Filter {
         record: &ByteRecord,
     ) -> (bool, Option<String>) {
         let options = MatcherOptions::new()
-            .strsim_threshold(self.strsim_threshold.unwrap_or(0.8))
+            .strsim_threshold(self.strsim_threshold)
             .case_ignore(self.case_ignore);
 
         let mut result = self.matcher.is_match(record, &options);
