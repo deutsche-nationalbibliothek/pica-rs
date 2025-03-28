@@ -80,7 +80,15 @@ format = "%Y-%m-%d"
 path = "010@.D"
 ```
 
-Folgende Optionen können zusätzlich gesetzt werden:
+#### Optionen
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
 
 `format = <string>`
 : Angabe des Format-Strings, der das Format der Datums- bzw. Zeitangabe
@@ -108,7 +116,7 @@ link = "https://wiki.dnb.de/display/ILTIS/0602"
 filter = '017C.a not in ["a","d","f","i","m","n","t"]'
 ```
 
-Folgende Optionen können zusätzlich gesetzt werden:
+#### Optionen
 
 `case-ignore = true | false`
 : Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
@@ -141,7 +149,7 @@ path = '028A{ y | y =^ "(orcid)" }'
 prefix = '(orcid)'
 ```
 
-Weitere Optionen:
+#### Optionen
 
 `case-ignore = true | false`
 : Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
@@ -155,6 +163,7 @@ Zeichenketten mittels des `=*`-Operators.
 : Es werden nur Werte überprüft, die mit dem Prefix `<prefix>` beginnen.
 Wird kein Prefix angegeben, werden alle Werte des `path`-Ausdrucks
 überprüft.
+
 
 ### ISO 639-2B
 
@@ -170,7 +179,7 @@ link = 'https://wiki.dnb.de/display/ILTIS/1500'
 path = '010@.a'
 ```
 
-Weitere Optionen:
+#### Optionen
 
 `case-ignore = true | false`
 : Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
@@ -258,7 +267,7 @@ Geltungsbereich auf Personen eingeschränkt werden (`scope = '002@.0 =^
 "Tp"'`). Ein Abgleich mit den Geografika kann aber trotzdem erfolgen,
 da diese nicht dem Geltungsbereich unterliegen.
 
-Weitere Optionen:
+#### Optionen
 
 `case-ignore = true | false`
 : Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
@@ -289,6 +298,14 @@ aufgeführt.
 check = "unicode"
 normalization = "nfd"
 ```
+
+#### Optionen
+
+`normalization = <value>`
+: Auswahl einer Unicode-Normalform, auf die zusätzlich überprüft werden
+soll. Es können die Werte `nfc`, `nfkc`, `nfd` oder `nfkd` ausgewählt
+werden.
+
 
 ## Optionen
 

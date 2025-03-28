@@ -2,7 +2,6 @@ use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
-// use predicates::prelude::*;
 use crate::prelude::*;
 
 #[test]
@@ -14,8 +13,8 @@ fn simple() -> TestResult {
             r#"
             [rule.R01]
             check = 'link'
-            source = '065R.9'
-            destination = '003@.0'
+            source.path = '065R.9'
+            target.path = '003@.0'
         "#,
         )
         .unwrap();
@@ -51,8 +50,8 @@ fn path_filter() -> TestResult {
             r#"
             [rule.R01]
             check = 'link'
-            source = '065R{ 9 | 4 == "ortw" }'
-            destination = '003@.0'
+            source.path = '065R{ 9 | 4 == "ortw" }'
+            target.path = '003@.0'
         "#,
         )
         .unwrap();
@@ -85,9 +84,8 @@ fn condition() -> TestResult {
             r#"
             [rule.R01]
             check = 'link'
-            source = '065R{ 9 | 4 == "ortw" }'
-            destination = '003@.0'
-            condition = '002@.0 == "Tgz"'
+            source.path = '065R{ 9 | 4 == "ortw" }'
+            target = { path = '003@.0', filter  = '002@.0 == "Tgz"' }
         "#,
         )
         .unwrap();

@@ -285,7 +285,7 @@ fn prefix() -> TestResult {
 }
 
 #[test]
-fn options() -> TestResult {
+fn case_ignore() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
