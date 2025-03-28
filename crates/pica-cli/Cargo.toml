@@ -11,7 +11,7 @@ version.workspace = true
 default = ["performant"]
 compat = ["pica-record/compat"]
 nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
-performant = ["polars/cse", "polars/performant"]
+performant = ["pica-record/performant", "polars/cse", "polars/performant"]
 unstable = ["pica-record/unstable", "jiff"]
 
 [dependencies]

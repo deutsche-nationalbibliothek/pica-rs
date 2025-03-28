@@ -211,36 +211,8 @@ impl Filter {
                             continue;
                         }
 
-                        if !keep.is_empty() {
-                            record.retain(|field| {
-                                for (t, o) in keep.iter() {
-                                    if t.is_match(field.tag())
-                                        && o.is_match(
-                                            field.occurrence(),
-                                        )
-                                    {
-                                        return true;
-                                    }
-                                }
-
-                                false
-                            });
-                        }
-
-                        if !discard.is_empty() {
-                            record.retain(|field| {
-                                for (t, o) in discard.iter() {
-                                    if t.is_match(field.tag())
-                                        && o.is_match(
-                                            field.occurrence(),
-                                        )
-                                    {
-                                        return false;
-                                    }
-                                }
-                                true
-                            });
-                        }
+                        record.discard(&discard);
+                        record.keep(&keep);
 
                         writer.write_byte_record(record)?;
                         if let Some(ref mut writer) = tee_writer {

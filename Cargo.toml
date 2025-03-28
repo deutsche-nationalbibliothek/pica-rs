@@ -21,10 +21,11 @@ rust-version.workspace = true
 version.workspace = true
 
 [features]
-serde = ["dep:serde", "bstr/serde"]
-nightly = ["smallvec/specialization"]
-unstable = []
 compat = []
+nightly = ["smallvec/specialization"]
+performant = []
+serde = ["dep:serde", "bstr/serde"]
+unstable = []
 
 [dependencies]
 bstr = { version = "1.11" }
