@@ -69,7 +69,7 @@ fn default() -> TestResult {
 }
 
 #[test]
-fn filter() -> TestResult {
+fn case_ignore() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
@@ -112,6 +112,5 @@ fn filter() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     temp_dir.close().unwrap();
-
     Ok(())
 }

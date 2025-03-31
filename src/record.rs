@@ -7,6 +7,7 @@ use std::str::Utf8Error;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::matcher::{OccurrenceMatcher, TagMatcher};
 use crate::primitives::{FieldRef, ParsePicaError, RecordRef};
 
 /// A record, that may contain invalid UTF-8 data.
@@ -86,10 +87,93 @@ impl<'a> ByteRecord<'a> {
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
+    #[inline(always)]
     pub fn retain<F: FnMut(&FieldRef) -> bool>(&mut self, f: F) {
         self.record.retain(f);
         self.raw_data = None;
+    }
+
+    /// Keep only field which match the given predicates.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::ByteRecord;
+    /// use pica_record::matcher::{OccurrenceMatcher, TagMatcher};
+    ///
+    /// let mut record =
+    ///     ByteRecord::from_bytes(b"003@ \x1f0a\x1e012A \x1faABC\x1e\n")?;
+    ///
+    /// let tag_matcher = TagMatcher::new("012A")?;
+    /// let occurrence_matcher = OccurrenceMatcher::new("/*")?;
+    ///
+    /// assert_eq!(record.fields().len(), 2);
+    ///
+    /// record.keep(&[(tag_matcher, occurrence_matcher)]);
+    /// assert_eq!(record.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[cfg_attr(feature = "performant", inline)]
+    pub fn keep(
+        &mut self,
+        predicates: &[(TagMatcher, OccurrenceMatcher)],
+    ) {
+        if !predicates.is_empty() {
+            self.retain(|field| {
+                for (t, o) in predicates.iter() {
+                    if t.is_match(field.tag())
+                        && o.is_match(field.occurrence())
+                    {
+                        return true;
+                    }
+                }
+
+                false
+            });
+        }
+    }
+
+    /// Discard field which match the given predicates.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pica_record::ByteRecord;
+    /// use pica_record::matcher::{OccurrenceMatcher, TagMatcher};
+    ///
+    /// let mut record =
+    ///     ByteRecord::from_bytes(b"003@ \x1f0a\x1e012A \x1faABC\x1e\n")?;
+    ///
+    /// let tag_matcher = TagMatcher::new("012A")?;
+    /// let occurrence_matcher = OccurrenceMatcher::new("/*")?;
+    ///
+    /// assert_eq!(record.fields().len(), 2);
+    ///
+    /// record.keep(&[(tag_matcher, occurrence_matcher)]);
+    /// assert_eq!(record.fields().len(), 1);
+    ///
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[cfg_attr(feature = "performant", inline)]
+    pub fn discard(
+        &mut self,
+        predicates: &[(TagMatcher, OccurrenceMatcher)],
+    ) {
+        if !predicates.is_empty() {
+            self.retain(|field| {
+                for (t, o) in predicates.iter() {
+                    if t.is_match(field.tag())
+                        && o.is_match(field.occurrence())
+                    {
+                        return false;
+                    }
+                }
+                true
+            });
+        }
     }
 
     /// Returns the SHA-256 hash of the record.

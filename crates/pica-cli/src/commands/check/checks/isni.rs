@@ -5,7 +5,10 @@ use pica_record::prelude::*;
 pub(crate) struct Isni {
     path: Path,
     prefix: Option<String>,
-    strsim_threshold: Option<f64>,
+
+    #[serde(default = "super::strsim_threshold")]
+    strsim_threshold: f64,
+
     #[serde(default)]
     case_ignore: bool,
 }
@@ -19,7 +22,7 @@ impl Isni {
         let mut retval = false;
 
         let options = MatcherOptions::default()
-            .strsim_threshold(self.strsim_threshold.unwrap_or(0.8))
+            .strsim_threshold(self.strsim_threshold)
             .case_ignore(self.case_ignore);
 
         for value in record.path(&self.path, &options) {

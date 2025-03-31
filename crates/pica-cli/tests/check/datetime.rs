@@ -31,7 +31,7 @@ fn invalid() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R1,error,\n",
+            "ppn,rule,level,message\n123456789X,R1,error,2025-02-29\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -64,7 +64,6 @@ fn message() -> TestResult {
             r#"
             [rule.R1]
             check = "datetime"
-            message = "invalid '{}'"
             path = "010@.D"
         "#,
         )
@@ -74,14 +73,16 @@ fn message() -> TestResult {
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
-        .write_stdin(b"003@ \x1f0123456789X\x1e010@ \x1fDXYZ\x1e\n")
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e010@ \x1fDXYZ\x1fDABC\x1e\n",
+        )
         .assert();
 
     assert
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R1,error,invalid 'XYZ'\n",
+            "ppn,rule,level,message\n123456789X,R1,error,\"XYZ, ABC\"\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -117,7 +118,7 @@ fn offset() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R3,error,\n",
+            "ppn,rule,level,message\n123456789X,R3,error,XYZ2025-02-29\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -168,7 +169,7 @@ fn format() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n123456789X,R4,error,\n",
+            "ppn,rule,level,message\n123456789X,R4,error,25-02-29\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -189,5 +190,68 @@ fn format() -> TestResult {
 
     temp_dir.close().unwrap();
 
+    Ok(())
+}
+
+#[test]
+fn case_ignore() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset1 = temp_dir.child("rules1.toml");
+    ruleset1
+        .write_str(
+            r#"
+            [rule.R5]
+            check = 'datetime'
+            case-ignore = true
+            path = '010@{ D | X == "foo" }'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset1.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e010@ \x1fD25-02-29\x1fXFoo\x1e\n",
+        )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n123456789X,R5,error,25-02-29\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let ruleset2 = temp_dir.child("rules1.toml");
+    ruleset2
+        .write_str(
+            r#"
+            [rule.R6]
+            check = 'datetime'
+            case-ignore = false
+            path = '010@{ D | X == "foo" }'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset2.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e010@ \x1fD24-02-29\x1e\n",
+        )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
     Ok(())
 }

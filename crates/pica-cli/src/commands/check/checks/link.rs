@@ -5,22 +5,12 @@ use pica_record::prelude::*;
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct Link {
-    /// A path expression whose values are used to match the source
-    /// values.
-    destination: Path,
+    source: Source,
+    target: Target,
 
-    /// A path expression whose values refer to the target values.
-    source: Path,
-
-    /// An additional condition that the destintion record must
-    /// fulfill.
-    condition: Option<RecordMatcher>,
-
-    /// The minimum score for string similarity comparisons
-    #[serde(default = "strsim_threshold")]
+    #[serde(default = "super::strsim_threshold")]
     strsim_threshold: f64,
 
-    /// If set, comparison operations will be search case insensitive
     #[serde(default)]
     case_ignore: bool,
 
@@ -31,8 +21,18 @@ pub(crate) struct Link {
     seen: HashSet<BString>,
 }
 
-const fn strsim_threshold() -> f64 {
-    0.8
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct Source {
+    path: Path,
+}
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct Target {
+    path: Path,
+    #[serde(rename = "filter")]
+    matcher: Option<RecordMatcher>,
 }
 
 impl Link {
@@ -42,11 +42,11 @@ impl Link {
             .case_ignore(self.case_ignore);
 
         let values = record
-            .path(&self.destination, &options)
+            .path(&self.target.path, &options)
             .collect::<Vec<_>>();
 
         if !values.is_empty() {
-            let insert = if let Some(ref m) = self.condition {
+            let insert = if let Some(ref m) = self.target.matcher {
                 m.is_match(record, &options)
             } else {
                 true
@@ -69,7 +69,7 @@ impl Link {
             .strsim_threshold(self.strsim_threshold)
             .case_ignore(self.case_ignore);
 
-        for value in record.path(&self.source, &options) {
+        for value in record.path(&self.source.path, &options) {
             if self.seen.contains(value) {
                 continue;
             }

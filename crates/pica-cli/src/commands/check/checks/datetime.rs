@@ -5,9 +5,16 @@ use pica_record::prelude::*;
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct DateTime {
     path: Path,
-    message: Option<String>,
+
+    #[serde(default = "super::strsim_threshold")]
+    strsim_threshold: f64,
+
+    #[serde(default)]
+    case_ignore: bool,
+
     #[serde(default = "default_fmt")]
     format: String,
+
     #[serde(default)]
     offset: usize,
 }
@@ -21,7 +28,14 @@ impl DateTime {
         &self,
         record: &ByteRecord,
     ) -> (bool, Option<String>) {
-        for value in record.path(&self.path, &Default::default()) {
+        let mut messages = vec![];
+        let mut retval = false;
+
+        let options = MatcherOptions::default()
+            .strsim_threshold(self.strsim_threshold)
+            .case_ignore(self.case_ignore);
+
+        for value in record.path(&self.path, &options) {
             if self.offset >= value.len()
                 || civil::DateTime::strptime(
                     &self.format,
@@ -29,15 +43,17 @@ impl DateTime {
                 )
                 .is_err()
             {
-                let message = self
-                    .message
-                    .as_ref()
-                    .map(|m| m.replace("{}", &value.to_string()));
-
-                return (true, message);
+                messages.push(value.to_string());
+                retval = true;
             }
         }
 
-        (false, None)
+        let message = if !messages.is_empty() {
+            Some(messages.join(", "))
+        } else {
+            None
+        };
+
+        (retval, message)
     }
 }

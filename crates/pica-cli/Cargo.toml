@@ -8,13 +8,11 @@ rust-version.workspace = true
 version.workspace = true
 
 [features]
+default = ["performant"]
 compat = ["pica-record/compat"]
+nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
+performant = ["pica-record/performant", "polars/cse", "polars/performant"]
 unstable = ["pica-record/unstable", "jiff"]
-# nightly = ["polars/simd"]
-performant = [
-    "polars/cse",
-    "polars/performant",
-]
 
 [dependencies]
 bstr = { version = "1.11" }
@@ -22,7 +20,7 @@ clap_complete = { version = "4.5" }
 clap = { version = "4.5", features = ["derive", "cargo", "wrap_help"] }
 csv = { version = "1.3" }
 directories = { version = "6.0" }
-flate2 = { version = "1.0" }
+flate2 = { version = "1.1" }
 hashbrown = { version = "0.15" }
 indicatif = { version = "0.17", features = ["improved_unicode"] }
 jiff = { version = "0.2", optional = true }
@@ -49,15 +47,3 @@ name = "pica"
 [[test]]
 path = "tests/integration.rs"
 name = "integration"
-
-[package.metadata.deb]
-features = ["performant"]
-section = "utils"
-assets = [
-    ["target/release/pica", "usr/bin/", "755"],
-    ["../../README.md", "usr/share/doc/pica/README", "644"],
-    ["../../LICENSE", "usr/share/doc/pica/", "644"],
-    ["../../assets/pica.bash", "usr/share/bash-completions/completions/pica", "644"],
-    ["../../assets/pica.fish", "usr/share/fish/vendor_completions.d/pica.fish", "644"],
-    ["../../assets/pica.zsh", "usr/share/zsh/vendor-completions/_pica", "644"],
-]
