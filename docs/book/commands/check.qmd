@@ -216,21 +216,20 @@ $ pica filter -k '003@, 065R' '003@.0 == "118540238"' DUMP.dat.gz | pica print
 ```
 
 Der einfachste Test, der sich mit dem `link`-Check formulieren lässt,
-ist zu überprüfen, ob die Zieldatensätze in der Menge der Datensätze
-existieren. Hierzu muss ein Pfad-Ausdruck `source` angegeben werden,
-mit dem alle Identifikatoren ermittelt werden, die in den Zieldatensätzen
-gesucht werden. In unserem Beispiel ist dies der Ausdruck `065R.9`, der
-die PPNs der Zieldatensätze ermittelt. Als zweites wird noch ein Pfad-
-Ausdruck benötigt, der die Werte im Zieldatensatz adressiert. Da der
-Abgleich über die PPN eines Datensatzes erfolgt, wird der Ausdruck
-`003@.0` als Ziel (`destination`) benötigt. Es ergibt sich folgende
-Regel:
+ist zu überprüfen, ob die Zieldatensätze in der Menge der Eingabe
+existieren. Hierzu muss ein Pfad-Ausdruck `source` angegeben werden, mit
+dem alle Identifikatoren ermittelt werden, die in den Zieldatensätzen
+gesucht werden. In unserem Beispiel ist dies der Ausdruck `065R.9`,
+der die PPNs der Zieldatensätze ermittelt. Als zweites wird noch ein
+Pfad- Ausdruck benötigt, der die Werte im Zieldatensatz adressiert. Da
+der Abgleich über die PPN eines Datensatzes erfolgt, wird der Ausdruck
+`003@.0` als Ziel (`target`) benötigt. Es ergibt sich folgende Regel:
 
 ```{.toml}
 [rule.LINK1]
 check = 'link'
-source = '065R.9'
-destination = '003@.0'
+source.path = '065R.9'
+target.path = '003@.0'
 ````
 
 Zur Ermittlung der Ziel-Identifikatoren `source` können alle Funktionen
@@ -240,22 +239,21 @@ werden, kann die Regel wie folgt modifiziert werden:
 ```{.toml}
 [rule.LINK2]
 check = 'link'
-source = '065R{ 9  | 4 == "ortw" }'
-destination = '003@.0'
+source.path = '065R{ 9  | 4 == "ortw" }'
+tatget.path = '003@.0'
 ````
 
 Darüber hinaus können Kriterien formuliert werden, die der Zieldatensatz
 erfüllen muss. Zum Beispiel könnte die Anforderung an die verknüpften
-Datensätze gestellt werden, dass es sich auch um ein Geografikum
-`Tg*` handelt. Dies lässt sich durch die Angabe eines Filer-Ausdrucks
-`condition` erreichen:
+Datensätze gestellt werden, dass es sich auch um ein Geografikum `Tg*`
+handelt. Dies lässt sich durch die Angabe eines `filter`-Ausdrucks
+erreichen:
 
 ```{.toml}
 [rule.LINK3]
 check = 'link'
-source = '065R{ 9  | 4 == "ortw" }'
-destination = '003@.0'
-condition = '002@.0 =^ "Tg"'
+source.path = '065R{ 9  | 4 == "ortw" }'
+target = { path = '003@.0', filter = '002@.0 =^ "Tg"' }
 ```
 
 Sollte ein globaler Geltungsbereich `scope` für alle Regeln definiert
