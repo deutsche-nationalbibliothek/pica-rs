@@ -133,8 +133,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
       - uses: taiki-e/install-action@cargo-hack
-      - run: |
+      - name: "check powerset"
+        run: |
           cargo hack check --all --feature-powerset --exclude-features serde --no-dev-deps
+      - name: "test powerset"
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
           cargo hack test --all --feature-powerset --exclude-features serde
 
   msrv:
