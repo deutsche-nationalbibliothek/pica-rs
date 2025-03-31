@@ -47,15 +47,3 @@ name = "pica"
 [[test]]
 path = "tests/integration.rs"
 name = "integration"
-
-[package.metadata.deb]
-features = ["performant"]
-section = "utils"
-assets = [
-    ["target/release/pica", "usr/bin/", "755"],
-    ["../../README.md", "usr/share/doc/pica/README", "644"],
-    ["../../LICENSE", "usr/share/doc/pica/", "644"],
-    ["../../assets/pica.bash", "usr/share/bash-completions/completions/pica", "644"],
-    ["../../assets/pica.fish", "usr/share/fish/vendor_completions.d/pica.fish", "644"],
-    ["../../assets/pica.zsh", "usr/share/zsh/vendor-completions/_pica", "644"],
-]
