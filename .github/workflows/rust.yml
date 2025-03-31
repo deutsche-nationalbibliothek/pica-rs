@@ -134,6 +134,7 @@ jobs:
       - uses: taiki-e/install-action@cargo-hack
       - run: |
           cargo hack check --all --feature-powerset --exclude-features serde --no-dev-deps
+          cargo hack test --all --feature-powerset --exclude-features serde
 
   msrv:
     runs-on: ubuntu-latest
