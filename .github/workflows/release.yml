@@ -60,19 +60,19 @@ jobs:
         with:
           toolchain: ${{ matrix.target.toolchain }}
           targets: ${{ matrix.target.triple }}
-      - name: Test workspace packages
-        run: |
-          cargo test -p pica-record --release --all-features
-          cargo test -p pica-cli --release --all-features
       - name: Build release binary
         shell: bash
         run: |
-          cargo build -p pica-cli --release --features performant
+          cargo build -p pica-cli --release
           if [ "${{ matrix.target.os }}" = "windows-latest" ]; then
             echo "BINARY=target/release/pica.exe" >> $GITHUB_ENV
           else
             echo "BINARY=target/release/pica" >> $GITHUB_ENV
           fi
+      - name: Test workspace packages
+        run: |
+          cargo test -p pica-record --release
+          cargo test -p pica-cli --release
       - name: Strip release binary
         shell: bash
         if: matrix.target.os == 'macos-latest'
@@ -98,7 +98,7 @@ jobs:
           $BINARY completions powershell -o "$ARCHIVE/complete/_pica.ps1"
           $BINARY completions zsh -o "$ARCHIVE/complete/_pica"
       - name: Build Archive (Windows)
-        if: matrix.target.os == 'windows-latest'
+        if: ${{ matrix.target.os == 'windows-latest' }}
         shell: bash
         run: |
           7z a "$ARCHIVE.zip" "$ARCHIVE"
@@ -106,7 +106,7 @@ jobs:
           echo "ASSET_CHECKSUM=$ARCHIVE.zip.sha256" >> $GITHUB_ENV
           echo "ASSET=$ARCHIVE.zip" >> $GITHUB_ENV
       - name: Build Archive (Unix)
-        if: matrix.target.os != 'windows-latest'
+        if: ${{ matrix.target.os != 'windows-latest' }}
         shell: bash
         run: |
           tar czf "$ARCHIVE.tar.gz" "$ARCHIVE"
