@@ -44,7 +44,7 @@ pica-record = { path = "./", features = ["serde"] }
 quickcheck = { version = "1.0" }
 quickcheck_macros = { version = "1.0" }
 serde_test = { version = "1.0" }
-tempfile = { version = "3.14" }
+tempfile = { version = "3.19" }
 
 [lib]
 path = "src/lib.rs"
