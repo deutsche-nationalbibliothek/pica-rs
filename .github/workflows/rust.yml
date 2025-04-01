@@ -124,6 +124,7 @@ jobs:
       with:
         command: check ${{ matrix.checks }}
         arguments: --workspace --all-features
+        command-arguments: -c .deny.toml
         rust-version: stable
 
   features:
