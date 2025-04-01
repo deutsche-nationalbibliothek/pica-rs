@@ -12,21 +12,22 @@ führen immer zu einem der beiden Wahrheitswerte `true` (wahr) oder
 Ein Filterausdruck setzt sich aus einem oder mehreren miteinander
 verketteten Teilausdrücken zusammen, die immer auf die vollständige
 Liste von Feldern des Datensatzes angewandt werden. Ein Ausdruck, der
-auf eine Liste von Feldern angewandt werden kann, wird folgend als
-_Field Matcher_ bezeichnet.
+auf eine Liste von PICA-Feldern angewandt werden kann, wird im Folgenden
+als _Field Matcher_ bezeichnet.
 
-Da ein Feld wiederum aus einer Liste von Unterfeldern bestehen kann,
-besteht ein _Field Matcher_ aus einem oder mehreren _Subfield Matchern_,
-die einen Wahrheitswert auf einer Liste von Unterfeldern bestimmen.
+Da ein PICA-Feld wiederum aus einer Liste von Unterfeldern bestehen
+kann, besteht ein _Field Matcher_ aus einem oder mehreren _Subfield
+Matchern_, die einen Wahrheitswert auf einer Liste von Unterfeldern
+bestimmen.
 
 ## Contains Matcher (`=?`)
 
 ::: {.callout-warning}
 Der Vergleich gegen eine Liste von Teilwörtern ist eine `unstable`-
 Funktion, die sich noch in der Entwicklung befindet. Diese kann durch
-Aktivierung der `unstable`-Funktion beim Bauen aus den Quellen aktiviert
-werden. Die Veröffentlichung der Funktion ist in der Version `1.3`
-vorgesehen.
+Aktivierung der `unstable`-Funktion beim Bauen des Programms aus den
+Quellen aktiviert werden. Die Veröffentlichung der Funktion ist in der
+Version `1.3` vorgesehen.
 :::
 
 Der _Contains Matcher_ überprüft, ob der Wert eines Unterfeldes ein
@@ -57,4 +58,4 @@ Filterausdruck        | Wahrheitswert
 `x =? ["hij", "bcd"]` | `true`
 `x =? ["hij", "klm"]` | `false`
 
-: Beisiele `=?`-Operator {.hover}
+: Beispiele `=?`-Operator {.hover}
