@@ -28,6 +28,7 @@ book:
     - part: "Erste Schritte"
       chapters:
         - install.qmd
+    - filter.qmd
     - part: "Tutorials"
       chapters:
         - tutorials/beginner.qmd

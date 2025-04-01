@@ -1,0 +1,61 @@
+# Filter {.unnumbered}
+
+::: {.callout-warning}
+WORK IN PROGRESS
+:::
+
+Das Herzstück von `pica` ist das effiziente Filtern von Datensätzen
+anhand von Kriterien. Filterausdrücke, angewandt auf einen Datensatz,
+führen immer zu einem der beiden Wahrheitswerte `true` (wahr) oder
+`false` (falsch).
+
+Ein Filterausdruck setzt sich aus einem oder mehreren miteinander
+verketteten Teilausdrücken zusammen, die immer auf die vollständige
+Liste von Feldern des Datensatzes angewandt werden. Ein Ausdruck, der
+auf eine Liste von PICA-Feldern angewandt werden kann, wird im Folgenden
+als _Field Matcher_ bezeichnet.
+
+Da ein PICA-Feld wiederum aus einer Liste von Unterfeldern bestehen
+kann, besteht ein _Field Matcher_ aus einem oder mehreren _Subfield
+Matchern_, die einen Wahrheitswert auf einer Liste von Unterfeldern
+bestimmen.
+
+## Contains Matcher (`=?`)
+
+::: {.callout-warning}
+Der Vergleich gegen eine Liste von Teilwörtern ist eine `unstable`-
+Funktion, die sich noch in der Entwicklung befindet. Diese kann durch
+Aktivierung der `unstable`-Funktion beim Bauen des Programms aus den
+Quellen aktiviert werden. Die Veröffentlichung der Funktion ist in der
+Version `1.3` vorgesehen.
+:::
+
+Der _Contains Matcher_ überprüft, ob der Wert eines Unterfeldes ein
+bestimmtes Teilwort enthält. Diese Ausdrücke werden durch den Operator
+`=?` festgelegt, der entweder ein einzelnes Teilwort oder eine Liste
+von Teilwörtern erwartet.
+
+So überprüft der Ausdruck `028@.d =? "Love"`, ob ein Feld `028@` mit
+einem Unterfeld `a` existiert, welches das Teilwort `Love` enthält. Es
+kann ebenfalls gegen eine Liste von Teilwörtern getestet werden: Mit
+`028@.d =? ["Love", "Peace"]` wird getestet, ob das Unterfeld `d` das
+Teilwort _Love_ oder das Teilwort _Peace_ enthält. Dieses Verhalten
+lässt sich auch als eine ODER-Verknüpfung `028@{ d =? "Love" || d =?
+"Peace"}` ausdrücken, wobei die erstere Variante bei einer längeren
+Liste performanter ist.
+
+Beim Vergleich, ob ein Teilwort im Wert enthalten ist, lässt sich die
+Berücksichtigung von Groß- und Kleinschreibung ignorieren, wenn die
+Filter-Opton `case-ignore` gesetzt ist.
+
+Für die folgenden Beispiele wird ein Unterfeld `x` mit dem Wert _abcdef_
+verwendet:
+
+Filterausdruck        | Wahrheitswert
+----------------------+--------------
+`x =? "bcd"`          | `true`
+`x =? "hij"`          | `flase`
+`x =? ["hij", "bcd"]` | `true`
+`x =? ["hij", "klm"]` | `false`
+
+: Beispiele `=?`-Operator {.hover}
