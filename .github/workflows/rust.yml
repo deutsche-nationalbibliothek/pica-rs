@@ -123,7 +123,8 @@ jobs:
     - uses: EmbarkStudios/cargo-deny-action@v2
       with:
         command: check ${{ matrix.checks }}
-        arguments: --workspace --all-features -c .deny.toml
+        arguments: --workspace --all-features
+        command-arguments: -c .deny.toml
         rust-version: stable
 
   features:
