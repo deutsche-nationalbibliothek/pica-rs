@@ -47,8 +47,8 @@ Beim Vergleich, ob ein Teilwort im Wert enthalten ist, lässt sich die
 Berücksichtigung von Groß- und Kleinschreibung ignorieren, wenn die
 Filter-Opton `case-ignore` gesetzt ist.
 
-Für die folgenden Beispiele wird ein Unterfeld `x` mit dem Wert
-_abcdef_ verwendet:
+Für die folgenden Beispiele wird ein Unterfeld `x` mit dem Wert _abcdef_
+verwendet:
 
 Filterausdruck        | Wahrheitswert
 ----------------------+--------------
