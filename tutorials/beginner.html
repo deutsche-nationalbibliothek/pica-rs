@@ -444,7 +444,7 @@ Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen Pr
 </dd>
 <dt>Endet mit Suffix <code>=$</code> (<code>!$</code>)</dt>
 <dd>
-Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen Suffix endet (<code>=$</code>) bzw. nicht beginnt (<code>!$</code>).
+Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen Suffix endet (<code>=$</code>) bzw. nicht endet (<code>!$</code>).
 </dd>
 <dt>Regulären Ausdruck <code>=~</code> (<code>!~</code>)</dt>
 <dd>
@@ -460,7 +460,7 @@ Der Ausdruck wird dann wahr, wenn der angegebene Wert ein Teilstring des Unterfe
 </dd>
 <dt>Existenz <code>?</code></dt>
 <dd>
-Der Ausdruck wird dann wahr, wenn das gesuchte Feld/Unterfeld existiert.
+Der Ausdruck wird dann wahr, wenn das gesuchte Feld/Unterfeld existiert. Auf Nicht-Existenz lässt sich prüfen, indem der Gesamtausdruck negiert wird. So ist <code>!a?</code> genau dann wahr, wenn ein Feld kein Unterfeld <code>a</code> besitzt.
 </dd>
 <dt>Ähnlichkeit <code>=*</code></dt>
 <dd>
