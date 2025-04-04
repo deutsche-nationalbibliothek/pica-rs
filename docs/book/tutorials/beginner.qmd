@@ -206,12 +206,12 @@ Ungleichheit `!=`
 entspricht.
 
 Beginnt mit Präfix `=^` (`!^`)
-: Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen
-Präfix beginnt (`=^`) bzw. nicht beginnt (`!^`).
+: Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem
+angegebenen Präfix beginnt (`=^`) bzw. nicht beginnt (`!^`).
 
 Endet mit Suffix `=$` (`!$`)
-: Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem angegebenen
-Suffix endet (`=$`) bzw. nicht beginnt (`!$`).
+: Der Ausdruck wird dann wahr, wenn der Wert des Unterfelds mit dem
+angegebenen Suffix endet (`=$`) bzw. nicht endet (`!$`).
 
 Regulären Ausdruck `=~` (`!~`)
 : Prüft ob ein Feld einem regulären Ausdruck entspricht. Die Auswertung dieses
@@ -229,7 +229,10 @@ Teilstring `=?`
 Unterfelds ist (`=?`).
 
 Existenz `?`
-: Der Ausdruck wird dann wahr, wenn das gesuchte Feld/Unterfeld existiert.
+: Der Ausdruck wird dann wahr, wenn das gesuchte Feld/Unterfeld
+existiert. Auf Nicht-Existenz lässt sich prüfen, indem der
+Gesamtausdruck negiert wird. So ist `!a?` genau dann wahr, wenn ein Feld
+kein Unterfeld `a` besitzt.
 
 Ähnlichkeit `=*`
 : Der Ausdruck wird dann wahr, wenn der angegebene Wert ähnlich dem des
