@@ -124,6 +124,7 @@ jobs:
       with:
         command: check ${{ matrix.checks }}
         arguments: --workspace --all-features
+        command-arguments: -c .deny.toml
         rust-version: stable
 
   features:
@@ -163,12 +164,12 @@ jobs:
   outdated:
     runs-on: ubuntu-latest
     continue-on-error: true
-    timeout-minutes: 45
+    timeout-minutes: 15
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo install --git https://github.com/kbknapp/cargo-outdated.git --branch master
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install --locked cargo-outdated
       - run: cargo update
       - run: cargo outdated --workspace --root-deps-only --exit-code 1
 
