@@ -94,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: dtolnay/install@cargo-outdated
+      - run: cargo install --locked cargo-outdated
       - run: cargo update
       - run: cargo outdated --workspace --root-deps-only --exit-code 1
 
