@@ -11,8 +11,8 @@ Mithilfe des Kommandos `describe` lässt sich die Häufigkeitsverteilung
 von Unterfeldern ermitteln. Im folgenden Bespiel werden zuerst alle
 Datensätze aus der Eingabe (`DUMP.dat.gz`) auf die Satzarten `Tpz` und
 `Tp1` gefiltert und anschließend auf die Felder, die mit `04` oder `06`
-beginnend und mit `R` enden, reduziert. Anschließend werden die Vorkommen
-der Unterfelder ausgezähl und als Tabelle ausgegeben:
+beginnen und mit `R` enden, reduziert. Anschließend werden die Vorkommen
+der Unterfelder ausgezählt und als Tabelle ausgegeben:
 
 ```{.bash}
 $ pica describe -s -k '0[46].R' tests/data/DUMP.dat.gz --where '002@.0 in ["Tpz", "Tp1"]'
