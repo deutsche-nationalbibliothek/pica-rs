@@ -1,4 +1,3 @@
-#[cfg(feature = "unstable")]
 pub(crate) use check::Check;
 pub(crate) use completions::Completions;
 pub(crate) use concat::Concat;
@@ -19,7 +18,6 @@ pub(crate) use select::Select;
 pub(crate) use slice::Slice;
 pub(crate) use split::Split;
 
-#[cfg(feature = "unstable")]
 mod check;
 mod completions;
 mod concat;

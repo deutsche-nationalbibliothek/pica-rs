@@ -1,19 +1,12 @@
 # check {.unnumbered}
 
-::: {.callout-warning}
-Das Kommando `check` ist eine `unstable`-Funktion, die sich noch in der
-Entwicklung befindet und noch nicht in den Releases enthalten ist. Das
-Kommando kann durch Aktivierung der `unstable`-Funktion beim Bauen aus
-den Quellen aktiviert werden.
-:::
-
 Das `check`-Kommando erlaubt es, Datensätze auf Konformität mit einem
 Regelwerk zu überprüfen. In einer (oder mehreren) Konfigurationsdateien
 können Regeln hinterlegt werden, gegen die jeder Datensatz überprüft
 wird. Trifft eine Regel zu, wird diese Regelverletzung unter Angabe
 der PPN (Feld `003@ $0`) des Datensatzes und der ID der Regel in eine
-Ausgabedatei geschrieben. Die ID einer Regel kann von den Nutzenden
-frei gewählt werden.
+Ausgabedatei geschrieben. Die ID einer Regel kann von den Nutzenden frei
+gewählt werden.
 
 Befinden sich die spezifizierten Regeln in der Datei `rules.toml`, kann
 mit dem folgenden Befehl die Datei `DUMP.dat.gz` gegen das Regelwerk

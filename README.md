@@ -38,6 +38,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 
 ### Kommandos
 
+* [check] — Überprüft Datensätze auf Konformität mit einem Regelwerk
 * [concat] — Zusammenfügen (Konkatenieren) von Datensätzen
 * [completions] — Erzeugung von Shell-Skripten zur Autovervollständigung
 * [convert] — Konvertierung zwischen verschiedenen PICA-Formaten
@@ -75,6 +76,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 [Polars]: https://www.pola.rs/
 [R]: https://www.r-project.org/
 
+[check]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/check.html
 [concat]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/concat.html
 [completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/completions.html
 [convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/convert.html
