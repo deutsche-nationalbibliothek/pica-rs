@@ -41,6 +41,7 @@ book:
         - commands/config.qmd
         - commands/convert.qmd
         - commands/count.qmd
+        - commands/describe.qmd
         - commands/explode.qmd
         - commands/filter.qmd
         - commands/frequency.qmd

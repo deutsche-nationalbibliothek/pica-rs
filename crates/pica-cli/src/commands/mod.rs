@@ -5,6 +5,8 @@ pub(crate) use concat::Concat;
 pub(crate) use config::Config;
 pub(crate) use convert::Convert;
 pub(crate) use count::Count;
+#[cfg(feature = "unstable")]
+pub(crate) use describe::Describe;
 pub(crate) use explode::Explode;
 pub(crate) use filter::Filter;
 pub(crate) use frequency::Frequency;
@@ -24,6 +26,8 @@ mod concat;
 mod config;
 mod convert;
 mod count;
+#[cfg(feature = "unstable")]
+mod describe;
 mod explode;
 mod filter;
 mod frequency;

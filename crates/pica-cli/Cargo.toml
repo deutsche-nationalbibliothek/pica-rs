@@ -12,7 +12,7 @@ default = ["performant"]
 compat = ["pica-record/compat"]
 nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
 performant = ["pica-record/performant", "polars/cse", "polars/performant"]
-unstable = ["pica-record/unstable", "jiff"]
+unstable = ["pica-record/unstable", "jiff", "tmp_env", "polars/fmt"]
 
 [dependencies]
 bstr = { version = "1.11" }
@@ -31,6 +31,7 @@ rand = { version = "0.9" }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = { version = "2.0" }
+tmp_env = { version = "0.1", optional = true }
 toml = { version = "0.8", features = ["preserve_order"] }
 unicode-normalization = { version = "0.1" }
 
