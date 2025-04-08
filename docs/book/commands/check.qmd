@@ -8,7 +8,7 @@ den Quellen aktiviert werden.
 :::
 
 Das `check`-Kommando erlaubt es, Datensätze auf Konformität mit einem
-Regelwerk zu überprüfen. In einer (oder mehreren) Konfigurationsdateien
+Regelwerk zu überprüfen. In einer oder mehreren Konfigurationsdateien
 können Regeln hinterlegt werden, gegen die jeder Datensatz überprüft
 wird. Trifft eine Regel zu, wird diese Regelverletzung unter Angabe
 der PPN (Feld `003@ $0`) des Datensatzes und der ID der Regel in eine
@@ -25,7 +25,7 @@ $ pica check -R rules.toml DUMP.dat.gz -o out.csv
 ```
 
 Soll ein Regelwerk nur gegen eine Teilmenge der Eingabe getestet
-werden, erfolgt dies durch Einschränkung des (globalen) Geltungsbereichs
+werden, erfolgt dies durch Einschränkung des Geltungsbereichs
 (`scope`) mithilfe eines Filterausdrucks:
 
 ```{.toml}
@@ -196,7 +196,7 @@ Der `link`-Check überprüft, ob Verknüpfungen zwischen Datensätzen
 existieren. Zur Erläuterung der Funktionsweise, soll ein Beispiel
 dienen: Die beiden Normdatensätze _Goethe_ und _Schiller_ sind im
 Feld `065R` mit einem Geografikum in Beziehung gesetzt. Der verknüpfte
-Datensatz ist im Feld `$9` hinterlegt und die Art der Beziehung
+Datensatz ist im Unterfeld `$9` hinterlegt und die Art der Beziehung
 ist im Unterfeld `$4` kodiert. Im folgenden Beispiel sind nur die
 Beziehungen _Sterbeort_ (`orts`), Geburtsort (`ortg`) und Wirkungsort
 (`ortw`) relevant. In der folgenden Grafik ist das Beziehungsgeflecht
