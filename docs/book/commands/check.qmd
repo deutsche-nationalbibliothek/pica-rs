@@ -130,7 +130,7 @@ Die Gültigkeit eines [ISNI]-Identifikators, bspw. einer [ORCID], lässt
 sich mit dem `isni`-Check überprüfen.
 
 Die folgende Regel findet ungültige ORCID-Identifikatoren im Feld `028A
-$y`, wobei nur die Werte überprüft werden, die mit dem Prefix `(orcid)`
+$y`, wobei nur die Werte überprüft werden, die mit dem Präfix `(orcid)`
 beginnen:
 
 ```{.toml}
@@ -153,8 +153,8 @@ Vergleichen von Werten ignoriert.
 Zeichenketten mittels des `=*`-Operators.
 
 `prefix = '<prefix>'`
-: Es werden nur Werte überprüft, die mit dem Prefix `<prefix>` beginnen.
-Wird kein Prefix angegeben, werden alle Werte des `path`-Ausdrucks
+: Es werden nur Werte überprüft, die mit dem Präfix `<prefix>` beginnen.
+Wird kein Präfix angegeben, werden alle Werte des `path`-Ausdrucks
 überprüft.
 
 
@@ -186,7 +186,7 @@ Zeichenketten mittels des `=*`-Operators.
 ### Link
 
 Der `link`-Check überprüft, ob Verknüpfungen zwischen Datensätzen
-existieren. Zur Erläuterung der Funktionsweise, soll ein Beispiel
+existieren. Zur Erläuterung der Funktionsweise soll ein Beispiel
 dienen: Die beiden Normdatensätze _Goethe_ und _Schiller_ sind im
 Feld `065R` mit einem Geografikum in Beziehung gesetzt. Der verknüpfte
 Datensatz ist im Unterfeld `$9` hinterlegt und die Art der Beziehung
@@ -213,7 +213,7 @@ ist zu überprüfen, ob die Zieldatensätze in der Menge der Eingabe
 existieren. Hierzu muss ein Pfad-Ausdruck `source` angegeben werden, mit
 dem alle Identifikatoren ermittelt werden, die in den Zieldatensätzen
 gesucht werden. In unserem Beispiel ist dies der Ausdruck `065R.9`,
-der die PPNs der Zieldatensätze ermittelt. Als zweites wird noch ein
+der die PPNs der Zieldatensätze ermittelt. Als Zweites wird noch ein
 Pfad- Ausdruck benötigt, der die Werte im Zieldatensatz adressiert. Da
 der Abgleich über die PPN eines Datensatzes erfolgt, wird der Ausdruck
 `003@.0` als Ziel (`target`) benötigt. Es ergibt sich folgende Regel:
@@ -233,7 +233,7 @@ werden, kann die Regel wie folgt modifiziert werden:
 [rule.LINK2]
 check = 'link'
 source.path = '065R{ 9  | 4 == "ortw" }'
-tatget.path = '003@.0'
+target.path = '003@.0'
 ````
 
 Darüber hinaus können Kriterien formuliert werden, die der Zieldatensatz
@@ -252,10 +252,10 @@ target = { path = '003@.0', filter = '002@.0 =^ "Tg"' }
 Sollte ein globaler Geltungsbereich `scope` für alle Regeln definiert
 sein, dann werden nur die Zielwerte `source` der Datensätze, die zum
 spezifizierten Geltungsbereich gehören, überprüft. Der Geltungsbereich
-wird aber nicht zur Bestimmung der Zieldatesätze verwendet. Besteht die
-Eingabe sowohl aus Personen `Tp*` und Geografika `Tg*`, dann kann der
-Geltungsbereich auf Personen eingeschränkt werden (`scope = '002@.0 =^
-"Tp"'`). Ein Abgleich mit den Geografika kann aber trotzdem erfolgen,
+wird aber nicht zur Bestimmung der Zieldatensätze verwendet. Besteht die
+Eingabe sowohl aus Personen `Tp*` als auch Geografika `Tg*`, dann kann
+der Geltungsbereich auf Personen eingeschränkt werden (`scope = '002@.0
+=^ "Tp"'`). Ein Abgleich mit den Geografika kann aber trotzdem erfolgen,
 da diese nicht dem Geltungsbereich unterliegen.
 
 #### Optionen
@@ -272,10 +272,10 @@ Zeichenketten mittels des `=*`-Operators.
 ### Unicode
 
 Der `unicode`-Check überprüft, ob die Werte aller Unterfelder eines
-Datensatzes gültige Unicode-Zeichenketten enthalten.
+Datensatzes gültige Unicode-Zeichenketten sind.
 
 ```{.toml}
-[rule.UNICODE]
+[rule.UNICODE1]
 check = "unicode"
 ```
 
@@ -285,7 +285,7 @@ nicht konformen Werte werden in der `message`-Spalte der Ausgabedatei
 aufgeführt.
 
 ```{.toml}
-[rule.UNICODE]
+[rule.UNICODE2]
 check = "unicode"
 normalization = "nfd"
 ```
