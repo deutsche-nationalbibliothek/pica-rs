@@ -12,7 +12,7 @@ default = ["performant"]
 compat = ["pica-record/compat"]
 nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
 performant = ["pica-record/performant", "polars/cse", "polars/performant"]
-unstable = ["pica-record/unstable", "jiff", "tmp_env", "polars/fmt"]
+unstable = ["pica-record/unstable", "tmp_env", "polars/fmt"]
 
 [dependencies]
 bstr = { version = "1.11" }
@@ -23,7 +23,7 @@ directories = { version = "6.0" }
 flate2 = { version = "1.1" }
 hashbrown = { version = "0.15" }
 indicatif = { version = "0.17", features = ["improved_unicode"] }
-jiff = { version = "0.2", optional = true }
+jiff = { version = "0.2" }
 pica-record = { path = "../../", features = ["serde"] }
 polars = { version = "0.46", features = ["ipc", "decompress", "lazy"] }
 quick-xml = { version = "0.37" }
