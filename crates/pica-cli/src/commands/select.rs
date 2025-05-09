@@ -129,6 +129,12 @@ pub(crate) struct Select {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
+    #[arg(long, value_name = "PATH")]
+    filter_set_source: Option<Path>,
+
+    #[arg(long, value_name = "COLUMN")]
+    filter_set_column: Option<String>,
+
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
     progress: bool,
@@ -172,6 +178,11 @@ impl Select {
         let mut seen = HashSet::new();
         let mut count = 0;
 
+        let filter_set = FilterSetBuilder::new()
+            .allow(self.allow)
+            .deny(self.deny)
+            .build()?;
+
         let options = QueryOptions::default()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case)
@@ -197,7 +208,6 @@ impl Select {
 
         let translit = translit(config.normalization.clone());
         let query = Query::new(translit(self.query))?;
-        let filter_set = FilterSet::new(self.allow, self.deny)?;
 
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
@@ -221,10 +231,8 @@ impl Select {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if let Some(ppn) = record.ppn() {
-                            if !filter_set.check(ppn) {
-                                continue;
-                            }
+                        if !filter_set.check(record) {
+                            continue;
                         }
 
                         if let Some(ref matcher) = matcher {

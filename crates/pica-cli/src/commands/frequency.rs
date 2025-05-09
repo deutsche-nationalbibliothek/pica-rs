@@ -72,6 +72,12 @@ pub(crate) struct Frequency {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
+    #[arg(long, value_name = "PATH")]
+    filter_set_source: Option<Path>,
+
+    #[arg(long, value_name = "COLUMN")]
+    filter_set_column: Option<String>,
+
     /// Limit result to the N most frequent subfield values.
     #[arg(
         long,
@@ -154,6 +160,13 @@ impl Frequency {
         let mut progress = Progress::new(self.progress);
         let mut seen = HashSet::new();
 
+        let filter_set = FilterSetBuilder::new()
+            .source(self.filter_set_source)
+            .column(self.filter_set_column)
+            .allow(self.allow)
+            .deny(self.deny)
+            .build()?;
+
         let translit =
             crate::translit::translit(config.normalization.clone());
         let query = Query::new(translit(self.query))?;
@@ -176,9 +189,7 @@ impl Frequency {
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case);
 
-        let filter_set = FilterSet::new(self.allow, self.deny)?;
         let matcher_options = MatcherOptions::from(&options);
-
         let writer: Box<dyn Write> = match self.output {
             Some(filename) => Box::new(File::create(filename)?),
             None => Box::new(io::stdout()),
@@ -202,10 +213,8 @@ impl Frequency {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if let Some(ppn) = record.ppn() {
-                            if !filter_set.check(ppn) {
-                                continue;
-                            }
+                        if !filter_set.check(record) {
+                            continue;
                         }
 
                         if let Some(ref matcher) = matcher {

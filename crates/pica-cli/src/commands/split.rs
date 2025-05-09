@@ -86,6 +86,12 @@ pub(crate) struct Split {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
+    #[arg(long, value_name = "PATH")]
+    filter_set_source: Option<Path>,
+
+    #[arg(long, value_name = "COLUMN")]
+    filter_set_column: Option<String>,
+
     /// Write partitions into OUTDIR
     #[arg(long, short, value_name = "outdir", default_value = ".")]
     outdir: PathBuf,
@@ -109,10 +115,16 @@ pub(crate) struct Split {
 impl Split {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
-        let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut progress = Progress::new(self.progress);
         let mut chunks: u32 = 0;
         let mut count = 0;
+
+        let filter_set = FilterSetBuilder::new()
+            .source(self.filter_set_source)
+            .column(self.filter_set_column)
+            .allow(self.allow)
+            .deny(self.deny)
+            .build()?;
 
         let options = MatcherOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100.0)
@@ -164,10 +176,8 @@ impl Split {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if let Some(ppn) = record.ppn() {
-                            if !filter_set.check(ppn) {
-                                continue;
-                            }
+                        if !filter_set.check(record) {
+                            continue;
                         }
 
                         if let Some(ref matcher) = matcher {

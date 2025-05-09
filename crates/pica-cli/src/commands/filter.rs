@@ -67,6 +67,12 @@ pub(crate) struct Filter {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
+    #[arg(long, value_name = "PATH")]
+    filter_set_source: Option<Path>,
+
+    #[arg(long, value_name = "COLUMN")]
+    filter_set_column: Option<String>,
+
     /// Limit the result to first N records
     ///
     /// Note: A limit value `0` means no limit.
@@ -131,11 +137,17 @@ pub(crate) struct Filter {
 impl Filter {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
-        let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut progress = Progress::new(self.progress);
         let translit = translit(config.normalization.clone());
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
+
+        let filter_set = FilterSetBuilder::new()
+            .source(self.filter_set_source)
+            .column(self.filter_set_column)
+            .allow(self.allow)
+            .deny(self.deny)
+            .build()?;
 
         let mut writer = WriterBuilder::new()
             .append(self.append)
@@ -196,10 +208,8 @@ impl Filter {
                     Ok(ref mut record) => {
                         progress.update(false);
 
-                        if let Some(ppn) = record.ppn() {
-                            if !filter_set.check(ppn) {
-                                continue;
-                            }
+                        if !filter_set.check(record) {
+                            continue;
                         }
 
                         let mut is_match =

@@ -92,6 +92,12 @@ pub(crate) struct Sample {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
+    #[arg(long, value_name = "PATH")]
+    filter_set_source: Option<Path>,
+
+    #[arg(long, value_name = "COLUMN")]
+    filter_set_column: Option<String>,
+
     /// Number of random records
     #[arg(value_parser = value_parser!(u16).range(1..))]
     sample_size: u16,
@@ -106,10 +112,16 @@ pub(crate) struct Sample {
 impl Sample {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
-        let filter_set = FilterSet::new(self.allow, self.deny)?;
         let mut writer = WriterBuilder::new()
             .gzip(self.gzip)
             .from_path_or_stdout(self.output)?;
+
+        let filter_set = FilterSetBuilder::new()
+            .source(self.filter_set_source)
+            .column(self.filter_set_column)
+            .allow(self.allow)
+            .deny(self.deny)
+            .build()?;
 
         let mut rng: StdRng = match self.seed {
             None => StdRng::from_rng(&mut rng()),
@@ -156,10 +168,8 @@ impl Sample {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if let Some(ppn) = record.ppn() {
-                            if !filter_set.check(ppn) {
-                                continue;
-                            }
+                        if !filter_set.check(record) {
+                            continue;
                         }
 
                         if let Some(ref matcher) = matcher {
