@@ -149,7 +149,7 @@ pub(crate) struct FilterSet {
 }
 
 impl FilterSet {
-    #[inline]
+    #[inline(always)]
     pub(crate) fn check(&self, record: &ByteRecord) -> bool {
         let values: Vec<_> =
             record.path(&self.path, &self.options).collect();
@@ -171,63 +171,6 @@ impl FilterSet {
         true
     }
 }
-
-// fn read_filter_set<P: AsRef<path::Path>>(
-//     paths: Vec<P>,
-//     column: Option<String>,
-// ) -> Result<Option<HashSet<BString>>, FilterSetError> {
-//     let mut set = HashSet::new();
-
-//     for path in paths.iter() {
-//         let df = read_df(path)?;
-//         let column =
-//             df.column("ppn").or(df.column("idn")).map_err(|_| {
-//                 FilterSetError::Other(format!(
-//                     "Missing a column `ppn` or `idn` in file {}. ",
-//                     path.as_ref().display()
-//                 ))
-//             })?;
-
-//         set.extend(
-//             column
-//                 .cast(&DataType::String)?
-//                 .str()?
-//                 .iter()
-//                 .filter_map(|idn| idn.map(BString::from)),
-//         );
-//     }
-
-//     Ok(if !paths.is_empty() { Some(set) } else { None })
-// }
-
-// fn read_df<P: AsRef<path::Path>>(
-//     path: P,
-// ) -> Result<DataFrame, FilterSetError> {
-//     let path = path.as_ref().to_path_buf();
-//     let path_str = path.to_str().unwrap_or_default();
-
-//     if path_str.ends_with("ipc") || path_str.ends_with("arrow") {
-//         Ok(IpcReader::new(File::open(path)?)
-//             .memory_mapped(None)
-//             .finish()?)
-//     } else if path_str.ends_with("tsv") ||
-// path_str.ends_with("tsv.gz")     {
-//         Ok(CsvReadOptions::default()
-//             .with_has_header(true)
-//             .with_infer_schema_length(Some(0))
-//             .with_parse_options(
-//                 CsvParseOptions::default().with_separator(b'\t'),
-//             )
-//             .try_into_reader_with_file_path(Some(path))?
-//             .finish()?)
-//     } else {
-//         Ok(CsvReadOptions::default()
-//             .with_has_header(true)
-//             .with_infer_schema_length(Some(0))
-//             .try_into_reader_with_file_path(Some(path))?
-//             .finish()?)
-//     }
-// }
 
 pub(crate) fn parse_predicates<S: AsRef<str>>(
     predicates: Option<S>,
