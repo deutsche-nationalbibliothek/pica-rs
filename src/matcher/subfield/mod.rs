@@ -200,7 +200,6 @@ impl RelationMatcher {
                 EndsWith => self.ends_with(value, options, false),
                 EndsNotWith => self.ends_with(value, options, true),
                 Similar => self.is_similar(value, options),
-                Contains => self.contains(value, options),
                 _ => unreachable!(),
             }
         };
@@ -366,39 +365,6 @@ impl RelationMatcher {
 
         score > options.strsim_threshold
     }
-
-    /// Returns `true` if the given value is a substring of the value.
-    /// If the `case_ignore` flag is set, both strings will be
-    /// converted to lowercase first.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use pica_record::matcher::MatcherOptions;
-    /// use pica_record::matcher::subfield::RelationMatcher;
-    /// use pica_record::primitives::SubfieldRef;
-    ///
-    /// let options = MatcherOptions::default();
-    /// let subfield = SubfieldRef::new('a', "foobar")?;
-    ///
-    /// let matcher = RelationMatcher::new("a =? 'foo'")?;
-    /// assert!(matcher.is_match(&subfield, &options));
-    ///
-    /// let matcher = RelationMatcher::new("a =? 'bar'")?;
-    /// assert!(matcher.is_match(&subfield, &options));
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    fn contains(&self, value: &[u8], options: &MatcherOptions) -> bool {
-        if options.case_ignore {
-            value
-                .to_lowercase()
-                .find(self.value.to_lowercase())
-                .is_some()
-        } else {
-            value.find(&self.value).is_some()
-        }
-    }
 }
 
 impl Display for RelationMatcher {
@@ -428,7 +394,7 @@ impl Display for RelationMatcher {
 pub struct ContainsMatcher {
     pub(crate) quantifier: Quantifier,
     pub(crate) codes: SmallVec<[SubfieldCode; 4]>,
-    pub(crate) values: Either<(), BTreeSet<Vec<u8>>>,
+    pub(crate) values: Either<Vec<u8>, BTreeSet<Vec<u8>>>,
     pub(crate) raw_data: String,
 }
 
@@ -495,19 +461,28 @@ impl ContainsMatcher {
         let r#fn = |subfield: &SubfieldRef| -> bool {
             match self.values {
                 Right(ref values) => {
-                    if !options.case_ignore {
-                        let haystack = subfield.value();
-                        values
-                            .iter()
-                            .any(|needle| haystack.contains_str(needle))
-                    } else {
+                    if options.case_ignore {
                         let haystack = subfield.value().to_lowercase();
                         values.iter().any(|needle| {
                             haystack.contains_str(needle.to_lowercase())
                         })
+                    } else {
+                        let haystack = subfield.value();
+                        values
+                            .iter()
+                            .any(|needle| haystack.contains_str(needle))
                     }
                 }
-                Left(_) => unreachable!(),
+                Left(ref needle) => {
+                    if options.case_ignore {
+                        subfield
+                            .value()
+                            .to_lowercase()
+                            .contains_str(needle.to_lowercase())
+                    } else {
+                        subfield.value().contains_str(needle)
+                    }
+                }
             }
         };
 
@@ -1641,12 +1616,6 @@ mod tests {
         let matcher = RelationMatcher::new("a =* 'foO'")?;
         assert!(!matcher.is_match(&subfields, &options));
 
-        let matcher = RelationMatcher::new("a =? 'oo'")?;
-        assert!(matcher.is_match(&subfields, &options));
-
-        let matcher = RelationMatcher::new("a =? 'frob'")?;
-        assert!(!matcher.is_match(&subfields, &options));
-
         let options = MatcherOptions::default().case_ignore(true);
         let matcher = RelationMatcher::new("a == 'FOO'")?;
         assert!(matcher.is_match(&subfields, &options));
@@ -1721,7 +1690,14 @@ mod tests {
         assert!(matcher.is_match(&subfields, &options));
 
         let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? 'foo'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
         let matcher = ContainsMatcher::new("a =? ['xy', 'ba']")?;
+        assert!(matcher.is_match(&subfields, &options));
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? 'ba'")?;
         assert!(matcher.is_match(&subfields, &options));
 
         let options = MatcherOptions::default();
@@ -1729,15 +1705,31 @@ mod tests {
         assert!(matcher.is_match(&subfields, &options));
 
         let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? ''")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
         let matcher = ContainsMatcher::new("a =? ['xy', 'yz']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? 'xy'")?;
         assert!(!matcher.is_match(&subfields, &options));
 
         let options = MatcherOptions::default();
         let matcher = ContainsMatcher::new("a =? ['xy', 'OO']")?;
         assert!(!matcher.is_match(&subfields, &options));
 
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("a =? 'OO'")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
         let options = MatcherOptions::default().case_ignore(true);
         let matcher = ContainsMatcher::new("a =? ['xy', 'OO']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default().case_ignore(true);
+        let matcher = ContainsMatcher::new("a =? 'OO'")?;
         assert!(matcher.is_match(&subfields, &options));
 
         let subfields = vec![
@@ -1750,7 +1742,15 @@ mod tests {
         assert!(matcher.is_match(&subfields, &options));
 
         let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ANY a =? 'ba'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
         let matcher = ContainsMatcher::new("ALL a =? ['xy','ba']")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ALL a =? 'ba'")?;
         assert!(matcher.is_match(&subfields, &options));
 
         let options = MatcherOptions::default();
@@ -1758,7 +1758,15 @@ mod tests {
         assert!(matcher.is_match(&subfields, &options));
 
         let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ANY a =? 'bar'")?;
+        assert!(matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
         let matcher = ContainsMatcher::new("ALL a =? ['xy','bar']")?;
+        assert!(!matcher.is_match(&subfields, &options));
+
+        let options = MatcherOptions::default();
+        let matcher = ContainsMatcher::new("ALL a =? 'bar'")?;
         assert!(!matcher.is_match(&subfields, &options));
 
         Ok(())

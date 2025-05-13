@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 
 use bstr::ByteSlice;
+use either::Either::Left;
 use either::Right;
 use regex::bytes::Regex;
 use winnow::ascii::{digit1, multispace1};
@@ -88,15 +89,18 @@ pub(crate) fn parse_contains_matcher(
             ),
         )),
         ws("=?"),
-        alt((delimited(
-            ws('['),
-            separated(1.., parse_string, ws(',')).map(
-                |values: Vec<Vec<u8>>| {
-                    Right(BTreeSet::<Vec<u8>>::from_iter(values))
-                },
+        alt((
+            delimited(
+                ws('['),
+                separated(1.., parse_string, ws(',')).map(
+                    |values: Vec<Vec<u8>>| {
+                        Right(BTreeSet::<Vec<u8>>::from_iter(values))
+                    },
+                ),
+                ws(']'),
             ),
-            ws(']'),
-        ),)),
+            ws(parse_string).map(Left),
+        )),
     )
         .with_taken()
         .map(|((quantifier, codes, _, values), raw_data)| {
@@ -508,7 +512,6 @@ mod tests {
         parse_success!("a =$ 'abc'", Any, "a", EndsWith, b"abc");
         parse_success!("a !$ 'abc'", Any, "a", EndsNotWith, b"abc");
         parse_success!("a =* 'abc'", Any, "a", Similar, b"abc");
-        parse_success!("a =? 'abc'", Any, "a", Contains, b"abc");
     }
 
     #[test]
@@ -518,7 +521,7 @@ mod tests {
         use Quantifier::*;
 
         macro_rules! parse_success {
-            ($i:expr, $q:expr, $codes:expr, $values:expr) => {
+            ($i:expr, $q:expr, $codes:expr, $rhs:expr) => {
                 let matcher = parse_contains_matcher
                     .parse($i.as_bytes())
                     .unwrap();
@@ -534,31 +537,61 @@ mod tests {
                     )
                 );
 
-                assert_eq!(
-                    matcher.values,
+                assert_eq!(matcher.values, $rhs);
+            };
+        }
+
+        macro_rules! parse_success_r {
+            ($i:expr, $q:expr, $codes:expr, $values:expr) => {
+                parse_success!(
+                    $i,
+                    $q,
+                    $codes,
                     Right(BTreeSet::from_iter(
                         $values
                             .iter()
                             .map(|value| value.as_bytes().to_vec())
                     ))
-                );
+                )
             };
         }
 
-        parse_success!("a =? ['foo']", Any, "a", vec!["foo"]);
-        parse_success!("ANY a =? ['foo']", Any, "a", vec!["foo"]);
-        parse_success!("ALL a =? ['foo']", All, "a", vec!["foo"]);
-        parse_success!("[a-c] =? ['foo']", Any, "abc", vec!["foo"]);
-        parse_success!("ANY [ab] =? ['foo']", Any, "ab", vec!["foo"]);
+        macro_rules! parse_success_l {
+            ($i:expr, $q:expr, $codes:expr, $value:expr) => {
+                parse_success!(
+                    $i,
+                    $q,
+                    $codes,
+                    Left($value.as_bytes().to_vec())
+                )
+            };
+        }
 
-        parse_success!(
+        parse_success_r!("a =? ['foo']", Any, "a", vec!["foo"]);
+        parse_success_l!("a =? 'foo'", Any, "a", "foo");
+
+        parse_success_r!("ANY a =? ['foo']", Any, "a", vec!["foo"]);
+        parse_success_l!("ANY a =? 'foo'", Any, "a", "foo");
+
+        parse_success_r!("ALL a =? ['foo']", All, "a", vec!["foo"]);
+        parse_success_l!("ALL a =? 'foo'", All, "a", "foo");
+
+        parse_success_r!("[a-c] =? ['foo']", Any, "abc", vec!["foo"]);
+        parse_success_l!("[a-c] =? 'foo'", Any, "abc", "foo");
+
+        parse_success_r!("ANY [ab] =? ['foo']", Any, "ab", vec!["foo"]);
+        parse_success_l!("ANY [ab] =? 'foo'", Any, "ab", "foo");
+
+        parse_success_r!(
             "ALL [a-d] =? ['foo']",
             All,
             "abcd",
             vec!["foo"]
         );
 
-        parse_success!(
+        parse_success_l!("ALL [a-d] =? 'foo'", All, "abcd", "foo");
+
+        parse_success_r!(
             "a =? ['foo','bar']",
             Any,
             "a",
@@ -867,7 +900,9 @@ mod tests {
         parse_success!("a =$ 'foo'", Singleton(Relation(_)));
         parse_success!("a !$ 'foo'", Singleton(Relation(_)));
         parse_success!("a =* 'foo'", Singleton(Relation(_)));
-        parse_success!("a =? 'foo'", Singleton(Relation(_)));
+
+        parse_success!("a =? ['foo', 'bar']", Singleton(Contains(_)));
+        parse_success!("a =? 'foo'", Singleton(Contains(_)));
 
         parse_success!("#a == 1", Singleton(Cardinality(_)));
         parse_success!("#a != 1", Singleton(Cardinality(_)));
