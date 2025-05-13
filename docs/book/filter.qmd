@@ -22,14 +22,6 @@ bestimmen.
 
 ## Contains Matcher (`=?`)
 
-::: {.callout-warning}
-Der Vergleich gegen eine Liste von Teilwörtern ist eine `unstable`-
-Funktion, die sich noch in der Entwicklung befindet. Diese kann durch
-Aktivierung der `unstable`-Funktion beim Bauen des Programms aus den
-Quellen aktiviert werden. Die Veröffentlichung der Funktion ist in der
-Version `1.3` vorgesehen.
-:::
-
 Der _Contains Matcher_ überprüft, ob der Wert eines Unterfeldes ein
 bestimmtes Teilwort enthält. Diese Ausdrücke werden durch den Operator
 `=?` festgelegt, der entweder ein einzelnes Teilwort oder eine Liste

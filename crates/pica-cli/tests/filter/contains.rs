@@ -61,7 +61,6 @@ fn contains_set_case_ignore() -> TestResult {
 }
 
 #[test]
-#[cfg(feature = "unstable")]
 fn contains_set_quantifier() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

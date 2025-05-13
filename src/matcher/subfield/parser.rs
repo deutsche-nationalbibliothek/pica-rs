@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 
 use bstr::ByteSlice;
-#[cfg(feature = "unstable")]
 use either::Right;
 use regex::bytes::Regex;
 use winnow::ascii::{digit1, multispace1};
@@ -11,11 +10,9 @@ use winnow::combinator::{
 use winnow::error::ParserError;
 use winnow::prelude::*;
 
-#[cfg(feature = "unstable")]
-use super::ContainsMatcher;
 use super::{
-    CardinalityMatcher, ExistsMatcher, InMatcher, RegexMatcher,
-    RegexSetMatcher, RelationMatcher, SingletonMatcher,
+    CardinalityMatcher, ContainsMatcher, ExistsMatcher, InMatcher,
+    RegexMatcher, RegexSetMatcher, RelationMatcher, SingletonMatcher,
     SubfieldMatcher,
 };
 use crate::matcher::operator::{
@@ -75,7 +72,6 @@ pub(crate) fn parse_relation_matcher(
 }
 
 /// Parse a [ContainsMatcher] expression.
-#[cfg(feature = "unstable")]
 pub(crate) fn parse_contains_matcher(
     i: &mut &[u8],
 ) -> ModalResult<ContainsMatcher> {
@@ -252,7 +248,6 @@ pub(crate) fn parse_singleton_matcher(
 ) -> ModalResult<SingletonMatcher> {
     alt((
         parse_relation_matcher.map(SingletonMatcher::Relation),
-        #[cfg(feature = "unstable")]
         parse_contains_matcher.map(SingletonMatcher::Contains),
         parse_in_matcher.map(SingletonMatcher::In),
         parse_exists_matcher.map(SingletonMatcher::Exists),
@@ -517,7 +512,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unstable")]
     fn test_parse_contains_matcher() {
         use std::collections::BTreeSet;
 
