@@ -79,7 +79,7 @@
     "href": "filter.html#contains-matcher",
     "title": "Filter",
     "section": "",
-    "text": "Warnung\n\n\n\nDer Vergleich gegen eine Liste von Teilwörtern ist eine unstable- Funktion, die sich noch in der Entwicklung befindet. Diese kann durch Aktivierung der unstable-Funktion beim Bauen des Programms aus den Quellen aktiviert werden. Die Veröffentlichung der Funktion ist in der Version 1.3 vorgesehen.\n\n\n\n\n\n\n\nBeispiele =?-Operator\n\n\nFilterausdruck\nWahrheitswert\n\n\n\n\nx =? \"bcd\"\ntrue\n\n\nx =? \"hij\"\nflase\n\n\nx =? [\"hij\", \"bcd\"]\ntrue\n\n\nx =? [\"hij\", \"klm\"]\nfalse",
+    "text": "Beispiele =?-Operator\n\n\nFilterausdruck\nWahrheitswert\n\n\n\n\nx =? \"bcd\"\ntrue\n\n\nx =? \"hij\"\nflase\n\n\nx =? [\"hij\", \"bcd\"]\ntrue\n\n\nx =? [\"hij\", \"klm\"]\nfalse",
     "crumbs": [
       "Filter"
     ]

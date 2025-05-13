@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.30">
+<meta name="generator" content="quarto-1.7.31">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -38,7 +38,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap-86c4efbe7addb00e34b5b8b44428ed1b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -328,19 +328,6 @@ Warnung
 <p>Da ein PICA-Feld wiederum aus einer Liste von Unterfeldern bestehen kann, besteht ein <em>Field Matcher</em> aus einem oder mehreren <em>Subfield Matchern</em>, die einen Wahrheitswert auf einer Liste von Unterfeldern bestimmen.</p>
 <section id="contains-matcher" class="level2">
 <h2 class="anchored" data-anchor-id="contains-matcher">Contains Matcher (<code>=?</code>)</h2>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warnung
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Der Vergleich gegen eine Liste von Teilwörtern ist eine <code>unstable</code>- Funktion, die sich noch in der Entwicklung befindet. Diese kann durch Aktivierung der <code>unstable</code>-Funktion beim Bauen des Programms aus den Quellen aktiviert werden. Die Veröffentlichung der Funktion ist in der Version <code>1.3</code> vorgesehen.</p>
-</div>
-</div>
 <p>Der <em>Contains Matcher</em> überprüft, ob der Wert eines Unterfeldes ein bestimmtes Teilwort enthält. Diese Ausdrücke werden durch den Operator <code>=?</code> festgelegt, der entweder ein einzelnes Teilwort oder eine Liste von Teilwörtern erwartet.</p>
 <p>So überprüft der Ausdruck <code>028@.d =? "Love"</code>, ob ein Feld <code>028@</code> mit einem Unterfeld <code>a</code> existiert, welches das Teilwort <code>Love</code> enthält. Es kann ebenfalls gegen eine Liste von Teilwörtern getestet werden: Mit <code>028@.d =? ["Love", "Peace"]</code> wird getestet, ob das Unterfeld <code>d</code> das Teilwort <em>Love</em> oder das Teilwort <em>Peace</em> enthält. Dieses Verhalten lässt sich auch als eine ODER-Verknüpfung <code>028@{ d =? "Love" || d =? "Peace"}</code> ausdrücken, wobei die erstere Variante bei einer längeren Liste performanter ist.</p>
 <p>Beim Vergleich, ob ein Teilwort im Wert enthalten ist, lässt sich die Berücksichtigung von Groß- und Kleinschreibung ignorieren, wenn die Filter-Opton <code>case-ignore</code> gesetzt ist.</p>
