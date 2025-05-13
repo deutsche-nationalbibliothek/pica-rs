@@ -9,7 +9,6 @@ use crate::prelude::*;
 
 mod cardinality;
 mod connectives;
-#[cfg(feature = "unstable")]
 mod contains;
 mod exists;
 mod r#in;
