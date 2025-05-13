@@ -17,7 +17,6 @@ pub enum RelationalOp {
     EndsWith,      // ends with, "=$"
     EndsNotWith,   // ends not with, "!$"
     Similar,       // similar, "=*"
-    Contains,      // contains, "=?"
 }
 
 impl RelationalOp {
@@ -36,7 +35,6 @@ impl RelationalOp {
     /// assert!(RelationalOp::Le.is_usize_applicable());
     /// assert!(RelationalOp::Lt.is_usize_applicable());
     ///
-    /// assert!(!RelationalOp::Contains.is_usize_applicable());
     /// assert!(!RelationalOp::EndsNotWith.is_usize_applicable());
     /// assert!(!RelationalOp::EndsWith.is_usize_applicable());
     /// assert!(!RelationalOp::Similar.is_usize_applicable());
@@ -67,7 +65,6 @@ impl RelationalOp {
     ///
     /// assert!(RelationalOp::Eq.is_str_applicable());
     /// assert!(RelationalOp::Ne.is_str_applicable());
-    /// assert!(RelationalOp::Contains.is_str_applicable());
     /// assert!(RelationalOp::EndsNotWith.is_str_applicable());
     /// assert!(RelationalOp::EndsWith.is_str_applicable());
     /// assert!(RelationalOp::Similar.is_str_applicable());
@@ -106,7 +103,6 @@ impl Display for RelationalOp {
             RelationalOp::EndsWith => write!(f, "=$"),
             RelationalOp::EndsNotWith => write!(f, "!$"),
             RelationalOp::Similar => write!(f, "=*"),
-            RelationalOp::Contains => write!(f, "=?"),
         }
     }
 }
@@ -126,7 +122,6 @@ impl quickcheck::Arbitrary for RelationalOp {
             Self::EndsWith,
             Self::EndsNotWith,
             Self::Similar,
-            Self::Contains,
         ])
         .unwrap()
         .clone()
@@ -148,7 +143,6 @@ pub(crate) fn parse_relational_operator(
         "=$".value(EndsWith),
         "!$".value(EndsNotWith),
         "=*".value(Similar),
-        "=?".value(Contains),
         ">=".value(Ge),
         ">".value(Gt),
         "<=".value(Le),
@@ -212,6 +206,5 @@ mod tests {
         parse_success!("=$", EndsWith);
         parse_success!("!$", EndsNotWith);
         parse_success!("=*", Similar);
-        parse_success!("=?", Contains);
     }
 }
