@@ -25,11 +25,11 @@ compat = []
 nightly = ["smallvec/specialization"]
 performant = []
 serde = ["dep:serde", "bstr/serde"]
-unstable = ["dep:either"]
+unstable = []
 
 [dependencies]
 bstr = { version = "1.11" }
-either = { version = "1.15", optional = true }
+either = { version = "1.15" }
 flate2 = { version = "1.0" }
 regex = { version = "1.11" }
 serde = { version = "1.0", optional = true, features = ["derive"] }

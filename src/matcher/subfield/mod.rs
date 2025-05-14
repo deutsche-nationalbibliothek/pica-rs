@@ -1,6 +1,5 @@
 //! Matcher that can be applied on a list of [SubfieldRef].
 
-#[cfg(feature = "unstable")]
 use std::collections::BTreeSet;
 use std::fmt::{self, Display};
 use std::ops::{
@@ -8,15 +7,12 @@ use std::ops::{
 };
 
 use bstr::ByteSlice;
-#[cfg(feature = "unstable")]
 use either::Either::{self, Left, Right};
-#[cfg(feature = "unstable")]
-use parser::parse_contains_matcher;
 use parser::{
-    parse_cardinality_matcher, parse_exists_matcher, parse_in_matcher,
-    parse_regex_matcher, parse_regex_set_matcher,
-    parse_relation_matcher, parse_singleton_matcher,
-    parse_subfield_matcher,
+    parse_cardinality_matcher, parse_contains_matcher,
+    parse_exists_matcher, parse_in_matcher, parse_regex_matcher,
+    parse_regex_set_matcher, parse_relation_matcher,
+    parse_singleton_matcher, parse_subfield_matcher,
 };
 use regex::bytes::{RegexBuilder, RegexSetBuilder};
 use smallvec::SmallVec;
@@ -429,7 +425,6 @@ impl Display for RelationMatcher {
 /// A matcher that checks if subfield value is contained in the given
 /// set.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg(feature = "unstable")]
 pub struct ContainsMatcher {
     pub(crate) quantifier: Quantifier,
     pub(crate) codes: SmallVec<[SubfieldCode; 4]>,
@@ -437,7 +432,6 @@ pub struct ContainsMatcher {
     pub(crate) raw_data: String,
 }
 
-#[cfg(feature = "unstable")]
 impl ContainsMatcher {
     /// Creates a new [ContainsMatcher].
     ///
@@ -524,7 +518,6 @@ impl ContainsMatcher {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl Display for ContainsMatcher {
     /// Format the in-matcher as a human-readable string.
     ///
@@ -975,7 +968,6 @@ pub enum SingletonMatcher {
     Regex(RegexMatcher),
     RegexSet(RegexSetMatcher),
     Relation(RelationMatcher),
-    #[cfg(feature = "unstable")]
     Contains(ContainsMatcher),
     Exists(ExistsMatcher),
     In(InMatcher),
@@ -1039,7 +1031,6 @@ impl SingletonMatcher {
             Self::Regex(m) => m.is_match(subfields, options),
             Self::RegexSet(m) => m.is_match(subfields, options),
             Self::Relation(m) => m.is_match(subfields, options),
-            #[cfg(feature = "unstable")]
             Self::Contains(m) => m.is_match(subfields, options),
             Self::Exists(m) => m.is_match(subfields, options),
             Self::In(m) => m.is_match(subfields, options),
@@ -1069,7 +1060,6 @@ impl Display for SingletonMatcher {
             Self::Regex(m) => write!(f, "{m}"),
             Self::RegexSet(m) => write!(f, "{m}"),
             Self::Relation(m) => write!(f, "{m}"),
-            #[cfg(feature = "unstable")]
             Self::Contains(m) => write!(f, "{m}"),
         }
     }
@@ -1719,7 +1709,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unstable")]
     fn test_contains_set_matcher() -> TestResult {
         let subfields = vec![
             SubfieldRef::new('a', "foo")?,
