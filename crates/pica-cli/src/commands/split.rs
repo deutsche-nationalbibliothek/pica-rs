@@ -67,7 +67,7 @@ pub(crate) struct Split {
     /// Ignore records which are *not* explicitly listed in one of the
     /// given allow-lists.
     ///
-    /// An allow-list must be an CSV, TSV or Apache Arrow file. By
+    /// An allow-list must be a CSV, TSV or Apache Arrow file. By
     /// default the column `ppn` or `idn` is used to get the values
     /// of the allow list. These values are compared against the PPN
     /// (003@.0) of record.
@@ -87,7 +87,7 @@ pub(crate) struct Split {
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
     ///
-    /// An deny-list must be an CSV, TSV or Apache Arrow file. By
+    /// A deny-list must be a CSV, TSV or Apache Arrow file. By
     /// default the column `ppn` or `idn` is used to get the values
     /// of the allow list. These values are compared against the PPN
     /// (003@.0) of record.
@@ -103,9 +103,9 @@ pub(crate) struct Split {
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
 
-    /// Defines the column name of an allow or deny list. By default,
-    /// the column `ppn` is used or, if this is not available, the
-    /// column `idn` is used.
+    /// Defines the column name of an allow-list or a deny-list. By
+    /// default, the column `ppn` is used or, if this is not
+    /// available, the column `idn` is used.
     #[arg(long, value_name = "COLUMN")]
     filter_set_column: Option<String>,
 
