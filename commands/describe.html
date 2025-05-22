@@ -345,19 +345,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warnung
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Das Kommando <code>describe</code> ist eine <code>unstable</code>-Funktion, die sich noch in der Entwicklung befindet und noch nicht in den Releases enthalten ist. Das Kommando kann durch Aktivierung der <code>unstable</code>-Funktion beim Bauen aus den Quellen aktiviert werden.</p>
-</div>
-</div>
 <p>Mithilfe des Kommandos <code>describe</code> lässt sich die Häufigkeitsverteilung von Unterfeldern ermitteln. Im folgenden Bespiel werden zuerst alle Datensätze aus der Eingabe (<code>DUMP.dat.gz</code>) auf die Satzarten <code>Tpz</code> und <code>Tp1</code> gefiltert und anschließend auf die Felder, die mit <code>04</code> oder <code>06</code> beginnen und mit <code>R</code> enden, reduziert. Anschließend werden die Vorkommen der Unterfelder ausgezählt und als Tabelle ausgegeben:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica describe <span class="at">-s</span> <span class="at">-k</span> <span class="st">'0[46].R'</span> tests/data/DUMP.dat.gz <span class="at">--where</span> <span class="st">'002@.0 in ["Tpz", "Tp1"]'</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">┌───────┬────┬────┬────┬────┬────┬────┬────┬───┐</span></span>
