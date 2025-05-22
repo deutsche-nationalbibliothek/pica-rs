@@ -1,8 +1,7 @@
 use std::cell::RefCell;
 
 use bstr::ByteSlice;
-use either::Either::Left;
-use either::Right;
+use hashbrown::HashSet;
 use regex::bytes::Regex;
 use winnow::ascii::{digit1, multispace1};
 use winnow::combinator::{
@@ -76,8 +75,6 @@ pub(crate) fn parse_relation_matcher(
 pub(crate) fn parse_contains_matcher(
     i: &mut &[u8],
 ) -> ModalResult<ContainsMatcher> {
-    use std::collections::BTreeSet;
-
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         alt((
@@ -94,12 +91,14 @@ pub(crate) fn parse_contains_matcher(
                 ws('['),
                 separated(1.., parse_string, ws(',')).map(
                     |values: Vec<Vec<u8>>| {
-                        Right(BTreeSet::<Vec<u8>>::from_iter(values))
+                        HashSet::<Vec<u8>>::from_iter(values)
                     },
                 ),
                 ws(']'),
             ),
-            ws(parse_string).map(Left),
+            ws(parse_string).map(|value| {
+                HashSet::<Vec<u8>>::from_iter(vec![value])
+            }),
         )),
     )
         .with_taken()

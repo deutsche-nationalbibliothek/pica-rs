@@ -1,13 +1,12 @@
 //! Matcher that can be applied on a list of [SubfieldRef].
 
-use std::collections::BTreeSet;
 use std::fmt::{self, Display};
 use std::ops::{
     BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not,
 };
 
 use bstr::ByteSlice;
-use either::Either::{self, Left, Right};
+use hashbrown::HashSet;
 use parser::{
     parse_cardinality_matcher, parse_contains_matcher,
     parse_exists_matcher, parse_in_matcher, parse_regex_matcher,
@@ -394,7 +393,7 @@ impl Display for RelationMatcher {
 pub struct ContainsMatcher {
     pub(crate) quantifier: Quantifier,
     pub(crate) codes: SmallVec<[SubfieldCode; 4]>,
-    pub(crate) values: Either<Vec<u8>, BTreeSet<Vec<u8>>>,
+    pub(crate) values: HashSet<Vec<u8>>,
     pub(crate) raw_data: String,
 }
 
@@ -459,30 +458,16 @@ impl ContainsMatcher {
             .filter(|s| self.codes.contains(s.code()));
 
         let r#fn = |subfield: &SubfieldRef| -> bool {
-            match self.values {
-                Right(ref values) => {
-                    if options.case_ignore {
-                        let haystack = subfield.value().to_lowercase();
-                        values.iter().any(|needle| {
-                            haystack.contains_str(needle.to_lowercase())
-                        })
-                    } else {
-                        let haystack = subfield.value();
-                        values
-                            .iter()
-                            .any(|needle| haystack.contains_str(needle))
-                    }
-                }
-                Left(ref needle) => {
-                    if options.case_ignore {
-                        subfield
-                            .value()
-                            .to_lowercase()
-                            .contains_str(needle.to_lowercase())
-                    } else {
-                        subfield.value().contains_str(needle)
-                    }
-                }
+            if options.case_ignore {
+                let haystack = subfield.value().to_lowercase();
+                self.values.iter().any(|needle| {
+                    haystack.contains_str(needle.to_lowercase())
+                })
+            } else {
+                let haystack = subfield.value();
+                self.values
+                    .iter()
+                    .any(|needle| haystack.contains_str(needle))
             }
         };
 
