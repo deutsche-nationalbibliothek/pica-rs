@@ -26,7 +26,6 @@ pub(crate) enum Command {
     Config(Config),
     Convert(Convert),
     Count(Count),
-    #[cfg(feature = "unstable")]
     Describe(Describe),
     Explode(Explode),
     Filter(Filter),

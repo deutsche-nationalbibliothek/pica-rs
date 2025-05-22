@@ -6,7 +6,6 @@ mod concat;
 mod config;
 mod convert;
 mod count;
-#[cfg(feature = "unstable")]
 mod describe;
 mod explode;
 mod filter;

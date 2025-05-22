@@ -1,12 +1,5 @@
 # describe {.unnumbered}
 
-::: {.callout-warning}
-Das Kommando `describe` ist eine `unstable`-Funktion, die sich noch in
-der Entwicklung befindet und noch nicht in den Releases enthalten ist.
-Das Kommando kann durch Aktivierung der `unstable`-Funktion beim Bauen
-aus den Quellen aktiviert werden.
-:::
-
 Mithilfe des Kommandos `describe` lässt sich die Häufigkeitsverteilung
 von Unterfeldern ermitteln. Im folgenden Bespiel werden zuerst alle
 Datensätze aus der Eingabe (`DUMP.dat.gz`) auf die Satzarten `Tpz` und
