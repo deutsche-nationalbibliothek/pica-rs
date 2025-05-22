@@ -43,6 +43,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 * [completions] — Erzeugung von Shell-Skripten zur Autovervollständigung
 * [convert] — Konvertierung zwischen verschiedenen PICA-Formaten
 * [count] — Zählen von Datensätzen, Feldern und Unterfeldern
+* [describe] — Erstellt pro Feld eine Häufigkeitsverteilung der Unterfelder
 * [explode] — Teilt Datensätze in Lokal- oder Exemplardatensätze auf
 * [filter] — Filtert Datensätze anhand eines Kriteriums
 * [frequency] — Ermitteln einer Häufigkeitsverteilung über ein oder
@@ -81,6 +82,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 [completions]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/completions.html
 [convert]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/convert.html
 [count]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/count.html
+[describe]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/describe.html
 [explode]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/explode.html
 [filter]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/filter.html
 [frequency]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/frequency.html
