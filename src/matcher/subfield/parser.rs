@@ -515,12 +515,11 @@ mod tests {
 
     #[test]
     fn test_parse_contains_matcher() {
-        use std::collections::BTreeSet;
-
         use Quantifier::*;
+        use hashbrown::HashSet;
 
         macro_rules! parse_success {
-            ($i:expr, $q:expr, $codes:expr, $rhs:expr) => {
+            ($i:expr, $q:expr, $codes:expr, $values:expr) => {
                 let matcher = parse_contains_matcher
                     .parse($i.as_bytes())
                     .unwrap();
@@ -536,61 +535,37 @@ mod tests {
                     )
                 );
 
-                assert_eq!(matcher.values, $rhs);
-            };
-        }
-
-        macro_rules! parse_success_r {
-            ($i:expr, $q:expr, $codes:expr, $values:expr) => {
-                parse_success!(
-                    $i,
-                    $q,
-                    $codes,
-                    Right(BTreeSet::from_iter(
+                assert_eq!(
+                    matcher.values,
+                    HashSet::from_iter(
                         $values
                             .iter()
                             .map(|value| value.as_bytes().to_vec())
-                    ))
+                    )
                 )
             };
         }
 
-        macro_rules! parse_success_l {
-            ($i:expr, $q:expr, $codes:expr, $value:expr) => {
-                parse_success!(
-                    $i,
-                    $q,
-                    $codes,
-                    Left($value.as_bytes().to_vec())
-                )
-            };
-        }
+        parse_success!("a =? ['foo']", Any, "a", vec!["foo"]);
+        parse_success!("a =? 'foo'", Any, "a", vec!["foo"]);
+        parse_success!("ANY a =? ['foo']", Any, "a", vec!["foo"]);
+        parse_success!("ANY a =? 'foo'", Any, "a", vec!["foo"]);
+        parse_success!("ALL a =? ['foo']", All, "a", vec!["foo"]);
+        parse_success!("ALL a =? 'foo'", All, "a", vec!["foo"]);
+        parse_success!("[a-c] =? ['foo']", Any, "abc", vec!["foo"]);
+        parse_success!("[a-c] =? 'foo'", Any, "abc", vec!["foo"]);
+        parse_success!("ANY [ab] =? ['foo']", Any, "ab", vec!["foo"]);
+        parse_success!("ANY [ab] =? 'foo'", Any, "ab", vec!["foo"]);
+        parse_success!("ALL [a-d] =? 'foo'", All, "abcd", vec!["foo"]);
 
-        parse_success_r!("a =? ['foo']", Any, "a", vec!["foo"]);
-        parse_success_l!("a =? 'foo'", Any, "a", "foo");
-
-        parse_success_r!("ANY a =? ['foo']", Any, "a", vec!["foo"]);
-        parse_success_l!("ANY a =? 'foo'", Any, "a", "foo");
-
-        parse_success_r!("ALL a =? ['foo']", All, "a", vec!["foo"]);
-        parse_success_l!("ALL a =? 'foo'", All, "a", "foo");
-
-        parse_success_r!("[a-c] =? ['foo']", Any, "abc", vec!["foo"]);
-        parse_success_l!("[a-c] =? 'foo'", Any, "abc", "foo");
-
-        parse_success_r!("ANY [ab] =? ['foo']", Any, "ab", vec!["foo"]);
-        parse_success_l!("ANY [ab] =? 'foo'", Any, "ab", "foo");
-
-        parse_success_r!(
+        parse_success!(
             "ALL [a-d] =? ['foo']",
             All,
             "abcd",
             vec!["foo"]
         );
 
-        parse_success_l!("ALL [a-d] =? 'foo'", All, "abcd", "foo");
-
-        parse_success_r!(
+        parse_success!(
             "a =? ['foo','bar']",
             Any,
             "a",
