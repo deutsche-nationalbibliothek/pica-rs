@@ -6,7 +6,6 @@ pub use error::Error;
 pub use record::{ByteRecord, StringRecord};
 
 mod error;
-#[cfg(feature = "unstable")]
 mod fmt;
 pub mod matcher;
 mod parser;

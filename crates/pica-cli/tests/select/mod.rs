@@ -6,6 +6,8 @@ use assert_fs::prelude::*;
 
 use super::prelude::*;
 
+mod format;
+
 #[test]
 fn select_csv_stdout() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
@@ -769,43 +771,6 @@ fn select_query_path() -> TestResult {
         .code(0)
         .stdout(predicates::ord::eq(
             "119232022,s|z|f\n119232022,w|k|v\n",
-        ))
-        .stderr(predicates::str::is_empty());
-
-    Ok(())
-}
-
-#[test]
-#[cfg(feature = "unstable")]
-fn select_query_format() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("select")
-        .arg("003@.0,028A{ a <$> (', ' d <*> ' (' c ')' ) }")
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq(
-            "119232022,\"Lovelace, Ada King (of)\"\n",
-        ))
-        .stderr(predicates::str::is_empty());
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("select")
-        .arg("003@.0,028R{a <$> (', ' d <*> ' (' v ')') | v in ['Vater', 'Mutter']}")
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq(
-            "119232022,\"Byron, George Gordon Byron (Vater)\"\n\
-            119232022,\"Byron, Anne Isabella Milbanke Byron (Mutter)\"\n"
         ))
         .stderr(predicates::str::is_empty());
 
