@@ -202,6 +202,8 @@ impl Select {
         let mut count = 0;
 
         let filter_set = FilterSetBuilder::new()
+            .source(self.filter_set_source)
+            .column(self.filter_set_column)
             .allow(self.allow)
             .deny(self.deny)
             .build()?;
