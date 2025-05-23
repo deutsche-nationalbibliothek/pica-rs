@@ -14,7 +14,6 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
-#[cfg(feature = "unstable")]
 pub use crate::fmt::{Format, FormatExt, FormatOptions};
 pub use crate::matcher::field::FieldMatcher;
 pub use crate::matcher::subfield::SubfieldMatcher;
