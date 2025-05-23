@@ -1,8 +1,8 @@
 use std::fs::File;
-use std::io;
-use std::path::Path;
+use std::path::PathBuf;
+use std::{io, path};
 
-use bstr::{BStr, BString};
+use bstr::{BString, ByteSlice};
 use hashbrown::HashSet;
 use pica_record::matcher::ParseMatcherError;
 use pica_record::prelude::*;
@@ -19,54 +19,115 @@ pub(crate) enum FilterSetError {
     Other(String),
 }
 
-pub(crate) struct FilterSet {
-    allow: Option<HashSet<BString>>,
-    deny: Option<HashSet<BString>>,
+#[derive(Debug, Default)]
+pub(crate) struct FilterSetBuilder {
+    column: Option<String>,
+    path: Option<Path>,
+    allow: Vec<PathBuf>,
+    deny: Vec<PathBuf>,
 }
 
-impl FilterSet {
-    pub(crate) fn new<P: AsRef<Path>>(
-        allow: Vec<P>,
-        deny: Vec<P>,
-    ) -> Result<Self, FilterSetError> {
-        let allow = read_filter_set(allow)?;
-        let deny = read_filter_set(deny)?;
-
-        Ok(Self { allow, deny })
+impl FilterSetBuilder {
+    pub(crate) fn new() -> Self {
+        Self::default()
     }
 
-    #[inline]
-    pub(crate) fn check(&self, ppn: &BStr) -> bool {
-        if let Some(ref deny) = self.deny {
-            if deny.contains(ppn) {
-                return false;
-            }
-        }
+    pub(crate) fn column(mut self, column: Option<String>) -> Self {
+        self.column = column;
+        self
+    }
 
-        if let Some(ref allow) = self.allow {
-            if !allow.contains(ppn) || allow.is_empty() {
-                return false;
-            }
-        }
+    pub(crate) fn source(mut self, path: Option<Path>) -> Self {
+        self.path = path;
+        self
+    }
 
-        true
+    pub(crate) fn allow<P>(mut self, list: Vec<P>) -> Self
+    where
+        P: AsRef<path::Path>,
+    {
+        self.allow =
+            list.iter().map(|p| PathBuf::from(p.as_ref())).collect();
+        self
+    }
+
+    pub(crate) fn deny<P>(mut self, list: Vec<P>) -> Self
+    where
+        P: AsRef<path::Path>,
+    {
+        self.deny =
+            list.iter().map(|p| PathBuf::from(p.as_ref())).collect();
+
+        self
+    }
+
+    pub(crate) fn build(self) -> Result<FilterSet, FilterSetError> {
+        let path = self.path.unwrap_or(Path::new("003@.0").unwrap());
+        let options = MatcherOptions::default();
+
+        let allow = read_filter_list(&self.allow, &self.column)?;
+        let deny = read_filter_list(&self.deny, &self.column)?;
+
+        Ok(FilterSet {
+            allow,
+            deny,
+            path,
+            options,
+        })
     }
 }
 
-fn read_filter_set<P: AsRef<Path>>(
-    paths: Vec<P>,
+fn read_filter_list(
+    paths: &[PathBuf],
+    column: &Option<String>,
 ) -> Result<Option<HashSet<BString>>, FilterSetError> {
+    if paths.is_empty() {
+        return Ok(None);
+    }
+
     let mut set = HashSet::new();
 
     for path in paths.iter() {
-        let df = read_df(path)?;
-        let column =
+        let path_str = path.to_str().unwrap_or_default();
+        let df = if path_str.ends_with("ipc") {
+            IpcReader::new(File::open(path)?)
+                .memory_mapped(None)
+                .finish()?
+        } else if path_str.ends_with("tsv")
+            || path_str.ends_with("tsv.gz")
+        {
+            CsvReadOptions::default()
+                .with_has_header(true)
+                .with_infer_schema_length(Some(0))
+                .with_parse_options(
+                    CsvParseOptions::default().with_separator(b'\t'),
+                )
+                .try_into_reader_with_file_path(Some(path.into()))?
+                .finish()?
+        } else {
+            CsvReadOptions::default()
+                .with_has_header(true)
+                .with_infer_schema_length(Some(0))
+                .try_into_reader_with_file_path(Some(path.into()))?
+                .finish()?
+        };
+
+        let column = if let Some(name) = column {
+            df.column(name).map_err(|_| {
+                FilterSetError::Other(format!(
+                    "Missing column `{}` in file {}. ",
+                    name,
+                    path.display()
+                ))
+            })?
+        } else {
             df.column("ppn").or(df.column("idn")).map_err(|_| {
                 FilterSetError::Other(format!(
                     "Missing a column `ppn` or `idn` in file {}. ",
-                    path.as_ref().display()
+                    path.display()
                 ))
-            })?;
+            })?
+        };
 
         set.extend(
             column
@@ -77,35 +138,37 @@ fn read_filter_set<P: AsRef<Path>>(
         );
     }
 
-    Ok(if !paths.is_empty() { Some(set) } else { None })
+    Ok(Some(set))
 }
 
-fn read_df<P: AsRef<Path>>(
-    path: P,
-) -> Result<DataFrame, FilterSetError> {
-    let path = path.as_ref().to_path_buf();
-    let path_str = path.to_str().unwrap_or_default();
+pub(crate) struct FilterSet {
+    allow: Option<HashSet<BString>>,
+    deny: Option<HashSet<BString>>,
+    path: Path,
+    options: MatcherOptions,
+}
 
-    if path_str.ends_with("ipc") || path_str.ends_with("arrow") {
-        Ok(IpcReader::new(File::open(path)?)
-            .memory_mapped(None)
-            .finish()?)
-    } else if path_str.ends_with("tsv") || path_str.ends_with("tsv.gz")
-    {
-        Ok(CsvReadOptions::default()
-            .with_has_header(true)
-            .with_infer_schema_length(Some(0))
-            .with_parse_options(
-                CsvParseOptions::default().with_separator(b'\t'),
-            )
-            .try_into_reader_with_file_path(Some(path))?
-            .finish()?)
-    } else {
-        Ok(CsvReadOptions::default()
-            .with_has_header(true)
-            .with_infer_schema_length(Some(0))
-            .try_into_reader_with_file_path(Some(path))?
-            .finish()?)
+impl FilterSet {
+    #[inline(always)]
+    pub(crate) fn check(&self, record: &ByteRecord) -> bool {
+        let values: Vec<_> =
+            record.path(&self.path, &self.options).collect();
+
+        if let Some(ref deny) = self.deny {
+            if values.iter().any(|v| deny.contains(v.as_bstr())) {
+                return false;
+            }
+        }
+
+        if let Some(ref allow) = self.allow {
+            if !values.iter().any(|v| allow.contains(v.as_bstr()))
+                || allow.is_empty()
+            {
+                return false;
+            }
+        }
+
+        true
     }
 }
 

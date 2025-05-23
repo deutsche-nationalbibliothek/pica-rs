@@ -110,24 +110,53 @@ pub(crate) struct Select {
     /// Ignore records which are *not* explicitly listed in one of the
     /// given allow-lists.
     ///
-    /// A allow-list must be an CSV/TSV or Apache Arrow file, whereby
-    /// a column `idn` exists. If the file extension is `.feather`,
-    /// `.arrow`, or `.ipc` the file is automatically interpreted
-    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
-    /// `.tsv.gz` is interpreted as CSV/TSV.
+    /// A allow-list must be a CSV, TSV or Apache Arrow file. By
+    /// default the column `ppn` or `idn` is used to get the values
+    /// of the allow list. These values are compared against the PPN
+    /// (003@.0) of record.
+    ///
+    /// The column name can be changed using the `--filter-set-column`
+    /// option and the path to the comparison values can be changed
+    /// with option `--filter-set-source`.
+    ///
+    /// # Note
+    ///
+    /// If the allow list is empty, all records are blocked. With more
+    /// than one allow list, the filter set is made up of all partial
+    /// lists. lists.
     #[arg(long = "allow-list", short = 'A')]
     allow: Vec<PathBuf>,
 
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
     ///
-    /// A deny-list must be an CSV/TSV or Apache Arrow file, whereby
-    /// a column `idn` exists. If the file extension is `.feather`,
-    /// `.arrow`, or `.ipc` the file is automatically interpreted
-    /// as Apache Arrow; file existions `.csv`, `.csv.gz`, `.tsv` or
-    /// `.tsv.gz` is interpreted as CSV/TSV.
+    /// A deny-list must be a CSV, TSV or Apache Arrow file. By
+    /// default the column `ppn` or `idn` is used to get the values
+    /// of the allow list. These values are compared against the PPN
+    /// (003@.0) of record.
+    ///
+    /// The column name can be changed using the `--filter-set-column`
+    /// option and the path to the comparison values can be changed
+    /// with option `--filter-set-source`.
+    ///
+    /// # Note
+    ///
+    /// With more than one allow list, the filter set is made up of all
+    /// partial lists.
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
+
+    /// Defines the column name of an allow-list or a deny-list. By
+    /// default, the column `ppn` is used or, if this is not
+    /// available, the column `idn` is used.
+    #[arg(long, value_name = "COLUMN")]
+    filter_set_column: Option<String>,
+
+    /// Defines an optional path to the comparison values of the
+    /// record. If no path is specified, a comparison with the PPN in
+    /// field 003@.0 is assumed.
+    #[arg(long, value_name = "PATH")]
+    filter_set_source: Option<Path>,
 
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
@@ -172,6 +201,13 @@ impl Select {
         let mut seen = HashSet::new();
         let mut count = 0;
 
+        let filter_set = FilterSetBuilder::new()
+            .source(self.filter_set_source)
+            .column(self.filter_set_column)
+            .allow(self.allow)
+            .deny(self.deny)
+            .build()?;
+
         let options = QueryOptions::default()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
             .case_ignore(self.ignore_case)
@@ -197,7 +233,6 @@ impl Select {
 
         let translit = translit(config.normalization.clone());
         let query = Query::new(translit(self.query))?;
-        let filter_set = FilterSet::new(self.allow, self.deny)?;
 
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
@@ -221,10 +256,8 @@ impl Select {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if let Some(ppn) = record.ppn() {
-                            if !filter_set.check(ppn) {
-                                continue;
-                            }
+                        if !filter_set.check(record) {
+                            continue;
                         }
 
                         if let Some(ref matcher) = matcher {
