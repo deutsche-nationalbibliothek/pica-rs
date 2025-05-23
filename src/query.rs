@@ -6,7 +6,6 @@ use winnow::combinator::{alt, separated};
 use winnow::{ModalResult, Parser};
 
 use crate::StringRecord;
-#[cfg(feature = "unstable")]
 use crate::fmt::{Format, FormatExt, FormatOptions, parse_format};
 use crate::matcher::MatcherOptions;
 use crate::parser::{parse_string, ws};
@@ -109,7 +108,6 @@ impl<'de> serde::Deserialize<'de> for Query {
 enum Fragment {
     Path(Box<Path>),
     Literal(BString),
-    #[cfg(feature = "unstable")]
     Format(Box<Format>),
 }
 
@@ -123,7 +121,6 @@ impl Fragment {
 
         match self {
             Literal(lit) => Outcome(vec![vec![lit.clone()]]),
-            #[cfg(feature = "unstable")]
             Format(fmt) => Outcome(
                 record
                     .format(fmt, &options.into())
@@ -213,7 +210,6 @@ fn parse_fragment(i: &mut &[u8]) -> ModalResult<Fragment> {
     alt((
         parse_path.map(|path| Fragment::Path(Box::new(path))),
         parse_string.map(|s| Fragment::Literal(s.into())),
-        #[cfg(feature = "unstable")]
         parse_format.map(|format| Fragment::Format(Box::new(format))),
     ))
     .parse_next(i)
@@ -295,7 +291,6 @@ impl From<&QueryOptions> for MatcherOptions {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl From<&QueryOptions> for FormatOptions {
     #[inline]
     fn from(options: &QueryOptions) -> Self {
@@ -682,7 +677,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unstable")]
     fn test_query_format() -> TestResult {
         let data = ada_lovelace();
         let record = ByteRecord::from_bytes(&data)?;
