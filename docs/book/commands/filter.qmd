@@ -69,6 +69,17 @@ Mengenvereinigung aus allen Listen gebildet.
 Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen
 Listen gebildet.
 
+`--filter-set-column <COLUMN>`
+: Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw.
+Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte
+aus der Spalte `ppn` bzw. `idn` ausgelesen. Die `idn`-Spalte wird nur
+versucht zu lesen, wenn keine `ppn`-Spalte vorhanden ist.
+
+`--filter-set-path <PATH>`
+: Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird.
+Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im
+Feld `003@.0` eines Datensatzes ausgegen.
+
 `-l <n>`, `--limit` `<n>`
 : Eingrenzung der Ausgabe auf die ersten `<n>` (gültigen) Datensätze.
 

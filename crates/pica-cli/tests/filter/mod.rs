@@ -11,6 +11,7 @@ mod cardinality;
 mod connectives;
 mod contains;
 mod exists;
+mod filter_set;
 mod r#in;
 mod regex;
 mod regex_set;

@@ -632,6 +632,28 @@ fn select_allow() -> TestResult {
 
     temp_dir.close().unwrap();
 
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    // FILTER SET COLUMN
+    let allow = temp_dir.child("allow.csv");
+    allow.write_str("id\n118540238\n040991970\n")?;
+
+    let assert = cmd
+        .args(["select", "-s", "002@.0"])
+        .args(["-A", allow.to_str().unwrap()])
+        .args(["--filter-set-column", "id"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Tpz\nTu1\n"))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+
     Ok(())
 }
 
