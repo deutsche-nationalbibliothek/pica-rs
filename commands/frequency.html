@@ -413,6 +413,14 @@ Es werden alle Datensätze ignoriert, die nicht explizit in der Positivliste<a h
 <dd>
 Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
 </dd>
+<dt><code>--filter-set-column &lt;COLUMN&gt;</code></dt>
+<dd>
+Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw. Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte aus der Spalte <code>ppn</code> bzw. <code>idn</code> ausgelesen. Die <code>idn</code>-Spalte wird nur versucht zu lesen, wenn keine <code>ppn</code>-Spalte vorhanden ist.
+</dd>
+<dt><code>--filter-set-path &lt;PATH&gt;</code></dt>
+<dd>
+Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird. Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im Feld <code>003@.0</code> eines Datensatzes ausgegen.
+</dd>
 <dt><code>-l &lt;n&gt;</code>, <code>--limit</code> <code>&lt;n&gt;</code></dt>
 <dd>
 Eingrenzung der Ausgabe auf die häufigsten <code>&lt;n&gt;</code> Unterfeldwerte.
