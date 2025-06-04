@@ -1,7 +1,7 @@
 [workspace]
 default-members = ["crates/pica-cli"]
 members = ["crates/pica-cli"]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
 version = "1.1.0"
