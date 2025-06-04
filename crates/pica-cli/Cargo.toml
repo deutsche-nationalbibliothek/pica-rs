@@ -15,7 +15,7 @@ performant = ["pica-record/performant", "polars/cse", "polars/performant"]
 unstable = ["pica-record/unstable"]
 
 [dependencies]
-bstr = { version = "1.11" }
+bstr = { version = "1.12" }
 clap_complete = { version = "4.5" }
 clap = { version = "4.5", features = ["derive", "cargo", "wrap_help"] }
 csv = { version = "1.3" }

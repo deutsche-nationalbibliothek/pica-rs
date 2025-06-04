@@ -28,7 +28,7 @@ serde = ["dep:serde", "bstr/serde"]
 unstable = []
 
 [dependencies]
-bstr = { version = "1.11" }
+bstr = { version = "1.12" }
 flate2 = { version = "1.0" }
 regex = { version = "1.11" }
 serde = { version = "1.0", optional = true, features = ["derive"] }
