@@ -586,7 +586,7 @@ impl<'a> SubfieldRef<'a> {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
-    pub fn value(&self) -> &SubfieldValueRef {
+    pub fn value(&self) -> &SubfieldValueRef<'_> {
         &self.1
     }
 

@@ -188,7 +188,7 @@ impl<'a> FieldRef<'a> {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
-    pub fn find<F>(&self, predicate: F) -> Option<&SubfieldRef>
+    pub fn find<F>(&self, predicate: F) -> Option<&SubfieldRef<'_>>
     where
         F: Fn(&&SubfieldRef) -> bool,
     {
