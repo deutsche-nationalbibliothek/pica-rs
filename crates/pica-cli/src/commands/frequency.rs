@@ -16,9 +16,9 @@ use crate::prelude::*;
 ///
 /// This command computes a frequency table over all subfield values of
 /// the given path expression. By default, the resulting frequency table
-/// is sorted in descending order by default (the most frequent value is
-/// printed first). If the count of two or more subfield values is
-/// equal, these lines are given in lexicographical order.
+/// is sorted in descending order (the most frequent value is printed
+/// first). If the count of two or more subfield values is equal, these
+/// lines are given in lexicographical order.
 ///
 /// The set of fields, which are included in the result of a record, can
 /// be restricted by an optional subfield filter. A subfield filter
@@ -30,6 +30,27 @@ pub(crate) struct Frequency {
     /// Skip invalid records that can't be decoded as normalized PICA+.
     #[arg(long, short)]
     skip_invalid: bool,
+
+    /// Whether to squash all values of a repeated subfield into a
+    /// single value or not. The separator can be specified by the
+    /// `--separator` option.
+    ///
+    /// Note: This option cannot be used with `--merge`.
+    #[arg(long, conflicts_with = "merge")]
+    squash: bool,
+
+    /// Whether to merge all values of a column into a single value or
+    /// not. The separator can be specified by the `--separator`
+    ///
+    /// Note: This option cannot be used with `--squash`.
+    #[arg(long, conflicts_with = "squash")]
+    merge: bool,
+
+    /// Sets the separator used for squashing of repeated subfield
+    /// values into a single value. Note that it's possible to use the
+    /// empty string as a separator.
+    #[arg(long, default_value = "|")]
+    separator: String,
 
     /// When this flag is set, comparison operations will be search
     /// case insensitive
@@ -208,9 +229,13 @@ impl Frequency {
         };
 
         let mut ftable: HashMap<Vec<BString>, u64> = HashMap::new();
+
         let options = QueryOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100f64)
-            .case_ignore(self.ignore_case);
+            .case_ignore(self.ignore_case)
+            .separator(self.separator)
+            .squash(self.squash)
+            .merge(self.merge);
 
         let matcher_options = MatcherOptions::from(&options);
         let writer: Box<dyn Write> = match self.output {
