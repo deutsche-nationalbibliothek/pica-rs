@@ -26,7 +26,7 @@ indicatif = { version = "0.17", features = ["improved_unicode"] }
 jiff = { version = "0.2" }
 pica-record = { path = "../../", features = ["serde"] }
 polars = { version = "0.48.1", features = ["ipc", "decompress", "lazy", "fmt"] }
-quick-xml = { version = "0.37" }
+quick-xml = { version = "0.38" }
 rand = { version = "0.9" }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
