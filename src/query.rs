@@ -121,12 +121,18 @@ impl Fragment {
 
         match self {
             Literal(lit) => Outcome(vec![vec![lit.clone()]]),
-            Format(fmt) => Outcome(
-                record
+            Format(fmt) => {
+                let rows = record
                     .format(fmt, &options.into())
                     .map(|e| vec![e])
-                    .collect::<Vec<Vec<_>>>(),
-            ),
+                    .collect::<Vec<Vec<_>>>();
+
+                Outcome(if rows.is_empty() {
+                    vec![vec![BString::from("")]]
+                } else {
+                    rows
+                })
+            }
             Path(path) => {
                 let fields = record
                     .fields()
@@ -697,6 +703,13 @@ mod tests {
                 "https://d-nb.info/gnd/119232022",
                 "Lovelace, Ada King"
             ]]
+        );
+
+        // https://github.com/deutsche-nationalbibliothek/pica-rs/issues/976
+        let query = Query::new("003@.0, 029A{?u a}")?;
+        assert_eq!(
+            record.query(&query, &options).into_inner(),
+            vec![vec!["119232022", ""]]
         );
 
         Ok(())
