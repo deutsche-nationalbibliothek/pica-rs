@@ -129,11 +129,11 @@ fn process_local<'a>(
             Level::Copy => {
                 acc.push(cur);
 
-                if let Some(next) = iter.peek() {
-                    if next.level() == Level::Local {
-                        push_record!(records, main, acc);
-                        acc.clear();
-                    }
+                if let Some(next) = iter.peek()
+                    && next.level() == Level::Local
+                {
+                    push_record!(records, main, acc);
+                    acc.clear();
                 }
             }
         }
@@ -168,13 +168,13 @@ fn process_copy<'a>(
 
                 copy.push(cur);
 
-                if let Some(next) = iter.peek() {
-                    if next.level() == Level::Local {
-                        push_record!(records, main, local, copy);
-                        count = None;
-                        local.clear();
-                        copy.clear();
-                    }
+                if let Some(next) = iter.peek()
+                    && next.level() == Level::Local
+                {
+                    push_record!(records, main, local, copy);
+                    count = None;
+                    local.clear();
+                    copy.clear();
                 }
             }
         }
@@ -247,11 +247,10 @@ impl Explode {
                             let mut record =
                                 ByteRecord::from_bytes(&data).unwrap();
 
-                            if let Some(ref matcher) = matcher {
-                                if !matcher.is_match(&record, &options)
-                                {
-                                    continue;
-                                }
+                            if let Some(ref matcher) = matcher
+                                && !matcher.is_match(&record, &options)
+                            {
+                                continue;
                             }
 
                             if !keep.is_empty() {

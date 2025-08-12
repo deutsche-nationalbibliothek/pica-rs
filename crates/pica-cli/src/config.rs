@@ -86,10 +86,10 @@ impl Config {
         use std::fs::{File, create_dir_all};
         use std::io::Write;
 
-        if let Some(parent) = self.path.parent() {
-            if !parent.is_dir() {
-                create_dir_all(parent)?;
-            }
+        if let Some(parent) = self.path.parent()
+            && !parent.is_dir()
+        {
+            create_dir_all(parent)?;
         }
 
         let content = toml::to_string(self).unwrap();

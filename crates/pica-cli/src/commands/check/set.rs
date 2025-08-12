@@ -48,10 +48,10 @@ impl RuleSet {
         record: &ByteRecord,
         writer: &mut csv::Writer<W>,
     ) -> Result<(), CliError> {
-        if let Some(ref matcher) = self.scope {
-            if !matcher.is_match(record, &Default::default()) {
-                return Ok(());
-            }
+        if let Some(ref matcher) = self.scope
+            && !matcher.is_match(record, &Default::default())
+        {
+            return Ok(());
         }
 
         for (_, rule) in self.rules.iter_mut() {
