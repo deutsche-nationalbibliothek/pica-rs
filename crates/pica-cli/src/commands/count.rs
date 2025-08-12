@@ -151,10 +151,10 @@ impl Count {
                     Err(e) => return Err(e.into()),
                     Ok(record) => {
                         progress.update(false);
-                        if let Some(ref matcher) = matcher {
-                            if !matcher.is_match(&record, &options) {
-                                continue;
-                            }
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(&record, &options)
+                        {
+                            continue;
                         }
 
                         records += 1;

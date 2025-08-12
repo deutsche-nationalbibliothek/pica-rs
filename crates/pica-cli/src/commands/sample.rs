@@ -195,10 +195,10 @@ impl Sample {
                             continue;
                         }
 
-                        if let Some(ref matcher) = matcher {
-                            if !matcher.is_match(record, &options) {
-                                continue;
-                            }
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(record, &options)
+                        {
+                            continue;
                         }
 
                         let mut data = Vec::<u8>::new();
