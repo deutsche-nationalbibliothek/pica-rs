@@ -25,14 +25,14 @@ hashbrown = { version = "0.15" }
 indicatif = { version = "0.18", features = ["improved_unicode"] }
 jiff = { version = "0.2" }
 pica-record = { path = "../../", features = ["serde"] }
-polars = { version = "0.49", features = ["ipc", "decompress", "lazy", "fmt"] }
+polars = { version = "0.50", features = ["ipc", "decompress", "lazy", "fmt"] }
 quick-xml = { version = "0.38" }
 rand = { version = "0.9" }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = { version = "2.0" }
 tmp_env = { version = "0.1" }
-toml = { version = "0.8", features = ["preserve_order"] }
+toml = { version = "0.9", features = ["preserve_order"] }
 unicode-normalization = { version = "0.1" }
 
 [dev-dependencies]

@@ -154,18 +154,17 @@ impl FilterSet {
         let values: Vec<_> =
             record.path(&self.path, &self.options).collect();
 
-        if let Some(ref deny) = self.deny {
-            if values.iter().any(|v| deny.contains(v.as_bstr())) {
-                return false;
-            }
+        if let Some(ref deny) = self.deny
+            && (values.iter().any(|v| deny.contains(v.as_bstr())))
+        {
+            return false;
         }
 
-        if let Some(ref allow) = self.allow {
-            if !values.iter().any(|v| allow.contains(v.as_bstr()))
-                || allow.is_empty()
-            {
-                return false;
-            }
+        if let Some(ref allow) = self.allow
+            && (!values.iter().any(|v| allow.contains(v.as_bstr()))
+                || allow.is_empty())
+        {
+            return false;
         }
 
         true
