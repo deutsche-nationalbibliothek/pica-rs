@@ -260,12 +260,11 @@ impl Select {
                             continue;
                         }
 
-                        if let Some(ref matcher) = matcher {
-                            if !matcher
+                        if let Some(ref matcher) = matcher
+                            && !matcher
                                 .is_match(record, &matcher_options)
-                            {
-                                continue;
-                            }
+                        {
+                            continue;
                         }
 
                         let outcome = record.query(&query, &options);

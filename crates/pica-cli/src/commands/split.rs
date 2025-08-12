@@ -203,14 +203,15 @@ impl Split {
                             continue;
                         }
 
-                        if let Some(ref matcher) = matcher {
-                            if !matcher.is_match(record, &options) {
-                                continue;
-                            }
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(record, &options)
+                        {
+                            continue;
                         }
 
                         if count > 0
-                            && count as u32 % self.chunk_size == 0
+                            && (count as u32)
+                                .is_multiple_of(self.chunk_size)
                         {
                             writer.finish()?;
                             chunks += 1;
