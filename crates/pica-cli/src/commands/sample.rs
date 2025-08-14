@@ -122,8 +122,8 @@ pub(crate) struct Sample {
     filter_set_source: Option<Path>,
 
     /// Number of random records
-    #[arg(value_parser = value_parser!(u16).range(1..))]
-    sample_size: u16,
+    #[arg(value_parser = value_parser!(u32).range(1..))]
+    sample_size: u32,
 
     /// Read one or more files in normalized PICA+ format. If no
     /// filenames where given or a filename is "-", data is read from
