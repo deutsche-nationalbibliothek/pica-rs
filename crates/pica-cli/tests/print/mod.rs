@@ -58,6 +58,187 @@ fn print_output() -> TestResult {
 }
 
 #[test]
+fn print_limit() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let out = temp_dir.child("out.txt");
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["print", "-l", "1"])
+        .args(["-o", out.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .arg(data_dir().join("algebra.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let actual = read_to_string(out.path())?;
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert_eq!(expected, actual);
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn print_allow() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("ppn\n119232022\n")?;
+
+    let assert = cmd
+        .args(["print", "-A", allow.to_str().unwrap()])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    // filter set column
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("xyz\n119232022\n")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["print", "-A", allow.to_str().unwrap()])
+        .args(["--filter-set-column", "xyz"])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    // filter set source
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("gnd_id\n119232022\n")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["print", "-A", allow.to_str().unwrap()])
+        .args(["--filter-set-column", "gnd_id"])
+        .args(["--filter-set-source", "007K{ 0 | a == 'gnd' }"])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn print_deny() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    let deny = temp_dir.child("DENY.csv");
+    deny.write_str("ppn\n040011569\n")?;
+
+    let assert = cmd
+        .args(["print", "-D", deny.to_str().unwrap()])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    // filter set column
+    let deny = temp_dir.child("DENY.csv");
+    deny.write_str("xyz\n040011569\n")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["print", "-D", deny.to_str().unwrap()])
+        .args(["--filter-set-column", "xyz"])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    // filter set source
+    let deny = temp_dir.child("DENY.csv");
+    deny.write_str("gnd_id\n4001156-2\n")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["print", "-D", deny.to_str().unwrap()])
+        .args(["--filter-set-column", "gnd_id"])
+        .args(["--filter-set-source", "007K{ 0 | a == 'gnd' }"])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 fn print_translit_nfc() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

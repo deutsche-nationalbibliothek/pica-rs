@@ -30,12 +30,6 @@ $ pica print -s -l 1 DUMP.dat.gz
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
-`-l <number>`, `--limit <number>`
-: Eingrenzung der Ausgabe auf die ersten _n_ Datensätze.
-
 `--translit` `<nf>`
 : Ausgabe wird in die angegebene Normalform transliteriert. Mögliche Werte:
 `nfd`, `nfkd`, `nfc` und `nfkc`.
@@ -49,6 +43,34 @@ der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig
 wird die Ausgabe in die Standardausgabe `stdout` geschrieben.
 
+### Filter-Optionen
+
+`-s`, `--skip-invalid`
+: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+
+`-l <number>`, `--limit <number>`
+: Eingrenzung der Ausgabe auf die ersten _n_ Datensätze.
+
+`-A <file>`, `--allow-list` `<file>`
+: Es werden alle Datensätze ignoriert, die nicht explizit in der
+Positivliste auftauchen. Werden mehrere Positivlisten angegeben,
+wird die Mengenvereinigung aus allen Listen gebildet.
+
+`-D <file>`, `--deny-list` `<file>`
+: Es werden alle Datensätze ignoriert, die in der Negativliste
+auftauchen. Werden mehrere Negativlisten angegeben, wird die
+Mengenvereinigung aus allen Listen gebildet.
+
+`--filter-set-column <column>`
+: Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw.
+Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte
+aus der Spalte `ppn` bzw. `idn` ausgelesen. Die `idn`-Spalte wird nur
+versucht zu lesen, wenn keine `ppn`-Spalte vorhanden ist.
+
+`--filter-set-path <path>`
+: Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird.
+Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im
+Feld `003@.0` eines Datensatzes ausgegen.
 
 ## Beispiele
 
