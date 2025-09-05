@@ -72,7 +72,7 @@ impl Print {
                     Ok(ref record) => {
                         progress.update(false);
                         if let Some(ref matcher) = matcher
-                            && !matcher.is_match(&record, &options)
+                            && !matcher.is_match(record, &options)
                         {
                             continue;
                         }
