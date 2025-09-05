@@ -89,6 +89,140 @@ fn print_limit() -> TestResult {
 }
 
 #[test]
+fn print_where() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .args(["--where", "003@.0 == \"119232022\""])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn print_where_and() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .args(["--where", "003@.0 == \"119232022\""])
+        .args(["--and", "002@.0 == \"Tp1\""])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn print_where_and_not() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .args(["--where", "003@.0 == \"119232022\""])
+        .args(["--and", "002@.0 == \"Tp1\""])
+        .args(["--not", "002@.0 == \"Tpz\""])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn print_where_or() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .args(["--where", "003@.0 == \"119232023\""])
+        .args(["--or", "003@.0 == \"119232022\""])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn print_where_not() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .args(["--where", "003@.0 == \"119232022\""])
+        .args(["--not", "002@.0 == \"Tpz\""])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    let mut expected = read_to_string(data_dir().join("ada.txt"))?;
+    if cfg!(windows) {
+        expected = expected.replace('\r', "");
+    }
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(expected))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("print")
+        .args(["--where", "003@.0 == \"119232022\""])
+        .args(["--not", "002@.0 == \"Tp1\""])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 fn print_allow() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let mut cmd = Command::cargo_bin("pica")?;

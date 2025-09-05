@@ -1,9 +1,11 @@
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
-use pica_record::path::Path;
+use clap::{Parser, Subcommand, value_parser};
+use pica_record::prelude::*;
 
 use crate::commands::*;
+use crate::error::CliError;
+use crate::prelude::{NormalizationForm, translit};
 
 /// pica is a fast command-line tool to process bibliographic records
 /// encoded in PICA+.
@@ -105,4 +107,70 @@ pub(crate) struct FilterOpts {
     /// field 003@.0 is assumed.
     #[arg(long, value_name = "PATH")]
     pub(crate) filter_set_source: Option<Path>,
+
+    /// A filter expression used for searching
+    #[arg(long = "where", value_name = "FILTER")]
+    filter: Option<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical AND-operator (conjunction)
+    ///
+    /// This option can't be combined with `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
+    and: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical OR-operator (disjunction)
+    ///
+    /// This option can't be combined with `--and` or `--not`.
+    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
+    or: Vec<String>,
+
+    /// Connects the where clause with additional expressions using the
+    /// logical NOT-operator (negation)
+    ///
+    /// This option can't be combined with `--and` or `--or`.
+    #[arg(long, requires = "filter", conflicts_with = "or")]
+    not: Vec<String>,
+
+    /// When this flag is set, comparison operations will be search
+    /// case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+          default_value = "75")]
+    strsim_threshold: u8,
+}
+
+impl FilterOpts {
+    pub(crate) fn matcher(
+        &self,
+        nf: Option<NormalizationForm>,
+    ) -> Result<Option<RecordMatcher>, CliError> {
+        Ok(if let Some(ref matcher) = self.filter {
+            Some(
+                RecordMatcherBuilder::with_transform(
+                    matcher.clone(),
+                    translit(nf),
+                )?
+                .and(self.and.clone())?
+                .or(self.or.clone())?
+                .not(self.not.clone())?
+                .build(),
+            )
+        } else {
+            None
+        })
+    }
+}
+
+impl From<&FilterOpts> for MatcherOptions {
+    fn from(opts: &FilterOpts) -> Self {
+        MatcherOptions::new()
+            .strsim_threshold(opts.strsim_threshold as f64 / 100f64)
+            .case_ignore(opts.ignore_case)
+    }
 }

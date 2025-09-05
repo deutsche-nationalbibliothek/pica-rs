@@ -40,6 +40,10 @@ impl Print {
         let mut progress = Progress::new(self.progress);
         let mut count = 0;
 
+        let matcher =
+            self.filter.matcher(config.normalization.clone())?;
+        let options = MatcherOptions::from(&self.filter);
+
         let filter_set = FilterSetBuilder::new()
             .column(self.filter.filter_set_column)
             .source(self.filter.filter_set_source)
@@ -66,12 +70,18 @@ impl Print {
                     }
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
-                        let translit = translit(self.nf.clone());
                         progress.update(false);
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(&record, &options)
+                        {
+                            continue;
+                        }
 
                         if !filter_set.check(record) {
                             continue;
                         }
+
+                        let translit = translit(self.nf.clone());
 
                         for field in record.fields() {
                             field.tag().write_to(&mut writer)?;
