@@ -49,13 +49,21 @@ pub(crate) struct FilterOpts {
     #[arg(short, long)]
     pub(crate) skip_invalid: bool,
 
-    /// Limit the result to first N records
-    ///
-    /// # Note
-    ///
-    /// A limit value `0` means no limit.
+    /// Limit the result to first N records (a limit value `0` means no
+    /// limit).
     #[arg(long, short, value_name = "N", default_value = "0")]
     pub(crate) limit: usize,
+
+    /// When this flag is set, comparison operations will be search
+    /// case insensitive
+    #[arg(long, short)]
+    ignore_case: bool,
+
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
+    #[arg(long, value_parser = value_parser!(u8).range(0..100),
+          default_value = "75")]
+    strsim_threshold: u8,
 
     /// Ignore records which are *not* explicitly listed in one of the
     /// given allow-lists.
@@ -132,17 +140,6 @@ pub(crate) struct FilterOpts {
     /// This option can't be combined with `--and` or `--or`.
     #[arg(long, requires = "filter", conflicts_with = "or")]
     not: Vec<String>,
-
-    /// When this flag is set, comparison operations will be search
-    /// case insensitive
-    #[arg(long, short)]
-    ignore_case: bool,
-
-    /// The minimum score for string similarity comparisons (0 <= score
-    /// < 100).
-    #[arg(long, value_parser = value_parser!(u8).range(0..100),
-          default_value = "75")]
-    strsim_threshold: u8,
 }
 
 impl FilterOpts {
