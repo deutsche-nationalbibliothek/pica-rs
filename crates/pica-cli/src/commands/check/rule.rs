@@ -54,6 +54,7 @@ impl Rule {
             Checks::Filter(ref c) => c.check(record),
             Checks::Isni(ref c) => c.check(record),
             Checks::Iso639(ref c) => c.check(record),
+            Checks::Jel(ref c) => c.check(record),
             Checks::Link(ref mut c) => c.check(record),
             Checks::Unicode(ref c) => c.check(record),
         };

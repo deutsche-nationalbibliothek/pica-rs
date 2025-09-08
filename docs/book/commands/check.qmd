@@ -268,6 +268,29 @@ Vergleichen von Werten ignoriert.
 : Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
 Zeichenketten mittels des `=*`-Operators.
 
+### JEL
+
+Der `jel`-Check überprüft, ob ein Unterfeld einen gültigen [JEL]-Code
+enthält.
+
+```{.toml}
+[rule.JEL]
+check = 'jel'
+description = 'Findet ungültige JEL-Codes im Feld 045Z $a.'
+link = 'https://wiki.dnb.de/display/ILTIS/5450'
+path = '045Z{ a | b == "jelc" }'
+```
+
+#### Optionen
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
+
 
 ### Unicode
 
@@ -320,4 +343,5 @@ geschrieben.
 
 [ISNI]: https://de.wikipedia.org/wiki/International_Standard_Name_Identifier
 [ISO 639-2B]: https://wiki.dnb.de/download/attachments/90411323/sprachenCodesIso6392.pdf
+[JEL]: https://papers.ssrn.com/sol3/displayjel.cfm
 [ORCID]: https://de.wikipedia.org/wiki/ORCID
