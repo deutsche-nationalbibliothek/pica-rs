@@ -4,22 +4,16 @@ use assert_fs::prelude::*;
 
 use crate::prelude::*;
 
-mod datetime;
-mod filter;
-mod isni;
-mod iso639;
-mod jel;
-mod link;
-mod unicode;
-
 #[test]
-fn skip_invalid() -> TestResult {
+fn default() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
         .write_str(
             r#"
-            scope = '003@.0 != "123456789X"'
+            [rule.R001]
+            check = 'jel'
+            path = '045Z{ a | b == "jelc" }'
         "#,
         )
         .unwrap();
@@ -28,24 +22,26 @@ fn skip_invalid() -> TestResult {
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("invalid.dat"))
-        .arg(data_dir().join("ada.dat"))
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045Z \x1fbjelc\x1fa<D63>\x1e\n",
+        )
         .assert();
 
     assert
-        .failure()
-        .code(2)
-        .stdout(predicates::str::is_empty())
-        .stderr(predicates::str::contains(
-            "parse error: invalid record on line 1",
-        ));
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n123456789X,R001,error,<D63>\n",
+        ))
+        .stderr(predicates::str::is_empty());
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
-        .args(["check", "-s"])
+        .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("invalid.dat"))
-        .arg(data_dir().join("ada.dat"))
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045Z \x1fbjelc\x1faD63\x1e\n",
+        )
         .assert();
 
     assert
@@ -59,16 +55,16 @@ fn skip_invalid() -> TestResult {
 }
 
 #[test]
-fn scope() -> TestResult {
+fn case_ignore() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
         .write_str(
             r#"
-            scope = '003@.0 != "123456789X"'
-            
-            [rule.UNICODE]
-            check = "unicode"
+            [rule.R001]
+            check = 'jel'
+            case-ignore = true
+            path = '045Z{ a | b =^ "JEL" }'
         "#,
         )
         .unwrap();
@@ -78,7 +74,24 @@ fn scope() -> TestResult {
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
         .write_stdin(
-            b"003@ \x1f0123456789X\x1e012A \x1f0\x00\x9F\x1e\n",
+            b"003@ \x1f0123456789X\x1e045Z \x1fbjelc\x1fa<D63>\x1e\n",
+        )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n123456789X,R001,error,<D63>\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045Z \x1fbJEL\x1faD63\x1e\n",
         )
         .assert();
 
