@@ -387,6 +387,14 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
 <dd>
 Eingrenzung der Ausgabe auf die ersten <em>n</em> Datensätze.
 </dd>
+<dt><code>-i</code>, <code>--ignore-case</code></dt>
+<dd>
+Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+</dd>
+<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
+</dd>
 <dt><code>-A &lt;file&gt;</code>, <code>--allow-list</code> <code>&lt;file&gt;</code></dt>
 <dd>
 Es werden alle Datensätze ignoriert, die nicht explizit in der Positivliste auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
@@ -402,6 +410,22 @@ Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw. Deny-Liste e
 <dt><code>--filter-set-path &lt;path&gt;</code></dt>
 <dd>
 Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird. Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im Feld <code>003@.0</code> eines Datensatzes ausgegen.
+</dd>
+<dt><code>--where &lt;expr&gt;</code></dt>
+<dd>
+Angabe eines Filters, um Datensätze aus der Eingabe auszuwählen.
+</dd>
+<dt><code>--and &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>&amp;&amp;</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; &lt;expr&gt;</code>.
+</dd>
+<dt><code>--or &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>||</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; || &lt;expr&gt;</code>.
+</dd>
+<dt><code>--not &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; !(&lt;expr&gt;)</code>.
 </dd>
 </dl>
 </section>
