@@ -520,17 +520,39 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 </dl>
 </section>
 </section>
+<section id="jel" class="level3">
+<h3 class="anchored" data-anchor-id="jel">JEL</h3>
+<p>Der <code>jel</code>-Check überprüft, ob ein Unterfeld einen gültigen <a href="https://papers.ssrn.com/sol3/displayjel.cfm">JEL</a>-Code enthält.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.JEL]</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">jel</span><span class="st">'</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">'</span><span class="vs">Findet ungültige JEL-Codes im Feld 045Z $a.</span><span class="st">'</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">'</span><span class="vs">https://wiki.dnb.de/display/ILTIS/5450</span><span class="st">'</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">045Z{ a | b == "jelc" }</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="optionen-5" class="level4">
+<h4 class="anchored" data-anchor-id="optionen-5">Optionen</h4>
+<dl>
+<dt><code>case-ignore = true | false</code></dt>
+<dd>
+Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim Vergleichen von Werten ignoriert.
+</dd>
+<dt><code>strsim-threshold = &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels des <code>=*</code>-Operators.
+</dd>
+</dl>
+</section>
+</section>
 <section id="unicode" class="level3">
 <h3 class="anchored" data-anchor-id="unicode">Unicode</h3>
 <p>Der <code>unicode</code>-Check überprüft, ob die Werte aller Unterfelder eines Datensatzes gültige Unicode-Zeichenketten sind.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE1]</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE1]</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Darüber hinaus kann überprüft werden, ob diese Werte in einer der Unicode-Normalformen <code>nfc</code>, <code>nfkc</code>, <code>nfd</code> oder <code>nfkd</code> vorliegen. Alle nicht konformen Werte werden in der <code>message</code>-Spalte der Ausgabedatei aufgeführt.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE2]</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<section id="optionen-5" class="level4">
-<h4 class="anchored" data-anchor-id="optionen-5">Optionen</h4>
+<div class="sourceCode" id="cb15"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE2]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="optionen-6" class="level4">
+<h4 class="anchored" data-anchor-id="optionen-6">Optionen</h4>
 <dl>
 <dt><code>normalization = &lt;value&gt;</code></dt>
 <dd>
@@ -540,8 +562,8 @@ Auswahl einer Unicode-Normalform, auf die zusätzlich überprüft werden soll. E
 </section>
 </section>
 </section>
-<section id="optionen-6" class="level2">
-<h2 class="anchored" data-anchor-id="optionen-6">Optionen</h2>
+<section id="optionen-7" class="level2">
+<h2 class="anchored" data-anchor-id="optionen-7">Optionen</h2>
 <dl>
 <dt><code>-s</code>, <code>--skip-invalid</code></dt>
 <dd>
