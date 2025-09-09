@@ -5,7 +5,7 @@ use assert_fs::prelude::*;
 use crate::prelude::*;
 
 #[test]
-fn default() -> TestResult {
+fn check_jel_default() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
@@ -55,7 +55,7 @@ fn default() -> TestResult {
 }
 
 #[test]
-fn case_ignore() -> TestResult {
+fn check_jel_case_ignore() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
