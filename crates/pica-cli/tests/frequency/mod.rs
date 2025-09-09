@@ -157,10 +157,10 @@ fn frequency_reverse() -> TestResult {
 }
 
 #[test]
-fn frequency_limit() -> TestResult {
+fn frequency_num() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
-        .args(["frequency", "-s", "-l", "2", "002@.0"])
+        .args(["frequency", "-s", "-n", "2", "002@.0"])
         .arg(data_dir().join("DUMP.dat.gz"))
         .assert();
 
@@ -168,6 +168,23 @@ fn frequency_limit() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq("Tu1,6\nTsz,2\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn frequency_limit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["frequency", "-l", "1", "002@.0"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Tpz,1\n"))
         .stderr(predicates::str::is_empty());
 
     Ok(())

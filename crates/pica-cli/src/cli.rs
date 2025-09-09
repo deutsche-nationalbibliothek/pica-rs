@@ -118,27 +118,27 @@ pub(crate) struct FilterOpts {
 
     /// A filter expression used for searching
     #[arg(long = "where", value_name = "FILTER")]
-    filter: Option<String>,
+    r#where: Option<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
     /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
+    #[arg(long, requires = "r#where", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical OR-operator (disjunction)
     ///
     /// This option can't be combined with `--and` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
+    #[arg(long, requires = "r#where", conflicts_with_all = ["and", "not"])]
     or: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
     /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
+    #[arg(long, requires = "where", conflicts_with = "or")]
     not: Vec<String>,
 }
 
@@ -148,7 +148,7 @@ impl FilterOpts {
         nf: Option<NormalizationForm>,
         predicate: Option<String>,
     ) -> Result<Option<RecordMatcher>, CliError> {
-        let filter = predicate.or(self.filter.clone());
+        let filter = predicate.or(self.r#where.clone());
 
         Ok(if let Some(ref matcher) = filter {
             Some(

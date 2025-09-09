@@ -57,13 +57,12 @@ pub(crate) struct Frequency {
 
     /// Limit result to the N most frequent subfield values.
     #[arg(
-        long,
         short,
         value_name = "N",
         hide_default_value = true,
         default_value = "0"
     )]
-    limit: usize,
+    num: usize,
 
     /// Ignore rows with a frequency < VALUE.
     #[arg(
@@ -146,10 +145,10 @@ impl Frequency {
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
 
-        for filename in self.filenames {
-            let mut reader =
-                ReaderBuilder::new().from_path(filename)?;
+        let mut count = 0;
 
+        'outer: for path in self.filenames {
+            let mut reader = ReaderBuilder::new().from_path(path)?;
             while let Some(result) = reader.next_byte_record() {
                 match result {
                     Err(e) if e.skip_parse_err(skip_invalid) => {
@@ -187,6 +186,13 @@ impl Frequency {
                                 *ftable.entry(key).or_insert(0) += 1;
                             }
                         }
+
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
+                        }
                     }
                 }
             }
@@ -213,7 +219,7 @@ impl Frequency {
 
         let translit = crate::translit::translit(self.nf.clone());
         for (i, (values, freq)) in ftable_sorted.iter().enumerate() {
-            if self.limit > 0 && i >= self.limit {
+            if self.num > 0 && i >= self.num {
                 break;
             }
 
