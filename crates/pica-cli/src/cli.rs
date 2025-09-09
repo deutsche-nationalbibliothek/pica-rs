@@ -57,13 +57,13 @@ pub(crate) struct FilterOpts {
     /// When this flag is set, comparison operations will be search
     /// case insensitive
     #[arg(long, short)]
-    ignore_case: bool,
+    pub(crate) ignore_case: bool,
 
     /// The minimum score for string similarity comparisons (0 <= score
     /// < 100).
     #[arg(long, value_parser = value_parser!(u8).range(0..100),
           default_value = "75")]
-    strsim_threshold: u8,
+    pub(crate) strsim_threshold: u8,
 
     /// Ignore records which are *not* explicitly listed in one of the
     /// given allow-lists.
@@ -146,8 +146,11 @@ impl FilterOpts {
     pub(crate) fn matcher(
         &self,
         nf: Option<NormalizationForm>,
+        predicate: Option<String>,
     ) -> Result<Option<RecordMatcher>, CliError> {
-        Ok(if let Some(ref matcher) = self.filter {
+        let filter = predicate.or(self.filter.clone());
+
+        Ok(if let Some(ref matcher) = filter {
             Some(
                 RecordMatcherBuilder::with_transform(
                     matcher.clone(),

@@ -9,6 +9,8 @@ use pica_record::prelude::*;
 use polars::prelude::*;
 use thiserror::Error;
 
+use crate::cli::FilterOpts;
+
 #[derive(Debug, Error)]
 pub(crate) enum FilterSetError {
     #[error(transparent)]
@@ -32,17 +34,20 @@ impl FilterSetBuilder {
         Self::default()
     }
 
-    pub(crate) fn column(mut self, column: Option<String>) -> Self {
-        self.column = column;
+    pub(crate) fn column<S>(mut self, column: Option<S>) -> Self
+    where
+        S: AsRef<str>,
+    {
+        self.column = column.map(|s| s.as_ref().to_owned());
         self
     }
 
-    pub(crate) fn source(mut self, path: Option<Path>) -> Self {
-        self.path = path;
+    pub(crate) fn source(mut self, path: Option<&Path>) -> Self {
+        self.path = path.map(|p| p.clone());
         self
     }
 
-    pub(crate) fn allow<P>(mut self, list: Vec<P>) -> Self
+    pub(crate) fn allow<P>(mut self, list: &Vec<P>) -> Self
     where
         P: AsRef<path::Path>,
     {
@@ -51,7 +56,7 @@ impl FilterSetBuilder {
         self
     }
 
-    pub(crate) fn deny<P>(mut self, list: Vec<P>) -> Self
+    pub(crate) fn deny<P>(mut self, list: &Vec<P>) -> Self
     where
         P: AsRef<path::Path>,
     {
@@ -74,6 +79,19 @@ impl FilterSetBuilder {
             path,
             options,
         })
+    }
+}
+
+impl TryFrom<&FilterOpts> for FilterSet {
+    type Error = FilterSetError;
+
+    fn try_from(opts: &FilterOpts) -> Result<Self, Self::Error> {
+        FilterSetBuilder::new()
+            .source(opts.filter_set_source.as_ref())
+            .column(opts.filter_set_column.as_ref())
+            .allow(&opts.allow)
+            .deny(&opts.deny)
+            .build()
     }
 }
 
