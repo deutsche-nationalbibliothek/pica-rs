@@ -40,9 +40,6 @@ $ pica select -s '003@.0, 004B.a' DUMP.dat.gz
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
 `--squash`
 : Wenn das Flag gesetzt ist, werden wiederholte Unterfelder als eine
 Zeichenkette zusammengefasst. Die einzelnen Werte werden durch einen Separator
@@ -64,51 +61,6 @@ einen nicht-leeren Wert enthält.
 `--unique`, `-u`
 : Mehrfach vorkommende Zeilen werden ignoriert.
 
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
-mittels `=*`.
-
-`-A <file>`, `--allow-list` `<file>`
-: Es werden alle Datensätze ignoriert, die nicht explizit in der
-Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben,
-wird die Mengenvereinigung aus allen Listen gebildet.
-
-`-D <file>`, `--deny-list` `<file>`
-: Es werden alle Datensätze ignoriert, die in der Negativliste
-auftauchen. Werden mehrere Negativlisten angegeben, wird die
-Mengenvereinigung aus allen Listen gebildet.
-
-`--filter-set-column <COLUMN>`
-: Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw.
-Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte
-aus der Spalte `ppn` bzw. `idn` ausgelesen. Die `idn`-Spalte wird nur
-versucht zu lesen, wenn keine `ppn`-Spalte vorhanden ist.
-
-`--filter-set-path <PATH>`
-: Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird.
-Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im
-Feld `003@.0` eines Datensatzes ausgegen.
-
-`--where <filter>`
-: Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
-
-`--and <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> && <expr>`.
-
-`--or <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> || <expr>`.
-
-`--not <expr>`
-: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
-`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
-
 `-H <header>`, `--header` `<header>`
 : Kopfzeile, die den Ergebnissen vorangestellt wird; Spaltennamen werde mit
 einem Komma separiert.
@@ -125,9 +77,6 @@ Ausgabe erfolgt im TSV-Format.
 invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben
 der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 
-`--limit <n>`
-: Limitiert die Aufbereitung auf die ersten `<n>` Datensätze.
-
 `--append`
 : Ist die Option gesetzt, wird die Ausgabe an das Ende der Ausgabedatei
 geschrieben, anstatt diese zu überschreiben.
@@ -135,6 +84,9 @@ geschrieben, anstatt diese zu überschreiben.
 `-o`, `--output`
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig
 wird die Ausgabe in die Standardausgabe `stdout` geschrieben.
+
+
+{{< include /_partials/filter-opts.qmd >}}
 
 
 [Kartesische Produkt]: https://de.wikipedia.org/wiki/Kartesisches_Produkt

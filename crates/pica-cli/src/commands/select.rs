@@ -80,7 +80,7 @@ pub(crate) struct Select {
     filenames: Vec<OsString>,
 
     #[command(flatten, next_help_heading = "Filter options")]
-    pub(crate) filter_opts: FilterOpts,
+    filter_opts: FilterOpts,
 }
 
 fn writer(
