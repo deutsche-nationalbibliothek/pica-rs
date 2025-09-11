@@ -1,7 +1,7 @@
 use std::ffi::OsString;
 use std::process::ExitCode;
 
-use clap::{Parser, value_parser};
+use clap::Parser;
 use pica_record::prelude::*;
 use pica_record::primitives::{FieldRef, Level};
 
@@ -10,55 +10,9 @@ use crate::prelude::*;
 /// Split records at main, local or copy level.
 #[derive(Parser, Debug)]
 pub(crate) struct Explode {
-    /// Whether to skip invalid records or not.
-    #[arg(short, long)]
-    skip_invalid: bool,
-
     /// Compress each partition in gzip format
     #[arg(long, short)]
     gzip: bool,
-
-    /// Limit the result to first N records
-    ///
-    /// Note: A limit value `0` means no limit.
-    #[arg(long, short, value_name = "N", default_value = "0")]
-    limit: usize,
-
-    /// A filter expression used for searching
-    #[arg(long = "where")]
-    filter: Option<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical AND-operator (conjunction)
-    ///
-    /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    and: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical OR-operator (disjunction)
-    ///
-    /// This option can't be combined with `--and` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
-    or: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical NOT-operator (negation)
-    ///
-    /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    not: Vec<String>,
-
-    /// When this flag is provided, comparison operations will be
-    /// search case insensitive
-    #[arg(long, short)]
-    ignore_case: bool,
-
-    /// The minimum score for string similarity comparisons
-    /// (range: 0.0..1.0)
-    #[arg(long, value_parser = value_parser!(u8).range(0..100),
-        default_value = "75")]
-    strsim_threshold: u8,
 
     /// Keep only fields specified by a list of predicates.
     #[arg(long, short)]
@@ -84,6 +38,9 @@ pub(crate) struct Explode {
     /// standard input (stdin)
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    pub(crate) filter_opts: FilterOpts,
 }
 
 macro_rules! push_record {
@@ -186,9 +143,9 @@ fn process_copy<'a>(
 
 impl Explode {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
-        let translit = translit(config.normalization.clone());
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
 
@@ -199,23 +156,11 @@ impl Explode {
             .gzip(self.gzip)
             .from_path_or_stdout(self.output)?;
 
-        let options = MatcherOptions::new()
-            .strsim_threshold(self.strsim_threshold as f64 / 100.0)
-            .case_ignore(self.ignore_case);
-
-        let matcher = if let Some(matcher) = self.filter {
-            Some(
-                RecordMatcherBuilder::with_transform(
-                    matcher, translit,
-                )?
-                .and(self.and)?
-                .not(self.not)?
-                .or(self.or)?
-                .build(),
-            )
-        } else {
-            None
-        };
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let options = MatcherOptions::from(&self.filter_opts);
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
 
         let process = match self.level {
             Level::Main => process_main,
@@ -246,6 +191,10 @@ impl Explode {
 
                             let mut record =
                                 ByteRecord::from_bytes(&data).unwrap();
+
+                            if !filter_set.check(&record) {
+                                continue;
+                            }
 
                             if let Some(ref matcher) = matcher
                                 && !matcher.is_match(&record, &options)
@@ -288,7 +237,9 @@ impl Explode {
                             writer.write_byte_record(&record)?;
                             count += 1;
 
-                            if self.limit > 0 && count >= self.limit {
+                            if self.filter_opts.limit > 0
+                                && count >= self.filter_opts.limit
+                            {
                                 break 'outer;
                             }
                         }

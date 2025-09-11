@@ -7,7 +7,7 @@ use assert_fs::prelude::*;
 use crate::prelude::*;
 
 #[test]
-fn write_stdout() -> TestResult {
+fn describe_write_stdout() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .args(["describe", "-s", "-k", "050C"])
@@ -24,7 +24,7 @@ fn write_stdout() -> TestResult {
 }
 
 #[test]
-fn write_csv() -> TestResult {
+fn describe_write_csv() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -47,7 +47,7 @@ fn write_csv() -> TestResult {
 }
 
 #[test]
-fn write_tsv() -> TestResult {
+fn describe_write_tsv() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.tsv");
 
@@ -74,7 +74,7 @@ fn write_tsv() -> TestResult {
 }
 
 #[test]
-fn skip_invalid() -> TestResult {
+fn describe_skip_invalid() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .arg("describe")
@@ -93,7 +93,7 @@ fn skip_invalid() -> TestResult {
 }
 
 #[test]
-fn keep() -> TestResult {
+fn describe_keep() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -116,7 +116,7 @@ fn keep() -> TestResult {
 }
 
 #[test]
-fn discard() -> TestResult {
+fn describe_discard() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -139,7 +139,7 @@ fn discard() -> TestResult {
 }
 
 #[test]
-fn allow() -> TestResult {
+fn describe_allow() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -170,7 +170,7 @@ fn allow() -> TestResult {
 }
 
 #[test]
-fn deny() -> TestResult {
+fn describe_deny() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -201,7 +201,72 @@ fn deny() -> TestResult {
 }
 
 #[test]
-fn r#where() -> TestResult {
+fn describe_filter_set_column() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let out = temp_dir.child("out.csv");
+
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("id\n118540238\n")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["describe", "-s", "-k", "007N"])
+        .args(["-A", allow.to_str().unwrap()])
+        .args(["--filter-set-column", "id"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", out.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert_eq!(
+        "field,0,a,v\n007N,15,15,6\n",
+        read_to_string(out.path())?
+    );
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn describe_filter_set_source() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let out = temp_dir.child("out.csv");
+
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("gnd_id\n118540238\n")?;
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["describe", "-s", "-k", "007N"])
+        .args(["-A", allow.to_str().unwrap()])
+        .args(["--filter-set-source", "003@.0"])
+        .args(["--filter-set-column", "gnd_id"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", out.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert_eq!(
+        "field,0,a,v\n007N,15,15,6\n",
+        read_to_string(out.path())?
+    );
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn describe_where() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -229,7 +294,7 @@ fn r#where() -> TestResult {
 }
 
 #[test]
-fn where_and() -> TestResult {
+fn describe_where_and() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -258,7 +323,7 @@ fn where_and() -> TestResult {
 }
 
 #[test]
-fn where_or() -> TestResult {
+fn describe_where_or() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -287,7 +352,7 @@ fn where_or() -> TestResult {
 }
 
 #[test]
-fn where_not() -> TestResult {
+fn describe_where_not() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 

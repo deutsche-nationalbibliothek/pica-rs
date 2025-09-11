@@ -86,16 +86,6 @@ $ pica print copy.dat
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
-mittels `=*`.
-
 `-k <expr>`, `--keep <expr>`
 Es werden nur die Felder eines Datensatzes beibehalten, die in der Liste
 aufgeführt werden.
@@ -103,26 +93,6 @@ aufgeführt werden.
 `-d`, `--discard`
 : Es werden die Felder eines Datensatzes verworfen, die in der Liste aufgeführt
 werden.
-
-`-l <n>`, `--limit` `<n>`
-: Eingrenzung der Ausgabe auf die ersten `<n>` (gültigen) Datensätze.
-
-`--where <filter>`
-: Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
-
-`--and <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> && <expr>`.
-
-`--or <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> || <expr>`.
-
-`--not <expr>`
-: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
-`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
 
 `-g`, `--gzip`
 : Komprimieren der Ausgabe im [Gzip]-Format.
@@ -137,6 +107,8 @@ der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 wird die Ausgabe in die Standardausgabe `stdout` geschrieben. Endet der
 Dateiname mit dem Suffix `.gz`, wird die Ausgabe automatisch im [Gzip]-Format
 komprimiert.
+
+{{< include /_partials/filter-opts.qmd >}}
 
 
 ## Beispiele

@@ -31,16 +31,6 @@ out
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
-mittels `=*`.
-
 `-g`, `--gzip`
 : Komprimieren der Ausgabe im [Gzip]-Format.
 
@@ -55,6 +45,9 @@ invaliden Datensätze anzeigt.
 `-o <path>`, `--outdir <path>`
 : Angabe, in welches Verzeichnis die Partitionen geschrieben werden sollen.
 Standardmäßig wird das aktuelle Verzeichnis verwendet.
+
+
+{{< include /_partials/filter-opts.qmd >}}
 
 
 ## Beispiele

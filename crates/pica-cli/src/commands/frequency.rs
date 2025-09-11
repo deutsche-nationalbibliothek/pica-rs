@@ -2,11 +2,10 @@ use std::cmp::Ordering;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{self, Write};
-use std::path::PathBuf;
 use std::process::ExitCode;
 
 use bstr::BString;
-use clap::{Parser, value_parser};
+use clap::Parser;
 use hashbrown::{HashMap, HashSet};
 use pica_record::prelude::*;
 
@@ -27,10 +26,6 @@ use crate::prelude::*;
 #[derive(Parser, Debug)]
 #[clap(visible_alias = "freq")]
 pub(crate) struct Frequency {
-    /// Skip invalid records that can't be decoded as normalized PICA+.
-    #[arg(long, short)]
-    skip_invalid: bool,
-
     /// Whether to squash all values of a repeated subfield into a
     /// single value or not. The separator can be specified by the
     /// `--separator` option.
@@ -52,17 +47,6 @@ pub(crate) struct Frequency {
     #[arg(long, default_value = "|")]
     separator: String,
 
-    /// When this flag is set, comparison operations will be search
-    /// case insensitive
-    #[arg(long, short)]
-    ignore_case: bool,
-
-    /// The minimum score for string similarity comparisons (0 <= score
-    /// < 100).
-    #[arg(long, value_parser = value_parser!(u8).range(0..100),
-          default_value = "75")]
-    strsim_threshold: u8,
-
     /// Skip duplicate rows (of a record).
     #[arg(long, short)]
     unique: bool,
@@ -71,66 +55,14 @@ pub(crate) struct Frequency {
     #[arg(long, short)]
     reverse: bool,
 
-    /// Ignore records which are *not* explicitly listed in one of the
-    /// given allow-lists.
-    ///
-    /// An allow-list must be a CSV, TSV or Apache Arrow file. By
-    /// default the column `ppn` or `idn` is used to get the values
-    /// of the allow list. These values are compared against the PPN
-    /// (003@.0) of record.
-    ///
-    /// The column name can be changed using the `--filter-set-column`
-    /// option and the path to the comparison values can be changed
-    /// with option `--filter-set-source`.
-    ///
-    /// # Note
-    ///
-    /// If the allow list is empty, all records are blocked. With more
-    /// than one allow list, the filter set is made up of all partial
-    /// lists. lists.
-    #[arg(long = "allow-list", short = 'A')]
-    allow: Vec<PathBuf>,
-
-    /// Ignore records which are explicitly listed in one of the
-    /// given deny-lists.
-    ///
-    /// A deny-list must be a CSV, TSV or Apache Arrow file. By
-    /// default the column `ppn` or `idn` is used to get the values
-    /// of the allow list. These values are compared against the PPN
-    /// (003@.0) of record.
-    ///
-    /// The column name can be changed using the `--filter-set-column`
-    /// option and the path to the comparison values can be changed
-    /// with option `--filter-set-source`.
-    ///
-    /// # Note
-    ///
-    /// With more than one allow list, the filter set is made up of all
-    /// partial lists.
-    #[arg(long = "deny-list", short = 'D')]
-    deny: Vec<PathBuf>,
-
-    /// Defines the column name of an allow-lit or a deny-list. By
-    /// default, the column `ppn` is used or, if this is not
-    /// available, the column `idn` is used.
-    #[arg(long, value_name = "COLUMN")]
-    filter_set_column: Option<String>,
-
-    /// Defines an optional path to the comparison values of the
-    /// record. If no path is specified, a comparison with the PPN in
-    /// field 003@.0 is assumed.
-    #[arg(long, value_name = "PATH")]
-    filter_set_source: Option<Path>,
-
     /// Limit result to the N most frequent subfield values.
     #[arg(
-        long,
         short,
         value_name = "N",
         hide_default_value = true,
         default_value = "0"
     )]
-    limit: usize,
+    num: usize,
 
     /// Ignore rows with a frequency < VALUE.
     #[arg(
@@ -140,31 +72,6 @@ pub(crate) struct Frequency {
         hide_default_value = true
     )]
     threshold: u64,
-
-    /// A filter expression used for searching
-    #[arg(long = "where")]
-    filter: Option<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical AND-operator (conjunction)
-    ///
-    /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    and: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical OR-operator (disjunction)
-    ///
-    /// This option can't be combined with `--and` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
-    or: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical NOT-operator (negation)
-    ///
-    /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    not: Vec<String>,
 
     /// Comma-separated list of column names.
     #[arg(long, short = 'H')]
@@ -196,43 +103,34 @@ pub(crate) struct Frequency {
     /// (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    pub(crate) filter_opts: FilterOpts,
 }
 
 impl Frequency {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
         let mut seen = HashSet::new();
 
-        let filter_set = FilterSetBuilder::new()
-            .source(self.filter_set_source)
-            .column(self.filter_set_column)
-            .allow(self.allow)
-            .deny(self.deny)
-            .build()?;
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
 
         let translit =
             crate::translit::translit(config.normalization.clone());
         let query = Query::new(translit(self.query))?;
-        let matcher = if let Some(matcher) = self.filter {
-            Some(
-                RecordMatcherBuilder::with_transform(
-                    matcher, translit,
-                )?
-                .and(self.and)?
-                .not(self.not)?
-                .or(self.or)?
-                .build(),
-            )
-        } else {
-            None
-        };
 
         let mut ftable: HashMap<Vec<BString>, u64> = HashMap::new();
 
         let options = QueryOptions::new()
-            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
-            .case_ignore(self.ignore_case)
+            .strsim_threshold(
+                self.filter_opts.strsim_threshold as f64 / 100f64,
+            )
+            .case_ignore(self.filter_opts.ignore_case)
             .separator(self.separator)
             .squash(self.squash)
             .merge(self.merge);
@@ -247,10 +145,10 @@ impl Frequency {
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
 
-        for filename in self.filenames {
-            let mut reader =
-                ReaderBuilder::new().from_path(filename)?;
+        let mut count = 0;
 
+        'outer: for path in self.filenames {
+            let mut reader = ReaderBuilder::new().from_path(path)?;
             while let Some(result) = reader.next_byte_record() {
                 match result {
                     Err(e) if e.skip_parse_err(skip_invalid) => {
@@ -288,6 +186,13 @@ impl Frequency {
                                 *ftable.entry(key).or_insert(0) += 1;
                             }
                         }
+
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
+                        }
                     }
                 }
             }
@@ -314,7 +219,7 @@ impl Frequency {
 
         let translit = crate::translit::translit(self.nf.clone());
         for (i, (values, freq)) in ftable_sorted.iter().enumerate() {
-            if self.limit > 0 && i >= self.limit {
+            if self.num > 0 && i >= self.num {
                 break;
             }
 

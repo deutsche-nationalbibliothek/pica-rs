@@ -19,65 +19,17 @@ Ts1,1
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
-mittels `=*`.
-
 `--unique`, `-u`
 : Doppelte Werte eines Datensatzes werden ignoriert.
 
 `--reverse`
 : Ergebnisse werden in aufsteigender Reihenfolge ausgegeben.
 
-`-A <file>`, `--allow-list` `<file>`
-: Es werden alle Datensätze ignoriert, die nicht explizit in der
-Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben, wird die
-Mengenvereinigung aus allen Listen gebildet.
-
-`-D <file>`, `--deny-list` `<file>`
-: Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen.
-Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen
-Listen gebildet.
-
-`--filter-set-column <COLUMN>`
-: Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw.
-Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte
-aus der Spalte `ppn` bzw. `idn` ausgelesen. Die `idn`-Spalte wird nur
-versucht zu lesen, wenn keine `ppn`-Spalte vorhanden ist.
-
-`--filter-set-path <PATH>`
-: Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird.
-Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im
-Feld `003@.0` eines Datensatzes ausgegen.
-
-`-l <n>`, `--limit` `<n>`
+`-n <n>`
 : Eingrenzung der Ausgabe auf die häufigsten `<n>` Unterfeldwerte.
 
 `-t <n>`, `--threshold` `<n>`
 : Zeilen mit einer Häufigkeit $<$ `<n>` ignorieren.
-
-`--where <filter>`
-: Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
-
-`--and <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> && <expr>`.
-
-`--or <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> || <expr>`.
-
-`--not <expr>`
-: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck
-`<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
 
 `-H <header>`, `--header` `<header>`
 Kopfzeile, die den Ergebnissen vorangestellt wird; Spaltennamen werde mit einem
@@ -98,6 +50,8 @@ der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 `-o`, `--output`
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig
 wird die Ausgabe in die Standardausgabe `stdout` geschrieben.
+
+{{< include /_partials/filter-opts.qmd >}}
 
 
 ## Beispiele

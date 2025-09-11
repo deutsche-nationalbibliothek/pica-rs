@@ -20,21 +20,10 @@ $ pica describe -s -k '0[46].R' tests/data/DUMP.dat.gz --where '002@.0 in ["Tpz"
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden
-konnten.
-
 `-p`, `--progress`
 : Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen
 sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert
 das Schreiben der Datensätze in eine Datei mittels `-o` bzw. `--output`.
-
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
-Zeichenketten mittels `=*`.
 
 `-k`, `--keep`
 : Es werden nur die Felder eines Datensatzes beibehalten, die in der
@@ -44,44 +33,6 @@ Liste aufgeführt werden.
 : Es werden die Felder eines Datensatzes verworfen, die in der Liste
 aufgeführt werden.
 
-`-A <filename>`, `--allow-list` `<filename>`
-: Es werden alle Datensätze ignoriert, die nicht explizit in der
-Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben,
-wird die Mengenvereinigung aus allen Listen gebildet.
-
-`-D <filename>`, `--deny-list` `<filename>`
-: Es werden alle Datensätze ignoriert, die in der Negativliste
-auftauchen. Werden mehrere Negativlisten angegeben, wird die
-Mengenvereinigung aus allen Listen gebildet.
-
-`--filter-set-column <COLUMN>`
-: Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw.
-Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte
-aus der Spalte `ppn` bzw. `idn` ausgelesen. Die `idn`-Spalte wird nur
-versucht zu lesen, wenn keine `ppn`-Spalte vorhanden ist.
-
-`--filter-set-path <PATH>`
-: Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird.
-Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im
-Feld `003@.0` eines Datensatzes ausgegen.
-
-`--where <filter>`
-: Angabe eines Filters, der auf die erzeugten Datensätze angewandt wird.
-
-`--and <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum
-Ausdruck `<filter> && <expr>`.
-
-`--or <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-  `||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum
-  Ausdruck `<filter> || <expr>`.
-
-`--not <expr>`
-: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche
-Filterausdruck `<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
-
 `-o <filename>`, `--output <filename>`
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll.
 Standardmäßig wird die Ausgabe in die Standardausgabe `stdout`
@@ -89,3 +40,6 @@ geschrieben. Endet die Datei mit der Endung `.csv` bzw. `.tsv` oder
 ist die Option `--csv` bzw. `--tsv` gesetzt, erfolgt die Ausgabe im
 CSV- bzw. TSV-Format. Standardmäßig erfolgt die Ausgabe im _Apache
 Arrow_-Format.
+
+
+{{< include /_partials/filter-opts.qmd >}}

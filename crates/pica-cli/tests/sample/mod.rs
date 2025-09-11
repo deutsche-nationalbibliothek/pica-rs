@@ -115,6 +115,40 @@ fn sample_skip_invalid() -> TestResult {
 }
 
 #[test]
+fn sample_limit() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+
+    let samples = temp_dir.child("samples.dat");
+
+    let assert = cmd
+        .args(["sample", "-s", "-l", "5", "10"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", samples.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["count", "--records"])
+        .arg(samples.to_str().unwrap())
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("5\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 fn sample_seed() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");

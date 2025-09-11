@@ -7,27 +7,33 @@ use clap::{Parser, value_parser};
 use pica_record::prelude::*;
 
 use crate::prelude::*;
+use crate::utils::FilterSetBuilder;
 
 /// Filter records by whether the given filter expression matches
 #[derive(Parser, Debug)]
 pub(crate) struct Filter {
-    /// Whether to skip invalid records or not.
+    /// Skip invalid records that can't be decoded
     #[arg(short, long)]
     skip_invalid: bool,
+
+    /// Limit the result to first N records (a limit value `0` means no
+    /// limit).
+    #[arg(long, short, value_name = "N", default_value = "0")]
+    limit: usize,
 
     /// Filter only records that did not match
     #[arg(long, short = 'v')]
     invert_match: bool,
 
-    /// When this flag is provided, comparison operations will be
-    /// search case insensitive
+    /// When this flag is set, comparison operations will be search
+    /// case insensitive
     #[arg(long, short)]
     ignore_case: bool,
 
-    /// The minimum score for string similarity comparisons
-    /// (range: 0.0..1.0)
+    /// The minimum score for string similarity comparisons (0 <= score
+    /// < 100).
     #[arg(long, value_parser = value_parser!(u8).range(0..100),
-        default_value = "75")]
+          default_value = "75")]
     strsim_threshold: u8,
 
     /// Keep only fields specified by a list of predicates.
@@ -79,7 +85,7 @@ pub(crate) struct Filter {
     ///
     /// # Note
     ///
-    /// With more than one allow list, the filter set is made up of all
+    /// With more than one deny list, the filter set is made up of all
     /// partial lists.
     #[arg(long = "deny-list", short = 'D')]
     deny: Vec<PathBuf>,
@@ -96,30 +102,24 @@ pub(crate) struct Filter {
     #[arg(long, value_name = "PATH")]
     filter_set_source: Option<Path>,
 
-    /// Limit the result to first N records
-    ///
-    /// Note: A limit value `0` means no limit.
-    #[arg(long, short, value_name = "N", default_value = "0")]
-    limit: usize,
-
-    /// Connects the filter with additional expressions using the
+    /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
     /// This option can't be combined with `--or`.
     #[arg(long, conflicts_with = "or")]
     and: Vec<String>,
 
-    /// Connects the filter with additional expressions using the
+    /// Connects the where clause with additional expressions using the
     /// logical OR-operator (disjunction)
     ///
     /// This option can't be combined with `--and` or `--not`.
     #[arg(long, conflicts_with_all = ["and", "not"])]
     or: Vec<String>,
 
-    /// Connects the filter with additional expressions using the
+    /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
-    /// This option can't be combined with `--or`.
+    /// This option can't be combined with `--and` or `--or`.
     #[arg(long, conflicts_with = "or")]
     not: Vec<String>,
 
@@ -166,10 +166,10 @@ impl Filter {
         let keep = parse_predicates(self.keep)?;
 
         let filter_set = FilterSetBuilder::new()
-            .source(self.filter_set_source)
+            .source(self.filter_set_source.as_ref())
             .column(self.filter_set_column)
-            .allow(self.allow)
-            .deny(self.deny)
+            .allow(&self.allow)
+            .deny(&self.deny)
             .build()?;
 
         let mut writer = WriterBuilder::new()
@@ -213,10 +213,11 @@ impl Filter {
                 .not(self.not)?
                 .build();
 
-        let mut count = 0;
         let options = MatcherOptions::new()
             .strsim_threshold(self.strsim_threshold as f64 / 100.0)
             .case_ignore(self.ignore_case);
+
+        let mut count = 0;
 
         'outer: for path in filenames {
             let mut reader = ReaderBuilder::new().from_path(path)?;

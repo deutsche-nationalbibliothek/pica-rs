@@ -23,24 +23,24 @@ pub(crate) struct Args {
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
-    Check(Check),
-    Completions(Completions),
-    Concat(Concat),
-    Config(Config),
-    Convert(Convert),
-    Count(Count),
-    Describe(Describe),
-    Explode(Explode),
-    Filter(Filter),
-    Frequency(Frequency),
-    Hash(Hash),
-    Invalid(Invalid),
-    Partition(Partition),
-    Print(Print),
-    Sample(Sample),
-    Select(Select),
-    Slice(Slice),
-    Split(Split),
+    Check(Box<Check>),
+    Completions(Box<Completions>),
+    Concat(Box<Concat>),
+    Config(Box<Config>),
+    Convert(Box<Convert>),
+    Count(Box<Count>),
+    Describe(Box<Describe>),
+    Explode(Box<Explode>),
+    Filter(Box<Filter>),
+    Frequency(Box<Frequency>),
+    Hash(Box<Hash>),
+    Invalid(Box<Invalid>),
+    Partition(Box<Partition>),
+    Print(Box<Print>),
+    Sample(Box<Sample>),
+    Select(Box<Select>),
+    Slice(Box<Slice>),
+    Split(Box<Split>),
 }
 
 #[derive(Debug, clap::Args)]
@@ -57,13 +57,13 @@ pub(crate) struct FilterOpts {
     /// When this flag is set, comparison operations will be search
     /// case insensitive
     #[arg(long, short)]
-    ignore_case: bool,
+    pub(crate) ignore_case: bool,
 
     /// The minimum score for string similarity comparisons (0 <= score
     /// < 100).
     #[arg(long, value_parser = value_parser!(u8).range(0..100),
           default_value = "75")]
-    strsim_threshold: u8,
+    pub(crate) strsim_threshold: u8,
 
     /// Ignore records which are *not* explicitly listed in one of the
     /// given allow-lists.
@@ -118,27 +118,27 @@ pub(crate) struct FilterOpts {
 
     /// A filter expression used for searching
     #[arg(long = "where", value_name = "FILTER")]
-    filter: Option<String>,
+    r#where: Option<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical AND-operator (conjunction)
     ///
     /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
+    #[arg(long, requires = "where", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical OR-operator (disjunction)
     ///
     /// This option can't be combined with `--and` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
+    #[arg(long, requires = "where", conflicts_with_all = ["and", "not"])]
     or: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
     /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
+    #[arg(long, requires = "where", conflicts_with = "or")]
     not: Vec<String>,
 }
 
@@ -146,8 +146,11 @@ impl FilterOpts {
     pub(crate) fn matcher(
         &self,
         nf: Option<NormalizationForm>,
+        predicate: Option<String>,
     ) -> Result<Option<RecordMatcher>, CliError> {
-        Ok(if let Some(ref matcher) = self.filter {
+        let filter = predicate.or(self.r#where.clone());
+
+        Ok(if let Some(ref matcher) = filter {
             Some(
                 RecordMatcherBuilder::with_transform(
                     matcher.clone(),

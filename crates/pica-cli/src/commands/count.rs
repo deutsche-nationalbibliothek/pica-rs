@@ -3,21 +3,14 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::process::ExitCode;
 
-use clap::{Parser, value_parser};
+use clap::Parser;
 use pica_record::prelude::*;
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::prelude::translit;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Count records, fields and subfields
 #[derive(Parser, Debug)]
 pub(crate) struct Count {
-    /// Whether to skip invalid records or not
-    #[arg(short, long)]
-    skip_invalid: bool,
-
     /// Append to the given file, do not overwrite
     #[arg(long)]
     append: bool,
@@ -36,42 +29,6 @@ pub(crate) struct Count {
     #[arg(long,
           conflicts_with_all = ["records", "fields", "csv", "tsv", "no_header"])]
     subfields: bool,
-
-    /// When this flag is set, comparison operations will be search
-    /// case insensitive
-    #[arg(long, short)]
-    ignore_case: bool,
-
-    /// The minimum score for string similarity comparisons (0 <= score
-    /// < 100).
-    #[arg(long, value_parser = value_parser!(u8).range(0..100),
-          default_value = "75")]
-    strsim_threshold: u8,
-
-    /// A filter expression used for searching
-    #[arg(long = "where", value_name = "FILTER")]
-    filter: Option<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical AND-operator (conjunction)
-    ///
-    /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    and: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical OR-operator (disjunction)
-    ///
-    /// This option can't be combined with `--and` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
-    or: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical NOT-operator (negation)
-    ///
-    /// This option can't be combined with `--and` or `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    not: Vec<String>,
 
     /// Write output comma-separated (CSV)
     #[arg(long, conflicts_with = "tsv")]
@@ -96,12 +53,15 @@ pub(crate) struct Count {
     /// Read one or more files in normalized PICA+ format.
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    pub(crate) filter_opts: FilterOpts,
 }
 
 impl Count {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
-        let translit = translit(config.normalization.clone());
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
 
         let mut writer: Box<dyn Write> = match self.output {
@@ -116,23 +76,11 @@ impl Count {
             None => Box::new(io::stdout().lock()),
         };
 
-        let matcher = if let Some(matcher) = self.filter {
-            Some(
-                RecordMatcherBuilder::with_transform(
-                    matcher, translit,
-                )?
-                .and(self.and)?
-                .or(self.or)?
-                .not(self.not)?
-                .build(),
-            )
-        } else {
-            None
-        };
-
-        let options = MatcherOptions::new()
-            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
-            .case_ignore(self.ignore_case);
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let options = MatcherOptions::from(&self.filter_opts);
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
 
         let mut records = 0;
         let mut fields = 0;
@@ -151,6 +99,11 @@ impl Count {
                     Err(e) => return Err(e.into()),
                     Ok(record) => {
                         progress.update(false);
+
+                        if !filter_set.check(&record) {
+                            continue;
+                        }
+
                         if let Some(ref matcher) = matcher
                             && !matcher.is_match(&record, &options)
                         {
