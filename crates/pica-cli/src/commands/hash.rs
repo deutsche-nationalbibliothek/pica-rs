@@ -44,6 +44,7 @@ impl Hash {
         let skip_invalid =
             self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
+        let mut count = 0;
 
         let filter_set = FilterSet::try_from(&self.filter_opts)?;
         let options = MatcherOptions::from(&self.filter_opts);
@@ -59,8 +60,6 @@ impl Hash {
         let mut writer = WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
-
-        let mut count = 0;
 
         writer.write_record(self.header.split(',').map(str::trim))?;
 

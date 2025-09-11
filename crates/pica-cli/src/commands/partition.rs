@@ -3,13 +3,11 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{Parser, value_parser};
+use clap::Parser;
 use hashbrown::hash_map::{Entry, HashMap};
 use pica_record::prelude::*;
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Partition records by subfield values
 ///
@@ -24,21 +22,6 @@ use crate::progress::Progress;
 /// values of a record will be removed.
 #[derive(Parser, Debug)]
 pub(crate) struct Partition {
-    /// Whether to skip invalid records or not.
-    #[arg(long, short)]
-    skip_invalid: bool,
-
-    /// When this flag is set, comparison operations will be search
-    /// case insensitive
-    #[arg(long, short)]
-    ignore_case: bool,
-
-    /// The minimum score for string similarity comparisons (0 <= score
-    /// < 100).
-    #[arg(long, value_parser = value_parser!(u8).range(0..100),
-          default_value = "75")]
-    strsim_threshold: u8,
-
     /// Compress each partition in gzip format
     #[arg(long, short)]
     gzip: bool,
@@ -67,20 +50,29 @@ pub(crate) struct Partition {
     /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    filter_opts: FilterOpts,
 }
 
 impl Partition {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
+        let mut progress = Progress::new(self.progress);
+        let mut count = 0;
+
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let options = MatcherOptions::from(&self.filter_opts);
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
+
         let template = self.template.unwrap_or(if self.gzip {
             "{}.dat.gz".into()
         } else {
             "{}.dat".into()
         });
-
-        let options = MatcherOptions::new()
-            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
-            .case_ignore(self.ignore_case);
 
         if !self.outdir.exists() {
             fs::create_dir_all(&self.outdir)?;
@@ -89,9 +81,7 @@ impl Partition {
         let mut writers: HashMap<Vec<u8>, Box<dyn ByteRecordWrite>> =
             HashMap::new();
 
-        let mut progress = Progress::new(self.progress);
-
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -104,6 +94,16 @@ impl Partition {
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
                         progress.update(false);
+
+                        if !filter_set.check(&record) {
+                            continue;
+                        }
+
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(&record, &options)
+                        {
+                            continue;
+                        }
 
                         let mut values: Vec<_> =
                             record.path(&self.path, &options).collect();
@@ -134,6 +134,12 @@ impl Partition {
                             };
 
                             writer.write_byte_record(record)?;
+                            count += 1;
+                            if self.filter_opts.limit > 0
+                                && count >= self.filter_opts.limit
+                            {
+                                break 'outer;
+                            }
                         }
                     }
                 }
