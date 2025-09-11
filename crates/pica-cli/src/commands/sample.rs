@@ -40,16 +40,16 @@ pub(crate) struct Sample {
     filenames: Vec<OsString>,
 
     #[command(flatten, next_help_heading = "Filter options")]
-    pub(crate) filter_opts: FilterOpts,
+    filter_opts: FilterOpts,
 }
 
 impl Sample {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid =
             self.filter_opts.skip_invalid || config.skip_invalid;
-        let mut writer = WriterBuilder::new()
-            .gzip(self.gzip)
-            .from_path_or_stdout(self.output)?;
+        let mut progress = Progress::new(self.progress);
+        let sample_size = self.sample_size as usize;
+        let mut count = 0;
 
         let filter_set = FilterSet::try_from(&self.filter_opts)?;
         let options = MatcherOptions::from(&self.filter_opts);
@@ -57,19 +57,19 @@ impl Sample {
             .filter_opts
             .matcher(config.normalization.clone(), None)?;
 
+        let mut writer = WriterBuilder::new()
+            .gzip(self.gzip)
+            .from_path_or_stdout(self.output)?;
+
         let mut rng: StdRng = match self.seed {
             None => StdRng::from_rng(&mut rng()),
             Some(seed) => StdRng::seed_from_u64(seed),
         };
 
-        let sample_size = self.sample_size as usize;
         let mut reservoir: Vec<Vec<u8>> =
             Vec::with_capacity(sample_size);
 
-        let mut progress = Progress::new(self.progress);
-        let mut i = 0;
-
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -96,16 +96,21 @@ impl Sample {
                         let mut data = Vec::<u8>::new();
                         record.write_to(&mut data)?;
 
-                        if i < sample_size {
+                        if count < sample_size {
                             reservoir.push(data);
                         } else {
-                            let j = rng.random_range(0..i);
+                            let j = rng.random_range(0..count);
                             if j < sample_size {
                                 reservoir[j] = data;
                             }
                         }
 
-                        i += 1;
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
+                        }
                     }
                 }
             }
