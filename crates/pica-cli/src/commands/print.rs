@@ -7,7 +7,6 @@ use bstr::ByteSlice;
 use clap::Parser;
 use pica_record::prelude::*;
 
-use crate::cli::FilterOpts;
 use crate::prelude::*;
 use crate::utils::FilterSet;
 
@@ -31,7 +30,7 @@ pub(crate) struct Print {
     filenames: Vec<OsString>,
 
     #[command(flatten, next_help_heading = "Filter options")]
-    pub(crate) filter_opts: FilterOpts,
+    filter_opts: FilterOpts,
 }
 
 impl Print {
