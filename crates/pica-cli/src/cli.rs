@@ -124,14 +124,14 @@ pub(crate) struct FilterOpts {
     /// logical AND-operator (conjunction)
     ///
     /// This option can't be combined with `--or`.
-    #[arg(long, requires = "r#where", conflicts_with = "or")]
+    #[arg(long, requires = "where", conflicts_with = "or")]
     and: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
     /// logical OR-operator (disjunction)
     ///
     /// This option can't be combined with `--and` or `--not`.
-    #[arg(long, requires = "r#where", conflicts_with_all = ["and", "not"])]
+    #[arg(long, requires = "where", conflicts_with_all = ["and", "not"])]
     or: Vec<String>,
 
     /// Connects the where clause with additional expressions using the
