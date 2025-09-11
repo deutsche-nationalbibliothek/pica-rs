@@ -8,17 +8,11 @@ use clap::Parser;
 use csv::WriterBuilder;
 use pica_record::prelude::*;
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Compute SHA-256 checksum of records.
 #[derive(Parser, Debug)]
 pub(crate) struct Hash {
-    /// Whether to skip invalid records or not.
-    #[arg(short, long)]
-    skip_invalid: bool,
-
     /// Comma-separated list of column names.
     #[arg(long, short = 'H', default_value = "ppn,hash")]
     header: String,
@@ -40,12 +34,22 @@ pub(crate) struct Hash {
     /// standard input (stdin)
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    filter_opts: FilterOpts,
 }
 
 impl Hash {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
+
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let options = MatcherOptions::from(&self.filter_opts);
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
 
         let writer: Box<dyn Write> = match self.output {
             Some(filename) => Box::new(File::create(filename)?),
@@ -56,9 +60,11 @@ impl Hash {
             .delimiter(if self.tsv { b'\t' } else { b',' })
             .from_writer(writer);
 
+        let mut count = 0;
+
         writer.write_record(self.header.split(',').map(str::trim))?;
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -71,6 +77,17 @@ impl Hash {
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
                         progress.update(false);
+
+                        if !filter_set.check(&record) {
+                            continue;
+                        }
+
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(&record, &options)
+                        {
+                            continue;
+                        }
+
                         let hash = record.sha256().iter().fold(
                             String::new(),
                             |mut out, b| {
@@ -86,6 +103,13 @@ impl Hash {
                                 .to_string(),
                             hash,
                         ])?;
+
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
+                        }
                     }
                 }
             }

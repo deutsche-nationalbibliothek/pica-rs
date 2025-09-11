@@ -25,9 +25,6 @@ ppn,hash
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
 `-H <header>`, `--header <header>`
 : Kopfzeile, die den Ergebnissen vorangestellt wird.
 
@@ -41,6 +38,9 @@ der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 
 `-o <filename>`, `--output <filename>`
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll.
+
+
+{{< include /_partials/filter-opts.qmd >}}
 
 
 ## Beispiele
