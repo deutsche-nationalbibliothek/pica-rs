@@ -43,11 +43,11 @@ impl FilterSetBuilder {
     }
 
     pub(crate) fn source(mut self, path: Option<&Path>) -> Self {
-        self.path = path.map(|p| p.clone());
+        self.path = path.cloned();
         self
     }
 
-    pub(crate) fn allow<P>(mut self, list: &Vec<P>) -> Self
+    pub(crate) fn allow<P>(mut self, list: &[P]) -> Self
     where
         P: AsRef<path::Path>,
     {
@@ -56,7 +56,7 @@ impl FilterSetBuilder {
         self
     }
 
-    pub(crate) fn deny<P>(mut self, list: &Vec<P>) -> Self
+    pub(crate) fn deny<P>(mut self, list: &[P]) -> Self
     where
         P: AsRef<path::Path>,
     {
