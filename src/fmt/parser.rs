@@ -170,26 +170,32 @@ fn parse_list_and_then(i: &mut &[u8]) -> ModalResult<List> {
 fn parse_modifier(i: &mut &[u8]) -> ModalResult<Option<Modifier>> {
     opt(preceded(
         '?',
-        repeat(1.., alt(('l', 'u', 't', 'w'))).map(|codes: Vec<_>| {
-            let mut modifier = Modifier::default();
-            if codes.contains(&'l') {
-                modifier.lowercase(true);
-            }
+        repeat(1.., alt(('l', 'u', 't', 'w', 'o'))).map(
+            |codes: Vec<_>| {
+                let mut modifier = Modifier::default();
+                if codes.contains(&'o') {
+                    modifier.strip_overread_char(true);
+                }
 
-            if codes.contains(&'u') {
-                modifier.uppercase(true);
-            }
+                if codes.contains(&'l') {
+                    modifier.lowercase(true);
+                }
 
-            if codes.contains(&'w') {
-                modifier.remove_ws(true);
-            }
+                if codes.contains(&'u') {
+                    modifier.uppercase(true);
+                }
 
-            if codes.contains(&'t') {
-                modifier.trim(true);
-            }
+                if codes.contains(&'w') {
+                    modifier.remove_ws(true);
+                }
 
-            modifier
-        }),
+                if codes.contains(&'t') {
+                    modifier.trim(true);
+                }
+
+                modifier
+            },
+        ),
     ))
     .parse_next(i)
 }
@@ -205,6 +211,14 @@ mod tests {
 
     #[test]
     fn test_parse_modifier() -> TestResult {
+        assert_eq!(
+            parse_modifier.parse(b"?o").unwrap().unwrap(),
+            Modifier {
+                strip_overread_char: true,
+                ..Default::default()
+            }
+        );
+
         assert_eq!(
             parse_modifier.parse(b"?l").unwrap().unwrap(),
             Modifier {
@@ -238,8 +252,9 @@ mod tests {
         );
 
         assert_eq!(
-            parse_modifier.parse(b"?luwt").unwrap().unwrap(),
+            parse_modifier.parse(b"?luwto").unwrap().unwrap(),
             Modifier {
+                strip_overread_char: true,
                 lowercase: true,
                 uppercase: true,
                 remove_ws: true,
@@ -248,8 +263,9 @@ mod tests {
         );
 
         assert_eq!(
-            parse_modifier.parse(b"?luwtluwt").unwrap().unwrap(),
+            parse_modifier.parse(b"?luwtoluwto").unwrap().unwrap(),
             Modifier {
+                strip_overread_char: true,
                 lowercase: true,
                 uppercase: true,
                 remove_ws: true,

@@ -1,7 +1,5 @@
 use assert_cmd::Command;
 
-// use assert_fs::TempDir;
-// use assert_fs::prelude::*;
 use crate::prelude::*;
 
 #[test]
@@ -150,6 +148,35 @@ fn format_string_trim() -> TestResult {
         .stdout(predicates::ord::eq(
             "119232022,\"Lovelace, Ada King (of)\"\n",
         ))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn format_strip_overread_char() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "021A{?o a }"])
+        .write_stdin(b"021A \x1fa@abc\x1e\n")
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("abc\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["select", "021A{ a }"])
+        .write_stdin(b"021A \x1fa@abc\x1e\n")
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("@abc\n"))
         .stderr(predicates::str::is_empty());
 
     Ok(())
