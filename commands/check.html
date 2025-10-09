@@ -567,10 +567,6 @@ Auswahl einer Unicode-Normalform, auf die zusätzlich überprüft werden soll. E
 <section id="optionen-7" class="level2">
 <h2 class="anchored" data-anchor-id="optionen-7">Optionen</h2>
 <dl>
-<dt><code>-s</code>, <code>--skip-invalid</code></dt>
-<dd>
-Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-</dd>
 <dt><code>-p</code>, <code>--progress</code></dt>
 <dd>
 Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie invaliden Datensätze anzeigt. Das Aktivieren der Option erfordert das Schreiben der Datensätze in eine Datei mittels <code>-o</code> bzw. <code>--output</code>.
@@ -584,8 +580,61 @@ Angabe eines Regelwerks, gegen das die Datensätze aus der Eingabe getestet werd
 Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wird die Ausgabe in die Standardausgabe <code>stdout</code> geschrieben.
 </dd>
 </dl>
+<section id="filter-optionen" class="level3">
+<h3 class="anchored" data-anchor-id="filter-optionen">Filter-Optionen</h3>
+<dl>
+<dt><code>-s</code>, <code>--skip-invalid</code></dt>
+<dd>
+Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
+</dd>
+<dt><code>-l &lt;number&gt;</code>, <code>--limit &lt;number&gt;</code></dt>
+<dd>
+Eingrenzung der Ausgabe auf die ersten <em>n</em> Datensätze.
+</dd>
+<dt><code>-i</code>, <code>--ignore-case</code></dt>
+<dd>
+Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
+</dd>
+<dt><code>--strsim-threshold &lt;value&gt;</code></dt>
+<dd>
+Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mittels <code>=*</code>.
+</dd>
+<dt><code>-A &lt;file&gt;</code>, <code>--allow-list</code> <code>&lt;file&gt;</code></dt>
+<dd>
+Es werden alle Datensätze ignoriert, die nicht explizit in der Positivliste auftauchen. Werden mehrere Positivlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
+</dd>
+<dt><code>-D &lt;file&gt;</code>, <code>--deny-list</code> <code>&lt;file&gt;</code></dt>
+<dd>
+Es werden alle Datensätze ignoriert, die in der Negativliste auftauchen. Werden mehrere Negativlisten angegeben, wird die Mengenvereinigung aus allen Listen gebildet.
+</dd>
+<dt><code>--filter-set-column &lt;column&gt;</code></dt>
+<dd>
+Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw. Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte aus der Spalte <code>ppn</code> bzw. <code>idn</code> ausgelesen. Die <code>idn</code>-Spalte wird nur versucht zu lesen, wenn keine <code>ppn</code>-Spalte vorhanden ist.
+</dd>
+<dt><code>--filter-set-path &lt;path&gt;</code></dt>
+<dd>
+Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird. Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im Feld <code>003@.0</code> eines Datensatzes ausgegen.
+</dd>
+<dt><code>--where &lt;expr&gt;</code></dt>
+<dd>
+Angabe eines Filters, um Datensätze aus der Eingabe auszuwählen.
+</dd>
+<dt><code>--and &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>&amp;&amp;</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; &lt;expr&gt;</code>.
+</dd>
+<dt><code>--or &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters mittels der booleschen <code>||</code>-Verknüpfung. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; || &lt;expr&gt;</code>.
+</dd>
+<dt><code>--not &lt;expr&gt;</code></dt>
+<dd>
+Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code>&lt;filter&gt;</code> wird zum Ausdruck <code>&lt;filter&gt; &amp;&amp; !(&lt;expr&gt;)</code>.
+</dd>
+</dl>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
