@@ -6,9 +6,7 @@ use std::process::ExitCode;
 use clap::{Parser, value_parser};
 use pica_record::prelude::*;
 
-use crate::cli::FilterOpts;
 use crate::prelude::*;
-use crate::utils::FilterSet;
 
 /// Splits a list of records into chunks
 ///
