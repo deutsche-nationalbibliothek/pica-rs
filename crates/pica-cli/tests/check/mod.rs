@@ -13,7 +13,7 @@ mod link;
 mod unicode;
 
 #[test]
-fn skip_invalid() -> TestResult {
+fn check_skip_invalid() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
@@ -59,7 +59,7 @@ fn skip_invalid() -> TestResult {
 }
 
 #[test]
-fn scope() -> TestResult {
+fn check_scope() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
@@ -80,6 +80,85 @@ fn scope() -> TestResult {
         .write_stdin(
             b"003@ \x1f0123456789X\x1e012A \x1f0\x00\x9F\x1e\n",
         )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_limit() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            scope = '003@.0 != "123456789X"'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["check", "--limit", "1"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .arg(data_dir().join("invalid.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_where() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = "filter"
+            filter = '004B.a != "pik"'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n040011569,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .args(["--where", "003@.0 == '119232022'"])
         .assert();
 
     assert
