@@ -77,7 +77,7 @@ pub struct FormatOptions {
 impl Default for FormatOptions {
     fn default() -> Self {
         Self {
-            strip_overread_char: true,
+            strip_overread_char: false,
             strsim_threshold: 0.8,
             case_ignore: false,
         }
@@ -297,9 +297,20 @@ struct Modifier {
     /// Whether to remove all whitespaces from the beginning or end of
     /// a fragment or not.
     trim: bool,
+
+    /// Whether to strip the overread character '@' or not.
+    strip_overread_char: bool,
 }
 
 impl Modifier {
+    pub(crate) fn strip_overread_char(
+        &mut self,
+        yes: bool,
+    ) -> &mut Self {
+        self.strip_overread_char = yes;
+        self
+    }
+
     pub(crate) fn lowercase(&mut self, yes: bool) -> &mut Self {
         self.lowercase = yes;
         self
@@ -321,6 +332,10 @@ impl Modifier {
     }
 
     pub(crate) fn modify(&self, value: &mut BString) {
+        if self.strip_overread_char {
+            *value = value.replacen("@", "", 1).into();
+        }
+
         if self.trim {
             *value = BString::from(value.trim());
         }
