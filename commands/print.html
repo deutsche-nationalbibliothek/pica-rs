@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,14 +69,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../commands/partition.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cd63c9d9159021c9e6cc762d0675ae63.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-9dcb88be0e4135188ca178d6ae8aa706.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -133,7 +134,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
       <a href="../index.html" class="sidebar-logo-link">
-      <img src="../assets/img/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
     <div class="sidebar-title mb-0 py-0">
       <a href="../">pica-rs</a> 
@@ -347,7 +349,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>Mithilfe des <code>print</code>-Kommandos können Datensätze in einer menschenlesbaren Form auf dem Terminal ausgegeben oder in eine Datei geschrieben werden. Das Format ist an die Darstellung in der WinIBW angelehnt: Felder werden zeilenweise ausgegeben; zuerst wird das Feld (bspw. <code>003@</code>), dann - sofern vorhanden - die Okkurrenz (bspw. <code>/01</code>), und schließlich die Liste von Unterfeldern ausgegeben. Dem Unterfeld-Code wird ein Dollarzeichen vorangestellt. Die Unterfeldwerte werden genau so ausgegeben, wie sie im Datensatz vorhanden sind; es findet kein [<em>Escaping</em>] von Sonderzeichen statt. Einzelne Datensätze werden durch eine Leerzeile voneinander getrennt.</p>
 <p>Der folgende Befehl gibt den ersten Datensatz aus:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-s</span> <span class="at">-l</span> 1 DUMP.dat.gz</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-s</span> <span class="at">-l</span> 1 DUMP.dat.gz</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">001A</span> <span class="va">$0</span> 1250:01-07-88</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">001B</span> <span class="va">$0</span> 9999:15-04-22 <span class="va">$t</span> 15:15:00.000</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">001D</span> <span class="va">$0</span> 0292:01-08-19</span>
@@ -359,7 +361,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">004B</span> <span class="va">$a</span> piz</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">006Y</span> <span class="va">$S</span> isni <span class="va">$0</span> 0000 0001 2099 9104</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">006Y</span> <span class="va">$S</span> wikidata <span class="va">$0</span> Q5879</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen" class="level2">
 <h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
 <dl>
@@ -435,7 +437,7 @@ Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code
 <section id="transliteration-der-ausgabe" class="level3">
 <h3 class="anchored" data-anchor-id="transliteration-der-ausgabe">Transliteration der Ausgabe</h3>
 <p>Standardmäßig werden die Unterfeldwerte so ausgegeben, wie sie im Datensatz vorkommen. Mit der Option <code>--translit</code> werden die Werte in die angegebene <a href="https://de.wikipedia.org/wiki/Normalisierung_(Unicode)">Unicode-Normalform</a> transliteriert.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-s</span> <span class="at">-l1</span> <span class="at">--translit</span> nfc DUMP.dat.gz</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print <span class="at">-s</span> <span class="at">-l1</span> <span class="at">--translit</span> nfc DUMP.dat.gz</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$d</span> Yohan Wolfgang <span class="va">$a</span> Gete</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$d</span> Yôhân Wôlfgang <span class="va">$c</span> fôn <span class="va">$a</span> Gete</span>
@@ -453,7 +455,7 @@ Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Jpan <span class="va">$d</span> ヨハン・ヴォルフガング・フォン <span class="va">$a</span> ゲーテ</span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="ex">028@</span> <span class="va">$T</span> 01 <span class="va">$U</span> Geor <span class="va">$d</span> იოჰან ვოლფგანგ ფონ <span class="va">$a</span> გოეთე</span>
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="ex">028A</span> <span class="va">$d</span> Johann Wolfgang <span class="va">$c</span> von <span class="va">$a</span> Goethe</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>
@@ -511,13 +513,14 @@ Hinzufügen eines zusätzlichen Filters. Der ursprüngliche Filterausdruck <code
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

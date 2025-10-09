@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,14 +69,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../commands/completions.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cd63c9d9159021c9e6cc762d0675ae63.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-9dcb88be0e4135188ca178d6ae8aa706.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -133,7 +134,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
       <a href="../index.html" class="sidebar-logo-link">
-      <img src="../assets/img/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
     <div class="sidebar-title mb-0 py-0">
       <a href="../">pica-rs</a> 
@@ -348,7 +350,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Das <code>concat</code>-Kommando (Alias <code>cat</code>) liest Datensätze direkt von der Standardeingabe (<code>stdin</code>) oder aus Dateien ein und fügt diese zusammen. Die Ausgabe kann entweder in eine Datei oder in die Standardausgabe (<code>stdout</code>) geschrieben werden.</p>
 <p>Der wichtigste Anwendungsfall des Kommandos besteht in Kombination mit den Kommandos <code>partition</code> oder <code>split</code>, da mittels <code>concat</code> das Ergebnis dieser Kommandos (teil-)rückgängig gemacht werden kann. Häufig macht es Sinn, eine große Datei in viele kleinere Dateien anhand eines Kriteriums zu teilen (bspw. nach der Sprache), um anschließend einzelne Dateien wieder zusammenzufügen.</p>
 <p>Das folgende Beispiel fügt die Datensätze aus den Dateien <code>ger.dat</code> und <code>eng.dat</code> zu einer Datei <code>ger_eng.dat</code> zusammen:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-u</span> ger.dat eng.dat <span class="at">-o</span> ger_eng.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-u</span> ger.dat eng.dat <span class="at">-o</span> ger_eng.dat</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen" class="level2">
 <h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
 <dl>
@@ -388,38 +390,38 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
 <h3 class="anchored" data-anchor-id="überspringen-ungültiger-datensätze">Überspringen ungültiger Datensätze</h3>
 <p>Der eingangs verwendete Befehl geht davon aus, dass die zwei Partitionen ausschließlich gültige Datensätze enthalten. Gültig in diesem Zusammenhang bedeutet, dass es sich um valide Datensätze im Format PICA+ handelt und nicht ob ein Datensatz einem bestimmten Regelwerk entspricht.</p>
 <p>Das Ausschließen von ungültigen Datensätzen wird mit der Option <code>-s</code> oder <code>--skip-invalid</code> erreicht:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--skip-invalid</span> DUMP.dat.gz <span class="at">-o</span> dump_valid.dat</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-s</span> DUMP.dat.gz <span class="at">--output</span> dump_valid.dat.gz</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--skip-invalid</span> DUMP.dat.gz <span class="at">-o</span> dump_valid.dat</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-s</span> DUMP.dat.gz <span class="at">--output</span> dump_valid.dat.gz</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Alternativ lässt sich das Überspringen ungültiger Datensätze mittels des <a href="../commands/config.html#überspringen-ungültiger-datensätze">config</a>-Kommandos einstellen.</p>
 </section>
 <section id="lesen-von-der-standardeingabe" class="level3">
 <h3 class="anchored" data-anchor-id="lesen-von-der-standardeingabe">Lesen von der Standardeingabe</h3>
 <p>Das Kommando kann auch direkt von der Standardeingabe (<code>stdin</code>) lesen. Das ist bspw. dann hilfreich, wenn die Ausgabe aus einem vorhergehenden Pipeline-Schritt mit dem Inhalt einer oder mehrerer Dateien konkateniert werden soll.</p>
 <p>Das folgende Beispiel liest im ersten Pipeline-Schritt die Datei <code>dump1.dat</code> ein, entfernt ungültige Datensätze und gibt die Ausgabe nach <code>stdout</code> aus. Der zweite Pipeline-Schritt liest diese Datensätze ein (<code>-</code>) und konkateniert diese mit den Datensätzen aus der Datei <code>dump2.dat</code>. Das Ergebnis wird in die Datei <code>out.dat</code> geschrieben.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-s</span> dump1.dat <span class="kw">|</span> <span class="ex">pica</span> cat <span class="at">-</span> dump2.dat <span class="at">-o</span> out.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">-s</span> dump1.dat <span class="kw">|</span> <span class="ex">pica</span> cat <span class="at">-</span> dump2.dat <span class="at">-o</span> out.dat</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Der Dateiname <code>-</code> steht für die Standardeingabe (<code>stdin</code>). Wären die zwei Argumente vertauscht (<code>pica cat dump2.dat -</code>), dann würden erst die gültigen Datensätze aus der Datei <code>dump1.dat</code> und anschließend die Datensätze aus dem ersten Pipeline-Schritt geschrieben.</p>
 </section>
 <section id="hinzufügen-von-datensätzen" class="level3">
 <h3 class="anchored" data-anchor-id="hinzufügen-von-datensätzen">Hinzufügen von Datensätzen</h3>
 <p>Wenn eine Ausgabedatei bereits existiert, wird diese standardmäßig neu angelegt und überschrieben. Soll das Verhalten dahingehend geändert werden, dass an die bestehenden Dateien angehangen wird, kann dies mit der <code>--append</code>-Option erreicht werden. Diese Option ändert das Verhalten von <code>--output</code> und <code>--tee</code>. Die Option hat auf das Verhalten beim Schreiben in die Standardausgabe keine Auswirkung.</p>
 <p>Im folgenden Beispiel erzeugt der erste Befehl eine neue Datei <code>gnd.dat</code>. Sollte die Datei bereits existieren, wird der Datei-Inhalt überschrieben. Die darauffolgenden Kommandos hängen jeweils an das Ende der Datei <code>gnd.dat</code> an.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat Tp<span class="pp">*</span>.dat <span class="at">-o</span> gnd.dat</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat Tp<span class="pp">*</span>.dat <span class="at">-o</span> gnd.dat</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--append</span> Ts<span class="pp">*</span>.dat <span class="at">-o</span> gnd.dat</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--append</span> Tu<span class="pp">*</span>.dat <span class="at">-o</span> gnd.dat</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="abzweigen-der-ausgabe" class="level3">
 <h3 class="anchored" data-anchor-id="abzweigen-der-ausgabe">Abzweigen der Ausgabe</h3>
 <p>Gelegenlich kann es nützlich sein, die Ausgabe des <code>concat</code>-Kommandos in eine Datei zu schreiben und gleichzeitig die Ausgabe an einen weiteren Pipeline-Schritt weiterzureichen. Dies hat den Vorteil, dass zwei CPU-Kerne gleichzeitig genutzt werden können. Mit der <code>--tee</code>-Option lässt sich dieses Verhalten erzielen. Der Name der Option leitet sich von dem T-Stück (engl. tee connector) ab, mit dem ein Klempner eine Abzeigung in eine Leitung einbaut.</p>
 <p>Im folgenden Beispiel werden alle <code>Tp*.dat</code> zusammengefügt und in eine Datei <code>Tp.dat</code> geschrieben. Gleichzeitig werden alle Datensätze mit dem <code>filter</code>-Kommando nach der Satzart <code>Tp2</code> im Feld <code>002@.0</code> gefiltert.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat partitions/Tp<span class="pp">*</span>.dat <span class="at">--tee</span> gnd_person.dat <span class="kw">|</span> <span class="dt">\</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">pica</span> filter <span class="st">"002@.0 =^ 'Tp2'"</span> <span class="at">-o</span> Tp2.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat partitions/Tp<span class="pp">*</span>.dat <span class="at">--tee</span> gnd_person.dat <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">pica</span> filter <span class="st">"002@.0 =^ 'Tp2'"</span> <span class="at">-o</span> Tp2.dat</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="entfernen-von-duplikaten" class="level3">
 <h3 class="anchored" data-anchor-id="entfernen-von-duplikaten">Entfernen von Duplikaten</h3>
 <p>Duplikate können durch die Angabe des Flags <code>--unique</code> (<code>-u</code>) entfernt werden. Standardmäßig erfolgt die Erkennung von Duplikaten per PPN aus dem Feld <code>003@.0</code> . Alternativ kann durch die Angabe der Option <code>--unique-strategy</code> die Variante <code>hash</code> ausgewählt werden, bei der nur solche Datensätze als gleich gewertet werden, bei denen alle Bytes gleich sind.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--unique</span> <span class="at">--unique-strategy</span> hash ger.dat eng.dat <span class="at">-o</span> out.dat</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--unique</span> <span class="at">--unique-strategy</span> idn ger.dat eng.dat <span class="at">-o</span> out.dat</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--unique</span> <span class="at">--unique-strategy</span> hash ger.dat eng.dat <span class="at">-o</span> out.dat</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica concat <span class="at">--unique</span> <span class="at">--unique-strategy</span> idn ger.dat eng.dat <span class="at">-o</span> out.dat</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>
@@ -477,13 +479,14 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

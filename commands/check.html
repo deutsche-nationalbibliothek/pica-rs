@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,14 +69,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../tutorials/rmarkdown.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cd63c9d9159021c9e6cc762d0675ae63.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-9dcb88be0e4135188ca178d6ae8aa706.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -133,7 +134,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
       <a href="../index.html" class="sidebar-logo-link">
-      <img src="../assets/img/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
     <div class="sidebar-title mb-0 py-0">
       <a href="../">pica-rs</a> 
@@ -347,12 +349,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>Das <code>check</code>-Kommando erlaubt es, Datensätze auf Konformität mit einem Regelwerk zu überprüfen. In einer oder mehreren Konfigurationsdateien können Regeln hinterlegt werden, gegen die jeder Datensatz überprüft wird. Trifft eine Regel zu, wird diese Regelverletzung unter Angabe der PPN (Feld <code>003@ $0</code>) des Datensatzes und der ID der Regel in eine Ausgabedatei geschrieben. Die ID einer Regel kann von den Nutzenden frei gewählt werden.</p>
 <p>Befinden sich die spezifizierten Regeln in der Datei <code>rules.toml</code>, kann mit dem folgenden Befehl die Datei <code>DUMP.dat.gz</code> gegen das Regelwerk überprüft werden. Die Ausgabe erfolgt im CSV-Format in die Ausgabedatei <code>out.csv</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica check <span class="at">-R</span> rules.toml DUMP.dat.gz <span class="at">-o</span> out.csv</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica check <span class="at">-R</span> rules.toml DUMP.dat.gz <span class="at">-o</span> out.csv</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Soll ein Regelwerk nur gegen eine Teilmenge der Eingabe getestet werden, erfolgt dies durch Einschränkung des Geltungsbereichs (<code>scope</code>) mithilfe eines Filterausdrucks:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">scope</span> <span class="op">=</span> <span class="st">'</span><span class="vs">002@.0 =^ "T"</span><span class="st">'</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">scope</span> <span class="op">=</span> <span class="st">'</span><span class="vs">002@.0 =^ "T"</span><span class="st">'</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.XYZ]</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Nicht bei jeder Regelverletzung handelt es sich gleich um einen Fehler. Deshalb wird zwischen folgenden Levels unterschieden:</p>
 <ul>
 <li><em>Fehler</em> — <code>error</code>,</li>
@@ -360,24 +362,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>und <em>Info</em> — <code>info</code>.</li>
 </ul>
 <p>Konfiguriert wird das Level über die <code>level</code>-Option. Ist die Option nicht gesetzt, wird automatisch das Level <code>error</code> ausgewählt:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.XYZ]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">level</span> <span class="op">=</span> <span class="st">"warning"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.XYZ]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">level</span> <span class="op">=</span> <span class="st">"warning"</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Zur Nachvollziehbarkeit und Dokumentation kann eine Regel mit einer Beschreibung (<code>description</code>) und einem Link (<code>link</code>) ausgezeichnet werden:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.XYZ]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.XYZ]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">"Findet Datensätze, die gegen die Regel XYZ verstoßen."</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://www.example.org/XYZ"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://www.example.org/XYZ"</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="checks" class="level2">
 <h2 class="anchored" data-anchor-id="checks">Checks</h2>
 <section id="datetime" class="level3">
 <h3 class="anchored" data-anchor-id="datetime">Datetime</h3>
 <p>Der <code>datetime</code>-Check überprüft, ob in einem Feld ein gültiges Datum bzw. Zeitangabe steht. Die Angabe der zu überprüfenden Felder erfolgt mittels der Option <code>path</code>, welche einen Pfadausdruck erwartet.</p>
 <!-- TODO: Link zu Pfad-Spezifikation setzen. -->
-<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.DATETIME]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.DATETIME]</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"datetime"</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">"Findet ungültige Datumsangaben im Feld 010@ $D."</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://wiki.dnb.de/display/ILTIS/1500"</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">format</span> <span class="op">=</span> <span class="st">"%Y-%m-%d"</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"010@.D"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"010@.D"</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen" class="level4">
 <h4 class="anchored" data-anchor-id="optionen">Optionen</h4>
 <dl>
@@ -403,11 +405,11 @@ Mit der <code>offset</code>-Option können die ersten <code>&lt;n&gt;</code> Zei
 <section id="filter" class="level3">
 <h3 class="anchored" data-anchor-id="filter">Filter</h3>
 <p>Mittels des <code>filter</code>-Checks können Datensätze gefunden werden, die einem Filterausdruck entsprechen. Zum Beispiel können mit der folgenden Regel Datensätze gefunden werden, die einen ungültigen Projektcode im Feld <code>017C $a</code> enthalten:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.TITLE-017C-001]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.TITLE-017C-001]</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"filter"</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">"Findet ungültige Projektcodes im Feld 017C $a."</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://wiki.dnb.de/display/ILTIS/0602"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">filter</span> <span class="op">=</span> <span class="st">'</span><span class="vs">017C.a not in ["a","d","f","i","m","n","t"]</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">filter</span> <span class="op">=</span> <span class="st">'</span><span class="vs">017C.a not in ["a","d","f","i","m","n","t"]</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen-1" class="level4">
 <h4 class="anchored" data-anchor-id="optionen-1">Optionen</h4>
 <dl>
@@ -430,12 +432,12 @@ Ist die Option gesetzt, werden Datensätze gefunden, die <em>nicht</em> dem Filt
 <h3 class="anchored" data-anchor-id="isni">ISNI</h3>
 <p>Die Gültigkeit eines <a href="https://de.wikipedia.org/wiki/International_Standard_Name_Identifier">ISNI</a>-Identifikators, bspw. einer <a href="https://de.wikipedia.org/wiki/ORCID">ORCID</a>, lässt sich mit dem <code>isni</code>-Check überprüfen.</p>
 <p>Die folgende Regel findet ungültige ORCID-Identifikatoren im Feld <code>028A $y</code>, wobei nur die Werte überprüft werden, die mit dem Präfix <code>(orcid)</code> beginnen:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.ORCID]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.ORCID]</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">isni</span><span class="st">'</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">'</span><span class="vs">Findet ungültige ORCID-Einträge im Feld 028A $y.</span><span class="st">'</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">'</span><span class="vs">https://wiki.dnb.de/display/ILTIS/3000</span><span class="st">'</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">028A{ y | y =^ "(orcid)" }</span><span class="st">'</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">prefix</span> <span class="op">=</span> <span class="st">'</span><span class="vs">(orcid)</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">prefix</span> <span class="op">=</span> <span class="st">'</span><span class="vs">(orcid)</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen-2" class="level4">
 <h4 class="anchored" data-anchor-id="optionen-2">Optionen</h4>
 <dl>
@@ -457,11 +459,11 @@ Es werden nur Werte überprüft, die mit dem Präfix <code>&lt;prefix&gt;</code>
 <section id="iso-639-2b" class="level3">
 <h3 class="anchored" data-anchor-id="iso-639-2b">ISO 639-2B</h3>
 <p>Ob ein Unterfeld einen gültigen Sprachencode nach <a href="https://wiki.dnb.de/download/attachments/90411323/sprachenCodesIso6392.pdf">ISO 639-2B</a> enthält, lässt sich mit dem <code>iso639-2b</code>-Check testen. Die zu überprüfenden Werte werden mit <code>path</code> adressiert:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.SPRACHENCODE]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.SPRACHENCODE]</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">iso639-2b</span><span class="st">'</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">'</span><span class="vs">Findet ungültige Sprachencodes im Feld 010@ $a.</span><span class="st">'</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">'</span><span class="vs">https://wiki.dnb.de/display/ILTIS/1500</span><span class="st">'</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">010@.a</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">010@.a</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen-3" class="level4">
 <h4 class="anchored" data-anchor-id="optionen-3">Optionen</h4>
 <dl>
@@ -485,26 +487,26 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 </figure>
 </div>
 <p>Goethes Normdatensatz, reduziert auf die relevanten Felder, sieht wie folgt aus:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-k</span> <span class="st">'003@, 065R'</span> <span class="st">'003@.0 == "118540238"'</span> DUMP.dat.gz <span class="kw">|</span> <span class="ex">pica</span> print</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-k</span> <span class="st">'003@, 065R'</span> <span class="st">'003@.0 == "118540238"'</span> DUMP.dat.gz <span class="kw">|</span> <span class="ex">pica</span> print</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118540238</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">065R</span> <span class="va">$9</span> 040181189 <span class="va">$7</span> Tg1 <span class="va">$V</span> gik <span class="va">$A</span> gnd <span class="va">$0</span> 4018118-2 <span class="va">$a</span> Frankfurt am Main <span class="va">$4</span> ortg</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">065R</span> <span class="va">$9</span> 040651053 <span class="va">$7</span> Tg1 <span class="va">$V</span> gik <span class="va">$A</span> gnd <span class="va">$0</span> 4065105-8 <span class="va">$a</span> Weimar <span class="va">$4</span> orts</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">065R</span> <span class="va">$9</span> 040651053 <span class="va">$7</span> Tg1 <span class="va">$V</span> gik <span class="va">$A</span> gnd <span class="va">$0</span> 4065105-8 <span class="va">$a</span> Weimar <span class="va">$4</span> ortw</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">065R</span> <span class="va">$9</span> 040651053 <span class="va">$7</span> Tg1 <span class="va">$V</span> gik <span class="va">$A</span> gnd <span class="va">$0</span> 4065105-8 <span class="va">$a</span> Weimar <span class="va">$4</span> ortw</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Der einfachste Test, der sich mit dem <code>link</code>-Check formulieren lässt, ist zu überprüfen, ob die Zieldatensätze in der Menge der Eingabe existieren. Hierzu muss ein Pfad-Ausdruck <code>source</code> angegeben werden, mit dem alle Identifikatoren ermittelt werden, die in den Zieldatensätzen gesucht werden. In unserem Beispiel ist dies der Ausdruck <code>065R.9</code>, der die PPNs der Zieldatensätze ermittelt. Als Zweites wird noch ein Pfad- Ausdruck benötigt, der die Werte im Zieldatensatz adressiert. Da der Abgleich über die PPN eines Datensatzes erfolgt, wird der Ausdruck <code>003@.0</code> als Ziel (<code>target</code>) benötigt. Es ergibt sich folgende Regel:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.LINK1]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.LINK1]</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">link</span><span class="st">'</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">source.path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">065R.9</span><span class="st">'</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="dt">target.path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">003@.0</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="dt">target.path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">003@.0</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Zur Ermittlung der Ziel-Identifikatoren <code>source</code> können alle Funktionen der Pfad-Ausdrücke genutzt werden. Sollen nur <code>ortw</code>-Relationen getestet werden, kann die Regel wie folgt modifiziert werden:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.LINK2]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.LINK2]</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">link</span><span class="st">'</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="dt">source.path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">065R{ 9  | 4 == "ortw" }</span><span class="st">'</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="dt">target.path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">003@.0</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="dt">target.path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">003@.0</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Darüber hinaus können Kriterien formuliert werden, die der Zieldatensatz erfüllen muss. Zum Beispiel könnte die Anforderung an die verknüpften Datensätze gestellt werden, dass es sich auch um ein Geografikum <code>Tg*</code> handelt. Dies lässt sich durch die Angabe eines <code>filter</code>-Ausdrucks erreichen:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.LINK3]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.LINK3]</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">link</span><span class="st">'</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="dt">source.path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">065R{ 9  | 4 == "ortw" }</span><span class="st">'</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="dt">target</span> <span class="op">=</span> <span class="op">{ </span><span class="dt">path</span><span class="op"> =</span> <span class="st">'</span><span class="vs">003@.0</span><span class="st">'</span><span class="op">, </span><span class="dt">filter</span><span class="op"> =</span> <span class="st">'</span><span class="vs">002@.0 =^ "Tg"</span><span class="st">'</span><span class="op"> }</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="dt">target</span> <span class="op">=</span> <span class="op">{ </span><span class="dt">path</span><span class="op"> =</span> <span class="st">'</span><span class="vs">003@.0</span><span class="st">'</span><span class="op">, </span><span class="dt">filter</span><span class="op"> =</span> <span class="st">'</span><span class="vs">002@.0 =^ "Tg"</span><span class="st">'</span><span class="op"> }</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Sollte ein globaler Geltungsbereich <code>scope</code> für alle Regeln definiert sein, dann werden nur die Zielwerte <code>source</code> der Datensätze, die zum spezifizierten Geltungsbereich gehören, überprüft. Der Geltungsbereich wird aber nicht zur Bestimmung der Zieldatensätze verwendet. Besteht die Eingabe sowohl aus Personen <code>Tp*</code> als auch Geografika <code>Tg*</code>, dann kann der Geltungsbereich auf Personen eingeschränkt werden (<code>scope = '002@.0 =^ "Tp"'</code>). Ein Abgleich mit den Geografika kann aber trotzdem erfolgen, da diese nicht dem Geltungsbereich unterliegen.</p>
 <section id="optionen-4" class="level4">
 <h4 class="anchored" data-anchor-id="optionen-4">Optionen</h4>
@@ -523,11 +525,11 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 <section id="jel" class="level3">
 <h3 class="anchored" data-anchor-id="jel">JEL</h3>
 <p>Der <code>jel</code>-Check überprüft, ob ein Unterfeld einen gültigen <a href="https://papers.ssrn.com/sol3/displayjel.cfm">JEL</a>-Code enthält.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.JEL]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.JEL]</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">'</span><span class="vs">jel</span><span class="st">'</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">'</span><span class="vs">Findet ungültige JEL-Codes im Feld 045Z $a.</span><span class="st">'</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">'</span><span class="vs">https://wiki.dnb.de/display/ILTIS/5450</span><span class="st">'</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">045Z{ a | b == "jelc" }</span><span class="st">'</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">'</span><span class="vs">045Z{ a | b == "jelc" }</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen-5" class="level4">
 <h4 class="anchored" data-anchor-id="optionen-5">Optionen</h4>
 <dl>
@@ -545,12 +547,12 @@ Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten mitte
 <section id="unicode" class="level3">
 <h3 class="anchored" data-anchor-id="unicode">Unicode</h3>
 <p>Der <code>unicode</code>-Check überprüft, ob die Werte aller Unterfelder eines Datensatzes gültige Unicode-Zeichenketten sind.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE1]</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE1]</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Darüber hinaus kann überprüft werden, ob diese Werte in einer der Unicode-Normalformen <code>nfc</code>, <code>nfkc</code>, <code>nfd</code> oder <code>nfkd</code> vorliegen. Alle nicht konformen Werte werden in der <code>message</code>-Spalte der Ausgabedatei aufgeführt.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE2]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.UNICODE2]</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"unicode"</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="dt">normalization</span> <span class="op">=</span> <span class="st">"nfd"</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen-6" class="level4">
 <h4 class="anchored" data-anchor-id="optionen-6">Optionen</h4>
 <dl>
@@ -638,13 +640,14 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

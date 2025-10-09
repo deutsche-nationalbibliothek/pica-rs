@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,14 +69,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../commands/explode.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cd63c9d9159021c9e6cc762d0675ae63.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-9dcb88be0e4135188ca178d6ae8aa706.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -133,7 +134,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
       <a href="../index.html" class="sidebar-logo-link">
-      <img src="../assets/img/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../assets/img/logo.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
     <div class="sidebar-title mb-0 py-0">
       <a href="../">pica-rs</a> 
@@ -347,7 +349,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>Das <code>filter</code>-Kommando bildet das Herzstück des <code>pica</code>-Tools. Es ermöglicht es, aus einer (mitunter sehr großen) Datenmenge, bspw. dem Gesamtabzug des Katalogsystems, eine kleinere Menge effizient zu extrahieren, um sie anschließend weiterzuverarbeiten. Dies erfolgt über die Angabe eines Filterausdrucks, der darüber entscheidet, ob ein Datensatz in die Zielmenge eingeht oder nicht.</p>
 <p>Im folgenden Beispiel werden alle Datensätze aus der Datei <code>DUMP.dat.gz</code> extrahiert, die ein Feld <code>003@</code> enthalten, das ein Unterfeld <code>0</code> besitzt, welches mit dem Wert <code>118540238</code> belegt ist.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="st">'003@.0 == "118540238"'</span> DUMP.dat.gz <span class="at">-o</span> goethe.dat</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="st">'003@.0 == "118540238"'</span> DUMP.dat.gz <span class="at">-o</span> goethe.dat</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print goethe.dat</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">001A</span> <span class="va">$0</span> 1250:01-07-88</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">001B</span> <span class="va">$0</span> 9999:15-04-22 <span class="va">$t</span> 15:15:00.000</span>
@@ -362,7 +364,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">006Y</span> <span class="va">$S</span> wikidata <span class="va">$0</span> Q5879</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ex">028A</span> <span class="va">$d</span> Johann Wolfgang <span class="va">$c</span> von <span class="va">$a</span> Goethe</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen" class="level2">
 <h2 class="anchored" data-anchor-id="optionen">Optionen</h2>
 <dl>
@@ -454,28 +456,28 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
 <h3 class="anchored" data-anchor-id="invertierte-treffermenge-invert-match">Invertierte Treffermenge (<em>invert match</em>)</h3>
 <p>Mitunter ist es einfacher, einen Ausdruck zu formulieren, der alle Datensätze umfasst, die nicht in der Treffermenge gewünscht sind. Durch die Option <code>-v</code>/<code>--invert-match</code> werden dann nur die Datensätze ausgegeben, die nicht dem Filterkriterum entsprechen.</p>
 <p>Beispielweise enthält der Abzug <code>DUMP.dat.gz</code> verschiedene Normdatensätze. Werden nur die Datensätze benötigt, die <strong>nicht</strong> vom Satztyp Werk sind, ist es einfacher, zuerst nach den Werken zu suchen und dann durch das Flag <code>-v</code> alle Datensätze zu erhalten, die nicht dem Filterkriterium entsprechen.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">-v</span> <span class="st">'002@.0 =^ "Tu"'</span> DUMP.dat.gz <span class="at">-o</span> not-Tu.dat.gz</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">-v</span> <span class="st">'002@.0 =^ "Tu"'</span> DUMP.dat.gz <span class="at">-o</span> not-Tu.dat.gz</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica frequency <span class="st">'002@.0'</span> not-Tu.dat.gz</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Tsz,2</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Tg1,1</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Tp1,1</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Tpz,1</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,1</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Ts1,1</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="groß--und-kleinschreibung-ingorieren" class="level3">
 <h3 class="anchored" data-anchor-id="groß--und-kleinschreibung-ingorieren">Groß- und Kleinschreibung ingorieren</h3>
 <p>Standardmäßig wird bei Vergleichen von Zeichenketten die Groß- und Kleinschreibung beachtet. Dies lässt sich mit dem Flag <code>-i</code>/<code>--ignore-case</code> deaktivieren:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">-i</span> <span class="st">'028A.a == "GOETHE"'</span> DUMP.dat.gz <span class="at">-o</span> goethe.dat</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">-i</span> <span class="st">'028A.a == "GOETHE"'</span> DUMP.dat.gz <span class="at">-o</span> goethe.dat</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print goethe.dat</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">028A</span> <span class="va">$d</span> Johann Wolfgang <span class="va">$c</span> von <span class="va">$a</span> Goethe</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="felder-eines-datensatzes-reduzieren" class="level3">
 <h3 class="anchored" data-anchor-id="felder-eines-datensatzes-reduzieren">Felder eines Datensatzes reduzieren</h3>
 <p>Teilweise ist die Anzahl der Felder pro Datensatz sehr groß, was zu erheblichen Laufzeiteinbußen nachfolgender Datenanalysen führen kann. Mittels der Optionen <code>-k</code>/<code>--keep</code> bzw. <code>-d</code>/<code>--discard</code> lassen sich Datensätze auf eine Teilmenge der Felder reduzieren.</p>
 <p>Werden für eine Datenanalyse nur die IDN/PPN (<code>003@</code>), die Satzart (<code>002@</code>) und die Entitätenkodierung (<code>004B</code>) benötigt, können die Datensätze wie folgt auf die Felder reduziert werden:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">--keep</span> <span class="st">'00[23]@,004B'</span> <span class="st">"003@?"</span> DUMP.dat.gz <span class="at">-o</span> out.dat</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">--keep</span> <span class="st">'00[23]@,004B'</span> <span class="st">"003@?"</span> DUMP.dat.gz <span class="at">-o</span> out.dat</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print out.dat</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tpz</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118540238</span>
@@ -484,9 +486,9 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tp1</span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118607626</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">004B</span> <span class="va">$a</span> piz</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Sollen bestimmte Felder entfernt werden, kann dies mit der Option <code>-d</code>/<code>--discard</code> erfolgen. Der folgende Aufruf entfernt das Feld <code>004B</code>, sofern vorhanden, aus allen Datensätzen:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">--keep</span> <span class="st">'00[23]@,004B'</span> <span class="st">"003@?"</span> DUMP.dat.gz <span class="at">-o</span> out.dat</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">-s</span> <span class="at">--keep</span> <span class="st">'00[23]@,004B'</span> <span class="st">"003@?"</span> DUMP.dat.gz <span class="at">-o</span> out.dat</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica filter <span class="at">--discard</span> <span class="st">'004B'</span> <span class="st">"003@?"</span> out.dat <span class="at">-o</span> out2.dat</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pica print out2.dat</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tpz</span>
@@ -494,7 +496,7 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">002@</span> <span class="va">$0</span> Tp1</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">003@</span> <span class="va">$0</span> 118607626</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>
@@ -558,13 +560,14 @@ Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig wir
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
