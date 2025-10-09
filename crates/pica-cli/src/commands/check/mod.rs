@@ -69,12 +69,12 @@ impl Check {
                     Ok(ref record) => {
                         progress.update(false);
 
-                        if !filter_set.check(&record) {
+                        if !filter_set.check(record) {
                             continue;
                         }
 
                         if let Some(ref matcher) = matcher
-                            && !matcher.is_match(&record, &options)
+                            && !matcher.is_match(record, &options)
                         {
                             continue;
                         }
