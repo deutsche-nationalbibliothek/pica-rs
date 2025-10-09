@@ -19,9 +19,6 @@ $ pica count --records slice.dat
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
 `--start <number>`
 : Startposition des Teilbereichs (Voreinstellung: `0`).
 
@@ -50,6 +47,9 @@ der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 `-o`, `--output`
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll. Standardmäßig
 wird die Ausgabe in die Standardausgabe `stdout` geschrieben.
+
+
+{{< include /_partials/filter-opts.qmd >}}
 
 
 ## Beispiele

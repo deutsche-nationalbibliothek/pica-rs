@@ -4,9 +4,7 @@ use std::process::ExitCode;
 use clap::Parser;
 use pica_record::prelude::*;
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Return records within a range
 ///
@@ -55,10 +53,6 @@ pub(crate) struct Slice {
     )]
     length: usize,
 
-    /// Skip invalid records that can't be decoded as normalized PICA+
-    #[arg(short, long)]
-    skip_invalid: bool,
-
     /// Compress output in gzip format
     #[arg(long, short)]
     gzip: bool,
@@ -81,11 +75,23 @@ pub(crate) struct Slice {
     /// from standard input (stdin).
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    pub(crate) filter_opts: FilterOpts,
 }
 
 impl Slice {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
+        let mut count = 0;
+
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let options = MatcherOptions::from(&self.filter_opts);
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
+
         let mut writer = WriterBuilder::new()
             .gzip(self.gzip)
             .append(self.append)
@@ -119,12 +125,29 @@ impl Slice {
                     Ok(ref record) => {
                         progress.update(false);
 
+                        if !filter_set.check(record) {
+                            continue;
+                        }
+
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(record, &options)
+                        {
+                            continue;
+                        }
+
                         if range.contains(&i) {
                             writer.write_byte_record(record)?;
                         } else if i < range.start {
                             i += 1;
                             continue;
                         } else {
+                            break 'outer;
+                        }
+
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
                             break 'outer;
                         }
                     }

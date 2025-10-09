@@ -212,7 +212,7 @@ fn count_write_no_header() -> TestResult {
 }
 
 #[test]
-fn count_matcher_where() -> TestResult {
+fn count_where() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .args(["count", "-s", "--records"])
@@ -230,7 +230,7 @@ fn count_matcher_where() -> TestResult {
 }
 
 #[test]
-fn count_matcher_where_and() -> TestResult {
+fn count_where_and() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .args(["count", "-s", "--records"])
@@ -249,7 +249,7 @@ fn count_matcher_where_and() -> TestResult {
 }
 
 #[test]
-fn count_matcher_where_not() -> TestResult {
+fn count_where_not() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .args(["count", "-s", "--records"])
@@ -268,7 +268,7 @@ fn count_matcher_where_not() -> TestResult {
 }
 
 #[test]
-fn count_matcher_where_or() -> TestResult {
+fn count_where_or() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .args(["count", "-s", "--records"])
@@ -287,7 +287,106 @@ fn count_matcher_where_or() -> TestResult {
 }
 
 #[test]
-fn count_matcher_options() -> TestResult {
+fn count_allow() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    let allow = temp_dir.child("allow.csv");
+    allow.write_str("ppn\n118540238\n118607626\n")?;
+
+    let assert = cmd
+        .args(["count", "-s", "--records"])
+        .args(["-A", allow.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("2\n"))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn count_deny() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    let deny = temp_dir.child("allow.csv");
+    deny.write_str("ppn\n118540238\n118607626\n")?;
+
+    let assert = cmd
+        .args(["count", "-s", "--records"])
+        .args(["-D", deny.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("10\n"))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn count_filter_set_column() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    let allow = temp_dir.child("allow.csv");
+    allow.write_str("id\n118540238\n118607626\n")?;
+
+    let assert = cmd
+        .args(["count", "-s", "--records"])
+        .args(["-A", allow.to_str().unwrap()])
+        .args(["--filter-set-column", "id"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("2\n"))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn count_filter_set_source() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("pica")?;
+
+    let allow = temp_dir.child("allow.csv");
+    allow.write_str("bbg\nTpz\nTp1\n")?;
+
+    let assert = cmd
+        .args(["count", "-s", "--records"])
+        .args(["-A", allow.to_str().unwrap()])
+        .args(["--filter-set-source", "002@.0"])
+        .args(["--filter-set-column", "bbg"])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("2\n"))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn count_ignore_case() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
         .args(["count", "-s", "--records"])

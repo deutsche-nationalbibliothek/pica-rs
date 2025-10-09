@@ -15,10 +15,6 @@ mod writer;
 /// Checks records against rule sets.
 #[derive(clap::Parser, Debug)]
 pub(crate) struct Check {
-    /// Whether to skip invalid records or not
-    #[arg(short, long)]
-    skip_invalid: bool,
-
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
     progress: bool,
@@ -34,13 +30,24 @@ pub(crate) struct Check {
     /// Read one or more files in normalized PICA+ format.
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    filter_opts: FilterOpts,
 }
 
 impl Check {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
         let mut writer = writer(self.output)?;
+        let mut count = 0;
+
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let options = MatcherOptions::from(&self.filter_opts);
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
 
         let mut rulesets = self
             .rules
@@ -48,7 +55,7 @@ impl Check {
             .map(RuleSet::from_path)
             .collect::<Result<Vec<_>, _>>()?;
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -60,12 +67,29 @@ impl Check {
                     }
                     Err(e) => return Err(e.into()),
                     Ok(ref record) => {
+                        progress.update(false);
+
+                        if !filter_set.check(record) {
+                            continue;
+                        }
+
+                        if let Some(ref matcher) = matcher
+                            && !matcher.is_match(record, &options)
+                        {
+                            continue;
+                        }
+
                         for rs in rulesets.iter_mut() {
                             rs.preprocess(record);
                             rs.check(record, &mut writer)?;
                         }
 
-                        progress.update(false);
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
+                        }
                     }
                 }
             }

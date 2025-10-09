@@ -1,9 +1,8 @@
 use std::ffi::OsString;
 use std::fs::File;
-use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{Parser, value_parser};
+use clap::Parser;
 use hashbrown::HashMap;
 use pica_record::prelude::*;
 use polars::prelude::*;
@@ -13,24 +12,9 @@ use crate::prelude::*;
 /// Creates a frequency table of all subfield codes.
 #[derive(Parser, Debug)]
 pub(crate) struct Describe {
-    /// Skip invalid records that can't be decoded
-    #[arg(short, long)]
-    skip_invalid: bool,
-
     /// Show progress bar (requires `-o`/`--output`).
     #[arg(short, long, requires = "output")]
     progress: bool,
-
-    /// When this flag is provided, comparison operations will be
-    /// search case insensitive
-    #[arg(long, short)]
-    ignore_case: bool,
-
-    /// The minimum score for string similarity comparisons (0 <= score
-    /// < 100).
-    #[arg(long, value_parser = value_parser!(u8).range(0..100),
-          default_value = "75")]
-    strsim_threshold: u8,
 
     /// Only examine fields that are specified in the list.
     #[arg(long, short)]
@@ -39,82 +23,6 @@ pub(crate) struct Describe {
     /// Ignore fields that specifield in the list.
     #[arg(long, short)]
     discard: Option<String>,
-
-    /// Ignore records which are *not* explicitly listed in one of the
-    /// given allow-lists.
-    ///
-    /// An allow-list must be a CSV, TSV or Apache Arrow file. By
-    /// default the column `ppn` or `idn` is used to get the values
-    /// of the allow list. These values are compared against the PPN
-    /// (003@.0) of record.
-    ///
-    /// The column name can be changed using the `--filter-set-column`
-    /// option and the path to the comparison values can be changed
-    /// with option `--filter-set-source`.
-    ///
-    /// # Note
-    ///
-    /// If the allow list is empty, all records are blocked. With more
-    /// than one allow list, the filter set is made up of all partial
-    /// lists. lists.
-    #[arg(long = "allow-list", short = 'A')]
-    allow: Vec<PathBuf>,
-
-    /// Ignore records which are explicitly listed in one of the
-    /// given deny-lists.
-    ///
-    /// A deny-list must be a CSV, TSV or Apache Arrow file. By
-    /// default the column `ppn` or `idn` is used to get the values
-    /// of the allow list. These values are compared against the PPN
-    /// (003@.0) of record.
-    ///
-    /// The column name can be changed using the `--filter-set-column`
-    /// option and the path to the comparison values can be changed
-    /// with option `--filter-set-source`.
-    ///
-    /// # Note
-    ///
-    /// With more than one allow list, the filter set is made up of all
-    /// partial lists.
-    #[arg(long = "deny-list", short = 'D')]
-    deny: Vec<PathBuf>,
-
-    /// Defines the column name of an allow-list or a deny-list. By
-    /// default, the column `ppn` is used or, if this is not
-    /// available, the column `idn` is used.
-    #[arg(long, value_name = "COLUMN")]
-    filter_set_column: Option<String>,
-
-    /// Defines an optional path to the comparison values of the
-    /// record. If no path is specified, a comparison with the PPN in
-    /// field 003@.0 is assumed.
-    #[arg(long, value_name = "PATH")]
-    filter_set_source: Option<Path>,
-
-    /// A filter expression used for searching
-    #[arg(long = "where")]
-    filter: Option<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical AND-operator (conjunction)
-    ///
-    /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    and: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical OR-operator (disjunction)
-    ///
-    /// This option can't be combined with `--and` or `--not`.
-    #[arg(long, requires = "filter", conflicts_with_all = ["and", "not"])]
-    or: Vec<String>,
-
-    /// Connects the where clause with additional expressions using the
-    /// logical NOT-operator (negation)
-    ///
-    /// This option can't be combined with `--or`.
-    #[arg(long, requires = "filter", conflicts_with = "or")]
-    not: Vec<String>,
 
     /// Write output comma-separated (CSV)
     #[arg(long, short, requires = "output", conflicts_with = "tsv")]
@@ -131,45 +39,31 @@ pub(crate) struct Describe {
     /// Read one or more files in normalized PICA+ format.
     #[arg(default_value = "-", hide_default_value = true)]
     filenames: Vec<OsString>,
+
+    #[command(flatten, next_help_heading = "Filter options")]
+    pub(crate) filter_opts: FilterOpts,
 }
 
 impl Describe {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
-        let skip_invalid = self.skip_invalid || config.skip_invalid;
+        let skip_invalid =
+            self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
+        let mut count = 0;
+
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
 
-        let filter_set = FilterSetBuilder::new()
-            .source(self.filter_set_source)
-            .column(self.filter_set_column)
-            .allow(self.allow)
-            .deny(self.deny)
-            .build()?;
-
-        let matcher = if let Some(matcher) = self.filter {
-            Some(
-                RecordMatcherBuilder::with_transform(
-                    matcher,
-                    translit(config.normalization.clone()),
-                )?
-                .and(self.and)?
-                .not(self.not)?
-                .or(self.or)?
-                .build(),
-            )
-        } else {
-            None
-        };
-
-        let options = MatcherOptions::new()
-            .strsim_threshold(self.strsim_threshold as f64 / 100f64)
-            .case_ignore(self.ignore_case);
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let options = MatcherOptions::from(&self.filter_opts);
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
 
         let mut fields: HashMap<String, HashMap<char, usize>> =
             HashMap::new();
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -209,6 +103,13 @@ impl Describe {
                                     .and_modify(|e| *e += 1)
                                     .or_insert(1);
                             }
+                        }
+
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
                         }
                     }
                 }

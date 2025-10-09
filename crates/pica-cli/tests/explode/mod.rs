@@ -410,6 +410,108 @@ fn explode_where_or() -> TestResult {
 }
 
 #[test]
+fn explode_allow() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("ppn\n123456789\n")?;
+
+    let assert = cmd
+        .args(["explode", "main"])
+        .args(["-A", allow.to_str().unwrap()])
+        .arg(data_dir().join("COPY.dat.gz"))
+        .assert();
+
+    let output = "003@ \x1f0123456789\x1e002@ \x1f0Abvz\x1e\
+        101@ \x1fa1\x1e203@/01 \x1f00123456789\x1e203@/02 \x1f01234567890\x1e\
+        101@ \x1fa2\x1e203@/01 \x1f0345678901\x1e\n";
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(output))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn explode_deny() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+    let deny = temp_dir.child("ALLOW.csv");
+    deny.write_str("ppn\n123456789\n")?;
+
+    let assert = cmd
+        .args(["explode", "main"])
+        .args(["-D", deny.to_str().unwrap()])
+        .arg(data_dir().join("COPY.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn explode_filter_set_column() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("id\n123456789\n")?;
+
+    let assert = cmd
+        .args(["explode", "main"])
+        .args(["-A", allow.to_str().unwrap()])
+        .args(["--filter-set-column", "id"])
+        .arg(data_dir().join("COPY.dat.gz"))
+        .assert();
+
+    let output = "003@ \x1f0123456789\x1e002@ \x1f0Abvz\x1e\
+        101@ \x1fa1\x1e203@/01 \x1f00123456789\x1e203@/02 \x1f01234567890\x1e\
+        101@ \x1fa2\x1e203@/01 \x1f0345678901\x1e\n";
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(output))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn explode_filter_set_source() -> TestResult {
+    let mut cmd = Command::cargo_bin("pica")?;
+    let temp_dir = TempDir::new().unwrap();
+    let allow = temp_dir.child("ALLOW.csv");
+    allow.write_str("eln\n345678901\n")?;
+
+    let assert = cmd
+        .args(["explode", "copy"])
+        .args(["-A", allow.to_str().unwrap()])
+        .args(["--filter-set-source", "203@/*.0"])
+        .args(["--filter-set-column", "eln"])
+        .arg(data_dir().join("COPY.dat.gz"))
+        .assert();
+
+    let output = "003@ \x1f0123456789\x1e002@ \x1f0Abvz\x1e\
+        101@ \x1fa2\x1e203@/01 \x1f0345678901\x1e\n";
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(output))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 fn explode_keep() -> TestResult {
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd

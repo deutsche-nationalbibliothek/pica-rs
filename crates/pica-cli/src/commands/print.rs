@@ -7,8 +7,8 @@ use bstr::ByteSlice;
 use clap::Parser;
 use pica_record::prelude::*;
 
-use crate::cli::FilterOpts;
 use crate::prelude::*;
+use crate::utils::FilterSet;
 
 /// Print records in human readable format
 #[derive(Parser, Debug)]
@@ -30,26 +30,21 @@ pub(crate) struct Print {
     filenames: Vec<OsString>,
 
     #[command(flatten, next_help_heading = "Filter options")]
-    pub(crate) filter: FilterOpts,
+    filter_opts: FilterOpts,
 }
 
 impl Print {
     pub(crate) fn execute(self, config: &Config) -> CliResult {
         let skip_invalid =
-            self.filter.skip_invalid || config.skip_invalid;
+            self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
         let mut count = 0;
 
-        let matcher =
-            self.filter.matcher(config.normalization.clone())?;
-        let options = MatcherOptions::from(&self.filter);
-
-        let filter_set = FilterSetBuilder::new()
-            .column(self.filter.filter_set_column)
-            .source(self.filter.filter_set_source)
-            .allow(self.filter.allow)
-            .deny(self.filter.deny)
-            .build()?;
+        let filter_set = FilterSet::try_from(&self.filter_opts)?;
+        let matcher = self
+            .filter_opts
+            .matcher(config.normalization.clone(), None)?;
+        let options = MatcherOptions::from(&self.filter_opts);
 
         let mut writer: BufWriter<Box<dyn Write>> =
             if let Some(path) = self.output {
@@ -105,8 +100,8 @@ impl Print {
                         writeln!(writer)?;
                         count += 1;
 
-                        if self.filter.limit > 0
-                            && count >= self.filter.limit
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
                         {
                             break 'outer;
                         }

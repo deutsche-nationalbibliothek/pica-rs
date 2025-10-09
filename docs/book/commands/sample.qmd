@@ -21,9 +21,6 @@ $ pica sample 200 DUMP.dat.gz -o samples.dat
 
 ## Optionen
 
-`-s`, `--skip-invalid`
-: Überspringt jene Zeilen aus der Eingabe, die nicht dekodiert werden konnten.
-
 `-g`, `--gzip`
 : Komprimieren der Ausgabe im [Gzip]-Format.
 
@@ -35,54 +32,12 @@ deterministische Auswahl zu erhalten.
 : Anzeige des Fortschritts, der die Anzahl der eingelesenen gültigen sowie
 invaliden Datensätze anzeigt.
 
-`-i`, `--ignore-case`
-: Groß- und Kleinschreibung wird bei Vergleichen ignoriert.
-
-`--strsim-threshold <value>`
-: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von Zeichenketten
-mittels `=*`.
-
-`--where <filter>`
-: Angabe eines Filters, der auf die eingelesenen Datensätze angewandt wird.
-
-`--and <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`&&`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> && <expr>`.
-
-`--or <expr>`
-: Hinzufügen eines zusätzlichen Filters mittels der booleschen
-`||`-Verknüpfung. Der ursprüngliche Filterausdruck `<filter>` wird zum Ausdruck
-`<filter> || <expr>`.
-
-`--not <expr>`
-: Hinzufügen eines zusätzlichen Filters. Der ursprüngliche
-Filterausdruck `<filter>` wird zum Ausdruck `<filter> && !(<expr>)`.
-
-`-A <file>`, `--allow-list` `<file>`
-: Es werden alle Datensätze ignoriert, die nicht explizit in der
-Positivliste[^1] auftauchen. Werden mehrere Positivlisten angegeben,
-wird die Mengenvereinigung aus allen Listen gebildet.
-
-`-D <file>`, `--deny-list` `<file>`
-: Es werden alle Datensätze ignoriert, die in der Negativliste
-auftauchen. Werden mehrere Negativlisten angegeben, wird die
-Mengenvereinigung aus allen Listen gebildet.
-
-`--filter-set-column <COLUMN>`
-: Legt den Spaltennamen fest, der die Referenzwerte einer Allow- bzw.
-Deny-Liste enthält. Wird die Option nicht angegeben, werden die Werte
-aus der Spalte `ppn` bzw. `idn` ausgelesen. Die `idn`-Spalte wird nur
-versucht zu lesen, wenn keine `ppn`-Spalte vorhanden ist.
-
-`--filter-set-path <PATH>`
-: Ein Pfadausdruck, der zur Ermittlung der Vergleichswerte genutzt wird.
-Ist die Option nicht angegeben, wird von einem Vergleich mit der PPN im
-Feld `003@.0` eines Datensatzes ausgegen.
-
 `-o <path>`, `--outdir <path>`
 : Angabe, in welches Verzeichnis die Partitionen geschrieben werden sollen.
 Standardmäßig wird das aktuelle Verzeichnis verwendet.
+
+
+{{< include /_partials/filter-opts.qmd >}}
 
 
 ## Beispiele
@@ -96,17 +51,8 @@ werden:
 $ pica sample 3 DUMP.dat.gz | pica select -H 'ppn' '003@.0' -o samples.csv
 ```
 
-[^1]: Eine Positiv- oder Negativliste muss entweder als [CSV]-Datei
-    vorliegen oder als eine [Arrow]-Datei, die eine `ppn`- oder
-    `idn`-Spalte enthält. Alle Dateien werden automatisch als
-    [CSV]-Datei interpretiert, es sei denn, die Datei endet mit `.ipc`
-    oder `.arrow`, dann erfolgt die Interpretation im [Arrow]-Format.
-    CSV- bzw. TSV-Dateien mit der Endung `.csv.gz` bzw. `.tsv.gz`
-    werden automatisch entpackt. Ist sowohl eine `ppn`- als auch eine
-    `idn`-Spalte vorhanden, wird die `ppn`-Spalte genutzt.
-
-[Arrow]: https://arrow.apache.org/
-[CSV]: https://de.wikipedia.org/wiki/CSV_(Dateiformat)
-[Gzip]: https://de.wikipedia.org/wiki/Gzip
 [Reservoir sampling]: https://en.wikipedia.org/wiki/Reservoir_sampling
+[CSV]: https://de.wikipedia.org/wiki/CSV_(Dateiformat)
+[Arrow]: https://arrow.apache.org/
+[Gzip]: https://de.wikipedia.org/wiki/Gzip
 

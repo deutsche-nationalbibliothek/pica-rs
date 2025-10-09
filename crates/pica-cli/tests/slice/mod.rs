@@ -2,7 +2,6 @@ use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
-// use predicates::prelude::*;
 use crate::prelude::*;
 
 #[test]
