@@ -7,9 +7,7 @@ use hashbrown::HashSet;
 use pica_record::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::config::Config;
-use crate::error::CliResult;
-use crate::progress::Progress;
+use crate::prelude::*;
 
 /// Concatenate records from multiple inputs
 #[derive(Debug, Parser)]

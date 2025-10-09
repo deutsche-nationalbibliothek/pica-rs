@@ -49,8 +49,11 @@ impl Describe {
         let skip_invalid =
             self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
+        let mut count = 0;
+
         let discard = parse_predicates(self.discard)?;
         let keep = parse_predicates(self.keep)?;
+
         let filter_set = FilterSet::try_from(&self.filter_opts)?;
         let options = MatcherOptions::from(&self.filter_opts);
         let matcher = self
@@ -60,7 +63,7 @@ impl Describe {
         let mut fields: HashMap<String, HashMap<char, usize>> =
             HashMap::new();
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -100,6 +103,13 @@ impl Describe {
                                     .and_modify(|e| *e += 1)
                                     .or_insert(1);
                             }
+                        }
+
+                        count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
                         }
                     }
                 }
