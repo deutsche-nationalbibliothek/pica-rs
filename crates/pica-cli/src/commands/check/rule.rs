@@ -1,11 +1,10 @@
-use std::io::Write;
-
 use bstr::ByteSlice;
 use pica_record::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::checks::Checks;
 use super::writer::Record;
+use crate::commands::check::writer::Writer;
 use crate::prelude::*;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -44,10 +43,10 @@ impl Rule {
         }
     }
 
-    pub(crate) fn check<W: Write>(
+    pub(crate) fn check(
         &mut self,
         record: &ByteRecord,
-        writer: &mut csv::Writer<W>,
+        writer: &mut Writer,
     ) -> Result<(), CliError> {
         let (result, message) = match self.check {
             Checks::DateTime(ref c) => c.check(record),
@@ -60,7 +59,7 @@ impl Rule {
         };
 
         if result {
-            writer.serialize(Record {
+            writer.write_record(Record {
                 ppn: record.ppn(),
                 rule: &self.id,
                 level: &self.level,
@@ -71,9 +70,9 @@ impl Rule {
         Ok(())
     }
 
-    pub(crate) fn finish<W: Write>(
+    pub(crate) fn finish(
         &mut self,
-        writer: &mut csv::Writer<W>,
+        writer: &mut Writer,
     ) -> Result<(), CliError> {
         if let Checks::Link(ref mut c) = self.check {
             for (ppn, message) in c.finish() {
@@ -83,7 +82,7 @@ impl Rule {
                     None
                 };
 
-                writer.serialize(Record {
+                writer.write_record(Record {
                     rule: &self.id,
                     level: &self.level,
                     message,
@@ -92,6 +91,7 @@ impl Rule {
             }
         }
 
+        writer.finish()?;
         Ok(())
     }
 }

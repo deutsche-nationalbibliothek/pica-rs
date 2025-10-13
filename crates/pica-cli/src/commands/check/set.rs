@@ -1,11 +1,11 @@
 use std::fs::read_to_string;
-use std::io::Write;
 use std::path::Path;
 
 use hashbrown::HashMap;
 use pica_record::prelude::*;
 
 use super::rule::Rule;
+use crate::commands::check::writer::Writer;
 use crate::prelude::*;
 
 #[derive(Debug, serde::Deserialize)]
@@ -43,10 +43,10 @@ impl RuleSet {
             .for_each(|(_, rule)| rule.preprocess(record));
     }
 
-    pub(crate) fn check<W: Write>(
+    pub(crate) fn check(
         &mut self,
         record: &ByteRecord,
-        writer: &mut csv::Writer<W>,
+        writer: &mut Writer,
     ) -> Result<(), CliError> {
         if let Some(ref matcher) = self.scope
             && !matcher.is_match(record, &Default::default())
@@ -61,9 +61,9 @@ impl RuleSet {
         Ok(())
     }
 
-    pub(crate) fn finish<W: Write>(
+    pub(crate) fn finish(
         &mut self,
-        writer: &mut csv::Writer<W>,
+        writer: &mut Writer,
     ) -> Result<(), CliError> {
         for (_, rule) in self.rules.iter_mut() {
             rule.finish(writer)?;

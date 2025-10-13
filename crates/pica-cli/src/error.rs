@@ -16,6 +16,7 @@ macro_rules! bail {
 
 pub(crate) use bail;
 
+use crate::commands::check;
 use crate::utils::FilterSetError;
 
 #[derive(Debug, Error)]
@@ -30,6 +31,8 @@ pub(crate) enum CliError {
     ParseQuery(#[from] ParseQueryError),
     #[error(transparent)]
     FilterSet(#[from] FilterSetError),
+    #[error(transparent)]
+    Check(#[from] check::writer::Error),
     #[error(transparent)]
     Csv(#[from] csv::Error),
     #[error(transparent)]

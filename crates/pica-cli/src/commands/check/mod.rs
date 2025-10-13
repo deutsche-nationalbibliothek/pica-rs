@@ -1,16 +1,17 @@
 use std::ffi::OsString;
+use std::path::PathBuf;
 use std::process::ExitCode;
 
 use pica_record::prelude::*;
 use set::RuleSet;
-use writer::writer;
+use writer::Writer;
 
 use crate::prelude::*;
 
 mod checks;
 mod rule;
 mod set;
-mod writer;
+pub(crate) mod writer;
 
 /// Checks records against rule sets.
 #[derive(clap::Parser, Debug)]
@@ -25,7 +26,7 @@ pub(crate) struct Check {
 
     /// Write output to FILENAME instead of stdout
     #[arg(short, long, value_name = "FILENAME")]
-    output: Option<OsString>,
+    output: Option<PathBuf>,
 
     /// Read one or more files in normalized PICA+ format.
     #[arg(default_value = "-", hide_default_value = true)]
@@ -40,7 +41,7 @@ impl Check {
         let skip_invalid =
             self.filter_opts.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
-        let mut writer = writer(self.output)?;
+        let mut writer = Writer::from_path(self.output)?;
         let mut count = 0;
 
         let filter_set = FilterSet::try_from(&self.filter_opts)?;
@@ -100,7 +101,7 @@ impl Check {
         }
 
         progress.finish();
-        writer.flush()?;
+        writer.finish()?;
 
         Ok(ExitCode::SUCCESS)
     }
