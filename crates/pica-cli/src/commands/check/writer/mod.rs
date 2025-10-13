@@ -54,15 +54,59 @@ impl CsvWriter {
     }
 }
 
+pub(crate) struct TxtWriter {
+    inner: csv::Writer<Box<dyn Write>>,
+}
+
+impl TxtWriter {
+    pub(crate) fn from_path(
+        path: Option<PathBuf>,
+    ) -> Result<Self, Error> {
+        let wtr: Box<dyn Write> = match path {
+            Some(path) => Box::new(BufWriter::new(File::create(path)?)),
+            None => Box::new(stdout().lock()),
+        };
+
+        let wtr = csv::WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(wtr);
+
+        Ok(Self { inner: wtr })
+    }
+
+    pub(crate) fn write_record(
+        &mut self,
+        record: Record,
+    ) -> Result<(), Error> {
+        let ppn = record.ppn.unwrap_or_default();
+        Ok(self.inner.write_record([ppn])?)
+    }
+
+    pub(crate) fn finish(&mut self) -> Result<(), Error> {
+        Ok(self.inner.flush()?)
+    }
+}
+
 pub(crate) enum Writer {
     Csv(CsvWriter),
+    Txt(TxtWriter),
 }
 
 impl Writer {
     pub(crate) fn from_path(
         path: Option<PathBuf>,
     ) -> Result<Self, Error> {
-        Ok(Self::Csv(CsvWriter::from_path(path)?))
+        let path_str = if let Some(ref path) = path {
+            path.to_str().unwrap_or_default()
+        } else {
+            ""
+        };
+
+        if path_str.ends_with(".txt") {
+            Ok(Self::Txt(TxtWriter::from_path(path)?))
+        } else {
+            Ok(Self::Csv(CsvWriter::from_path(path)?))
+        }
     }
 
     pub(crate) fn write_record(
@@ -71,41 +115,14 @@ impl Writer {
     ) -> Result<(), Error> {
         match self {
             Self::Csv(wtr) => wtr.write_record(record),
+            Self::Txt(wtr) => wtr.write_record(record),
         }
     }
 
     pub(crate) fn finish(&mut self) -> Result<(), Error> {
         match self {
             Self::Csv(wtr) => wtr.finish(),
+            Self::Txt(wtr) => wtr.finish(),
         }
     }
 }
-
-// pub(crate) trait Writer {
-//     fn write_record(&mut self, record: &Record) -> Result<(), Error>;
-//     fn flush(&mut self) -> Result<(), Error>;
-//     fn finish(self) -> Result<(), Error>;
-// }
-
-// pub(crate) struct CsvWriter<W: Write> {
-//     inner: csv::Writer<W>,
-// }
-
-// impl<W: Write> Writer for CsvWriter<W> {
-//     fn write_record(&mut self, record: &Record) -> Result<(), Error>
-// {         Ok(self.inner.serialize(record)?)
-//     }
-
-//     fn flush(&mut self) -> Result<(), Error> {
-//         Ok(self.inner.flush()?)
-//     }
-
-//     fn finish(mut self) -> Result<(), Error> {
-//         Ok(self.inner.flush()?)
-//     }
-// }
-
-// pub(crate) fn writer(
-//     output: OsString,
-// ) -> Result<Box<dyn Writer>, Error> {
-// }

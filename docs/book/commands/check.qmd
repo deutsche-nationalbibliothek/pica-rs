@@ -53,8 +53,17 @@ description = "Findet Datensätze, die gegen die Regel XYZ verstoßen."
 link = "https://www.example.org/XYZ"
 ````
 
-## Checks
+## Ausgabeformate
 
+Ist die Dateiendung der Ausgabedatei (Option `-o`) gleich dem Suffix
+`.txt`, wird in die Ausgabedatei lediglich die PPN des Datensatzes
+geschrieben (ohne Spaltenbezeichnung). Dieses Ausgabeformat eigenet sich
+besonders für die Verarbeitung in der WinIBW.
+
+Ist die Dateiendung nicht `.txt` wird standardmäßig wird eine CSV-Datei
+erzeugt, die die Spalten `ppn`, `rule`, `level` und `message` enthält.
+
+## Checks
 
 ### Datetime
 

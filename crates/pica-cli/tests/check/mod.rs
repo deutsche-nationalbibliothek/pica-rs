@@ -1,3 +1,5 @@
+use std::fs::read_to_string;
+
 use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
@@ -166,6 +168,42 @@ fn check_where() -> TestResult {
         .code(0)
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_txt_output() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let output = temp_dir.child("out.txt");
+
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = "filter"
+            filter = '002@.0 =^ "Tp"'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .args(["check", "-s"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", output.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert_eq!(read_to_string(output)?, "118540238\n118607626\n");
 
     temp_dir.close().unwrap();
     Ok(())
