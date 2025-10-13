@@ -17,7 +17,7 @@ pub(crate) use select::Select;
 pub(crate) use slice::Slice;
 pub(crate) use split::Split;
 
-mod check;
+pub(crate) mod check;
 mod completions;
 mod concat;
 mod config;
