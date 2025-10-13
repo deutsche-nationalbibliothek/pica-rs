@@ -19,7 +19,7 @@ pub(crate) enum Error {
     #[error(transparent)]
     IO(#[from] std::io::Error),
     #[error(transparent)]
-    CSV(#[from] csv::Error),
+    Csv(#[from] csv::Error),
 }
 
 pub(crate) struct CsvWriter {
