@@ -99,7 +99,7 @@ impl Writer {
         let path_str = if let Some(ref path) = path {
             path.to_str().unwrap_or_default()
         } else {
-            "".into()
+            ""
         };
 
         if path_str.ends_with(".txt") {
