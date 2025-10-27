@@ -46,7 +46,7 @@ impl Duplicates {
         }
 
         freqs.retain(|_, cnt| *cnt >= self.threshold);
-        if freqs.len() > 0 {
+        if !freqs.is_empty() {
             let message = freqs
                 .keys()
                 .map(ToString::to_string)
