@@ -107,15 +107,15 @@ werden, wenn die Datums- bzw. Zeitangabe nicht am Anfang des zu
 
 Mittels des `filter`-Checks können Datensätze gefunden werden, die einem
 Filterausdruck entsprechen. Zum Beispiel können mit der folgenden Regel
-Datensätze gefunden werden, die einen ungültigen Projektcode im Feld
-`017C $a` enthalten:
+Datensätze gefunden werden, die einen ungültigen Zugriffscode im Feld
+`209K $a` enthalten:
 
 ```{.toml}
-[rule.TITLE-017C-001]
+[rule.ZUGRIFFSCODE]
 check = "filter"
-description = "Findet ungültige Projektcodes im Feld 017C $a."
-link = "https://wiki.dnb.de/display/ILTIS/0602"
-filter = '017C.a not in ["a","d","f","i","m","n","t"]'
+description = "Findet ungültige Zugriffscodes im Feld 209K $a."
+link = "https://wiki.dnb.de/display/ILTIS/7133"
+filter = '209K/*.a not in ["a","b","c","d","q","r"]'
 ```
 
 #### Optionen
