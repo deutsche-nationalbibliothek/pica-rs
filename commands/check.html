@@ -409,12 +409,12 @@ Mit der <code>offset</code>-Option können die ersten <code>&lt;n&gt;</code> Zei
 </section>
 <section id="filter" class="level3">
 <h3 class="anchored" data-anchor-id="filter">Filter</h3>
-<p>Mittels des <code>filter</code>-Checks können Datensätze gefunden werden, die einem Filterausdruck entsprechen. Zum Beispiel können mit der folgenden Regel Datensätze gefunden werden, die einen ungültigen Projektcode im Feld <code>017C $a</code> enthalten:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.TITLE-017C-001]</span></span>
+<p>Mittels des <code>filter</code>-Checks können Datensätze gefunden werden, die einem Filterausdruck entsprechen. Zum Beispiel können mit der folgenden Regel Datensätze gefunden werden, die einen ungültigen Zugriffscode im Feld <code>209K $a</code> enthalten:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[rule.ZUGRIFFSCODE]</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">check</span> <span class="op">=</span> <span class="st">"filter"</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">"Findet ungültige Projektcodes im Feld 017C $a."</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://wiki.dnb.de/display/ILTIS/0602"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">filter</span> <span class="op">=</span> <span class="st">'</span><span class="vs">017C.a not in ["a","d","f","i","m","n","t"]</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">"Findet ungültige Zugriffscodes im Feld 209K $a."</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">link</span> <span class="op">=</span> <span class="st">"https://wiki.dnb.de/display/ILTIS/7133"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">filter</span> <span class="op">=</span> <span class="st">'</span><span class="vs">209K/*.a not in ["a","b","c","d","q","r"]</span><span class="st">'</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="optionen-1" class="level4">
 <h4 class="anchored" data-anchor-id="optionen-1">Optionen</h4>
 <dl>
