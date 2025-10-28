@@ -29,6 +29,7 @@ pub(crate) struct CsvWriter {
 impl CsvWriter {
     pub(crate) fn from_path(
         path: Option<PathBuf>,
+        delimiter: u8,
     ) -> Result<Self, Error> {
         let wtr: Box<dyn Write> = match path {
             Some(path) => Box::new(BufWriter::new(File::create(path)?)),
@@ -36,6 +37,7 @@ impl CsvWriter {
         };
 
         let wtr = csv::WriterBuilder::new()
+            .delimiter(delimiter)
             .has_headers(true)
             .from_writer(wtr);
 
@@ -104,8 +106,10 @@ impl Writer {
 
         if path_str.ends_with(".txt") {
             Ok(Self::Txt(TxtWriter::from_path(path)?))
+        } else if path_str.ends_with(".tsv") {
+            Ok(Self::Csv(CsvWriter::from_path(path, b'\t')?))
         } else {
-            Ok(Self::Csv(CsvWriter::from_path(path)?))
+            Ok(Self::Csv(CsvWriter::from_path(path, b',')?))
         }
     }
 

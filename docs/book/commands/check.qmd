@@ -26,7 +26,7 @@ scope = '002@.0 =^ "T"'
 
 [rule.XYZ]
 ...
-````
+```
 
 Nicht bei jeder Regelverletzung handelt es sich gleich um einen Fehler.
 Deshalb wird zwischen folgenden Levels unterschieden:
@@ -41,8 +41,7 @@ nicht gesetzt, wird automatisch das Level `error` ausgewählt:
 ```{.toml}
 [rule.XYZ]
 level = "warning"
-````
-
+```
 Zur Nachvollziehbarkeit und Dokumentation kann eine Regel mit einer
 Beschreibung (`description`) und einem Link (`link`) ausgezeichnet
 werden:
@@ -51,7 +50,7 @@ werden:
 [rule.XYZ]
 description = "Findet Datensätze, die gegen die Regel XYZ verstoßen."
 link = "https://www.example.org/XYZ"
-````
+```
 
 ## Ausgabeformate
 
@@ -232,7 +231,7 @@ der Abgleich über die PPN eines Datensatzes erfolgt, wird der Ausdruck
 check = 'link'
 source.path = '065R.9'
 target.path = '003@.0'
-````
+```
 
 Zur Ermittlung der Ziel-Identifikatoren `source` können alle Funktionen
 der Pfad-Ausdrücke genutzt werden. Sollen nur `ortw`-Relationen getestet
@@ -243,7 +242,7 @@ werden, kann die Regel wie folgt modifiziert werden:
 check = 'link'
 source.path = '065R{ 9  | 4 == "ortw" }'
 target.path = '003@.0'
-````
+```
 
 Darüber hinaus können Kriterien formuliert werden, die der Zieldatensatz
 erfüllen muss. Zum Beispiel könnte die Anforderung an die verknüpften
