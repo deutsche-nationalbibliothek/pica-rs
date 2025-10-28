@@ -278,12 +278,12 @@ Zeichenketten mittels des `=*`-Operators.
 
 ### JEL
 
-Der `jel`-Check überprüft, ob ein Unterfeld einen gültigen [JEL]-Code
+Der `jelc`-Check überprüft, ob ein Unterfeld einen gültigen [JEL]-Code
 enthält.
 
 ```{.toml}
 [rule.JEL]
-check = 'jel'
+check = 'jelc'
 description = 'Findet ungültige JEL-Codes im Feld 045Z $a.'
 link = 'https://wiki.dnb.de/display/ILTIS/5450'
 path = '045Z{ a | b == "jelc" }'
