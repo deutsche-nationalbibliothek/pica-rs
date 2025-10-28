@@ -257,6 +257,8 @@ fn check_termination() -> TestResult {
     ruleset
         .write_str(
             r#"
+            termination = 'default'
+
             [rule.R001]
             check = "unicode"
 
