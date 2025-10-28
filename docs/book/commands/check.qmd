@@ -56,10 +56,10 @@ link = "https://www.example.org/XYZ"
 
 Ist die Dateiendung der Ausgabedatei (Option `-o`) `.txt`, wird in
 die Ausgabedatei lediglich die PPN des Datensatzes geschrieben (ohne
-Spaltenbezeichnung). Dieses Ausgabeformat eigenet sich besonders für die
+Spaltenbezeichnung). Dieses Ausgabeformat eignet sich besonders für die
 Verarbeitung in der WinIBW.
 
-Ist die Dateiendung nicht `.txt` wird standardmäßig eine CSV-Datei
+Ist die Dateiendung nicht `.txt`, wird standardmäßig eine CSV-Datei
 erzeugt, die die Spalten `ppn`, `rule`, `level` und `message` enthält.
 
 
@@ -107,16 +107,17 @@ werden, wenn die Datums- bzw. Zeitangabe nicht am Anfang des zu
 Mithilfe des `duplicates`-Check lässt sich überprüfen, ob ein
 Wert bzw. eine Kombination aus mehreren Werten mehrfach vorkommt.
 Der Schwellenwert ist standardmäßig `2` und kann durch die Option
-`threshold` geändert werden. Die folgende Regel überprüft, ob es mehrere
-Felder `045E` gibt, bei denen das Unter `H` mit dem Wert _dnb_ belegt
-ist und die eine gleiche Belegung der Unterfelder `E` und `H` hat.
+`threshold` geändert werden. Die folgende Regel überprüft, ob es unter
+denjenigen Feldern `045E`, bei denen das Unterfeld `H` mit "npi" belegt
+ist, mehrere Felder mit einer identischen Belegung des Unterfelds
+`e`gibt.
 
 ```{.toml}
 [rule.DUPLICATES]
 check = 'duplicates'
-description = 'Findet mehrfach intellektuell vergene DDC-Sachgruppen'
+description = 'Findet mehrfach vorkommende DDC-Sachgruppen (Herkunft `npi`)'
 link = 'https://wiki.dnb.de/display/ILTIS/5050'
-query = '045E{ E, H | H == "dnb" }'
+query = '045E{ e | H == "npi" }'
 ```
 
 #### Optionen
@@ -134,7 +135,7 @@ Zeichenketten mittels des `=*`-Operators.
 Vergleichswerte werden ignoriert.
 
 `threshold = <value>`
-: Ist die Häufigkeit eines Werts größer oder gleich `<value>` gilt der
+: Ist die Häufigkeit eines Werts größer oder gleich `<value>`, gilt der
 Wert als Duplikat. Wird der Schwellenwert nicht explizit angegeben, wird
 ein Wert von `2` angenommen.
 

@@ -6,6 +6,11 @@ const fn duplicates_threshold() -> usize {
     2
 }
 
+#[inline(always)]
+fn duplicates_separator() -> String {
+    "|".into()
+}
+
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct Duplicates {
@@ -16,6 +21,9 @@ pub(crate) struct Duplicates {
 
     #[serde(default = "super::strsim_threshold")]
     strsim_threshold: f64,
+
+    #[serde(default = "duplicates_separator")]
+    separator: String,
 
     #[serde(default)]
     case_ignore: bool,
@@ -33,11 +41,14 @@ impl Duplicates {
         let mut freqs = HashMap::new();
 
         for row in record.query(&self.query, &options).iter() {
-            let value = row
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join("-");
+            let values =
+                row.iter().map(ToString::to_string).collect::<Vec<_>>();
+
+            if values.iter().all(String::is_empty) {
+                continue;
+            }
+
+            let value = values.join(&self.separator);
 
             freqs
                 .entry(value)
@@ -51,7 +62,7 @@ impl Duplicates {
                 .keys()
                 .map(ToString::to_string)
                 .collect::<Vec<_>>()
-                .join(", ");
+                .join("; ");
             (true, Some(message))
         } else {
             (false, None)
