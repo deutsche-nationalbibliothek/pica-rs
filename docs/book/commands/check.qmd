@@ -28,6 +28,21 @@ scope = '002@.0 =^ "T"'
 ...
 ```
 
+Mit der Option `termination` kann die Abarbeitung der Regeln beeinflusst
+werden. Der Wert `fast` legt fest, dass mit der ersten zutreffenden
+Regel die Weiterverarbeitung eines Datensatzes beendet wird.
+
+```{.toml}
+scope = '002@.0 =^ "O"'
+termination = 'fast'
+
+[rule.R001]
+...
+
+[rule.R002]
+...
+```
+
 Nicht bei jeder Regelverletzung handelt es sich gleich um einen Fehler.
 Deshalb wird zwischen folgenden Levels unterschieden:
 

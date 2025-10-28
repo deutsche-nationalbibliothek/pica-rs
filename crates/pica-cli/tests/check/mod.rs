@@ -3,6 +3,7 @@ use std::fs::read_to_string;
 use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
+use predicates::prelude::PredicateBooleanExt;
 
 use crate::prelude::*;
 
@@ -244,6 +245,81 @@ fn check_tsv_output() -> TestResult {
         read_to_string(output)?,
         "ppn\trule\tlevel\tmessage\n118540238\tR001\terror\t\n118607626\tR001\terror\t\n"
     );
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_termination() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            termination = 'default'
+
+            [rule.R001]
+            check = "unicode"
+
+            [rule.R002]
+            check = "unicode"
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e012A \x1f0\x00\x9F\x1e\n",
+        )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::contains("123456789X,R001,error,\n"))
+        .stdout(predicates::str::contains("123456789X,R002,error,\n"))
+        .stderr(predicates::str::is_empty());
+
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            termination = 'fast'
+            
+            [rule.R001]
+            check = "unicode"
+
+            [rule.R002]
+            check = "unicode"
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e012A \x1f0\x00\x9F\x1e\n",
+        )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(
+            predicates::ord::eq(
+                "ppn,rule,level,message\n123456789X,R001,error,\n",
+            )
+            .or(predicates::ord::eq(
+                "ppn,rule,level,message\n123456789X,R002,error,\n",
+            )),
+        )
+        .stderr(predicates::str::is_empty());
 
     temp_dir.close().unwrap();
     Ok(())
