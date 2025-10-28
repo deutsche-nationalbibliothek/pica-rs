@@ -3,7 +3,7 @@ use assert_fs::prelude::*;
 
 use crate::prelude::*;
 
-const HASHES: &'static str = "\
+const HASHES: &str = "\
 118540238,762cf3a1b18a0cad2d0401cd2b573a89ff9c81b43c4ddab76e136d7a10a851f3\n\
 118607626,8d75e2cdfec20aa025d36018a40b150363d79571788cd92e7ff568595ba4f9ee\n\
 040993396,0361c33e1f7a80e21eecde747b2721b7884e003ac4deb8c271684ec0dc4d059a\n\
