@@ -139,6 +139,10 @@ Vergleichswerte werden ignoriert.
 Wert als Duplikat. Wird der Schwellenwert nicht explizit angegeben, wird
 ein Wert von `2` angenommen.
 
+`separator = <value>`
+: Nutzt den Sepator `<value>`, um mehrere Spalten zu einem Wert
+zusammenzufassen. Standardmäßig wird das Zeichen `|` verwendet.
+
 
 ### Filter
 
