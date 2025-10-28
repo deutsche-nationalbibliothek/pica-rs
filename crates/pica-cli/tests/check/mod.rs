@@ -11,7 +11,7 @@ mod duplicates;
 mod filter;
 mod isni;
 mod iso639;
-mod jel;
+mod jelc;
 mod link;
 mod unicode;
 
