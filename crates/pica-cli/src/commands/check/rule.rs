@@ -50,6 +50,7 @@ impl Rule {
     ) -> Result<bool, CliError> {
         let (result, message) = match self.check {
             Checks::DateTime(ref c) => c.check(record),
+            Checks::Duplicates(ref c) => c.check(record),
             Checks::Filter(ref c) => c.check(record),
             Checks::Isni(ref c) => c.check(record),
             Checks::Iso639(ref c) => c.check(record),

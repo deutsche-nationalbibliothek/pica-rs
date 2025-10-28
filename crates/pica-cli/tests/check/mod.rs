@@ -8,6 +8,7 @@ use predicates::prelude::PredicateBooleanExt;
 use crate::prelude::*;
 
 mod datetime;
+mod duplicates;
 mod filter;
 mod isni;
 mod iso639;
