@@ -122,9 +122,9 @@ pub(crate) fn parse_regex_matcher(
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
         ws(parse_subfield_codes),
         ws(alt(("=~".value(false), "!~".value(true)))),
-        parse_string
-            .verify_map(|re| String::from_utf8(re).ok())
-            .verify(|re| Regex::new(re).is_ok()),
+        parse_string.verify_map(|re| {
+            String::from_utf8(re).ok().filter(|s| Regex::new(s).is_ok())
+        }),
     )
         .with_taken()
         .map(|((quantifier, codes, invert, re), raw_data)| {
@@ -152,9 +152,11 @@ pub(crate) fn parse_regex_set_matcher(
             ws('['),
             separated(
                 1..,
-                parse_string
-                    .verify_map(|re| String::from_utf8(re).ok())
-                    .verify(|re| Regex::new(re).is_ok()),
+                parse_string.verify_map(|re| {
+                    String::from_utf8(re)
+                        .ok()
+                        .filter(|s| Regex::new(s).is_ok())
+                }),
                 ws(','),
             ),
             ws(']'),
