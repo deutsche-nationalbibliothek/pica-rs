@@ -13,8 +13,19 @@ use crate::prelude::*;
 pub(crate) struct RuleSet {
     pub(crate) scope: Option<RecordMatcher>,
 
+    #[serde(default)]
+    pub(crate) termination: Termination,
+
     #[serde(rename = "rule", default)]
     pub(crate) rules: HashMap<String, Rule>,
+}
+
+#[derive(Debug, PartialEq, Default, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum Termination {
+    #[default]
+    Default,
+    Fast,
 }
 
 impl RuleSet {
@@ -55,7 +66,12 @@ impl RuleSet {
         }
 
         for (_, rule) in self.rules.iter_mut() {
-            rule.check(record, writer)?;
+            let result = rule.check(record, writer)?;
+
+            match self.termination {
+                Termination::Fast if result => break,
+                _ => continue,
+            }
         }
 
         Ok(())

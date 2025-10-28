@@ -47,7 +47,7 @@ impl Rule {
         &mut self,
         record: &ByteRecord,
         writer: &mut Writer,
-    ) -> Result<(), CliError> {
+    ) -> Result<bool, CliError> {
         let (result, message) = match self.check {
             Checks::DateTime(ref c) => c.check(record),
             Checks::Filter(ref c) => c.check(record),
@@ -67,7 +67,7 @@ impl Rule {
             })?;
         }
 
-        Ok(())
+        Ok(result)
     }
 
     pub(crate) fn finish(
