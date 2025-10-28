@@ -54,13 +54,14 @@ link = "https://www.example.org/XYZ"
 
 ## Ausgabeformate
 
-Ist die Dateiendung der Ausgabedatei (Option `-o`) gleich dem Suffix
-`.txt`, wird in die Ausgabedatei lediglich die PPN des Datensatzes
-geschrieben (ohne Spaltenbezeichnung). Dieses Ausgabeformat eigenet sich
-besonders für die Verarbeitung in der WinIBW.
+Ist die Dateiendung der Ausgabedatei (Option `-o`) `.txt`, wird in
+die Ausgabedatei lediglich die PPN des Datensatzes geschrieben (ohne
+Spaltenbezeichnung). Dieses Ausgabeformat eignet sich besonders für die
+Verarbeitung in der WinIBW.
 
-Ist die Dateiendung nicht `.txt` wird standardmäßig wird eine CSV-Datei
+Ist die Dateiendung nicht `.txt`, wird standardmäßig eine CSV-Datei
 erzeugt, die die Spalten `ppn`, `rule`, `level` und `message` enthält.
+
 
 ## Checks
 
@@ -100,6 +101,47 @@ String `%Y-%m-%d` verwendet.
 : Mit der `offset`-Option können die ersten `<n>` Zeichen übersprungen
 werden, wenn die Datums- bzw. Zeitangabe nicht am Anfang des zu
 überprüfenden Feldes steht.
+
+### Duplicates
+
+Mithilfe des `duplicates`-Check lässt sich überprüfen, ob ein
+Wert bzw. eine Kombination aus mehreren Werten mehrfach vorkommt.
+Der Schwellenwert ist standardmäßig `2` und kann durch die Option
+`threshold` geändert werden. Die folgende Regel überprüft, ob es unter
+denjenigen Feldern `045E`, bei denen das Unterfeld `H` mit "npi" belegt
+ist, mehrere Felder mit einer identischen Belegung des Unterfelds
+`e`gibt.
+
+```{.toml}
+[rule.DUPLICATES]
+check = 'duplicates'
+description = 'Findet mehrfach vorkommende DDC-Sachgruppen (Herkunft `npi`)'
+link = 'https://wiki.dnb.de/display/ILTIS/5050'
+query = '045E{ e | H == "npi" }'
+```
+
+#### Optionen
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
+
+`query = <query>`
+: Angabe einer [select]-Abfrage, die die Vergleichwerte erzeugt. Leere
+Vergleichswerte werden ignoriert.
+
+`threshold = <value>`
+: Ist die Häufigkeit eines Werts größer oder gleich `<value>`, gilt der
+Wert als Duplikat. Wird der Schwellenwert nicht explizit angegeben, wird
+ein Wert von `2` angenommen.
+
+`separator = <value>`
+: Nutzt den Sepator `<value>`, um mehrere Spalten zu einem Wert
+zusammenzufassen. Standardmäßig wird das Zeichen `|` verwendet.
 
 
 ### Filter

@@ -1,4 +1,5 @@
 mod datetime;
+mod duplicates;
 mod filter;
 mod isni;
 mod iso639;
@@ -16,6 +17,7 @@ pub(crate) const fn strsim_threshold() -> f64 {
 pub(crate) enum Checks {
     #[serde(rename = "datetime")]
     DateTime(Box<datetime::DateTime>),
+    Duplicates(Box<duplicates::Duplicates>),
     Filter(Box<filter::Filter>),
     Isni(Box<isni::Isni>),
     #[serde(rename = "iso639-2b")]

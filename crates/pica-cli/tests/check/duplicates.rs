@@ -1,77 +1,19 @@
-use std::fs::read_to_string;
-
 use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
 use crate::prelude::*;
 
-mod datetime;
-mod duplicates;
-mod filter;
-mod isni;
-mod iso639;
-mod jel;
-mod link;
-mod unicode;
-
 #[test]
-fn check_skip_invalid() -> TestResult {
+fn check_duplicates_path() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let ruleset = temp_dir.child("rules.toml");
     ruleset
         .write_str(
             r#"
-            scope = '003@.0 != "123456789X"'
-        "#,
-        )
-        .unwrap();
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("check")
-        .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("invalid.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .failure()
-        .code(2)
-        .stdout(predicates::str::is_empty())
-        .stderr(predicates::str::contains(
-            "parse error: invalid record on line 1",
-        ));
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .args(["check", "-s"])
-        .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("invalid.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::str::is_empty())
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-    Ok(())
-}
-
-#[test]
-fn check_scope() -> TestResult {
-    let temp_dir = TempDir::new().unwrap();
-    let ruleset = temp_dir.child("rules.toml");
-    ruleset
-        .write_str(
-            r#"
-            scope = '003@.0 != "123456789X"'
-            
-            [rule.UNICODE]
-            check = "unicode"
+            [rule.R001]
+            check = 'duplicates'
+            query = '045Z{ a | b == "jelc" }'
         "#,
         )
         .unwrap();
@@ -81,77 +23,15 @@ fn check_scope() -> TestResult {
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
         .write_stdin(
-            b"003@ \x1f0123456789X\x1e012A \x1f0\x00\x9F\x1e\n",
+            b"003@ \x1f0123456789X\x1e045Z \x1fbjelc\x1faD63\x1faD63\x1e\n",
         )
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::str::is_empty())
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-    Ok(())
-}
-
-#[test]
-fn check_limit() -> TestResult {
-    let temp_dir = TempDir::new().unwrap();
-    let ruleset = temp_dir.child("rules.toml");
-    ruleset
-        .write_str(
-            r#"
-            scope = '003@.0 != "123456789X"'
-        "#,
-        )
-        .unwrap();
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .args(["check", "--limit", "1"])
-        .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("ada.dat"))
-        .arg(data_dir().join("invalid.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::str::is_empty())
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-    Ok(())
-}
-
-#[test]
-fn check_where() -> TestResult {
-    let temp_dir = TempDir::new().unwrap();
-    let ruleset = temp_dir.child("rules.toml");
-    ruleset
-        .write_str(
-            r#"
-            [rule.R001]
-            check = "filter"
-            filter = '004B.a != "pik"'
-        "#,
-        )
-        .unwrap();
-
-    let mut cmd = Command::cargo_bin("pica")?;
-    let assert = cmd
-        .arg("check")
-        .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
         .assert();
 
     assert
         .success()
         .code(0)
         .stdout(predicates::ord::eq(
-            "ppn,rule,level,message\n040011569,R001,error,\n",
+            "ppn,rule,level,message\n123456789X,R001,error,D63\n",
         ))
         .stderr(predicates::str::is_empty());
 
@@ -159,9 +39,9 @@ fn check_where() -> TestResult {
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .args(["--where", "003@.0 == '119232022'"])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045Z \x1fbjelc\x1faD63\x1e\n",
+        )
         .assert();
 
     assert
@@ -175,27 +55,41 @@ fn check_where() -> TestResult {
 }
 
 #[test]
-fn check_txt_output() -> TestResult {
+fn check_duplicates_query() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
-    let output = temp_dir.child("out.txt");
-
     let ruleset = temp_dir.child("rules.toml");
     ruleset
         .write_str(
             r#"
             [rule.R001]
-            check = "filter"
-            filter = '002@.0 =^ "Tp"'
+            check = 'duplicates'
+            query = '045E{ E, H }'
         "#,
         )
         .unwrap();
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
-        .args(["check", "-s"])
+        .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .args(["-o", output.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045E \x1fe100\x1fEi\x1fHdnb\x1e045E \x1fe110\x1fEi\x1fHdnb\x1e\n", )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n123456789X,R001,error,i|dnb\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045E \x1fe100\x1fEm\x1fHdnb\x1e045E \x1fe110\x1fEi\x1fHdnb\x1e\n", )
         .assert();
 
     assert
@@ -203,35 +97,32 @@ fn check_txt_output() -> TestResult {
         .code(0)
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
-
-    assert_eq!(read_to_string(output)?, "118540238\n118607626\n");
 
     temp_dir.close().unwrap();
     Ok(())
 }
 
 #[test]
-fn check_tsv_output() -> TestResult {
+fn check_duplicates_threshold() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
-    let output = temp_dir.child("out.tsv");
-
     let ruleset = temp_dir.child("rules.toml");
     ruleset
         .write_str(
             r#"
             [rule.R001]
-            check = "filter"
-            filter = '002@.0 =^ "Tp"'
+            check = 'duplicates'
+            threshold = 3
+            query = '045E{ E, H }'
         "#,
         )
         .unwrap();
 
     let mut cmd = Command::cargo_bin("pica")?;
     let assert = cmd
-        .args(["check", "-s"])
+        .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .args(["-o", output.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045E \x1fe100\x1fEi\x1fHdnb\x1e045E \x1fe110\x1fEi\x1fHdnb\x1e\n", )
         .assert();
 
     assert
@@ -240,10 +131,92 @@ fn check_tsv_output() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    assert_eq!(
-        read_to_string(output)?,
-        "ppn\trule\tlevel\tmessage\n118540238\tR001\terror\t\n118607626\tR001\terror\t\n"
-    );
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045E \x1fe100\x1fEi\x1fHdnb\x1e045E \x1fe110\x1fEi\x1fHdnb\x1e045E \x1fe200\x1fEi\x1fHdnb\x1e\n", )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n123456789X,R001,error,i|dnb\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_duplicates_ignore_case() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = 'duplicates'
+            case-ignore = true
+            query = '045Z{ a | b =^ "JEL" }'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045Z \x1fbjelc\x1faD63\x1faD63\x1e\n",
+        )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n123456789X,R001,error,D63\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_duplicates_separator() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = 'duplicates'
+            separator = '+'
+            query = '045E{ E, H }'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("pica")?;
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .write_stdin(
+            b"003@ \x1f0123456789X\x1e045E \x1fe100\x1fEi\x1fHdnb\x1e045E \x1fe110\x1fEi\x1fHdnb\x1e\n", )
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n123456789X,R001,error,i+dnb\n",
+        ))
+        .stderr(predicates::str::is_empty());
 
     temp_dir.close().unwrap();
     Ok(())
