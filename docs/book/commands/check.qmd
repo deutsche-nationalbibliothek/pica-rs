@@ -26,7 +26,7 @@ scope = '002@.0 =^ "T"'
 
 [rule.XYZ]
 ...
-````
+```
 
 Nicht bei jeder Regelverletzung handelt es sich gleich um einen Fehler.
 Deshalb wird zwischen folgenden Levels unterschieden:
@@ -41,8 +41,7 @@ nicht gesetzt, wird automatisch das Level `error` ausgewählt:
 ```{.toml}
 [rule.XYZ]
 level = "warning"
-````
-
+```
 Zur Nachvollziehbarkeit und Dokumentation kann eine Regel mit einer
 Beschreibung (`description`) und einem Link (`link`) ausgezeichnet
 werden:
@@ -51,7 +50,7 @@ werden:
 [rule.XYZ]
 description = "Findet Datensätze, die gegen die Regel XYZ verstoßen."
 link = "https://www.example.org/XYZ"
-````
+```
 
 ## Ausgabeformate
 
@@ -144,15 +143,15 @@ ein Wert von `2` angenommen.
 
 Mittels des `filter`-Checks können Datensätze gefunden werden, die einem
 Filterausdruck entsprechen. Zum Beispiel können mit der folgenden Regel
-Datensätze gefunden werden, die einen ungültigen Projektcode im Feld
-`017C $a` enthalten:
+Datensätze gefunden werden, die einen ungültigen Zugriffscode im Feld
+`209K $a` enthalten:
 
 ```{.toml}
-[rule.TITLE-017C-001]
+[rule.ZUGRIFFSCODE]
 check = "filter"
-description = "Findet ungültige Projektcodes im Feld 017C $a."
-link = "https://wiki.dnb.de/display/ILTIS/0602"
-filter = '017C.a not in ["a","d","f","i","m","n","t"]'
+description = "Findet ungültige Zugriffscodes im Feld 209K $a."
+link = "https://wiki.dnb.de/display/ILTIS/7133"
+filter = '209K/*.a not in ["a","b","c","d","q","r"]'
 ```
 
 #### Optionen
@@ -269,7 +268,7 @@ der Abgleich über die PPN eines Datensatzes erfolgt, wird der Ausdruck
 check = 'link'
 source.path = '065R.9'
 target.path = '003@.0'
-````
+```
 
 Zur Ermittlung der Ziel-Identifikatoren `source` können alle Funktionen
 der Pfad-Ausdrücke genutzt werden. Sollen nur `ortw`-Relationen getestet
@@ -280,7 +279,7 @@ werden, kann die Regel wie folgt modifiziert werden:
 check = 'link'
 source.path = '065R{ 9  | 4 == "ortw" }'
 target.path = '003@.0'
-````
+```
 
 Darüber hinaus können Kriterien formuliert werden, die der Zieldatensatz
 erfüllen muss. Zum Beispiel könnte die Anforderung an die verknüpften
