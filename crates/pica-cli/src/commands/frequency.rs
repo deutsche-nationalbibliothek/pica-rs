@@ -173,14 +173,12 @@ impl Frequency {
                         let outcome = record.query(&query, &options);
                         seen.clear();
 
-                        for key in outcome.clone().into_iter() {
+                        for key in outcome.into_inner() {
                             if key.iter().any(|e| !e.is_empty()) {
-                                if self.unique {
-                                    if seen.contains(&key) {
-                                        continue;
-                                    }
-
-                                    seen.insert(key.clone());
+                                if self.unique
+                                    && !seen.insert(key.clone())
+                                {
+                                    continue;
                                 }
 
                                 *ftable.entry(key).or_insert(0) += 1;
