@@ -30,7 +30,7 @@ pub(crate) enum Termination {
 }
 
 impl RuleSet {
-    pub(crate) fn from_path<P>(
+    pub(crate) fn new<P>(
         path: P,
         nf: Option<&NormalizationForm>,
     ) -> Result<Self, CliError>

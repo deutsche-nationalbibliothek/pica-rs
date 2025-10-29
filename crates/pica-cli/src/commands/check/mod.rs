@@ -54,7 +54,7 @@ impl Check {
             .rules
             .iter()
             .map(|path| {
-                RuleSet::from_path(path, config.normalization.as_ref())
+                RuleSet::new(path, config.normalization.as_ref())
             })
             .collect::<Result<Vec<_>, _>>()?;
 
