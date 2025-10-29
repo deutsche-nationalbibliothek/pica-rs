@@ -53,7 +53,9 @@ impl Check {
         let mut rulesets = self
             .rules
             .iter()
-            .map(RuleSet::from_path)
+            .map(|path| {
+                RuleSet::new(path, config.normalization.as_ref())
+            })
             .collect::<Result<Vec<_>, _>>()?;
 
         'outer: for filename in self.filenames {
