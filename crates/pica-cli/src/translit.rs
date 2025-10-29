@@ -42,7 +42,6 @@ impl FromStr for NormalizationForm {
     }
 }
 
-#[allow(unused)]
 pub(crate) fn translit<S: AsRef<str>>(
     nf: Option<NormalizationForm>,
 ) -> impl Fn(S) -> String {

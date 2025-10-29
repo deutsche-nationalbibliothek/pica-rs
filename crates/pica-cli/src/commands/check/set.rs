@@ -3,6 +3,7 @@ use std::path::Path;
 
 use hashbrown::HashMap;
 use pica_record::prelude::*;
+use unicode_normalization::UnicodeNormalization;
 
 use super::rule::Rule;
 use crate::commands::check::writer::Writer;
@@ -29,17 +30,28 @@ pub(crate) enum Termination {
 }
 
 impl RuleSet {
-    pub(crate) fn from_path<P>(path: P) -> Result<Self, CliError>
+    pub(crate) fn from_path<P>(
+        path: P,
+        nf: Option<&NormalizationForm>,
+    ) -> Result<Self, CliError>
     where
         P: AsRef<Path>,
     {
-        let mut rs: Self = toml::from_str(&read_to_string(&path)?)
-            .map_err(|e| {
-                let filename = path.as_ref().to_string_lossy();
-                CliError::Other(format!(
-                    "invalid rule-set {filename}: {e}"
-                ))
-            })?;
+        use NormalizationForm::*;
+
+        let content = read_to_string(&path)?;
+        let content = match nf {
+            Some(Nfc) => content.chars().nfc().to_string(),
+            Some(Nfkc) => content.chars().nfkc().to_string(),
+            Some(Nfd) => content.chars().nfd().to_string(),
+            Some(Nfkd) => content.chars().nfkd().to_string(),
+            None => content,
+        };
+
+        let mut rs: Self = toml::from_str(&content).map_err(|e| {
+            let filename = path.as_ref().to_string_lossy();
+            CliError::Other(format!("invalid rule-set {filename}: {e}"))
+        })?;
 
         for (id, rule) in rs.rules.iter_mut() {
             rule.id = id.to_owned();
