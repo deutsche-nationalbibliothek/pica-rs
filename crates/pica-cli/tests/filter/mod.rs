@@ -507,7 +507,7 @@ fn filter_limit() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     let output = read_to_string(out.path())?;
-    let mut goethe = output.lines().nth(0).unwrap().to_string();
+    let mut goethe = output.lines().next().unwrap().to_string();
     goethe.push('\n');
     assert_eq!(read_to_string(data_dir().join("goethe.dat"))?, goethe);
 

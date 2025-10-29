@@ -393,14 +393,19 @@ impl<T: ToString + Clone> Mul for Outcome<T> {
             return self;
         }
 
-        let mut rows = vec![];
         let xs = self.0;
         let ys = rhs.0;
+
+        // Pre-allocate with exact capacity to avoid reallocations
+        let capacity = xs.len() * ys.len();
+        let mut rows = Vec::with_capacity(capacity);
 
         for x in xs.into_iter() {
             for y in ys.iter() {
                 let mut row = x.clone();
-                row.extend(y.clone());
+                // Use extend_from_slice instead of extend(y.clone())
+                // to avoid the intermediate iterator
+                row.extend_from_slice(y);
                 rows.push(row);
             }
         }
