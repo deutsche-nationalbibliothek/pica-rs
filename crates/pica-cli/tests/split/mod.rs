@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -9,7 +8,7 @@ use crate::prelude::*;
 fn split_default() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "100"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -22,7 +21,7 @@ fn split_default() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("0.dat"))
@@ -41,7 +40,7 @@ fn split_default() -> TestResult {
 fn split_size() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "2"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -84,7 +83,7 @@ fn split_size() -> TestResult {
 fn split_skip_invalid() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "5"])
         .arg(data_dir().join("invalid.dat"))
@@ -105,7 +104,7 @@ fn split_skip_invalid() -> TestResult {
     outdir.close().unwrap();
 
     let outdir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "10"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -128,7 +127,7 @@ fn split_skip_invalid() -> TestResult {
 fn split_gzip() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "--gzip", "100"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -141,7 +140,7 @@ fn split_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("0.dat.gz"))
@@ -160,7 +159,7 @@ fn split_gzip() -> TestResult {
 fn split_template() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "5"])
         .args(["--template", "FOO_{}.dat"])
@@ -175,7 +174,7 @@ fn split_template() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("FOO_0.dat"))
@@ -187,7 +186,7 @@ fn split_template() -> TestResult {
         .stdout(predicates::ord::eq("5\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("FOO_1.dat"))
@@ -199,7 +198,7 @@ fn split_template() -> TestResult {
         .stdout(predicates::ord::eq("5\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("FOO_2.dat"))
@@ -219,7 +218,7 @@ fn split_template() -> TestResult {
 fn split_where() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "100"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -233,7 +232,7 @@ fn split_where() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("0.dat"))
@@ -252,7 +251,7 @@ fn split_where() -> TestResult {
 fn split_where_and() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "100"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -267,7 +266,7 @@ fn split_where_and() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("0.dat"))
@@ -286,7 +285,7 @@ fn split_where_and() -> TestResult {
 fn split_where_not() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "100"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -301,7 +300,7 @@ fn split_where_not() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("0.dat"))
@@ -320,7 +319,7 @@ fn split_where_not() -> TestResult {
 fn split_where_and_not() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "100"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -336,7 +335,7 @@ fn split_where_and_not() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("0.dat"))
@@ -355,7 +354,7 @@ fn split_where_and_not() -> TestResult {
 fn split_where_or() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "1"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -370,7 +369,7 @@ fn split_where_or() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("0.dat"))
@@ -382,7 +381,7 @@ fn split_where_or() -> TestResult {
         .stdout(predicates::ord::eq("040309606\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("1.dat"))
@@ -405,7 +404,7 @@ fn split_allow() -> TestResult {
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("idn\n118540238\n118515551\n")?;
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "10"])
         .args(["-A", allow.to_str().unwrap()])
@@ -419,7 +418,7 @@ fn split_allow() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("0.dat"))
@@ -459,7 +458,7 @@ fn split_deny() -> TestResult {
     )
     .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["split", "-s", "10"])
         .args(["-D", deny.to_str().unwrap()])
@@ -473,7 +472,7 @@ fn split_deny() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(outdir.join("0.dat"))

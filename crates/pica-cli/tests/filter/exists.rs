@@ -1,10 +1,8 @@
-use assert_cmd::Command;
-
 use crate::prelude::*;
 
 #[test]
 fn field_exists() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "003@?"])
         .arg(data_dir().join("ada.dat"))
@@ -16,7 +14,7 @@ fn field_exists() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "ALL 028[A@].d?"])
         .arg(data_dir().join("ada.dat"))
@@ -28,7 +26,7 @@ fn field_exists() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "012A?"])
         .arg(data_dir().join("ada.dat"))
@@ -40,7 +38,7 @@ fn field_exists() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "ANY 028[A@].d?"])
         .arg(data_dir().join("ada.dat"))
@@ -52,7 +50,7 @@ fn field_exists() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "ALL 028[A@].c?"])
         .arg(data_dir().join("ada.dat"))
@@ -69,7 +67,7 @@ fn field_exists() -> TestResult {
 
 #[test]
 fn subfield_exists() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "003@.0?"])
         .arg(data_dir().join("ada.dat"))
@@ -81,7 +79,7 @@ fn subfield_exists() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "003@{ 0? }"])
         .arg(data_dir().join("ada.dat"))
@@ -93,7 +91,7 @@ fn subfield_exists() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "012A.a?"])
         .arg(data_dir().join("ada.dat"))
@@ -105,7 +103,7 @@ fn subfield_exists() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "028A.P?"])
         .arg(data_dir().join("ada.dat"))

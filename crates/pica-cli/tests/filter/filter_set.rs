@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -6,7 +5,7 @@ use crate::prelude::*;
 
 #[test]
 fn allow_list_ppn() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("ppn\n118540238").unwrap();
@@ -30,7 +29,7 @@ fn allow_list_ppn() -> TestResult {
 
 #[test]
 fn allow_list_idn() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("idn\n118540238").unwrap();
@@ -54,7 +53,7 @@ fn allow_list_idn() -> TestResult {
 
 #[test]
 fn allow_list_column() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("xyz\n118540238").unwrap();
@@ -79,7 +78,7 @@ fn allow_list_column() -> TestResult {
 
 #[test]
 fn allow_list_source() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("wd_id\nQ5879").unwrap();
@@ -105,7 +104,7 @@ fn allow_list_source() -> TestResult {
 
 #[test]
 fn allow_list_mulval() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("DENY.csv");
     allow.write_str("code\nx\nf").unwrap();
@@ -126,7 +125,7 @@ fn allow_list_mulval() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("DENY.csv");
     allow.write_str("code\nx\ny").unwrap();
@@ -150,7 +149,7 @@ fn allow_list_mulval() -> TestResult {
 
 #[test]
 fn allow_list_empty() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("ppn").unwrap();
@@ -172,7 +171,7 @@ fn allow_list_empty() -> TestResult {
 
 #[test]
 fn deny_list_ppn() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("ppn\n118540238").unwrap();
@@ -195,7 +194,7 @@ fn deny_list_ppn() -> TestResult {
 
 #[test]
 fn deny_list_idn() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("idn\n118540238").unwrap();
@@ -218,7 +217,7 @@ fn deny_list_idn() -> TestResult {
 
 #[test]
 fn deny_list_column() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("xyz\n118540238").unwrap();
@@ -242,7 +241,7 @@ fn deny_list_column() -> TestResult {
 
 #[test]
 fn deny_list_source() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("isni\n0000 0001 2099 9104").unwrap();
@@ -267,7 +266,7 @@ fn deny_list_source() -> TestResult {
 
 #[test]
 fn deny_list_mulval() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("code\nx\nf").unwrap();
@@ -286,7 +285,7 @@ fn deny_list_mulval() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("code\nx\ny").unwrap();
@@ -312,7 +311,7 @@ fn deny_list_mulval() -> TestResult {
 
 #[test]
 fn deny_list_empty() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -332,7 +331,7 @@ fn deny_list_empty() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())

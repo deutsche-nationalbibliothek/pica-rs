@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -9,7 +8,7 @@ use crate::prelude::*;
 
 #[test]
 fn single_file_write_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert =
         cmd.arg("concat").arg(data_dir().join("ada.dat")).assert();
 
@@ -24,7 +23,7 @@ fn single_file_write_stdout() -> TestResult {
 
 #[test]
 fn read_stdin() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("concat")
         .write_stdin(read_to_string(data_dir().join("ada.dat"))?)
@@ -36,7 +35,7 @@ fn read_stdin() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("cat")
         .arg("-")
@@ -49,7 +48,7 @@ fn read_stdin() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["concat", "-s", "-u"])
         .arg(data_dir().join("invalid.dat"))
@@ -69,7 +68,7 @@ fn read_stdin() -> TestResult {
 
 #[test]
 fn single_file_write_file() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -96,7 +95,7 @@ fn single_file_write_file() -> TestResult {
 
 #[test]
 fn write_gzip() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat.gz");
 
@@ -112,7 +111,7 @@ fn write_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd.arg("concat").arg(out.as_os_str()).assert();
 
     assert
@@ -130,7 +129,7 @@ fn single_file_write_tee() -> TestResult {
     let out = temp_dir.child("out.dat");
     let tee = temp_dir.child("tee.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("concat")
         .args(["--tee", tee.to_str().unwrap()])
@@ -148,7 +147,7 @@ fn single_file_write_tee() -> TestResult {
             .eval(tee.path())
     );
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("concat")
         .args(["--tee", tee.to_str().unwrap()])
@@ -177,7 +176,7 @@ fn single_file_write_tee() -> TestResult {
 
 #[test]
 fn skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("concat")
         .arg("--skip-invalid")
@@ -190,7 +189,7 @@ fn skip_invalid() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["concat", "-s"])
         .arg(data_dir().join("invalid.dat"))
@@ -203,7 +202,7 @@ fn skip_invalid() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("concat")
         .arg(data_dir().join("invalid.dat"))
@@ -219,7 +218,7 @@ fn skip_invalid() -> TestResult {
         ));
 
     // config
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let config = temp_dir.child("pica.toml");
     let filename = config.to_str().unwrap();
@@ -236,7 +235,7 @@ fn skip_invalid() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["-c", config.to_str().unwrap()])
         .arg("concat")
@@ -256,7 +255,7 @@ fn skip_invalid() -> TestResult {
 
 #[test]
 fn unique_by_idn() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let assert = cmd
         .args(["concat", "-u", "--unique-strategy", "idn"])
@@ -277,7 +276,7 @@ fn unique_by_idn() -> TestResult {
 
 #[test]
 fn unique_by_hash() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let assert = cmd
         .args(["concat", "--unique"])
@@ -299,7 +298,7 @@ fn unique_by_hash() -> TestResult {
 
 #[test]
 fn append() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 

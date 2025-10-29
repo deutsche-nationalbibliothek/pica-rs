@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -9,7 +8,7 @@ use crate::prelude::*;
 
 #[test]
 fn set_option() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let config = temp_dir.child("pica.toml");
     let filename = config.to_str().unwrap();
@@ -42,7 +41,7 @@ fn get_option() -> TestResult {
     let config = temp_dir.child("pica.toml");
     let filename = config.to_str().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .args(["config", "skip-invalid"])
@@ -54,7 +53,7 @@ fn get_option() -> TestResult {
         .stdout(predicates::str::contains("false"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .arg("config")
@@ -67,7 +66,7 @@ fn get_option() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .args(["config", "skip-invalid"])
@@ -91,7 +90,7 @@ fn unset_option() -> TestResult {
     let filename = config.to_str().unwrap();
 
     // get (option is not set yet)
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .args(["config", "normalization"])
@@ -104,7 +103,7 @@ fn unset_option() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     // set option
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .arg("config")
@@ -117,7 +116,7 @@ fn unset_option() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .args(["config", "normalization"])
@@ -129,7 +128,7 @@ fn unset_option() -> TestResult {
         .stdout(predicates::str::contains("nfd"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .args(["config", "--unset", "normalization"])
@@ -141,7 +140,7 @@ fn unset_option() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["--config", filename])
         .args(["config", "--get", "normalization"])
@@ -160,7 +159,7 @@ fn unset_option() -> TestResult {
 
 #[test]
 fn invalid_option() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let config = temp_dir.child("pica.toml");
     let filename = config.to_str().unwrap();

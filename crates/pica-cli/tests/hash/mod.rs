@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -20,7 +19,7 @@ const HASHES: &'static str = "\
 
 #[test]
 fn hash_single_record() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert =
         cmd.arg("hash").arg(data_dir().join("ada.dat")).assert();
 
@@ -38,7 +37,7 @@ fn hash_single_record() -> TestResult {
 
 #[test]
 fn hash_dump() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "-s"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -55,7 +54,7 @@ fn hash_dump() -> TestResult {
 
 #[test]
 fn hash_tsv() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "--tsv"])
         .arg(data_dir().join("ada.dat"))
@@ -75,7 +74,7 @@ fn hash_tsv() -> TestResult {
 
 #[test]
 fn hash_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "-s"])
         .arg(data_dir().join("invalid.dat"))
@@ -87,7 +86,7 @@ fn hash_skip_invalid() -> TestResult {
         .stdout(predicates::ord::eq("ppn,hash\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert =
         cmd.arg("hash").arg(data_dir().join("invalid.dat")).assert();
 
@@ -104,7 +103,7 @@ fn hash_skip_invalid() -> TestResult {
 
 #[test]
 fn hash_header() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("hash")
         .args(["--header", "idn,sha256"])
@@ -125,7 +124,7 @@ fn hash_header() -> TestResult {
 
 #[test]
 fn hash_where() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "-s"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -143,7 +142,7 @@ fn hash_where() -> TestResult {
 
 #[test]
 fn hash_where_and() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "-s"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -162,7 +161,7 @@ fn hash_where_and() -> TestResult {
 
 #[test]
 fn hash_where_or() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "-s"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -183,7 +182,7 @@ fn hash_where_or() -> TestResult {
 
 #[test]
 fn hash_where_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "-s"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -202,7 +201,7 @@ fn hash_where_not() -> TestResult {
 
 #[test]
 fn hash_limit() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["hash", "-s", "-l", "2"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -221,7 +220,7 @@ fn hash_limit() -> TestResult {
 
 #[test]
 fn hash_allow() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
 
     let allow = temp_dir.child("ALLOW.csv");
@@ -246,7 +245,7 @@ fn hash_allow() -> TestResult {
 
 #[test]
 fn hash_deny() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
 
     let deny = temp_dir.child("DENY.csv");
@@ -279,7 +278,7 @@ fn hash_deny() -> TestResult {
 
 #[test]
 fn hash_filter_set_column() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
 
     let allow = temp_dir.child("ALLOW.csv");
@@ -305,7 +304,7 @@ fn hash_filter_set_column() -> TestResult {
 
 #[test]
 fn hash_filter_set_source() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
 
     let allow = temp_dir.child("ALLOW.csv");

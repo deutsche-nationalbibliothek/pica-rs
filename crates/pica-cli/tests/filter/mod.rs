@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -19,7 +18,7 @@ mod relation;
 
 #[test]
 fn filter_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@.0 == '118540238'"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -38,7 +37,7 @@ fn filter_stdout() -> TestResult {
 
 #[test]
 fn filter_stdin() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "003@.0 == '118540238'"])
         .write_stdin(read_to_string(data_dir().join("goethe.dat"))?)
@@ -52,7 +51,7 @@ fn filter_stdin() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "003@.0 == '118540238'", "-"])
         .write_stdin(read_to_string(data_dir().join("goethe.dat"))?)
@@ -66,7 +65,7 @@ fn filter_stdin() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@.0 == '118540238'"])
         .arg(data_dir().join("ada.dat"))
@@ -88,7 +87,7 @@ fn filter_stdin() -> TestResult {
 
 #[test]
 fn filter_output() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -115,7 +114,7 @@ fn filter_output() -> TestResult {
 
 #[test]
 fn filter_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "003@?"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -129,7 +128,7 @@ fn filter_skip_invalid() -> TestResult {
             "parse error: invalid record on line 12",
         ));
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@?"])
         .arg(data_dir().join("invalid.dat"))
@@ -146,7 +145,7 @@ fn filter_skip_invalid() -> TestResult {
 
 #[test]
 fn filter_invert_match() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-v", "003@.0 == '040379442'"])
         .arg(data_dir().join("math.dat.gz"))
@@ -164,7 +163,7 @@ fn filter_invert_match() -> TestResult {
 
 #[test]
 fn filter_ignore_case() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-i", "002@.0 == 'TP1'"])
         .arg(data_dir().join("math.dat.gz"))
@@ -177,7 +176,7 @@ fn filter_ignore_case() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "002@.0 == 'TP1'"])
         .arg(data_dir().join("math.dat.gz"))
@@ -195,7 +194,7 @@ fn filter_ignore_case() -> TestResult {
 
 #[test]
 fn filter_strsim_threshold() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "028A.a =* 'Lovelaca'"])
         .args(["--strsim-threshold", "75"])
@@ -209,7 +208,7 @@ fn filter_strsim_threshold() -> TestResult {
         .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "028A.a =* 'Lovelaca'"])
         .args(["--strsim-threshold", "90"])
@@ -228,7 +227,7 @@ fn filter_strsim_threshold() -> TestResult {
 
 #[test]
 fn filter_keep() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@.0 == '118540238'"])
         .args(["--keep", "003@, 002@"])
@@ -248,7 +247,7 @@ fn filter_keep() -> TestResult {
 
 #[test]
 fn filter_discard() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@.0 == '118540238'"])
         .args(["--discard", "002@,012A/*"])
@@ -268,7 +267,7 @@ fn filter_discard() -> TestResult {
 
 #[test]
 fn filter_expr_file() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
 
     let expr_file = temp_dir.child("expr.txt");
@@ -295,7 +294,7 @@ fn filter_expr_file() -> TestResult {
 #[test]
 fn filter_allow() -> TestResult {
     // IDN
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("allow.csv");
     allow.write_str("idn\n118540238").unwrap();
@@ -316,7 +315,7 @@ fn filter_allow() -> TestResult {
     temp_dir.close().unwrap();
 
     // PPN
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("allow.csv");
     allow.write_str("idn\n118540238").unwrap();
@@ -337,7 +336,7 @@ fn filter_allow() -> TestResult {
     temp_dir.close().unwrap();
 
     // PPN+IDN
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("allow.csv");
     allow.write_str("idn,ppn\n118607626,118540238").unwrap();
@@ -358,7 +357,7 @@ fn filter_allow() -> TestResult {
     temp_dir.close().unwrap();
 
     // empty allow list
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("allow.csv");
     allow.write_str("idn\n").unwrap();
@@ -382,7 +381,7 @@ fn filter_allow() -> TestResult {
 #[test]
 fn filter_deny() -> TestResult {
     // IDN
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("deny.csv");
     deny.write_str(
@@ -417,7 +416,7 @@ fn filter_deny() -> TestResult {
     temp_dir.close().unwrap();
 
     // PPN
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("deny.csv");
     deny.write_str(
@@ -452,7 +451,7 @@ fn filter_deny() -> TestResult {
     temp_dir.close().unwrap();
 
     // empty deny list
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("deny.csv");
     deny.write_str("idn\n").unwrap();
@@ -475,7 +474,7 @@ fn filter_deny() -> TestResult {
 
 #[test]
 fn filter_limit() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@?"])
         .args(["--limit", "1"])
@@ -490,7 +489,7 @@ fn filter_limit() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -522,7 +521,7 @@ fn filter_limit() -> TestResult {
 
 #[test]
 fn filter_and() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@.0 == '118540238'"])
         .args(["--and", "002@.0 == 'Tpz'"])
@@ -542,7 +541,7 @@ fn filter_and() -> TestResult {
 
 #[test]
 fn filter_and_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@.0 == '118540238'"])
         .args(["--and", "002@.0 == 'Tpz'"])
@@ -563,7 +562,7 @@ fn filter_and_not() -> TestResult {
 
 #[test]
 fn filter_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@.0 == '118540238'"])
         .args(["--not", "002@.0 == 'Tp1'"])
@@ -583,7 +582,7 @@ fn filter_not() -> TestResult {
 
 #[test]
 fn filter_or() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "002@.0 == 'Tuz'"])
         .args(["--or", "003@.0 == '118540238'"])
@@ -604,7 +603,7 @@ fn filter_or() -> TestResult {
 #[test]
 fn filter_gzip() -> TestResult {
     // Flag
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat.gz");
 
@@ -620,7 +619,7 @@ fn filter_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(out.to_str().unwrap())
@@ -635,7 +634,7 @@ fn filter_gzip() -> TestResult {
     temp_dir.close().unwrap();
 
     // Filename
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat.gz");
 
@@ -651,7 +650,7 @@ fn filter_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(out.to_str().unwrap())
@@ -670,7 +669,7 @@ fn filter_gzip() -> TestResult {
 #[test]
 fn filter_append() -> TestResult {
     // Flag
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -686,7 +685,7 @@ fn filter_append() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["filter", "-s", "003@?", "--append"])
         .args(["-o", out.to_str().unwrap()])
@@ -699,7 +698,7 @@ fn filter_append() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0"])
         .arg(out.to_str().unwrap())
@@ -717,7 +716,7 @@ fn filter_append() -> TestResult {
 
 #[test]
 fn filter_tee() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let tee = temp_dir.child("tee.dat");
 
@@ -747,7 +746,7 @@ fn filter_tee() -> TestResult {
 /// https://github.com/deutsche-nationalbibliothek/pica-rs/issues/907
 #[test]
 fn filter_no_ppn() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let data = "036E/00 \x1faSpringer-Lehrbuch\x1e036E/01 \x1faSpringer-Link\x1fpBücher\x1e\n";
     let assert =

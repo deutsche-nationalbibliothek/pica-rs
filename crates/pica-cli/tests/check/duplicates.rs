@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -18,7 +17,7 @@ fn check_duplicates_path() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -35,7 +34,7 @@ fn check_duplicates_path() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -68,7 +67,7 @@ fn check_duplicates_query() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -84,7 +83,7 @@ fn check_duplicates_query() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -117,7 +116,7 @@ fn check_duplicates_threshold() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -131,7 +130,7 @@ fn check_duplicates_threshold() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -166,7 +165,7 @@ fn check_duplicates_ignore_case() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -202,7 +201,7 @@ fn check_duplicates_separator() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])

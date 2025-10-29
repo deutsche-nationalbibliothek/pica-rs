@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -7,7 +6,7 @@ use crate::prelude::*;
 
 #[test]
 fn sample_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "1"])
         .arg(data_dir().join("ada.dat"))
@@ -27,7 +26,7 @@ fn sample_output() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "1"])
         .arg(data_dir().join("ada.dat"))
@@ -54,7 +53,7 @@ fn sample_gzip() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat.gz");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "2"])
         .arg(data_dir().join("ada.dat"))
@@ -67,7 +66,7 @@ fn sample_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(samples.to_str().unwrap())
@@ -85,7 +84,7 @@ fn sample_gzip() -> TestResult {
 
 #[test]
 fn sample_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "10"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -97,7 +96,7 @@ fn sample_skip_invalid() -> TestResult {
         .stdout(predicates::str::is_empty().not())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "10"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -116,7 +115,7 @@ fn sample_skip_invalid() -> TestResult {
 
 #[test]
 fn sample_limit() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
 
     let samples = temp_dir.child("samples.dat");
@@ -133,7 +132,7 @@ fn sample_limit() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "--records"])
         .arg(samples.to_str().unwrap())
@@ -153,7 +152,7 @@ fn sample_seed() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "2"])
         .args(["--seed", "1234"])
@@ -181,7 +180,7 @@ fn sample_where() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "23"])
         .args(["--where", "003@.0 == '118540238'"])
@@ -209,7 +208,7 @@ fn sample_where_and() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "23"])
         .args(["--where", "002@.0 =^ 'Tp'"])
@@ -238,7 +237,7 @@ fn sample_where_not() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "23"])
         .args(["--where", "002@.0 =^ 'Tp'"])
@@ -267,7 +266,7 @@ fn sample_where_and_not() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "23"])
         .args(["--where", "002@.0 =^ 'Tp'"])
@@ -297,7 +296,7 @@ fn sample_where_or() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let samples = temp_dir.child("samples.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "23"])
         .args(["--where", "003@.0 == '118515551'"])
@@ -329,7 +328,7 @@ fn sample_allow() -> TestResult {
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("idn\n118540238\n118515551\n")?;
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "10"])
         .args(["-A", allow.to_str().unwrap()])
@@ -374,7 +373,7 @@ fn sample_deny() -> TestResult {
     )
     .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["sample", "-s", "10"])
         .args(["-D", deny.to_str().unwrap()])

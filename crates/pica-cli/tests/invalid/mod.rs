@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -9,7 +8,7 @@ use crate::prelude::*;
 
 #[test]
 fn read_file_write_file() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -36,7 +35,7 @@ fn read_file_write_file() -> TestResult {
 
 #[test]
 fn read_stdin_write_file() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -63,7 +62,7 @@ fn read_stdin_write_file() -> TestResult {
 
 #[test]
 fn read_file_write_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let input = data_dir().join("invalid.dat");
 
     let assert = cmd.arg("invalid").arg(&input).assert();
@@ -78,7 +77,7 @@ fn read_file_write_stdout() -> TestResult {
 
 #[test]
 fn read_stdin_write_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let filename = data_dir().join("invalid.dat");
 
     let assert = cmd
@@ -97,7 +96,7 @@ fn read_stdin_write_stdout() -> TestResult {
 
 #[test]
 fn read_multiple_files() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let input = data_dir().join("invalid.dat");
 
     let assert = cmd
@@ -117,7 +116,7 @@ fn read_multiple_files() -> TestResult {
 
 #[test]
 fn read_gzip_file() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let input = data_dir().join("invalid.dat");
 
     let assert = cmd

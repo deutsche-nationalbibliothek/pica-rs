@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -8,7 +7,7 @@ use super::prelude::*;
 
 #[test]
 fn explode_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "main"])
         .arg(data_dir().join("ada.dat"))
@@ -26,7 +25,7 @@ fn explode_stdout() -> TestResult {
 
 #[test]
 fn explode_local() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "local"])
         .arg(data_dir().join("COPY.dat.gz"))
@@ -53,7 +52,7 @@ fn explode_local() -> TestResult {
 
 #[test]
 fn explode_copy() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .arg(data_dir().join("COPY.dat.gz"))
@@ -83,7 +82,7 @@ fn explode_copy() -> TestResult {
 
 #[test]
 fn explode_output() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat");
 
@@ -112,7 +111,7 @@ fn explode_gzip() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.dat.gz");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "main"])
         .args(["-o", out.to_str().unwrap()])
@@ -125,7 +124,7 @@ fn explode_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd.arg("concat").arg(out.as_os_str()).assert();
 
     assert
@@ -135,7 +134,7 @@ fn explode_gzip() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     let out = temp_dir.child("out.dat.gz");
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "--gzip", "main"])
         .args(["-o", out.to_str().unwrap()])
@@ -148,7 +147,7 @@ fn explode_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd.arg("concat").arg(out.as_os_str()).assert();
 
     assert
@@ -163,7 +162,7 @@ fn explode_gzip() -> TestResult {
 
 #[test]
 fn explode_limit() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--limit", "2"])
@@ -185,7 +184,7 @@ fn explode_limit() -> TestResult {
         .stdout(predicates::ord::eq(output))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--limit", "1"])
@@ -203,7 +202,7 @@ fn explode_limit() -> TestResult {
         .stdout(predicates::ord::eq(output))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--limit", "0"])
@@ -234,7 +233,7 @@ fn explode_limit() -> TestResult {
 
 #[test]
 fn explode_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "-s", "main"])
         .arg(data_dir().join("invalid.dat"))
@@ -246,7 +245,7 @@ fn explode_skip_invalid() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "main"])
         .arg(data_dir().join("invalid.dat"))
@@ -260,7 +259,7 @@ fn explode_skip_invalid() -> TestResult {
             "parse error: invalid record on line 1",
         ));
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "-s", "main"])
         .arg(data_dir().join("invalid.dat"))
@@ -279,7 +278,7 @@ fn explode_skip_invalid() -> TestResult {
 
 #[test]
 fn explode_where() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--where", "101@.a == '1'"])
@@ -306,7 +305,7 @@ fn explode_where() -> TestResult {
 
 #[test]
 fn explode_where_and() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--where", "101@.a == '1'"])
@@ -334,7 +333,7 @@ fn explode_where_and() -> TestResult {
 
 #[test]
 fn explode_where_and_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--where", "101@.a == '1'"])
@@ -359,7 +358,7 @@ fn explode_where_and_not() -> TestResult {
 
 #[test]
 fn explode_where_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--where", "101@.a == '1'"])
@@ -383,7 +382,7 @@ fn explode_where_not() -> TestResult {
 
 #[test]
 fn explode_where_or() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "copy"])
         .args(["--where", "203@/*.0 == '0123456789'"])
@@ -411,7 +410,7 @@ fn explode_where_or() -> TestResult {
 
 #[test]
 fn explode_allow() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("ppn\n123456789\n")?;
@@ -437,7 +436,7 @@ fn explode_allow() -> TestResult {
 
 #[test]
 fn explode_deny() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("ALLOW.csv");
     deny.write_str("ppn\n123456789\n")?;
@@ -459,7 +458,7 @@ fn explode_deny() -> TestResult {
 
 #[test]
 fn explode_filter_set_column() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("id\n123456789\n")?;
@@ -486,7 +485,7 @@ fn explode_filter_set_column() -> TestResult {
 
 #[test]
 fn explode_filter_set_source() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("eln\n345678901\n")?;
@@ -513,7 +512,7 @@ fn explode_filter_set_source() -> TestResult {
 
 #[test]
 fn explode_keep() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "local"])
         .args(["--keep", "003@,101@,203@/*"])
@@ -539,7 +538,7 @@ fn explode_keep() -> TestResult {
 
 #[test]
 fn explode_discard() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["explode", "local"])
         .args(["--discard", "002@"])
