@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -9,7 +8,7 @@ fn slice_default() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -22,7 +21,7 @@ fn slice_default() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -43,7 +42,7 @@ fn slice_start_end() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .args(["--start", "2", "--end", "5"])
@@ -57,7 +56,7 @@ fn slice_start_end() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -78,7 +77,7 @@ fn slice_start() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .args(["--start", "9"])
@@ -92,7 +91,7 @@ fn slice_start() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -113,7 +112,7 @@ fn slice_end() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .args(["--end", "3"])
@@ -127,7 +126,7 @@ fn slice_end() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -148,7 +147,7 @@ fn slice_length() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .args(["--length", "5"])
@@ -162,7 +161,7 @@ fn slice_length() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -183,7 +182,7 @@ fn slice_gzip() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat.gz");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -196,7 +195,7 @@ fn slice_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -217,7 +216,7 @@ fn slice_append() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .args(["--length", "2"])
@@ -231,7 +230,7 @@ fn slice_append() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid", "--append"])
         .args(["--start", "5", "--length", "2"])
@@ -245,7 +244,7 @@ fn slice_append() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -266,7 +265,7 @@ fn slice_skip_invalid() -> TestResult {
     let outdir = TempDir::new().unwrap();
     let out = outdir.child("slice.dat");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice", "--skip-invalid"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -279,7 +278,7 @@ fn slice_skip_invalid() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(out.to_str().unwrap())
@@ -291,7 +290,7 @@ fn slice_skip_invalid() -> TestResult {
         .stdout(predicates::ord::eq("12\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["slice"])
         .arg(data_dir().join("DUMP.dat.gz"))

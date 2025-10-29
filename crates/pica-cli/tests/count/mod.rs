@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -8,7 +7,7 @@ use crate::prelude::*;
 
 #[test]
 fn count_write_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -30,7 +29,7 @@ fn count_write_output() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("counts.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "-o", out.to_str().unwrap()])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -56,7 +55,7 @@ fn count_write_append() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("counts.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--csv"])
         .args(["--where", "002@.0 =^ 'Tp'"])
@@ -70,7 +69,7 @@ fn count_write_append() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--csv", "--append", "--no-header"])
         .args(["--where", "002@.0 =^ 'Ts'"])
@@ -95,7 +94,7 @@ fn count_write_append() -> TestResult {
 
 #[test]
 fn count_write_csv() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--csv"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -114,7 +113,7 @@ fn count_write_csv() -> TestResult {
 
 #[test]
 fn count_write_tsv() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--tsv"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -133,7 +132,7 @@ fn count_write_tsv() -> TestResult {
 
 #[test]
 fn count_write_records() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -150,7 +149,7 @@ fn count_write_records() -> TestResult {
 
 #[test]
 fn count_write_fields() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--fields"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -167,7 +166,7 @@ fn count_write_fields() -> TestResult {
 
 #[test]
 fn count_write_subfields() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--subfields"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -184,7 +183,7 @@ fn count_write_subfields() -> TestResult {
 
 #[test]
 fn count_write_no_header() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--csv", "--no-header"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -196,7 +195,7 @@ fn count_write_no_header() -> TestResult {
         .stdout(predicates::ord::eq("12,1035,3973\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--tsv", "--no-header"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -213,7 +212,7 @@ fn count_write_no_header() -> TestResult {
 
 #[test]
 fn count_where() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .args(["--where", "002@.0 =^ 'Tp'"])
@@ -231,7 +230,7 @@ fn count_where() -> TestResult {
 
 #[test]
 fn count_where_and() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .args(["--where", "002@.0 =^ 'T'"])
@@ -250,7 +249,7 @@ fn count_where_and() -> TestResult {
 
 #[test]
 fn count_where_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .args(["--where", "002@.0 =^ 'Tp'"])
@@ -269,7 +268,7 @@ fn count_where_not() -> TestResult {
 
 #[test]
 fn count_where_or() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .args(["--where", "002@.0 =^ 'Tp'"])
@@ -289,7 +288,7 @@ fn count_where_or() -> TestResult {
 #[test]
 fn count_allow() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let allow = temp_dir.child("allow.csv");
     allow.write_str("ppn\n118540238\n118607626\n")?;
@@ -313,7 +312,7 @@ fn count_allow() -> TestResult {
 #[test]
 fn count_deny() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let deny = temp_dir.child("allow.csv");
     deny.write_str("ppn\n118540238\n118607626\n")?;
@@ -337,7 +336,7 @@ fn count_deny() -> TestResult {
 #[test]
 fn count_filter_set_column() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let allow = temp_dir.child("allow.csv");
     allow.write_str("id\n118540238\n118607626\n")?;
@@ -362,7 +361,7 @@ fn count_filter_set_column() -> TestResult {
 #[test]
 fn count_filter_set_source() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let allow = temp_dir.child("allow.csv");
     allow.write_str("bbg\nTpz\nTp1\n")?;
@@ -387,7 +386,7 @@ fn count_filter_set_source() -> TestResult {
 
 #[test]
 fn count_ignore_case() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .args(["-i", "--where", "002@.0 =^ 'tp'"])
@@ -405,7 +404,7 @@ fn count_ignore_case() -> TestResult {
 
 #[test]
 fn count_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(data_dir().join("invalid.dat"))
@@ -417,7 +416,7 @@ fn count_skip_invalid() -> TestResult {
         .stdout(predicates::ord::eq("0\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "--records"])
         .arg(data_dir().join("invalid.dat"))

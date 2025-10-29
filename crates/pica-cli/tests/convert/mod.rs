@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -9,7 +8,7 @@ use super::prelude::*;
 
 #[test]
 fn convert_from_plus_to_xml() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("ada.xml");
 
@@ -39,7 +38,7 @@ fn convert_from_plus_to_xml() -> TestResult {
 
 #[test]
 fn convert_from_plus_to_json() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("ada.json");
 
@@ -65,7 +64,7 @@ fn convert_from_plus_to_json() -> TestResult {
 
 #[test]
 fn convert_from_plus_to_plus() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("ada.dat");
 
@@ -93,7 +92,7 @@ fn convert_from_plus_to_plus() -> TestResult {
 
 #[test]
 fn convert_from_plus_to_plain() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("ada.plain");
 
@@ -123,7 +122,7 @@ fn convert_from_plus_to_plain() -> TestResult {
 
 #[test]
 fn convert_from_plus_to_import() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("ada.import");
 
@@ -151,7 +150,7 @@ fn convert_from_plus_to_import() -> TestResult {
 
 #[test]
 fn convert_from_plus_to_binary() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("ada.bin");
 
@@ -179,7 +178,7 @@ fn convert_from_plus_to_binary() -> TestResult {
 
 #[test]
 fn convert_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["convert", "-s"])
         .args(["--from", "plus", "--to", "json"])
@@ -192,7 +191,7 @@ fn convert_skip_invalid() -> TestResult {
         .stdout(predicates::ord::eq("[]"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["convert"])
         .args(["--from", "plus", "--to", "json"])

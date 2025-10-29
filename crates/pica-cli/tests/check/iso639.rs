@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -18,7 +17,7 @@ fn default() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -33,7 +32,7 @@ fn default() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -50,7 +49,7 @@ fn default() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -83,7 +82,7 @@ fn case_ignore() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -98,7 +97,7 @@ fn case_ignore() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])

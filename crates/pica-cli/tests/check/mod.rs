@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::PredicateBooleanExt;
@@ -28,7 +27,7 @@ fn check_skip_invalid() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -44,7 +43,7 @@ fn check_skip_invalid() -> TestResult {
             "parse error: invalid record on line 1",
         ));
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["check", "-s"])
         .args(["-R", ruleset.to_str().unwrap()])
@@ -77,7 +76,7 @@ fn check_scope() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -108,7 +107,7 @@ fn check_limit() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["check", "--limit", "1"])
         .args(["-R", ruleset.to_str().unwrap()])
@@ -140,7 +139,7 @@ fn check_where() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -156,7 +155,7 @@ fn check_where() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -191,7 +190,7 @@ fn check_txt_output() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["check", "-s"])
         .args(["-R", ruleset.to_str().unwrap()])
@@ -227,7 +226,7 @@ fn check_tsv_output() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["check", "-s"])
         .args(["-R", ruleset.to_str().unwrap()])
@@ -268,7 +267,7 @@ fn check_termination() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])
@@ -299,7 +298,7 @@ fn check_termination() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("check")
         .args(["-R", ruleset.to_str().unwrap()])

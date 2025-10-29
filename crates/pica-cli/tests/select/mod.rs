@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -10,7 +9,7 @@ mod format;
 
 #[test]
 fn select_csv_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,002@.0"])
         .arg(data_dir().join("algebra.dat"))
@@ -28,7 +27,7 @@ fn select_csv_stdout() -> TestResult {
 
 #[test]
 fn select_csv_output() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
@@ -56,7 +55,7 @@ fn select_csv_output() -> TestResult {
 
 #[test]
 fn select_tsv_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--tsv", "003@.0,002@.0"])
         .arg(data_dir().join("algebra.dat"))
@@ -74,7 +73,7 @@ fn select_tsv_stdout() -> TestResult {
 
 #[test]
 fn select_tsv_output() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.tsv");
 
@@ -102,7 +101,7 @@ fn select_tsv_output() -> TestResult {
 
 #[test]
 fn select_stdin() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,012B.0"])
         .write_stdin("003@ \x1f0123\x1e012B \x1f0bar\x1e\n")
@@ -114,7 +113,7 @@ fn select_stdin() -> TestResult {
         .stdout(predicates::ord::eq("123,bar\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "-s", "003@.0,012B.0"])
         .args([data_dir().join("invalid.dat"), "-".into()])
@@ -132,7 +131,7 @@ fn select_stdin() -> TestResult {
 
 #[test]
 fn select_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "002@.0"])
         .arg(data_dir().join("invalid.dat"))
@@ -146,7 +145,7 @@ fn select_skip_invalid() -> TestResult {
             "parse error: invalid record on line 1",
         ));
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["frequency", "-s", "002@.0"])
         .arg(data_dir().join("invalid.dat"))
@@ -163,7 +162,7 @@ fn select_skip_invalid() -> TestResult {
 
 #[test]
 fn select_squash() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--squash", "003@.0,008A.a"])
         .arg(data_dir().join("math.dat.gz"))
@@ -175,7 +174,7 @@ fn select_squash() -> TestResult {
         .stdout(predicates::ord::eq("040379442,s|g\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,008A.a"])
         .args(["--squash", "--separator", "+++"])
@@ -188,7 +187,7 @@ fn select_squash() -> TestResult {
         .stdout(predicates::ord::eq("040379442,s+++g\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,008A.a"])
         .args(["--squash", "--separator", "s"])
@@ -208,7 +207,7 @@ fn select_squash() -> TestResult {
 
 #[test]
 fn select_merge() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--merge", "003@.0,008A.a,008B.a"])
         .arg(data_dir().join("algebra.dat"))
@@ -223,7 +222,7 @@ fn select_merge() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,008A.a,008B.a"])
         .args(["--merge", "--separator", "+++"])
@@ -239,7 +238,7 @@ fn select_merge() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,008A.a,008B.a"])
         .args(["--merge", "--separator", ""])
@@ -260,7 +259,7 @@ fn select_merge() -> TestResult {
 
 #[test]
 fn select_no_empty_columns() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--no-empty-columns", "003@.0,028A.a"])
         .arg(data_dir().join("algebra.dat"))
@@ -278,7 +277,7 @@ fn select_no_empty_columns() -> TestResult {
 
 #[test]
 fn select_unique() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--unique", "004B.a"])
         .arg(data_dir().join("math.dat.gz"))
@@ -297,7 +296,7 @@ fn select_unique() -> TestResult {
 
 #[test]
 fn select_ignore_case() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--ignore-case"])
         .args(["003@.0,041[A@]{ a | a == 'algebra'}"])
@@ -315,7 +314,7 @@ fn select_ignore_case() -> TestResult {
 
 #[test]
 fn select_strsim_threshold() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,041[AP]{ a | a =* 'Algebra'}"])
         .arg(data_dir().join("algebra.dat"))
@@ -329,7 +328,7 @@ fn select_strsim_threshold() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--strsim-threshold", "60"])
         .arg("041[AP]{ a | a =* 'Algebra'}")
@@ -349,7 +348,7 @@ fn select_strsim_threshold() -> TestResult {
 
 #[test]
 fn select_limit() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--limit", "2", "003@.0,002@.0"])
         .arg(data_dir().join("math.dat.gz"))
@@ -363,7 +362,7 @@ fn select_limit() -> TestResult {
         .stdout(predicates::ord::eq("040379442,Tsz\n040011569,Ts1\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "-l", "1", "003@.0,002@.0"])
         .arg(data_dir().join("math.dat.gz"))
@@ -377,7 +376,7 @@ fn select_limit() -> TestResult {
         .stdout(predicates::ord::eq("040379442,Tsz\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--limit", "0", "003@.0,002@.0"])
         .arg(data_dir().join("math.dat.gz"))
@@ -398,7 +397,7 @@ fn select_limit() -> TestResult {
 
 #[test]
 fn select_translit() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "041@{ a | a =^ 'H'}"])
         .arg(data_dir().join("algebra.dat"))
@@ -411,7 +410,7 @@ fn select_translit() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     // NFD
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--translit", "nfd", "041@{ a | a =^ 'H'}"])
         .arg(data_dir().join("algebra.dat"))
@@ -424,7 +423,7 @@ fn select_translit() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     // NFKD
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--translit", "nfkd", "041@{ a | a =^ 'H'}"])
         .arg(data_dir().join("algebra.dat"))
@@ -437,7 +436,7 @@ fn select_translit() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     // NFC
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--translit", "nfc", "041@{ a | a =^ 'H'}"])
         .arg(data_dir().join("algebra.dat"))
@@ -450,7 +449,7 @@ fn select_translit() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     // NFKC
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--translit", "nfkc", "041@{ a | a =^ 'H'}"])
         .arg(data_dir().join("algebra.dat"))
@@ -467,7 +466,7 @@ fn select_translit() -> TestResult {
 
 #[test]
 fn select_where() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,002@.0"])
         .args(["--where", "003@.0 != '040011569'"])
@@ -486,7 +485,7 @@ fn select_where() -> TestResult {
 
 #[test]
 fn select_where_and() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,002@.0"])
         .args(["--where", "003@.0 != '040011569'"])
@@ -506,7 +505,7 @@ fn select_where_and() -> TestResult {
 
 #[test]
 fn select_where_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,002@.0"])
         .args(["--where", "003@.0 != '040011569'"])
@@ -526,7 +525,7 @@ fn select_where_not() -> TestResult {
 
 #[test]
 fn select_where_and_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,002@.0"])
         .args(["--where", "003@.0 != '040011569'"])
@@ -547,7 +546,7 @@ fn select_where_and_not() -> TestResult {
 
 #[test]
 fn select_where_or() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,002@.0"])
         .args(["--where", "002@.0 == 'Ts1'"])
@@ -569,7 +568,7 @@ fn select_where_or() -> TestResult {
 fn select_allow() -> TestResult {
     // IDN
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let allow = temp_dir.child("allow.csv");
     allow.write_str("idn\n118540238\n040991970\n")?;
@@ -590,7 +589,7 @@ fn select_allow() -> TestResult {
 
     // PPN
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let allow = temp_dir.child("allow.csv");
     allow.write_str("ppn\n118540238\n040991970\n")?;
@@ -611,7 +610,7 @@ fn select_allow() -> TestResult {
 
     // PPN+IDN
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let allow = temp_dir.child("allow.csv");
     allow.write_str(
@@ -633,7 +632,7 @@ fn select_allow() -> TestResult {
     temp_dir.close().unwrap();
 
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     // FILTER SET COLUMN
     let allow = temp_dir.child("allow.csv");
@@ -661,7 +660,7 @@ fn select_allow() -> TestResult {
 fn select_deny() -> TestResult {
     // IDN
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let deny = temp_dir.child("deny.csv");
     deny.write_str("idn\n040011569\n")?;
@@ -683,7 +682,7 @@ fn select_deny() -> TestResult {
 
     // PPN
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let deny = temp_dir.child("deny.csv");
     deny.write_str("ppn\n040011569\n")?;
@@ -705,7 +704,7 @@ fn select_deny() -> TestResult {
 
     // PPN+IDN
     let temp_dir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
 
     let deny = temp_dir.child("deny.csv");
     deny.write_str("idn,ppn\n119232022,040011569\n")?;
@@ -729,7 +728,7 @@ fn select_deny() -> TestResult {
 
 #[test]
 fn select_query_const() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0, 'abc'"])
         .arg(data_dir().join("ada.dat"))
@@ -746,7 +745,7 @@ fn select_query_const() -> TestResult {
 
 #[test]
 fn select_query_path() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,002@.0"])
         .arg(data_dir().join("ada.dat"))
@@ -758,7 +757,7 @@ fn select_query_path() -> TestResult {
         .stdout(predicates::ord::eq("119232022,Tp1\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@.0,028@{ (d, a) | 4 == 'nafr'}"])
         .arg(data_dir().join("ada.dat"))
@@ -770,7 +769,7 @@ fn select_query_path() -> TestResult {
         .stdout(predicates::ord::eq("119232022,Ada Augusta,Byron\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--merge", "003@.0,008[AB].a"])
         .arg(data_dir().join("ada.dat"))
@@ -782,7 +781,7 @@ fn select_query_path() -> TestResult {
         .stdout(predicates::ord::eq("119232022,s|z|f|w|k|v\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "--squash", "003@.0, 008[AB].a"])
         .arg(data_dir().join("ada.dat"))
@@ -802,7 +801,7 @@ fn select_query_path() -> TestResult {
 #[test]
 #[cfg(feature = "compat")]
 fn select_compat() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@ $0,002@$0"])
         .arg(data_dir().join("algebra.dat"))
@@ -815,7 +814,7 @@ fn select_compat() -> TestResult {
         .stdout(predicates::ord::eq("040011569,Ts1\n119232022,Tp1\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@$0,028@{ $d, $a | $4 == 'nafr'}"])
         .arg(data_dir().join("ada.dat"))
@@ -827,7 +826,7 @@ fn select_compat() -> TestResult {
         .stdout(predicates::ord::eq("119232022,Ada Augusta,Byron\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "003@$0,028@{ ($d, $a) | $4 == 'nafr'}"])
         .arg(data_dir().join("ada.dat"))

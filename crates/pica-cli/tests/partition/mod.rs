@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 use predicates::prelude::*;
@@ -11,7 +10,7 @@ use crate::prelude::*;
 fn partition_by_bbg() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["partition", "-s", "002@.0"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -24,7 +23,7 @@ fn partition_by_bbg() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tg1.dat"))
@@ -36,7 +35,7 @@ fn partition_by_bbg() -> TestResult {
         .stdout(predicates::ord::eq("1\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tu1.dat"))
@@ -55,7 +54,7 @@ fn partition_by_bbg() -> TestResult {
 fn partition_gzip() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["partition", "-s", "--gzip", "002@.0"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -68,7 +67,7 @@ fn partition_gzip() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat.gz"))
@@ -80,7 +79,7 @@ fn partition_gzip() -> TestResult {
         .stdout(predicates::ord::eq("1\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tu1.dat.gz"))
@@ -99,7 +98,7 @@ fn partition_gzip() -> TestResult {
 fn partition_template() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["partition", "-s", "002@.0"])
         .args(["--template", "BBG_{}.dat"])
@@ -113,7 +112,7 @@ fn partition_template() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("BBG_Tg1.dat"))
@@ -125,7 +124,7 @@ fn partition_template() -> TestResult {
         .stdout(predicates::ord::eq("1\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("BBG_Tu1.dat"))
@@ -144,7 +143,7 @@ fn partition_template() -> TestResult {
 fn partition_stdin() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["partition", "003@.0"])
         .args(["-o", outdir.to_str().unwrap()])
@@ -169,7 +168,7 @@ fn partition_stdin() -> TestResult {
 #[test]
 fn partition_skip_invalid() -> TestResult {
     let outdir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["partition", "003@.0"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -191,7 +190,7 @@ fn partition_skip_invalid() -> TestResult {
 #[test]
 fn multiple_partitions() -> TestResult {
     let outdir = TempDir::new().unwrap();
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["partition", "042A.a"])
         .arg(data_dir().join("ada.dat"))
@@ -219,7 +218,7 @@ fn multiple_partitions() -> TestResult {
 
 #[test]
 fn partition_where() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let outdir = TempDir::new().unwrap();
 
     let assert = cmd
@@ -237,7 +236,7 @@ fn partition_where() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 2);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat"))
@@ -256,7 +255,7 @@ fn partition_where() -> TestResult {
 
 #[test]
 fn partition_where_and() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let outdir = TempDir::new().unwrap();
 
     let assert = cmd
@@ -275,7 +274,7 @@ fn partition_where_and() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 1);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tpz.dat"))
@@ -293,7 +292,7 @@ fn partition_where_and() -> TestResult {
 
 #[test]
 fn partition_and_or() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let outdir = TempDir::new().unwrap();
 
     let assert = cmd
@@ -312,7 +311,7 @@ fn partition_and_or() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 2);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat"))
@@ -331,7 +330,7 @@ fn partition_and_or() -> TestResult {
 
 #[test]
 fn partition_where_not() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let outdir = TempDir::new().unwrap();
 
     let assert = cmd
@@ -350,7 +349,7 @@ fn partition_where_not() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 1);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tpz.dat"))
@@ -368,7 +367,7 @@ fn partition_where_not() -> TestResult {
 
 #[test]
 fn partition_allow() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let outdir = TempDir::new().unwrap();
 
@@ -390,7 +389,7 @@ fn partition_allow() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 2);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat"))
@@ -410,7 +409,7 @@ fn partition_allow() -> TestResult {
 
 #[test]
 fn partition_deny() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let outdir = TempDir::new().unwrap();
 
@@ -444,7 +443,7 @@ fn partition_deny() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 2);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat"))
@@ -464,7 +463,7 @@ fn partition_deny() -> TestResult {
 
 #[test]
 fn partition_filter_set_column() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let outdir = TempDir::new().unwrap();
 
@@ -487,7 +486,7 @@ fn partition_filter_set_column() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 2);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat"))
@@ -507,7 +506,7 @@ fn partition_filter_set_column() -> TestResult {
 
 #[test]
 fn partition_filter_set_source() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let outdir = TempDir::new().unwrap();
 
@@ -531,7 +530,7 @@ fn partition_filter_set_source() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 2);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat"))
@@ -551,7 +550,7 @@ fn partition_filter_set_source() -> TestResult {
 
 #[test]
 fn partition_limit() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let outdir = TempDir::new().unwrap();
 
     let assert = cmd
@@ -568,7 +567,7 @@ fn partition_limit() -> TestResult {
 
     assert_eq!(outdir.read_dir().unwrap().count(), 2);
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["count", "-s", "--records"])
         .arg(outdir.join("Tp1.dat"))

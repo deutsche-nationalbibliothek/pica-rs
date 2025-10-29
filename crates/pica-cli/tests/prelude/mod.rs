@@ -2,6 +2,8 @@ use std::env::current_dir;
 use std::path::PathBuf;
 use std::sync::LazyLock;
 
+use assert_cmd::Command;
+
 pub(crate) type TestResult = anyhow::Result<()>;
 
 pub(crate) fn data_dir() -> &'static PathBuf {
@@ -15,4 +17,8 @@ pub(crate) fn data_dir() -> &'static PathBuf {
     });
 
     &DATA_DIR
+}
+
+pub(crate) fn pica_cmd() -> Command {
+    Command::new(assert_cmd::cargo::cargo_bin!("pica"))
 }

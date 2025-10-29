@@ -1,10 +1,8 @@
-use assert_cmd::Command;
-
 use crate::prelude::*;
 
 #[test]
 fn format_string_simple() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028A{ a <$> (', ' d <*> ' (' c ')' ) }")
@@ -24,7 +22,7 @@ fn format_string_simple() -> TestResult {
 
 #[test]
 fn format_string_with_predicate() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028R{a <$> (', ' d <*> ' (' v ')') | v in ['Vater', 'Mutter']}")
@@ -45,7 +43,7 @@ fn format_string_with_predicate() -> TestResult {
 
 #[test]
 fn format_string_uppercase() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028A{?u a <$> (', ' d <*> ' (' c ')' ) }")
@@ -60,7 +58,7 @@ fn format_string_uppercase() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028A{?u a <$> (?u ', ' d <*> ' (' c ')' ) }")
@@ -80,7 +78,7 @@ fn format_string_uppercase() -> TestResult {
 
 #[test]
 fn format_string_lowercase() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028A{?l a <$> (', ' d <*> ' (' c ')' ) }")
@@ -95,7 +93,7 @@ fn format_string_lowercase() -> TestResult {
         ))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028A{?l a <$> (?l ', ' d <*> ' (' c ')' ) }")
@@ -115,7 +113,7 @@ fn format_string_lowercase() -> TestResult {
 
 #[test]
 fn format_string_strip_whitespaces() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028A{ a <$> (?w ', ' d <*> ' (' c ')' ) }")
@@ -135,7 +133,7 @@ fn format_string_strip_whitespaces() -> TestResult {
 
 #[test]
 fn format_string_trim() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("select")
         .arg("003@.0,028A{a <$> (?t ', ' d <*> ' (' c ') ' ) }")
@@ -155,7 +153,7 @@ fn format_string_trim() -> TestResult {
 
 #[test]
 fn format_strip_overread_char() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "021A{?o a }"])
         .write_stdin(b"021A \x1fa@abc\x1e\n")
@@ -167,7 +165,7 @@ fn format_strip_overread_char() -> TestResult {
         .stdout(predicates::ord::eq("abc\n"))
         .stderr(predicates::str::is_empty());
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["select", "021A{ a }"])
         .write_stdin(b"021A \x1fa@abc\x1e\n")

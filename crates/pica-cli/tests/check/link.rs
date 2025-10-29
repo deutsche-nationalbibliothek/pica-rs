@@ -1,4 +1,3 @@
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -19,7 +18,7 @@ fn simple() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["check", "-s"])
         .args(["-R", ruleset.to_str().unwrap()])
@@ -56,7 +55,7 @@ fn path_filter() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["check", "-s"])
         .args(["-R", ruleset.to_str().unwrap()])
@@ -90,7 +89,7 @@ fn condition() -> TestResult {
         )
         .unwrap();
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["check", "-s"])
         .args(["-R", ruleset.to_str().unwrap()])

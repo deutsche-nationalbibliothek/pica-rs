@@ -1,6 +1,5 @@
 use std::fs::read_to_string;
 
-use assert_cmd::Command;
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
 
@@ -8,7 +7,7 @@ use crate::prelude::*;
 
 #[test]
 fn describe_write_stdout() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "050C"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -28,7 +27,7 @@ fn describe_write_csv() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "050C"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -51,7 +50,7 @@ fn describe_write_tsv() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.tsv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "050C"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -75,7 +74,7 @@ fn describe_write_tsv() -> TestResult {
 
 #[test]
 fn describe_skip_invalid() -> TestResult {
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .arg("describe")
         .arg(data_dir().join("invalid.dat"))
@@ -97,7 +96,7 @@ fn describe_keep() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "002@"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -120,7 +119,7 @@ fn describe_discard() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "00[23]@", "-d", "003@"])
         .arg(data_dir().join("DUMP.dat.gz"))
@@ -146,7 +145,7 @@ fn describe_allow() -> TestResult {
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("ppn\n118540238\n")?;
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["-A", allow.to_str().unwrap()])
@@ -177,7 +176,7 @@ fn describe_deny() -> TestResult {
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("ppn\n118540238\n")?;
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["-D", deny.to_str().unwrap()])
@@ -208,7 +207,7 @@ fn describe_filter_set_column() -> TestResult {
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("id\n118540238\n")?;
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["-A", allow.to_str().unwrap()])
@@ -240,7 +239,7 @@ fn describe_filter_set_source() -> TestResult {
     let allow = temp_dir.child("ALLOW.csv");
     allow.write_str("gnd_id\n118540238\n")?;
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["-A", allow.to_str().unwrap()])
@@ -270,7 +269,7 @@ fn describe_where() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["--where", "003@.0 == '118540238'"])
@@ -298,7 +297,7 @@ fn describe_where_and() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["--where", "003@.0 == '118540238'"])
@@ -327,7 +326,7 @@ fn describe_where_or() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["--where", "003@.0 == '118540238'"])
@@ -356,7 +355,7 @@ fn describe_where_not() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let out = temp_dir.child("out.csv");
 
-    let mut cmd = Command::cargo_bin("pica")?;
+    let mut cmd = pica_cmd();
     let assert = cmd
         .args(["describe", "-s", "-k", "007N"])
         .args(["--where", "003@.0 == '118540238'"])
