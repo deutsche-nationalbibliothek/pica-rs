@@ -28,6 +28,8 @@ pub(crate) struct Rule {
     #[allow(dead_code)]
     pub(crate) link: Option<String>,
 
+    pub(crate) tags: Option<Vec<String>>,
+
     #[serde(default)]
     pub(crate) level: Level,
 
