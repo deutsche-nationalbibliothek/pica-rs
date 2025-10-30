@@ -29,6 +29,11 @@ pub(crate) struct Check {
     #[arg(long = "rule", short = 'r')]
     filter: Vec<String>,
 
+    /// A comma-separated list of tags to select a specific subset of
+    /// rules
+    #[arg(long, short)]
+    tags: Option<String>,
+
     /// Write output to FILENAME instead of stdout
     #[arg(short, long, value_name = "FILENAME")]
     output: Option<PathBuf>,
@@ -73,6 +78,26 @@ impl Check {
                 rs.rules.retain(|k, _| re.is_match(k));
             }
         }
+
+        if let Some(tags) = self.tags {
+            let allow: Vec<String> = tags
+                .split(',')
+                .map(str::trim)
+                .map(ToString::to_string)
+                .collect();
+
+            for rs in rulesets.iter_mut() {
+                rs.rules.retain(|_, rule| {
+                    if let Some(ref tags) = rule.tags {
+                        tags.iter().any(|tag| allow.contains(tag))
+                    } else {
+                        true
+                    }
+                })
+            }
+        }
+
+        rulesets.retain(|rs| !rs.rules.is_empty());
 
         'outer: for filename in self.filenames {
             let mut reader =

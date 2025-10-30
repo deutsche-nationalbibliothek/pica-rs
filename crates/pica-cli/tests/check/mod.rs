@@ -449,3 +449,70 @@ fn check_rule_filter() -> TestResult {
     temp_dir.close().unwrap();
     Ok(())
 }
+
+#[test]
+fn check_tags_filter() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = "filter"
+            tags = ["foo", "bar"]
+            filter = '002@.0 == "Tp1"'
+
+            [rule.R002]
+            check = "filter"
+            tags = ["bar", "baz"]
+            filter = '002@.0 == "Tpz"'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n119232022,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["check", "--tags", "bar"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n119232022,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["check", "--tags", "baz,frob"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
