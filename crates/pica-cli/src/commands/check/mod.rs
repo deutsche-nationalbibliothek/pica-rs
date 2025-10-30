@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use pica_record::prelude::*;
+use regex::RegexSetBuilder;
 use set::RuleSet;
 use writer::Writer;
 
@@ -23,6 +24,10 @@ pub(crate) struct Check {
     /// A set of rules to be checked.
     #[arg(long = "rule-set", short = 'R', required = true)]
     rules: Vec<OsString>,
+
+    /// A list of patterns to restrict the rule set to selected rules.
+    #[arg(long = "rule", short = 'r')]
+    filter: Vec<String>,
 
     /// Write output to FILENAME instead of stdout
     #[arg(short, long, value_name = "FILENAME")]
@@ -57,6 +62,17 @@ impl Check {
                 RuleSet::new(path, config.normalization.as_ref())
             })
             .collect::<Result<Vec<_>, _>>()?;
+
+        if !self.filter.is_empty() {
+            let re =
+                RegexSetBuilder::new(self.filter).build().map_err(
+                    |_| CliError::Other("invalid rule filter".into()),
+                )?;
+
+            for rs in rulesets.iter_mut() {
+                rs.rules.retain(|k, _| re.is_match(k));
+            }
+        }
 
         'outer: for filename in self.filenames {
             let mut reader =
