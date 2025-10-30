@@ -95,7 +95,7 @@ impl TryFrom<&FilterOpts> for FilterSet {
     }
 }
 
-fn read_filter_list(
+pub(crate) fn read_filter_list(
     paths: &[PathBuf],
     column: &Option<String>,
 ) -> Result<Option<HashSet<BString>>, FilterSetError> {
