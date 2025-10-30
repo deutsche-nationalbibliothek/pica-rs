@@ -397,6 +397,10 @@ das Schreiben der Datensätze in eine Datei mittels `-o` bzw. `--output`.
 : Angabe eines Regelwerks, gegen das die Datensätze aus der Eingabe
 getestet werden.
 
+`-r <filter>`, `--rule <filter>`
+: Alle Regelwerke werden auf die Regeln reduziert, deren Bezeichnung auf
+einen der spezifizierten regulären Ausdrücke passt.
+
 `-o`, `--output`
 : Angabe, in welche Datei die Ausgabe geschrieben werden soll.
 Standardmäßig wird die Ausgabe in die Standardausgabe `stdout`
