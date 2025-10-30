@@ -69,9 +69,9 @@ impl Check {
                     |_| CliError::Other("invalid rule filter".into()),
                 )?;
 
-            rulesets.iter_mut().for_each(|rs| {
-                rs.rules.retain(|k, _| re.is_match(&k));
-            });
+            for rs in rulesets.iter_mut() {
+                rs.rules.retain(|k, _| re.is_match(k));
+            }
         }
 
         'outer: for filename in self.filenames {
