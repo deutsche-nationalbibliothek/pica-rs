@@ -51,6 +51,7 @@ jobs:
       matrix:
         target:
           - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
           - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc }
           - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
     runs-on: ${{ matrix.target.os }}
