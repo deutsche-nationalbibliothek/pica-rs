@@ -323,3 +323,196 @@ fn check_termination() -> TestResult {
     temp_dir.close().unwrap();
     Ok(())
 }
+
+#[test]
+fn check_translit() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let config = temp_dir.child("pica.toml");
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = "filter"
+            filter = '028@.P == "Göthe"'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["--config", config.to_str().unwrap()])
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("goethe.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["--config", config.to_str().unwrap()])
+        .arg("config")
+        .args(["normalization", "nfd"])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["--config", config.to_str().unwrap()])
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("goethe.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n118540238,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_rule_filter() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = "filter"
+            filter = '004B.a != "pik"'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n040011569,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["check", "-r", "^R0\\d+"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n040011569,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["check", "-r", "R002"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("algebra.dat"))
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
+
+#[test]
+fn check_tags_filter() -> TestResult {
+    let temp_dir = TempDir::new().unwrap();
+    let ruleset = temp_dir.child("rules.toml");
+    ruleset
+        .write_str(
+            r#"
+            [rule.R001]
+            check = "filter"
+            tags = ["foo", "bar"]
+            filter = '002@.0 == "Tp1"'
+
+            [rule.R002]
+            check = "filter"
+            tags = ["bar", "baz"]
+            filter = '002@.0 == "Tpz"'
+        "#,
+        )
+        .unwrap();
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .arg("check")
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n119232022,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["check", "--tags", "bar"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq(
+            "ppn,rule,level,message\n119232022,R001,error,\n",
+        ))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["check", "--tags", "baz,frob"])
+        .args(["-R", ruleset.to_str().unwrap()])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    temp_dir.close().unwrap();
+    Ok(())
+}
