@@ -91,7 +91,7 @@ impl Check {
                     if let Some(ref tags) = rule.tags {
                         tags.iter().any(|tag| allow.contains(tag))
                     } else {
-                        true
+                        false
                     }
                 })
             }
