@@ -89,10 +89,13 @@ pub(crate) fn parse_contains_matcher(
         alt((
             delimited(
                 ws('['),
-                separated(1.., parse_string, ws(',')).map(
-                    |values: Vec<Vec<u8>>| {
-                        HashSet::<Vec<u8>>::from_iter(values)
-                    },
+                terminated(
+                    separated(1.., parse_string, ws(',')).map(
+                        |values: Vec<Vec<u8>>| {
+                            HashSet::<Vec<u8>>::from_iter(values)
+                        },
+                    ),
+                    opt(ws(',')),
                 ),
                 ws(']'),
             ),
@@ -150,14 +153,17 @@ pub(crate) fn parse_regex_set_matcher(
         ws(alt(("=~".value(false), "!~".value(true)))),
         delimited(
             ws('['),
-            separated(
-                1..,
-                parse_string.verify_map(|re| {
-                    String::from_utf8(re)
-                        .ok()
-                        .filter(|s| Regex::new(s).is_ok())
-                }),
-                ws(','),
+            terminated(
+                separated(
+                    1..,
+                    parse_string.verify_map(|re| {
+                        String::from_utf8(re)
+                            .ok()
+                            .filter(|s| Regex::new(s).is_ok())
+                    }),
+                    ws(','),
+                ),
+                opt(ws(',')),
             ),
             ws(']'),
         ),
@@ -189,7 +195,10 @@ pub(crate) fn parse_in_matcher(
             alt((
                 delimited(
                     ws('['),
-                    separated(1.., parse_string, ws(',')),
+                    terminated(
+                        separated(1.., parse_string, ws(',')),
+                        opt(ws(',')),
+                    ),
                     ws(']'),
                 ),
                 parse_string.verify_map(|s| {
@@ -568,7 +577,21 @@ mod tests {
         );
 
         parse_success!(
+            "ALL [a-d] =? ['foo',]",
+            All,
+            "abcd",
+            vec!["foo"]
+        );
+
+        parse_success!(
             "a =? ['foo','bar']",
+            Any,
+            "a",
+            vec!["foo", "bar"]
+        );
+
+        parse_success!(
+            "a =? ['foo','bar',]",
             Any,
             "a",
             vec!["foo", "bar"]
@@ -646,7 +669,23 @@ mod tests {
         );
 
         parse_success!(
+            "ALL [ab] =~ [\"^foo\", \"bar$\", ]",
+            All,
+            "ab",
+            vec!["^foo", "bar$"],
+            false
+        );
+
+        parse_success!(
             "[ab] =~ ['foo', 'bar']",
+            Any,
+            "ab",
+            vec!["foo", "bar"],
+            false
+        );
+
+        parse_success!(
+            "[ab] =~ ['foo', 'bar',]",
             Any,
             "ab",
             vec!["foo", "bar"],
@@ -725,8 +764,18 @@ mod tests {
         }
 
         parse_success!("0 in ['Tp1']", Any, "0", vec!["Tp1"], false);
+        parse_success!("0 in ['Tp1',]", Any, "0", vec!["Tp1"], false);
+
         parse_success!(
             "0 in ['Tp1', 'Tpz']",
+            Any,
+            "0",
+            vec!["Tp1", "Tpz"],
+            false
+        );
+
+        parse_success!(
+            "0 in ['Tp1', 'Tpz',]",
             Any,
             "0",
             vec!["Tp1", "Tpz"],
@@ -750,6 +799,14 @@ mod tests {
         );
 
         parse_success!(
+            "ANY [ab] in ['Tp1', 'Tpz', ]",
+            Any,
+            "ab",
+            vec!["Tp1", "Tpz"],
+            false
+        );
+
+        parse_success!(
             "ALL 0 in ['Tp1', 'Tpz']",
             All,
             "0",
@@ -764,8 +821,16 @@ mod tests {
             vec!["Tp1", "Tpz"],
             true
         );
+        parse_success!(
+            "0 not in ['Tp1', 'Tpz',]",
+            Any,
+            "0",
+            vec!["Tp1", "Tpz"],
+            true
+        );
 
         assert!(parse_in_matcher.parse(b"a in []").is_err());
+        assert!(parse_in_matcher.parse(b"a in [,]").is_err());
         assert!(parse_in_matcher.parse(b"a in ''").is_err());
     }
 
