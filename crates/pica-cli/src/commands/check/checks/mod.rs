@@ -1,3 +1,4 @@
+mod allow;
 mod datetime;
 mod duplicates;
 mod filter;
@@ -15,6 +16,7 @@ pub(crate) const fn strsim_threshold() -> f64 {
 #[serde(rename_all = "kebab-case")]
 #[serde(tag = "check")]
 pub(crate) enum Checks {
+    Allow(Box<allow::Allow>),
     #[serde(rename = "datetime")]
     DateTime(Box<datetime::DateTime>),
     Duplicates(Box<duplicates::Duplicates>),
