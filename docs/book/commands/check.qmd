@@ -88,18 +88,18 @@ erzeugt, die die Spalten `ppn`, `rule`, `level` und `message` enthält.
 
 ## Checks
 
-###
+### Allow
 
 Der `allow`-Check prüft, ob der Wert eines Unterfeldes aus einer
-vorgegeben Liste stammt. Die Liste kann im CSV, TSV oder im Arrow-Format
-vorliegen.
+vorgegeben Liste stammt. Die Liste kann im CSV-, TSV- oder im
+Arrow-Format vorliegen.
 
 Im folgenden Beispiel wird überprüft, ob die DDC-Sachgruppen im Feld
 `045E $e` aus der Liste `hsg.csv` stammen. Die Vergleichswerte werden
 aus der Spalte `hsg` genommen.
 
 ```{.toml}
-[rule.DATETIME]
+[rule.INVALID-DDC-SG]
 check = 'allow'
 description = 'Findet ungültige DDC-Sachgruppen im Feld 045E $e.'
 link = 'https://wiki.dnb.de/display/ILTIS/5050'
