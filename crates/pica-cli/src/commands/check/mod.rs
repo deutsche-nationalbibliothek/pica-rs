@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use pica_record::prelude::*;
+use regex::RegexSetBuilder;
 use set::RuleSet;
 use writer::Writer;
 
@@ -23,6 +24,15 @@ pub(crate) struct Check {
     /// A set of rules to be checked.
     #[arg(long = "rule-set", short = 'R', required = true)]
     rules: Vec<OsString>,
+
+    /// A list of patterns to restrict the rule set to selected rules.
+    #[arg(long = "rule", short = 'r')]
+    filter: Vec<String>,
+
+    /// A comma-separated list of tags to select a specific subset of
+    /// rules
+    #[arg(long, short)]
+    tags: Option<String>,
 
     /// Write output to FILENAME instead of stdout
     #[arg(short, long, value_name = "FILENAME")]
@@ -53,8 +63,41 @@ impl Check {
         let mut rulesets = self
             .rules
             .iter()
-            .map(RuleSet::from_path)
+            .map(|path| {
+                RuleSet::new(path, config.normalization.as_ref())
+            })
             .collect::<Result<Vec<_>, _>>()?;
+
+        if !self.filter.is_empty() {
+            let re =
+                RegexSetBuilder::new(self.filter).build().map_err(
+                    |_| CliError::Other("invalid rule filter".into()),
+                )?;
+
+            for rs in rulesets.iter_mut() {
+                rs.rules.retain(|k, _| re.is_match(k));
+            }
+        }
+
+        if let Some(tags) = self.tags {
+            let allow: Vec<String> = tags
+                .split(',')
+                .map(str::trim)
+                .map(ToString::to_string)
+                .collect();
+
+            for rs in rulesets.iter_mut() {
+                rs.rules.retain(|_, rule| {
+                    if let Some(ref tags) = rule.tags {
+                        tags.iter().any(|tag| allow.contains(tag))
+                    } else {
+                        false
+                    }
+                })
+            }
+        }
+
+        rulesets.retain(|rs| !rs.rules.is_empty());
 
         'outer: for filename in self.filenames {
             let mut reader =
