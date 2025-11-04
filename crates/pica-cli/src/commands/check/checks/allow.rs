@@ -12,6 +12,7 @@ use crate::utils::read_filter_list;
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct Allow {
     path: Path,
+
     list: List,
 
     #[serde(skip)]
@@ -27,14 +28,14 @@ pub(crate) struct Allow {
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct List {
-    source: PathBuf,
+    filename: PathBuf,
     column: String,
 }
 
 impl Allow {
     pub(crate) fn initialize(&mut self) -> Result<(), CliError> {
         let Some(values) = read_filter_list(
-            slice::from_ref(&self.list.source),
+            slice::from_ref(&self.list.filename),
             &Some(self.list.column.clone()),
         )?
         else {
