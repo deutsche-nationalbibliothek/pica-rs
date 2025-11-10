@@ -24,6 +24,7 @@ pub(crate) enum Checks {
     Isni(Box<isni::Isni>),
     #[serde(rename = "iso639-2b")]
     Iso639(Box<iso639::Iso639>),
+    #[serde(rename = "jelc")]
     Jel(Box<jelc::Jel>),
     Link(Box<link::Link>),
     Unicode(Box<unicode::Unicode>),
