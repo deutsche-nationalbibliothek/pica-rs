@@ -1,15 +1,33 @@
 cff-version: 1.2.0
-
-title: "pica-rs"
-abstract: "Tools to work with bibliographic records encoded in PICA+."
-
-repository-code: https://github.com/deutsche-nationalbibliothek/pica-rs
-date-released: "2025-06-04"
-license: "EUPL-1.2"
+title: pica-rs
+message: >-
+  If you use this software, please cite it using the  
+  article from from preferred-citation.
+type: software
+authors:
+  - given-names: Nico
+    family-names: Wagner
+    affiliation: Deutsche Nationalbibliothek
+    orcid: 'https://orcid.org/0000-0002-2033-1806'
+repository-code: 'https://github.com/deutsche-nationalbibliothek/pica-rs'
+url: 'https://deutsche-nationalbibliothek.github.io/pica-rs/'
+abstract: Tools to work with bibliographic records encoded in PICA+
+keywords:
+  - code4lib
+  - PICA+
+license: EUPL-1.2
+commit: v1.2.0
 version: 1.2.0
+date-released: '2025-06-04'
 
 preferred-citation:
   title: "pica – Open-Source-Tool zur Analyse und Transformation bibliografischer Metadaten"
+  journal: "ABI Technik"
+  volume: 45
+  number: 4
+  start: 372
+  end: 381
+  year: 2025
   doi: "10.1515/abitech-2025-0062"
   type: article
   authors:
