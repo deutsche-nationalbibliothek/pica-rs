@@ -1,12 +1,17 @@
 cff-version: 1.2.0
+
 title: "pica-rs"
-abstract: "pica-rs is a toolkit to process metadata records in PICA+ format."
-authors:
-  - family-names: Wagner
-    given-names: Nico
-    orcid: https://orcid.org/0000-0002-2033-1806
-  - family-names: Voß
-    given-names: Jakob
-    orcid: https://orcid.org/0000-0002-7613-4123
+abstract: "Tools to work with bibliographic records encoded in PICA+."
+
+repository-code: https://github.com/deutsche-nationalbibliothek/pica-rs
+date-released: "2025-06-04"
 version: 1.2.0
-date-released: 2025-06-04
+
+preferred-citation:
+  title: "pica – Open-Source-Tool zur Analyse und Transformation bibliografischer Metadaten"
+  doi: "10.1515/abitech-2025-0062"
+  type: article
+  authors:
+    - family-name: Wagner
+      given-names: Nico
+      orcid: https://orcid.org/0000-0002-2033-1806
