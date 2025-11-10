@@ -5,6 +5,7 @@ abstract: "Tools to work with bibliographic records encoded in PICA+."
 
 repository-code: https://github.com/deutsche-nationalbibliothek/pica-rs
 date-released: "2025-06-04"
+license: "EUPL-1.2"
 version: 1.2.0
 
 preferred-citation:
@@ -12,6 +13,6 @@ preferred-citation:
   doi: "10.1515/abitech-2025-0062"
   type: article
   authors:
-    - family-name: Wagner
+    - family-names: Wagner
       given-names: Nico
       orcid: https://orcid.org/0000-0002-2033-1806
