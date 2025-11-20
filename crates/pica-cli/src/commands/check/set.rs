@@ -55,6 +55,7 @@ impl RuleSet {
 
         for (id, rule) in rs.rules.iter_mut() {
             rule.id = id.to_owned();
+            rule.initialize()?
         }
 
         Ok(rs)

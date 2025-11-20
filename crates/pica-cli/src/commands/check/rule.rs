@@ -39,6 +39,15 @@ pub(crate) struct Rule {
 
 impl Rule {
     #[inline(always)]
+    pub(crate) fn initialize(&mut self) -> Result<(), CliError> {
+        if let Checks::Allow(ref mut c) = self.check {
+            c.initialize()?;
+        }
+
+        Ok(())
+    }
+
+    #[inline(always)]
     pub(crate) fn preprocess(&mut self, record: &ByteRecord) {
         if let Checks::Link(ref mut c) = self.check {
             c.preprocess(record);
@@ -51,6 +60,7 @@ impl Rule {
         writer: &mut Writer,
     ) -> Result<bool, CliError> {
         let (result, message) = match self.check {
+            Checks::Allow(ref c) => c.check(record),
             Checks::DateTime(ref c) => c.check(record),
             Checks::Duplicates(ref c) => c.check(record),
             Checks::Filter(ref c) => c.check(record),

@@ -36,7 +36,7 @@ Diskussion genutzt werden.
 Die Installation des Toolkits und alle Kommandos sind in der
 [Dokumentation] beschrieben.
 
-### Kommandos
+## Kommandos
 
 * [check] — Überprüft Datensätze auf Konformität mit einem Regelwerk
 * [concat] — Zusammenfügen (Konkatenieren) von Datensätzen
@@ -60,7 +60,7 @@ Die Installation des Toolkits und alle Kommandos sind in der
 * [split] — Teilt eine Menge an Datensätzen in Dateien fester Größe
 
 
-### Verwandte Projekte
+## Verwandte Projekte
 
 - [Catmandu::Pica](https://metacpan.org/pod/Catmandu::PICA) — Catmandu modules for working with PICA+ data
 - [Metafacture](https://github.com/metafacture) — Tool suite for metadata processing
@@ -94,6 +94,13 @@ Die Installation des Toolkits und alle Kommandos sind in der
 [select]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/select.html
 [slice]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/slice.html
 [split]: https://deutsche-nationalbibliothek.github.io/pica-rs/commands/split.html
+
+## Zitiervorschlag
+
+Wagner, Nico. "pica – Open-Source-Tool zur Analyse und Transformation
+bibliografischer Metadaten" ABI Technik, vol. 45, no. 4, 2025, pp. 372-381.
+[https://doi.org/10.1515/abitech-2025-0062](https://doi.org/10.1515/abitech-2025-0062)
+                 
 
 ## Lizenz
 

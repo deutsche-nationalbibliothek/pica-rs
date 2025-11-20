@@ -1,5 +1,9 @@
+use std::io::prelude::*;
+
 use assert_fs::TempDir;
 use assert_fs::prelude::*;
+use flate2::Compression;
+use flate2::write::GzEncoder;
 
 use crate::prelude::*;
 
@@ -341,6 +345,57 @@ fn deny_list_empty() -> TestResult {
         .success()
         .code(0)
         .stdout(predicates::ord::eq("12\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn allow_list_txt() -> TestResult {
+    let mut cmd = pica_cmd();
+    let temp_dir = TempDir::new().unwrap();
+    let allow = temp_dir.child("ALLOW.txt");
+    allow.write_str("118540238").unwrap();
+
+    let assert = cmd
+        .args(["filter", "-s", "003@?"])
+        .args(["-A", allow.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::path::eq_file(
+            data_dir().join("goethe.dat"),
+        ))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn allow_list_txt_gz() -> TestResult {
+    let mut cmd = pica_cmd();
+    let temp_dir = TempDir::new().unwrap();
+    let allow = temp_dir.child("ALLOW.txt");
+
+    let mut e = GzEncoder::new(Vec::new(), Compression::default());
+    e.write_all(b"118540238").unwrap();
+    let _ = allow.write_binary(&e.finish().unwrap());
+
+    let assert = cmd
+        .args(["filter", "-s", "003@?"])
+        .args(["-A", allow.to_str().unwrap()])
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::path::eq_file(
+            data_dir().join("goethe.dat"),
+        ))
         .stderr(predicates::str::is_empty());
 
     Ok(())

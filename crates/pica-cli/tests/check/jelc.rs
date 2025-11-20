@@ -11,7 +11,7 @@ fn check_jel_default() -> TestResult {
         .write_str(
             r#"
             [rule.R001]
-            check = 'jel'
+            check = 'jelc'
             path = '045Z{ a | b == "jelc" }'
         "#,
         )
@@ -61,7 +61,7 @@ fn check_jel_case_ignore() -> TestResult {
         .write_str(
             r#"
             [rule.R001]
-            check = 'jel'
+            check = 'jelc'
             case-ignore = true
             path = '045Z{ a | b =^ "JEL" }'
         "#,

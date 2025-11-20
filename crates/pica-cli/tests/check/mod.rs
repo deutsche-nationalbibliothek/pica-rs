@@ -6,6 +6,7 @@ use predicates::prelude::PredicateBooleanExt;
 
 use crate::prelude::*;
 
+mod allow;
 mod datetime;
 mod duplicates;
 mod filter;
