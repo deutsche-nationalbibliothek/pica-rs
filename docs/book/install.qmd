@@ -36,6 +36,11 @@ $ sudo install -m755 pica-X.Y.Z-x86_64-unknown-linux-gnu/pica \
       /usr/local/bin/pica
 ```
 
+::: {.callout-note title="Portable Version"}
+Das Release `pica-X.Y.Z-x86_64-unknown-linux-musl.tar.gz` enthält eine
+portable Version, die nicht von der `glibc`-Version des Systems abhängt.
+:::
+
 ## Installation unter macOS
 
 Unter macOS wird nur die Zielarchitektur `x86_64-apple-darwin` (macOS
