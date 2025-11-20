@@ -25,7 +25,13 @@ hashbrown = { version = "0.16", features = ["serde"] }
 indicatif = { version = "0.18", features = ["improved_unicode"] }
 jiff = { version = "0.2" }
 pica-record = { path = "../../", features = ["serde"] }
-polars = { version = "0.52", features = ["ipc", "decompress", "lazy", "fmt"] }
+polars = { version = "0.52", features = [
+  "decompress",
+  "fmt",
+  "ipc",
+  "lazy",
+  "timezones",
+]}
 quick-xml = { version = "0.38" }
 rand = { version = "0.9" }
 regex = { version = "1.12" }
