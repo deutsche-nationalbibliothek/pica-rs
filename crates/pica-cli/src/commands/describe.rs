@@ -182,7 +182,9 @@ impl Describe {
             }
             Some(path) => {
                 let mut writer = IpcWriter::new(File::create(path)?)
-                    .with_compression(Some(IpcCompression::ZSTD));
+                    .with_compression(Some(IpcCompression::ZSTD(
+                        Default::default(),
+                    )));
                 writer.finish(&mut df)?;
             }
         }
