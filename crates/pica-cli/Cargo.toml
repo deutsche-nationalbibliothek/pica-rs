@@ -30,6 +30,7 @@ polars = { version = "0.52", features = [
   "fmt",
   "ipc",
   "lazy",
+  "polars-io",
   "timezones",
 ]}
 quick-xml = { version = "0.38" }
