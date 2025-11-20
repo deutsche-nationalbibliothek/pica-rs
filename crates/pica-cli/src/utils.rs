@@ -122,6 +122,17 @@ pub(crate) fn read_filter_list(
                 )
                 .try_into_reader_with_file_path(Some(path.into()))?
                 .finish()?
+        } else if path_str.ends_with("txt")
+            || path_str.ends_with("txt.gz")
+        {
+            let mut df = CsvReadOptions::default()
+                .with_has_header(false)
+                .with_infer_schema_length(Some(0))
+                .try_into_reader_with_file_path(Some(path.into()))?
+                .finish()?;
+
+            df.rename("column_1", "ppn".into())?;
+            df
         } else {
             CsvReadOptions::default()
                 .with_has_header(true)
