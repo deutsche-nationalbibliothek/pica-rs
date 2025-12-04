@@ -51,8 +51,7 @@ impl Config {
             }
         };
 
-        if self.value.is_some() {
-            let value = self.value.unwrap();
+        if let Some(value) = self.value {
             match name {
                 "skip-invalid" => {
                     if let Ok(value) = value.parse::<bool>() {
