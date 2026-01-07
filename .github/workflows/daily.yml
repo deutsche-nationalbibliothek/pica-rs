@@ -27,16 +27,16 @@ jobs:
     strategy:
       matrix:
         target:
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: "1.89.0", triple: x86_64-unknown-linux-gnu }
-          - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc }
-          - { os: windows-latest, toolchain: stable, triple: i686-pc-windows-gnu }
-          - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
+          - {os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu}
+          - {os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu}
+          - {os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu}
+          - {os: ubuntu-latest, toolchain: "1.89.0", triple: x86_64-unknown-linux-gnu}
+          - {os: windows-latest, toolchain: stable, triple: i686-pc-windows-msvc}
+          - {os: windows-latest, toolchain: stable, triple: i686-pc-windows-gnu}
+          - {os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin}
     runs-on: ${{ matrix.target.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.target.toolchain }}
@@ -46,13 +46,13 @@ jobs:
       - name: Run tests
         if: ${{ matrix.target.toolchain != 'nightly' }}
         run: |
-            cargo nextest run --workspace -F performant,compat,unstable --profile ci
-            cargo test --doc --workspace --features performant,compat,unstable --no-fail-fast
+          cargo nextest run --workspace -F performant,compat,unstable --profile ci
+          cargo test --doc --workspace --features performant,compat,unstable --no-fail-fast
       - name: Run tests (nightly)
         if: ${{ matrix.target.toolchain == 'nightly' }}
         run: |
-            cargo nextest run --workspace --all-features --profile ci
-            cargo test --doc --workspace --all-features --no-fail-fast
+          cargo nextest run --workspace --all-features --profile ci
+          cargo test --doc --workspace --all-features --no-fail-fast
 
   cross:
     runs-on: ${{ matrix.target.os }}
@@ -60,11 +60,11 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl }
-          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl }
+          - {os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-musl}
+          - {os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-gnu}
+          - {os: ubuntu-latest, toolchain: stable, triple: aarch64-unknown-linux-musl}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.target.toolchain }}
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy
@@ -92,7 +92,7 @@ jobs:
     timeout-minutes: 15
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo install --locked cargo-outdated
       - run: cargo update
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - run: cargo install cargo-careful
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@miri
       - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@nextest
@@ -132,13 +132,13 @@ jobs:
           - advisories
     continue-on-error: ${{ matrix.checks == 'advisories' }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: EmbarkStudios/cargo-deny-action@v2
-      with:
-        command: check ${{ matrix.checks }}
-        arguments: --workspace --all-features
-        command-arguments: -c .deny.toml
-        rust-version: stable
+      - uses: actions/checkout@v6
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check ${{ matrix.checks }}
+          arguments: --workspace --all-features
+          command-arguments: -c .deny.toml
+          rust-version: stable
 
   audit:
     runs-on: ubuntu-latest
@@ -148,7 +148,7 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo update
       - uses: rustsec/audit-check@v2
