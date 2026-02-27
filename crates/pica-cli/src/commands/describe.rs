@@ -123,6 +123,7 @@ impl Describe {
 
         let tags =
             fields.keys().map(ToString::to_string).collect::<Vec<_>>();
+        let height = tags.len();
 
         let mut columns = vec![];
         columns.push(Column::new("field".into(), tags.clone()));
@@ -139,7 +140,7 @@ impl Describe {
             columns.push(Column::new(code.to_string().into(), values));
         }
 
-        let mut df = DataFrame::new(columns)?
+        let mut df = DataFrame::new(height, columns)?
             .lazy()
             .sort(["field"], SortMultipleOptions::default())
             .collect()?;
