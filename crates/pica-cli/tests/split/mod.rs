@@ -80,6 +80,40 @@ fn split_size() -> TestResult {
 }
 
 #[test]
+fn split_limit() -> TestResult {
+    let outdir = TempDir::new().unwrap();
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["split", "-s", "2"])
+        .args(["--limit", "1"])
+        .arg(data_dir().join("ada.dat"))
+        .arg(data_dir().join("DUMP.dat.gz"))
+        .args(["-o", outdir.to_str().unwrap()])
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
+    assert!(
+        predicates::path::eq_file(data_dir().join("ada.dat"))
+            .eval(outdir.child("0.dat").path())
+    );
+
+    assert!(
+        predicates::path::exists()
+            .not()
+            .eval(outdir.child("1.dat").path())
+    );
+
+    outdir.close().unwrap();
+    Ok(())
+}
+
+#[test]
 fn split_skip_invalid() -> TestResult {
     let outdir = TempDir::new().unwrap();
 
