@@ -37,7 +37,7 @@ smallvec = { version = "1.15" }
 strsim = { version = "0.11" }
 hashbrown = { version = "0.16" }
 thiserror = { version = "2.0" }
-winnow = { version = "0.7" }
+winnow = { version = "1.0" }
 
 [dev-dependencies]
 anyhow = { version = "1.0" }
