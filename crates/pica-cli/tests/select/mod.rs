@@ -799,6 +799,131 @@ fn select_query_path() -> TestResult {
 }
 
 #[test]
+fn select_quote_style() -> TestResult {
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\"\n"))
+        .stderr(predicates::str::is_empty());
+
+    // necessary
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }"])
+        .args(["--quote-style", "necessary"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\"\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028A.d"])
+        .args(["--quote-style", "necessary"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Ada King\n"))
+        .stderr(predicates::str::is_empty());
+
+    // always
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }"])
+        .args(["--quote-style", "always"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\"\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028A.d"])
+        .args(["--quote-style", "always"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King\"\n"))
+        .stderr(predicates::str::is_empty());
+
+    // never
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }"])
+        .args(["--quote-style", "never"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Ada King, Countess of\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028A.d"])
+        .args(["--quote-style", "never"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Ada King\n"))
+        .stderr(predicates::str::is_empty());
+
+    // non-numeric
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }, 001X.0"])
+        .args(["--quote-style", "non-numeric"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\",0\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028A.d,001X.0"])
+        .args(["--quote-style", "non-numeric"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King\",0\n"))
+        .stderr(predicates::str::is_empty());
+
+    Ok(())
+}
+
+#[test]
 #[cfg(feature = "compat")]
 fn select_compat() -> TestResult {
     let mut cmd = pica_cmd();
