@@ -67,6 +67,30 @@ fn cardinality_subfield_eq() -> TestResult {
         .stdout(predicates::str::is_empty())
         .stderr(predicates::str::is_empty());
 
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["filter", "003U{ #[az] >= 2 }"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["filter", "003U{ #[ax] >= 2 }"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::str::is_empty())
+        .stderr(predicates::str::is_empty());
+
     Ok(())
 }
 

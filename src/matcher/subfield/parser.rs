@@ -20,7 +20,6 @@ use crate::matcher::operator::{
 };
 use crate::matcher::quantifier::parse_quantifier;
 use crate::parser::{parse_string, parse_subfield_codes, ws};
-use crate::primitives::parse::parse_subfield_code;
 
 /// Parses a [ExistsMatcher] expression.
 pub(crate) fn parse_exists_matcher(
@@ -234,7 +233,7 @@ pub(crate) fn parse_cardinality_matcher(
     preceded(
         ws('#'),
         (
-            ws(parse_subfield_code),
+            ws(parse_subfield_codes),
             ws(parse_relational_operator)
                 .verify(RelationalOp::is_usize_applicable),
             digit1
@@ -243,11 +242,11 @@ pub(crate) fn parse_cardinality_matcher(
         ),
     )
     .with_taken()
-    .map(|((code, op, value), raw_data)| {
+    .map(|((codes, op, value), raw_data)| {
         let raw_data = raw_data.to_str().unwrap().to_string();
 
         CardinalityMatcher {
-            code,
+            codes,
             op,
             value,
             raw_data,
@@ -839,13 +838,17 @@ mod tests {
         use RelationalOp::*;
 
         macro_rules! parse_success {
-            ($i:expr, $code:expr, $op:expr, $value:expr) => {
+            ($i:expr, $codes:expr, $op:expr, $value:expr) => {
                 assert_eq!(
                     parse_cardinality_matcher
                         .parse($i.as_bytes())
                         .unwrap(),
                     CardinalityMatcher {
-                        code: SubfieldCode::from_unchecked($code),
+                        codes: SmallVec::<[SubfieldCode; 4]>::from_iter(
+                            $codes
+                                .chars()
+                                .map(SubfieldCode::from_unchecked)
+                        ),
                         op: $op,
                         value: $value,
                         raw_data: $i.to_string(),
@@ -854,12 +857,15 @@ mod tests {
             };
         }
 
-        parse_success!("#a == 1", 'a', Eq, 1);
-        parse_success!("#a != 2", 'a', Ne, 2);
-        parse_success!("#a >= 3", 'a', Ge, 3);
-        parse_success!("#a > 4", 'a', Gt, 4);
-        parse_success!("#a <= 5", 'a', Le, 5);
-        parse_success!("#a < 6", 'a', Lt, 6);
+        parse_success!("#a == 1", "a", Eq, 1);
+        parse_success!("#a != 2", "a", Ne, 2);
+        parse_success!("#a >= 3", "a", Ge, 3);
+        parse_success!("#a > 4", "a", Gt, 4);
+        parse_success!("#a <= 5", "a", Le, 5);
+        parse_success!("#a < 6", "a", Lt, 6);
+
+        parse_success!("#[ab] == 1", "ab", Eq, 1);
+        parse_success!("#[a-cx] == 1", "abcx", Eq, 1);
 
         assert!(parse_cardinality_matcher.parse(b"#a > -1").is_err());
         assert!(parse_cardinality_matcher.parse(b"#a > '2'").is_err());
