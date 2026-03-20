@@ -142,11 +142,13 @@ pub(crate) fn parse_relational_operator(
         "!^".value(StartsNotWith),
         "=$".value(EndsWith),
         "!$".value(EndsNotWith),
-        "=*".value(Similar),
-        ">=".value(Ge),
-        ">".value(Gt),
-        "<=".value(Le),
-        "<".value(Lt),
+        alt((
+            "=*".value(Similar),
+            ">=".value(Ge),
+            ">".value(Gt),
+            "<=".value(Le),
+            "<".value(Lt),
+        )),
     ))
     .parse_next(i)
 }
