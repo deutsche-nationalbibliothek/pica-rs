@@ -1,0 +1,39 @@
+version: 2
+
+updates:
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-patch']
+    commit-message:
+      prefix: ci
+    groups:
+      ci:
+        patterns:
+          - '*'
+
+  # Rust
+  - package-ecosystem: cargo
+    directory: '/'
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-patch']
+    commit-message:
+      prefix: deps
+    labels:
+      - "maintenance"
+    groups:
+      rust:
+        patterns:
+          - '*'
