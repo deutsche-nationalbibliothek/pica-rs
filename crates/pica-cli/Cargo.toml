@@ -35,6 +35,7 @@ polars = { version = "0.54", features = [
   "parquet",
   "polars-io",
   "timezones",
+  "strings",
 ]}
 quick-xml = { version = "0.40" }
 rand = { version = "0.10" }
