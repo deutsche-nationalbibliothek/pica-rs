@@ -37,7 +37,7 @@ polars = { version = "0.54", features = [
   "timezones",
   "strings",
 ]}
-quick-xml = { version = "0.40" }
+quick-xml = { version = "0.41" }
 rand = { version = "0.10" }
 regex = { version = "1.12" }
 serde_json = { version = "1.0" }
