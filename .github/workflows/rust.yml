@@ -177,9 +177,9 @@ jobs:
             persist-credentials: false
       - uses: dtolnay/rust-toolchain@67ef31d5b988238dd797d409d6f9574278e20537 # master
         with:
-          toolchain: "1.89"
+          toolchain: "1.95"
       - run: |
-          cargo check --workspace -F compat,performant
+          cargo check --workspace -F compat,performant,unstable
 
   udeps:
     runs-on: ubuntu-latest
