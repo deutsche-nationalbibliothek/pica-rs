@@ -7,7 +7,7 @@ resolver = "3"
 version = "1.4.0"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 license = "EUPL-1.2"
-rust-version = "1.89"
+rust-version = "1.95"
 edition = "2024"
 
 [package]
