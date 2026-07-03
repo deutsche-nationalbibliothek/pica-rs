@@ -27,7 +27,7 @@ hashbrown = { version = "0.17", features = ["serde"] }
 indicatif = { version = "0.18", features = ["improved_unicode"] }
 jiff = { version = "0.2" }
 pica-record = { path = "../../", features = ["serde"] }
-polars = { version = "0.54.4", features = [
+polars = { version = "0.54", features = [
   "decompress",
   "fmt",
   "ipc",
@@ -37,7 +37,7 @@ polars = { version = "0.54.4", features = [
   "timezones",
   "strings",
 ]}
-quick-xml = { version = "0.39" }
+quick-xml = { version = "0.40" }
 rand = { version = "0.10" }
 regex = { version = "1.12" }
 serde_json = { version = "1.0" }
