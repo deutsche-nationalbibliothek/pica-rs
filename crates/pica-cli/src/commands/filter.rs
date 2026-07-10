@@ -119,7 +119,7 @@ pub(crate) struct Filter {
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
-    /// This option can't be combined with `--and` or `--or`.
+    /// This option can't be combined with `--or`.
     #[arg(long, conflicts_with = "or")]
     not: Vec<String>,
 
