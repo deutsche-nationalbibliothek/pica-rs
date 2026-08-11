@@ -8,7 +8,7 @@ updates:
     schedule:
       interval: weekly
     cooldown:
-      default-days: 7
+      default-days: 3
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-patch']
@@ -23,16 +23,17 @@ updates:
   - package-ecosystem: cargo
     directory: '/'
     schedule:
-      interval: monthly
+      interval: weekly
     cooldown:
-      default-days: 7
+      default-days: 3
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-patch']
     commit-message:
       prefix: deps
     labels:
-      - "maintenance"
+      - "dependencies"
+      - "rust"
     groups:
       rust:
         patterns:
