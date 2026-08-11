@@ -1,0 +1,40 @@
+name: book
+
+on:
+  workflow_dispatch:
+  push:
+    branches: main
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: false
+  group: "gh-pages"
+
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+            persist-credentials: false
+            
+      - name: Setup quarto
+        uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tinytex: true
+      - name: Publish
+        uses: quarto-dev/quarto-actions/publish@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
+        with:
+          target: gh-pages
+          path: docs/book
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
