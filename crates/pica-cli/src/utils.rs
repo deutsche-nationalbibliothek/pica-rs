@@ -108,9 +108,7 @@ pub(crate) fn read_filter_list(
     for path in paths.iter() {
         let path_str = path.to_str().unwrap_or_default();
         let df = if path_str.ends_with("ipc") {
-            IpcReader::new(File::open(path)?)
-                .memory_mapped(None)
-                .finish()?
+            IpcReader::new(File::open(path)?).finish()?
         } else if path_str.ends_with("tsv")
             || path_str.ends_with("tsv.gz")
         {
