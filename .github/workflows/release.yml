@@ -1,4 +1,4 @@
-name: Release
+name: release
 
 on:
   push:
@@ -16,16 +16,22 @@ env:
   RUSTUP_MAX_RETRIES: 10
   RUST_BACKTRACE: 1
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   prepare:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ env.VERSION }}
+      tag: ${{ env.RELEASE_TAG }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
             persist-credentials: false
+
       - name: Get release version
         run: |
           tag=${{ github.ref_name }}
@@ -38,17 +44,20 @@ jobs:
         run: |
           echo "tag is $RELEASE_TAG"
           echo "version is $VERSION"
+
       - name: Create GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "$RELEASE_TAG" --verify-tag --draft --generate-notes --title "$RELEASE_TAG"
-    outputs:
-      version: ${{ env.VERSION }}
-      tag: ${{ env.RELEASE_TAG }}
 
   release:
     needs: prepare
+    permissions:
+      contents: write
+      attestations: write
+      artifact-metadata: write
+      id-token: write
     strategy:
       matrix:
         target:
@@ -58,12 +67,16 @@ jobs:
           - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
     runs-on: ${{ matrix.target.os }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
             persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
           toolchain: ${{ matrix.target.toolchain }}
+
           targets: ${{ matrix.target.triple }}
       - name: Build release binary
         if: ${{ matrix.target.triple != 'x86_64-unknown-linux-musl' }}
@@ -75,6 +88,7 @@ jobs:
           else
             echo "BINARY=target/release/pica" >> $GITHUB_ENV
           fi
+
       - name: Build release binary (musl)
         if: ${{ matrix.target.triple == 'x86_64-unknown-linux-musl' }}
         shell: bash
@@ -82,14 +96,18 @@ jobs:
           sudo apt-get install -y musl-tools
           cargo build -p pica-cli --target=x86_64-unknown-linux-musl --release
           echo "BINARY=target/x86_64-unknown-linux-musl/release/pica" >> $GITHUB_ENV
+
       - name: Test workspace packages
         run: |
           cargo test -p pica-record --release
           cargo test -p pica-cli --release
+          
       - name: Strip release binary
-        shell: bash
         if: matrix.target.os == 'macos-latest'
-        run: strip "$BINARY"
+        shell: bash
+        run: |
+          strip "$BINARY"
+
       - name: Prepare archive
         shell: bash
         run: |
@@ -101,6 +119,7 @@ jobs:
           cp "$BINARY" "$ARCHIVE"/
           cp "README.md" "$ARCHIVE"/
           cp "LICENSE" "$ARCHIVE"/
+
       - name: Generate completions
         shell: bash
         run: |
@@ -109,26 +128,29 @@ jobs:
           $BINARY completions fish -o "$ARCHIVE/complete/pica.fish"
           $BINARY completions powershell -o "$ARCHIVE/complete/_pica.ps1"
           $BINARY completions zsh -o "$ARCHIVE/complete/_pica"
+
       - name: Build Archive (Windows)
         if: ${{ matrix.target.os == 'windows-latest' }}
         shell: bash
         run: |
           7z a "$ARCHIVE.zip" "$ARCHIVE"
-          certutil -hashfile "$ARCHIVE.zip" SHA256 > "$ARCHIVE.zip.sha256"
-          echo "ASSET_CHECKSUM=$ARCHIVE.zip.sha256" >> $GITHUB_ENV
           echo "ASSET=$ARCHIVE.zip" >> $GITHUB_ENV
+
       - name: Build Archive (Unix)
         if: ${{ matrix.target.os != 'windows-latest' }}
         shell: bash
         run: |
           tar czf "$ARCHIVE.tar.gz" "$ARCHIVE"
-          shasum -a 256 "$ARCHIVE.tar.gz" > "$ARCHIVE.tar.gz.sha256"
-          echo "ASSET_CHECKSUM=$ARCHIVE.tar.gz.sha256" >> $GITHUB_ENV
           echo "ASSET=$ARCHIVE.tar.gz" >> $GITHUB_ENV
+
+      - name: Generate artifact attestations
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: '${{ github.workspace }}/${{ env.ASSET }}'
+
       - name: Upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          gh release upload "${{ needs.prepare.outputs.tag }}" ${{ env.ASSET_CHECKSUM }}
           gh release upload "${{ needs.prepare.outputs.tag }}" ${{ env.ASSET }}
