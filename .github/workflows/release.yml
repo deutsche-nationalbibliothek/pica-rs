@@ -33,11 +33,13 @@ jobs:
             persist-credentials: false
 
       - name: Get release version
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
-          tag=${{ github.ref_name }}
-          echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
-
+          tag="${TAG}"
           version=${tag#v}
+
+          echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
           echo "VERSION=$version" >> $GITHUB_ENV
 
       - name: Show release version
@@ -110,10 +112,11 @@ jobs:
 
       - name: Prepare archive
         shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          version="${{ needs.prepare.outputs.version }}"
           triple="${{ matrix.target.triple }}"
-          ARCHIVE="pica-$version-$triple"
+          ARCHIVE="pica-${VERSION}-$triple"
           echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
           mkdir -p "$ARCHIVE/complete"
           cp "$BINARY" "$ARCHIVE"/
@@ -151,6 +154,7 @@ jobs:
       - name: Upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
         shell: bash
         run: |
-          gh release upload "${{ needs.prepare.outputs.tag }}" ${{ env.ASSET }}
+          gh release upload "${TAG}" ${ ASSET }
