@@ -17,15 +17,15 @@ performant = ["pica-record/performant", "polars/cse", "polars/performant"]
 unstable = ["pica-record/unstable"]
 
 [dependencies]
-bstr = { version = "1.12" }
-clap_complete = { version = "4.6" }
-clap = { version = "4.6", features = ["derive", "cargo", "wrap_help"] }
-csv = { version = "1.4" }
-directories = { version = "6.0" }
-flate2 = { version = "1.1" }
-hashbrown = { version = "0.17", features = ["serde"] }
-indicatif = { version = "0.18", features = ["improved_unicode"] }
-jiff = { version = "0.2" }
+bstr = { version = "1.13.1" }
+clap_complete = { version = "4.6.9" }
+clap = { version = "4.6.6", features = ["derive", "cargo", "wrap_help"] }
+csv = { version = "1.4.0" }
+directories = { version = "6.0.0" }
+flate2 = { version = "1.1.10" }
+hashbrown = { version = "0.17.1", features = ["serde"] }
+indicatif = { version = "0.18.6", features = ["improved_unicode"] }
+jiff = { version = "0.2.35" }
 pica-record = { path = "../../", features = ["serde"] }
 polars = { version = "0.55.2", features = [
   "decompress",
@@ -37,21 +37,21 @@ polars = { version = "0.55.2", features = [
   "timezones",
   "strings",
 ] }
-quick-xml = { version = "0.41" }
-rand = { version = "0.10" }
-regex = { version = "1.12" }
-serde_json = { version = "1.0" }
-serde = { version = "1.0", features = ["derive"] }
-thiserror = { version = "2.0" }
-tmp_env = { version = "0.1" }
-toml = { version = "1.1", features = ["preserve_order"] }
-unicode-normalization = { version = "0.1" }
+quick-xml = { version = "0.42.0" }
+rand = { version = "0.10.2" }
+regex = { version = "1.13.1" }
+serde_json = { version = "1.0.151" }
+serde = { version = "1.0.229", features = ["derive"] }
+thiserror = { version = "2.0.20" }
+tmp_env = { version = "0.1.1" }
+toml = { version = "1.1.4", features = ["preserve_order"] }
+unicode-normalization = { version = "0.1.25" }
 
 [dev-dependencies]
-anyhow = { version = "1.0" }
-assert_cmd = { version = "2.2" }
-assert_fs = { version = "1.1" }
-predicates = { version = "3.1" }
+anyhow = { version = "1.0.104" }
+assert_cmd = { version = "2.2.2" }
+assert_fs = { version = "1.1.4" }
+predicates = { version = "3.1.4" }
 
 [[bin]]
 path = "src/main.rs"
