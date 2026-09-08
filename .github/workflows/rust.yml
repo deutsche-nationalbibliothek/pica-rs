@@ -51,7 +51,7 @@ jobs:
           targets: ${{ matrix.target.triple }}
 
       - name: Install nextest
-        uses: taiki-e/install-action@ba47c86ac325773530516bb756137ac718732518 # v2.86.5
+        uses: taiki-e/install-action@0758d235715de2f3551eacc980d9ae8fce9342c3 # v2.87.3
         with:
           tool: nextest
 
@@ -146,7 +146,7 @@ jobs:
           toolchain: nightly
 
       - name: Install cargo-hack
-        uses: taiki-e/install-action@ba47c86ac325773530516bb756137ac718732518 # v2.86.5
+        uses: taiki-e/install-action@0758d235715de2f3551eacc980d9ae8fce9342c3 # v2.87.3
         with:
           tool: cargo-hack
 
@@ -307,7 +307,7 @@ jobs:
           components: miri
 
       - name: Install nextest
-        uses: taiki-e/install-action@ba47c86ac325773530516bb756137ac718732518 # v2.86.5
+        uses: taiki-e/install-action@0758d235715de2f3551eacc980d9ae8fce9342c3 # v2.87.3
         with:
           tool: nextest
 
