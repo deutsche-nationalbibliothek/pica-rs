@@ -58,8 +58,8 @@ jobs:
       - name: Run tests
         if: ${{ matrix.target.toolchain != 'nightly' }}
         run: |
-          cargo nextest run --workspace -F performant,compat,unstable --profile ci
-          cargo test --doc --workspace --features performant,compat,unstable --no-fail-fast
+          cargo nextest run --workspace -F performant,unstable --profile ci
+          cargo test --doc --workspace --features performant,unstable --no-fail-fast
 
       - name: Run tests (nightly)
         if: ${{ matrix.target.toolchain == 'nightly' }}
@@ -222,7 +222,7 @@ jobs:
 
       - name: Check MSRV
         run: |
-          cargo check --workspace -F compat,performant,unstable
+          cargo check --workspace -F performant,unstable
 
   zizmor:
     runs-on: ubuntu-latest
@@ -315,13 +315,13 @@ jobs:
         env:
           MIRIFLAGS: -Zmiri-strict-provenance -Zmiri-disable-isolation
         run: |
-          cargo miri nextest run --workspace --lib -F compat,performant,unstable --profile ci
+          cargo miri nextest run --workspace --lib -F performant,unstable --profile ci
 
       - name: Run miri (doctests)
         env:
           MIRIFLAGS: -Zmiri-strict-provenance -Zmiri-disable-isolation
         run: |
-          cargo miri test --workspace --doc -F compat,performant,unstable
+          cargo miri test --workspace --doc -F performant,unstable
 
   audit:
     if: ${{ github.ref == 'refs/heads/main' }}

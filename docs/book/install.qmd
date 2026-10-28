@@ -110,8 +110,6 @@ aktiviert werden. Die folgenden Funktionen können mit der `cargo`-Option
   zu aktivieren,
 - `nightly`, um weitere Optimierungen zu aktivieren (benötigt Rust
   `nightly`),
-- und `compat`, um eine höhere Kompatibilität mit der Abfragesprache
-  [PICA Path] zu erhalten.
   
 [Releases]: https://github.com/deutsche-nationalbibliothek/pica-rs/releases
 [CentOS Linux]: https://www.centos.org
@@ -119,4 +117,3 @@ aktiviert werden. Die folgenden Funktionen können mit der `cargo`-Option
 [Red Hat Linux]: https://www.redhat.com
 [SUSE Linux]: https:://www.suse.com
 [Ubuntu Linux]: https://ubuntu.com
-[PICA Path]: https://format.gbv.de/query/picapath

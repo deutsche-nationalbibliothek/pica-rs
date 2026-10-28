@@ -22,7 +22,6 @@ rust-version.workspace = true
 version.workspace = true
 
 [features]
-compat = []
 nightly = []
 performant = []
 serde = ["dep:serde", "bstr/serde"]
