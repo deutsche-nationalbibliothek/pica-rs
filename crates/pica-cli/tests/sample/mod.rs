@@ -326,7 +326,7 @@ fn sample_allow() -> TestResult {
     let samples = temp_dir.child("samples.dat");
 
     let allow = temp_dir.child("ALLOW.csv");
-    allow.write_str("idn\n118540238\n118515551\n")?;
+    allow.write_str("ppn\n118540238\n118515551\n")?;
 
     let mut cmd = pica_cmd();
     let assert = cmd
@@ -358,7 +358,7 @@ fn sample_deny() -> TestResult {
 
     let deny = temp_dir.child("DENY.csv");
     deny.write_str(
-        "idn\n\
+        "ppn\n\
         118607626\n\
         040993396\n\
         04099337X\n\

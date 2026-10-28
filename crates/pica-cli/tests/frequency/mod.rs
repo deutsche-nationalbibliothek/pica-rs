@@ -499,52 +499,11 @@ fn frequency_translit() -> TestResult {
 
 #[test]
 fn frequency_allow() -> TestResult {
-    // IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str("idn\n118540238\n040991970\n040991989\n")?;
-
-    let assert = cmd
-        .args(["frequency", "-s", "002@.0"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tu1,2\nTpz,1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
     // PPN
     let temp_dir = TempDir::new().unwrap();
     let mut cmd = pica_cmd();
     let allow = temp_dir.child("allow.csv");
     allow.write_str("ppn\n118540238\n040991970\n040991989\n")?;
-
-    let assert = cmd
-        .args(["frequency", "-s", "002@.0"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tu1,2\nTpz,1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
-    // PPN+IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str(
-        "ppn,idn\n118540238,118607626\n040991970,040993396\n040991989,\n",)?;
 
     let assert = cmd
         .args(["frequency", "-s", "002@.0"])
@@ -569,47 +528,6 @@ fn frequency_deny() -> TestResult {
     let mut cmd = pica_cmd();
     let allow = temp_dir.child("deny.csv");
     allow.write_str("ppn\n040011569\n")?;
-
-    let assert = cmd
-        .args(["frequency", "-s", "002@.0"])
-        .args(["-D", allow.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tp1,1\n"))
-        .stderr(predicates::str::is_empty());
-    temp_dir.close().unwrap();
-
-    // IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-    let allow = temp_dir.child("deny.csv");
-    allow.write_str("idn\n040011569\n")?;
-
-    let assert = cmd
-        .args(["frequency", "-s", "002@.0"])
-        .args(["-D", allow.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tp1,1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
-    // IDN+PPN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-    let allow = temp_dir.child("deny.csv");
-    allow.write_str("idn,119232022\nppn\n040011569\n")?;
 
     let assert = cmd
         .args(["frequency", "-s", "002@.0"])

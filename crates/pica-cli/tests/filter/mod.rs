@@ -293,53 +293,11 @@ fn filter_expr_file() -> TestResult {
 
 #[test]
 fn filter_allow() -> TestResult {
-    // IDN
-    let mut cmd = pica_cmd();
-    let temp_dir = TempDir::new().unwrap();
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str("idn\n118540238").unwrap();
-
-    let assert = cmd
-        .args(["filter", "-s", "003@?"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::path::eq_file(
-            data_dir().join("goethe.dat"),
-        ))
-        .stderr(predicates::str::is_empty());
-    temp_dir.close().unwrap();
-
     // PPN
     let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("allow.csv");
-    allow.write_str("idn\n118540238").unwrap();
-
-    let assert = cmd
-        .args(["filter", "-s", "003@?"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::path::eq_file(
-            data_dir().join("goethe.dat"),
-        ))
-        .stderr(predicates::str::is_empty());
-    temp_dir.close().unwrap();
-
-    // PPN+IDN
-    let mut cmd = pica_cmd();
-    let temp_dir = TempDir::new().unwrap();
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str("idn,ppn\n118607626,118540238").unwrap();
+    allow.write_str("ppn\n118540238").unwrap();
 
     let assert = cmd
         .args(["filter", "-s", "003@?"])
@@ -360,7 +318,7 @@ fn filter_allow() -> TestResult {
     let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let allow = temp_dir.child("allow.csv");
-    allow.write_str("idn\n").unwrap();
+    allow.write_str("ppn\n").unwrap();
 
     let assert = cmd
         .args(["filter", "-s", "003@?"])
@@ -380,47 +338,12 @@ fn filter_allow() -> TestResult {
 
 #[test]
 fn filter_deny() -> TestResult {
-    // IDN
-    let mut cmd = pica_cmd();
-    let temp_dir = TempDir::new().unwrap();
-    let deny = temp_dir.child("deny.csv");
-    deny.write_str(
-        "idn\n\
-        118607626\n\
-        040993396\n\
-        04099337X\n\
-        040991970\n\
-        040991989\n\
-        041274377\n\
-        964262134\n\
-        040533093\n\
-        040309606\n\
-        040128997\n\
-        040651053\n",
-    )
-    .unwrap();
-
-    let assert = cmd
-        .args(["filter", "-s", "003@?"])
-        .args(["-D", deny.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::path::eq_file(
-            data_dir().join("goethe.dat"),
-        ))
-        .stderr(predicates::str::is_empty());
-    temp_dir.close().unwrap();
-
     // PPN
     let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("deny.csv");
     deny.write_str(
-        "idn\n\
+        "ppn\n\
         118607626\n\
         040993396\n\
         04099337X\n\
@@ -454,7 +377,7 @@ fn filter_deny() -> TestResult {
     let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("deny.csv");
-    deny.write_str("idn\n").unwrap();
+    deny.write_str("ppn\n").unwrap();
 
     let assert = cmd
         .args(["filter", "-s", "003@?"])
