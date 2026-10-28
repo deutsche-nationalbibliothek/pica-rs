@@ -16,7 +16,7 @@ fn describe_write_stdout() -> TestResult {
     assert
         .success()
         .code(0)
-        .stdout(predicates::str::contains("│ 050C  ┆ 7 ┆ 35 │"))
+        .stdout(predicates::str::contains("050C,7,35"))
         .stderr(predicates::str::is_empty());
 
     Ok(())
