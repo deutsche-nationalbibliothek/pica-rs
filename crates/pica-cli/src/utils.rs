@@ -1,12 +1,13 @@
 use std::fs::File;
+use std::io::{BufReader, Read};
 use std::path::PathBuf;
 use std::{io, path};
 
 use bstr::{BString, ByteSlice};
+use flate2::read::GzDecoder;
 use hashbrown::HashSet;
 use pica_record::matcher::ParseMatcherError;
 use pica_record::prelude::*;
-use polars::prelude::*;
 use thiserror::Error;
 
 use crate::cli::FilterOpts;
@@ -14,7 +15,7 @@ use crate::cli::FilterOpts;
 #[derive(Debug, Error)]
 pub(crate) enum FilterSetError {
     #[error(transparent)]
-    Polars(#[from] PolarsError),
+    Csv(#[from] csv::Error),
     #[error(transparent)]
     IO(#[from] io::Error),
     #[error("{0}")]
@@ -103,66 +104,60 @@ pub(crate) fn read_filter_list(
         return Ok(None);
     }
 
+    let column = column.clone().unwrap_or("ppn".into());
     let mut set = HashSet::new();
+    let mut index = 0;
 
     for path in paths.iter() {
         let path_str = path.to_str().unwrap_or_default();
-        let df = if path_str.ends_with("ipc") {
-            IpcReader::new(File::open(path)?).finish()?
-        } else if path_str.ends_with("tsv")
+        let delimiter = if path_str.ends_with("tsv")
             || path_str.ends_with("tsv.gz")
         {
-            CsvReadOptions::default()
-                .with_has_header(true)
-                .with_infer_schema_length(Some(0))
-                .with_parse_options(
-                    CsvParseOptions::default().with_separator(b'\t'),
-                )
-                .try_into_reader_with_file_path(Some(path.into()))?
-                .finish()?
-        } else if path_str.ends_with("txt")
-            || path_str.ends_with("txt.gz")
-        {
-            let mut df = CsvReadOptions::default()
-                .with_has_header(false)
-                .with_infer_schema_length(Some(0))
-                .try_into_reader_with_file_path(Some(path.into()))?
-                .finish()?;
-
-            df.rename("column_1", "ppn".into())?;
-            df
+            b'\t'
         } else {
-            CsvReadOptions::default()
-                .with_has_header(true)
-                .with_infer_schema_length(Some(0))
-                .try_into_reader_with_file_path(Some(path.into()))?
-                .finish()?
+            b','
         };
 
-        let column = if let Some(name) = column {
-            df.column(name).map_err(|_| {
-                FilterSetError::Other(format!(
-                    "Missing column `{}` in file {}. ",
-                    name,
-                    path.display()
-                ))
-            })?
+        let has_headers = !(path_str.ends_with(".txt")
+            || path_str.ends_with(".txt.gz"));
+
+        let inner: Box<dyn Read> = if path_str.ends_with(".gz") {
+            Box::new(GzDecoder::new(File::open(path)?))
         } else {
-            df.column("ppn").or(df.column("idn")).map_err(|_| {
-                FilterSetError::Other(format!(
-                    "Missing a column `ppn` or `idn` in file {}. ",
-                    path.display()
-                ))
-            })?
+            Box::new(BufReader::new(File::open(path)?))
         };
 
-        set.extend(
-            column
-                .cast(&DataType::String)?
-                .str()?
-                .iter()
-                .filter_map(|idn| idn.map(BString::from)),
-        );
+        let mut rdr = csv::ReaderBuilder::new()
+            .has_headers(has_headers)
+            .delimiter(delimiter)
+            .from_reader(inner);
+
+        if rdr.has_headers() {
+            let mut found = false;
+            for (i, header) in rdr.headers()?.iter().enumerate() {
+                if header == column {
+                    found = true;
+                    index = i;
+                    break;
+                }
+            }
+
+            if !found {
+                return Err(FilterSetError::Other(format!(
+                    "could not find column '{column}' in filter set '{path_str}'"
+                )));
+            }
+        }
+
+        for result in rdr.byte_records() {
+            if let Some(value) = result?.get(index) {
+                set.insert(value.into());
+            } else {
+                return Err(FilterSetError::Other(format!(
+                    "could not access value at index {index}"
+                )));
+            }
+        }
     }
 
     Ok(Some(set))

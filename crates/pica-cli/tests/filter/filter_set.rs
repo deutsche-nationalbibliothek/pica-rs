@@ -32,30 +32,6 @@ fn allow_list_ppn() -> TestResult {
 }
 
 #[test]
-fn allow_list_idn() -> TestResult {
-    let mut cmd = pica_cmd();
-    let temp_dir = TempDir::new().unwrap();
-    let allow = temp_dir.child("ALLOW.csv");
-    allow.write_str("idn\n118540238").unwrap();
-
-    let assert = cmd
-        .args(["filter", "-s", "003@?"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::path::eq_file(
-            data_dir().join("goethe.dat"),
-        ))
-        .stderr(predicates::str::is_empty());
-
-    Ok(())
-}
-
-#[test]
 fn allow_list_column() -> TestResult {
     let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
@@ -179,29 +155,6 @@ fn deny_list_ppn() -> TestResult {
     let temp_dir = TempDir::new().unwrap();
     let deny = temp_dir.child("DENY.csv");
     deny.write_str("ppn\n118540238").unwrap();
-
-    let assert = cmd
-        .args(["filter", "-s", "003@?"])
-        .args(["-D", deny.to_str().unwrap()])
-        .arg(data_dir().join("goethe.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::path::eq_file(data_dir().join("ada.dat")))
-        .stderr(predicates::str::is_empty());
-
-    Ok(())
-}
-
-#[test]
-fn deny_list_idn() -> TestResult {
-    let mut cmd = pica_cmd();
-    let temp_dir = TempDir::new().unwrap();
-    let deny = temp_dir.child("DENY.csv");
-    deny.write_str("idn\n118540238").unwrap();
 
     let assert = cmd
         .args(["filter", "-s", "003@?"])
@@ -378,7 +331,7 @@ fn allow_list_txt() -> TestResult {
 fn allow_list_txt_gz() -> TestResult {
     let mut cmd = pica_cmd();
     let temp_dir = TempDir::new().unwrap();
-    let allow = temp_dir.child("ALLOW.txt");
+    let allow = temp_dir.child("ALLOW.txt.gz");
 
     let mut e = GzEncoder::new(Vec::new(), Compression::default());
     e.write_all(b"118540238").unwrap();

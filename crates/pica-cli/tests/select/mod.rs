@@ -566,27 +566,6 @@ fn select_where_or() -> TestResult {
 
 #[test]
 fn select_allow() -> TestResult {
-    // IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str("idn\n118540238\n040991970\n")?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tpz\nTu1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
     // PPN
     let temp_dir = TempDir::new().unwrap();
     let mut cmd = pica_cmd();
@@ -605,36 +584,11 @@ fn select_allow() -> TestResult {
         .code(0)
         .stdout(predicates::ord::eq("Tpz\nTu1\n"))
         .stderr(predicates::str::is_empty());
-
     temp_dir.close().unwrap();
-
-    // PPN+IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str(
-        "idn,ppn\n040991970,118540238\n118540238,040991970\n",
-    )?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tpz\nTu1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
 
     // FILTER SET COLUMN
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = pica_cmd();
     let allow = temp_dir.child("allow.csv");
     allow.write_str("id\n118540238\n040991970\n")?;
 
@@ -652,62 +606,17 @@ fn select_allow() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     temp_dir.close().unwrap();
-
     Ok(())
 }
 
 #[test]
 fn select_deny() -> TestResult {
-    // IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let deny = temp_dir.child("deny.csv");
-    deny.write_str("idn\n040011569\n")?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-D", deny.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tp1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
     // PPN
     let temp_dir = TempDir::new().unwrap();
     let mut cmd = pica_cmd();
 
     let deny = temp_dir.child("deny.csv");
     deny.write_str("ppn\n040011569\n")?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-D", deny.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tp1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
-    // PPN+IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let deny = temp_dir.child("deny.csv");
-    deny.write_str("idn,ppn\n119232022,040011569\n")?;
 
     let assert = cmd
         .args(["select", "-s", "002@.0"])
