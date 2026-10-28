@@ -13,7 +13,7 @@ version.workspace = true
 default = ["performant"]
 compat = ["pica-record/compat"]
 nightly = ["pica-record/nightly"]
-performant = ["pica-record/performant", "polars/cse", "polars/performant"]
+performant = ["pica-record/performant"]
 unstable = ["pica-record/unstable"]
 
 [dependencies]
@@ -27,23 +27,12 @@ hashbrown = { version = "0.17.1", features = ["serde"] }
 indicatif = { version = "0.18.6", features = ["improved_unicode"] }
 jiff = { version = "0.2.38" }
 pica-record = { path = "../../", features = ["serde"] }
-polars = { version = "0.55.2", features = [
-  "decompress",
-  "fmt",
-  "ipc",
-  "lazy",
-  "parquet",
-  "polars-io",
-  "timezones",
-  "strings",
-] }
 quick-xml = { version = "0.42.0" }
 rand = { version = "0.10.3" }
 regex = { version = "1.13.1" }
 serde_json = { version = "1.0.154" }
 serde = { version = "1.0.229", features = ["derive"] }
 thiserror = { version = "2.0.21" }
-tmp_env = { version = "0.1.1" }
 toml = { version = "1.1.8", features = ["preserve_order"] }
 unicode-normalization = { version = "0.1.26" }
 
