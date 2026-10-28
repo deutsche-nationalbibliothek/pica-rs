@@ -9,9 +9,11 @@ use self::import::ImportWriter;
 use self::json::JsonWriter;
 use self::plain::PlainWriter;
 use self::xml::XmlWriter;
+use crate::commands::convert::download::DownloadReader;
 use crate::prelude::*;
 
 mod binary;
+mod download;
 mod import;
 mod json;
 mod plain;
@@ -20,6 +22,7 @@ mod xml;
 #[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
 enum Format {
     Binary,
+    Download,
     Import,
     Json,
     Plain,
@@ -74,13 +77,6 @@ impl Convert {
         let skip_invalid = self.skip_invalid || config.skip_invalid;
         let mut progress = Progress::new(self.progress);
 
-        if self.from != Format::Plus {
-            return Err(CliError::Other(format!(
-                "convert from {:?} is not supported",
-                self.from
-            )));
-        }
-
         let mut writer: Box<dyn ByteRecordWrite> = match self.to {
             Format::Plus => {
                 WriterBuilder::new().from_path_or_stdout(self.output)?
@@ -90,30 +86,69 @@ impl Convert {
             Format::Json => Box::new(JsonWriter::new(self.output)?),
             Format::Plain => Box::new(PlainWriter::new(self.output)?),
             Format::Xml => Box::new(XmlWriter::new(self.output)?),
+            Format::Download => {
+                return Err(CliError::Other(
+                    "write to download format is not supported".into(),
+                ));
+            }
         };
 
-        for filename in self.filenames {
-            let mut reader =
-                ReaderBuilder::new().from_path(filename)?;
+        match self.from {
+            Format::Plus => {
+                for filename in self.filenames {
+                    let mut reader =
+                        ReaderBuilder::new().from_path(filename)?;
+                    while let Some(result) = reader.next_byte_record() {
+                        match result {
+                            Err(e)
+                                if e.skip_parse_err(skip_invalid) =>
+                            {
+                                progress.update(true);
+                                continue;
+                            }
+                            Err(e) => return Err(e.into()),
+                            Ok(ref record) => {
+                                writer.write_byte_record(record)?;
+                                progress.update(false);
+                            }
+                        }
+                    }
 
-            while let Some(result) = reader.next_byte_record() {
-                match result {
-                    Err(e) if e.skip_parse_err(skip_invalid) => {
-                        progress.update(true);
-                        continue;
-                    }
-                    Err(e) => return Err(e.into()),
-                    Ok(ref record) => {
-                        writer.write_byte_record(record)?;
-                        progress.update(false);
-                    }
+                    writer.finish()?;
                 }
+            }
+            Format::Download => {
+                for filename in self.filenames {
+                    let mut reader =
+                        DownloadReader::from_path(filename)?;
+                    while let Some(result) = reader.next_byte_record() {
+                        match result {
+                            Err(e)
+                                if e.skip_parse_err(skip_invalid) =>
+                            {
+                                progress.update(true);
+                                continue;
+                            }
+                            Err(e) => return Err(e.into()),
+                            Ok(ref record) => {
+                                writer.write_byte_record(record)?;
+                                progress.update(false);
+                            }
+                        }
+                    }
+
+                    writer.finish()?;
+                }
+            }
+            _ => {
+                return Err(CliError::Other(format!(
+                    "convert from {:?} is not supported",
+                    self.from
+                )));
             }
         }
 
         progress.finish();
-        writer.finish()?;
-
         Ok(ExitCode::SUCCESS)
     }
 }

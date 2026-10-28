@@ -18,6 +18,8 @@ pub enum ReadPicaError {
     Utf8 { msg: String, err: Utf8Error },
     #[error(transparent)]
     IO(#[from] std::io::Error),
+    #[error("other: {0}")]
+    Other(String),
 }
 
 impl ReadPicaError {
