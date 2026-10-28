@@ -18,14 +18,14 @@ unstable = ["pica-record/unstable"]
 
 [dependencies]
 bstr = { version = "1.13.1" }
-clap_complete = { version = "4.6.9" }
-clap = { version = "4.6.6", features = ["derive", "cargo", "wrap_help"] }
+clap_complete = { version = "4.6.11" }
+clap = { version = "4.6.7", features = ["derive", "cargo", "wrap_help"] }
 csv = { version = "1.4.0" }
 directories = { version = "6.0.0" }
 flate2 = { version = "1.1.10" }
 hashbrown = { version = "0.17.1", features = ["serde"] }
 indicatif = { version = "0.18.6", features = ["improved_unicode"] }
-jiff = { version = "0.2.35" }
+jiff = { version = "0.2.38" }
 pica-record = { path = "../../", features = ["serde"] }
 polars = { version = "0.55.2", features = [
   "decompress",
@@ -38,14 +38,14 @@ polars = { version = "0.55.2", features = [
   "strings",
 ] }
 quick-xml = { version = "0.42.0" }
-rand = { version = "0.10.2" }
+rand = { version = "0.10.3" }
 regex = { version = "1.13.1" }
-serde_json = { version = "1.0.151" }
+serde_json = { version = "1.0.154" }
 serde = { version = "1.0.229", features = ["derive"] }
-thiserror = { version = "2.0.20" }
+thiserror = { version = "2.0.21" }
 tmp_env = { version = "0.1.1" }
-toml = { version = "1.1.4", features = ["preserve_order"] }
-unicode-normalization = { version = "0.1.25" }
+toml = { version = "1.1.8", features = ["preserve_order"] }
+unicode-normalization = { version = "0.1.26" }
 
 [dev-dependencies]
 anyhow = { version = "1.0.104" }
