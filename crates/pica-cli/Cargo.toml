@@ -11,7 +11,6 @@ version.workspace = true
 
 [features]
 default = ["performant"]
-compat = ["pica-record/compat"]
 nightly = ["pica-record/nightly"]
 performant = ["pica-record/performant"]
 unstable = ["pica-record/unstable"]

@@ -42,14 +42,7 @@ pub(crate) fn parse_relation_matcher(
     (
         opt(ws(terminated(parse_quantifier, multispace1)))
             .map(Option::unwrap_or_default),
-        alt((
-            ws(parse_subfield_codes),
-            #[cfg(feature = "compat")]
-            preceded(
-                ws('$'),
-                ws(crate::parser::parse_subfield_codes_compat),
-            ),
-        )),
+        ws(parse_subfield_codes),
         ws(parse_relational_operator)
             .verify(RelationalOp::is_str_applicable),
         ws(parse_string),
@@ -76,14 +69,7 @@ pub(crate) fn parse_contains_matcher(
 ) -> ModalResult<ContainsMatcher> {
     (
         opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
-        alt((
-            ws(parse_subfield_codes),
-            #[cfg(feature = "compat")]
-            preceded(
-                ws('$'),
-                ws(crate::parser::parse_subfield_codes_compat),
-            ),
-        )),
+        ws(parse_subfield_codes),
         ws("=?"),
         alt((
             delimited(

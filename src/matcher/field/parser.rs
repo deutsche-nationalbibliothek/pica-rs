@@ -58,31 +58,6 @@ fn parse_subfields_matcher_dot(
         .parse_next(i)
 }
 
-#[cfg(feature = "compat")]
-fn parse_subfields_matcher_dollar(
-    i: &mut &[u8],
-) -> ModalResult<SubfieldsMatcher> {
-    (
-        opt(ws(parse_quantifier)).map(Option::unwrap_or_default),
-        parse_tag_matcher,
-        parse_occurrence_matcher,
-        preceded('$', parse_subfield_singleton_matcher),
-    )
-        .with_taken()
-        .map(|((q, t, o, s), raw_data)| {
-            let raw_data =
-                raw_data.to_str().unwrap().trim_end().to_string();
-            SubfieldsMatcher {
-                quantifier: q,
-                tag_matcher: t,
-                occurrence_matcher: o,
-                subfield_matcher: s,
-                raw_data,
-            }
-        })
-        .parse_next(i)
-}
-
 fn parse_subfields_matcher_bracket(
     i: &mut &[u8],
 ) -> ModalResult<SubfieldsMatcher> {
@@ -111,13 +86,8 @@ fn parse_subfields_matcher_bracket(
 pub(super) fn parse_subfields_matcher(
     i: &mut &[u8],
 ) -> ModalResult<SubfieldsMatcher> {
-    alt((
-        parse_subfields_matcher_dot,
-        parse_subfields_matcher_bracket,
-        #[cfg(feature = "compat")]
-        parse_subfields_matcher_dollar,
-    ))
-    .parse_next(i)
+    alt((parse_subfields_matcher_dot, parse_subfields_matcher_bracket))
+        .parse_next(i)
 }
 
 /// Parse a [SingletonMatcher] expression.
@@ -194,17 +164,7 @@ fn parse_field_exists_matcher(
             opt(parse_quantifier).map(Option::unwrap_or_default),
             parse_tag_matcher,
             parse_occurrence_matcher,
-            alt((
-                preceded(
-                    ws('.'),
-                    subfield::parser::parse_exists_matcher,
-                ),
-                #[cfg(feature = "compat")]
-                preceded(
-                    ws('$'),
-                    subfield::parser::parse_exists_matcher,
-                ),
-            )),
+            preceded(ws('.'), subfield::parser::parse_exists_matcher),
         )
             .with_taken()
             .map(|((q, t, o, s), raw_data)| {
@@ -440,21 +400,6 @@ mod tests {
             }
         );
 
-        #[cfg(feature = "compat")]
-        parse_success!(
-            "003@$0 == '0123456789X'",
-            SubfieldsMatcher {
-                raw_data: "003@$0 == '0123456789X'".to_string(),
-                quantifier: Quantifier::Any,
-                tag_matcher: TagMatcher::new("003@").unwrap(),
-                occurrence_matcher: OccurrenceMatcher::None,
-                subfield_matcher: SubfieldMatcher::new(
-                    "0 == '0123456789X'"
-                )
-                .unwrap(),
-            }
-        );
-
         parse_success!(
             "003@{0 == '0123456789X'}",
             SubfieldsMatcher {
@@ -557,26 +502,6 @@ mod tests {
                             ),
                         ),
                     raw_data: "003@.0?".to_string(),
-                },
-            ))
-        );
-
-        #[cfg(feature = "compat")]
-        parse_success!(
-            "003@$0?",
-            FieldMatcher::Singleton(SingletonMatcher::Subfields(
-                SubfieldsMatcher {
-                    quantifier: Quantifier::Any,
-                    tag_matcher: TagMatcher::new("003@").unwrap(),
-                    occurrence_matcher: OccurrenceMatcher::None,
-                    subfield_matcher:
-                        subfield::SubfieldMatcher::Singleton(
-                            subfield::SingletonMatcher::Exists(
-                                subfield::ExistsMatcher::new("0?")
-                                    .unwrap(),
-                            ),
-                        ),
-                    raw_data: "003@$0?".to_string(),
                 },
             ))
         );
