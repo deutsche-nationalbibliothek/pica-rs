@@ -566,27 +566,6 @@ fn select_where_or() -> TestResult {
 
 #[test]
 fn select_allow() -> TestResult {
-    // IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str("idn\n118540238\n040991970\n")?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tpz\nTu1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
     // PPN
     let temp_dir = TempDir::new().unwrap();
     let mut cmd = pica_cmd();
@@ -605,36 +584,11 @@ fn select_allow() -> TestResult {
         .code(0)
         .stdout(predicates::ord::eq("Tpz\nTu1\n"))
         .stderr(predicates::str::is_empty());
-
     temp_dir.close().unwrap();
-
-    // PPN+IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let allow = temp_dir.child("allow.csv");
-    allow.write_str(
-        "idn,ppn\n040991970,118540238\n118540238,040991970\n",
-    )?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-A", allow.to_str().unwrap()])
-        .arg(data_dir().join("DUMP.dat.gz"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tpz\nTu1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
 
     // FILTER SET COLUMN
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = pica_cmd();
     let allow = temp_dir.child("allow.csv");
     allow.write_str("id\n118540238\n040991970\n")?;
 
@@ -652,62 +606,17 @@ fn select_allow() -> TestResult {
         .stderr(predicates::str::is_empty());
 
     temp_dir.close().unwrap();
-
     Ok(())
 }
 
 #[test]
 fn select_deny() -> TestResult {
-    // IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let deny = temp_dir.child("deny.csv");
-    deny.write_str("idn\n040011569\n")?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-D", deny.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tp1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
     // PPN
     let temp_dir = TempDir::new().unwrap();
     let mut cmd = pica_cmd();
 
     let deny = temp_dir.child("deny.csv");
     deny.write_str("ppn\n040011569\n")?;
-
-    let assert = cmd
-        .args(["select", "-s", "002@.0"])
-        .args(["-D", deny.to_str().unwrap()])
-        .arg(data_dir().join("algebra.dat"))
-        .arg(data_dir().join("ada.dat"))
-        .assert();
-
-    assert
-        .success()
-        .code(0)
-        .stdout(predicates::ord::eq("Tp1\n"))
-        .stderr(predicates::str::is_empty());
-
-    temp_dir.close().unwrap();
-
-    // PPN+IDN
-    let temp_dir = TempDir::new().unwrap();
-    let mut cmd = pica_cmd();
-
-    let deny = temp_dir.child("deny.csv");
-    deny.write_str("idn,ppn\n119232022,040011569\n")?;
 
     let assert = cmd
         .args(["select", "-s", "002@.0"])
@@ -799,43 +708,125 @@ fn select_query_path() -> TestResult {
 }
 
 #[test]
-#[cfg(feature = "compat")]
-fn select_compat() -> TestResult {
+fn select_quote_style() -> TestResult {
     let mut cmd = pica_cmd();
     let assert = cmd
-        .args(["select", "003@ $0,002@$0"])
-        .arg(data_dir().join("algebra.dat"))
+        .args(["select", "028@{ d | d =? ',' }"])
         .arg(data_dir().join("ada.dat"))
         .assert();
 
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq("040011569,Ts1\n119232022,Tp1\n"))
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\"\n"))
+        .stderr(predicates::str::is_empty());
+
+    // necessary
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }"])
+        .args(["--quote-style", "necessary"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\"\n"))
         .stderr(predicates::str::is_empty());
 
     let mut cmd = pica_cmd();
     let assert = cmd
-        .args(["select", "003@$0,028@{ $d, $a | $4 == 'nafr'}"])
+        .args(["select", "028A.d"])
+        .args(["--quote-style", "necessary"])
         .arg(data_dir().join("ada.dat"))
         .assert();
 
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq("119232022,Ada Augusta,Byron\n"))
+        .stdout(predicates::ord::eq("Ada King\n"))
+        .stderr(predicates::str::is_empty());
+
+    // always
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }"])
+        .args(["--quote-style", "always"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\"\n"))
         .stderr(predicates::str::is_empty());
 
     let mut cmd = pica_cmd();
     let assert = cmd
-        .args(["select", "003@$0,028@{ ($d, $a) | $4 == 'nafr'}"])
+        .args(["select", "028A.d"])
+        .args(["--quote-style", "always"])
         .arg(data_dir().join("ada.dat"))
         .assert();
 
     assert
         .success()
         .code(0)
-        .stdout(predicates::ord::eq("119232022,Ada Augusta,Byron\n"))
+        .stdout(predicates::ord::eq("\"Ada King\"\n"))
+        .stderr(predicates::str::is_empty());
+
+    // never
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }"])
+        .args(["--quote-style", "never"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Ada King, Countess of\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028A.d"])
+        .args(["--quote-style", "never"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("Ada King\n"))
+        .stderr(predicates::str::is_empty());
+
+    // non-numeric
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028@{ d | d =? ',' }, 001X.0"])
+        .args(["--quote-style", "non-numeric"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King, Countess of\",0\n"))
+        .stderr(predicates::str::is_empty());
+
+    let mut cmd = pica_cmd();
+    let assert = cmd
+        .args(["select", "028A.d,001X.0"])
+        .args(["--quote-style", "non-numeric"])
+        .arg(data_dir().join("ada.dat"))
+        .assert();
+
+    assert
+        .success()
+        .code(0)
+        .stdout(predicates::ord::eq("\"Ada King\",0\n"))
         .stderr(predicates::str::is_empty());
 
     Ok(())

@@ -81,14 +81,7 @@ fn parse_path_simple(i: &mut &[u8]) -> ModalResult<Path> {
     ws((
         parse_tag_matcher,
         parse_occurrence_matcher,
-        alt((
-            preceded('.', parse_subfield_codes),
-            #[cfg(feature = "compat")]
-            preceded(
-                ws('$'),
-                ws(crate::parser::parse_subfield_codes_compat),
-            ),
-        )),
+        preceded('.', parse_subfield_codes),
     ))
     .with_taken()
     .map(|((t, o, c), raw_path)| {
@@ -104,20 +97,6 @@ fn parse_path_simple(i: &mut &[u8]) -> ModalResult<Path> {
     .parse_next(i)
 }
 
-fn parse_codes(
-    i: &mut &[u8],
-) -> ModalResult<SmallVec<[SubfieldCode; 4]>> {
-    alt((
-        parse_subfield_codes,
-        #[cfg(feature = "compat")]
-        preceded(
-            ws('$'),
-            ws(crate::parser::parse_subfield_codes_compat),
-        ),
-    ))
-    .parse_next(i)
-}
-
 fn parse_path_curly(i: &mut &[u8]) -> ModalResult<Path> {
     ws((
         parse_tag_matcher,
@@ -126,10 +105,10 @@ fn parse_path_curly(i: &mut &[u8]) -> ModalResult<Path> {
             ws('{'),
             (
                 alt((
-                    separated(1.., parse_codes, ws(',')),
+                    separated(1.., parse_subfield_codes, ws(',')),
                     delimited(
                         ws('('),
-                        separated(1.., parse_codes, ws(',')),
+                        separated(1.., parse_subfield_codes, ws(',')),
                         ws(')'),
                     ),
                 )),

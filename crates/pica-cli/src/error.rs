@@ -36,8 +36,6 @@ pub(crate) enum CliError {
     #[error(transparent)]
     Csv(#[from] csv::Error),
     #[error(transparent)]
-    Polars(#[from] polars::error::PolarsError),
-    #[error(transparent)]
     IO(#[from] std::io::Error),
     #[error("{0}")]
     Other(String),

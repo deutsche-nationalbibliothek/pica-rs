@@ -5,12 +5,33 @@ use std::hash::{Hash, Hasher};
 use std::io::{self, Write};
 use std::process::ExitCode;
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
+use csv::QuoteStyle;
 use hashbrown::HashSet;
 use pica_record::prelude::*;
 
 use crate::prelude::*;
 use crate::utils::FilterSet;
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+#[value(rename_all = "kebab-case")]
+enum Quotes {
+    Always,
+    Necessary,
+    NonNumeric,
+    Never,
+}
+
+impl From<Quotes> for QuoteStyle {
+    fn from(quotes: Quotes) -> Self {
+        match quotes {
+            Quotes::Always => Self::Always,
+            Quotes::Necessary => Self::Necessary,
+            Quotes::NonNumeric => Self::NonNumeric,
+            Quotes::Never => Self::Never,
+        }
+    }
+}
 
 /// Select subfield values from records
 #[derive(Parser, Debug)]
@@ -47,6 +68,10 @@ pub(crate) struct Select {
     /// Write output tab-separated (TSV)
     #[arg(long, short)]
     tsv: bool,
+
+    /// The quoting style to use when writing CSV.
+    #[arg(long, default_value = "necessary")]
+    quote_style: Quotes,
 
     /// Transliterate output into the selected normal form NF
     /// (possible values: "nfd", "nfkd", "nfc" and "nfkc")
@@ -128,6 +153,7 @@ impl Select {
 
         let mut writer = csv::WriterBuilder::new()
             .delimiter(if self.tsv { b'\t' } else { b',' })
+            .quote_style(QuoteStyle::from(self.quote_style))
             .from_writer(writer(self.output, self.append)?);
 
         if let Some(header) = self.header {

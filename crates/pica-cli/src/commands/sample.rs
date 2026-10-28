@@ -3,8 +3,8 @@ use std::process::ExitCode;
 
 use clap::{Parser, value_parser};
 use pica_record::prelude::*;
-use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng, rng};
+use rand::prelude::*;
+use rand::rng;
 
 use crate::prelude::*;
 
@@ -62,8 +62,8 @@ impl Sample {
             .from_path_or_stdout(self.output)?;
 
         let mut rng: StdRng = match self.seed {
+            Some(state) => StdRng::seed_from_u64(state),
             None => StdRng::from_rng(&mut rng()),
-            Some(seed) => StdRng::seed_from_u64(seed),
         };
 
         let mut reservoir: Vec<Vec<u8>> =

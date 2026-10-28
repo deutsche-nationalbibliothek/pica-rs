@@ -54,10 +54,10 @@ pub(crate) struct Filter {
     /// Ignore records which are *not* explicitly listed in one of the
     /// given allow-lists.
     ///
-    /// An allow-list must be a CSV, TSV or Apache Arrow file. By
-    /// default the column `ppn` or `idn` is used to get the values
-    /// of the allow list. These values are compared against the PPN
-    /// (003@.0) of record.
+    /// An allow-list must be a CSV, TSV or a plain text file. By
+    /// default the column `ppn` is used to get the values of a CSV/TSV
+    /// file. These values are compared against the PPN (003@.0) of
+    /// record.
     ///
     /// The column name can be changed using the `--filter-set-column`
     /// option and the path to the comparison values can be changed
@@ -74,10 +74,9 @@ pub(crate) struct Filter {
     /// Ignore records which are explicitly listed in one of the
     /// given deny-lists.
     ///
-    /// A deny-list must be a CSV, TSV or Apache Arrow file. By
-    /// default the column `ppn` or `idn` is used to get the values
-    /// of the allow list. These values are compared against the PPN
-    /// (003@.0) of record.
+    /// A deny-list must be a CSV, TSV or a plain text file. By default
+    /// the column `ppn` is used to get the values of a CSV/TSV file.
+    /// These values are compared against the PPN (003@.0) of record.
     ///
     /// The column name can be changed using the `--filter-set-column`
     /// option and the path to the comparison values can be changed
@@ -91,9 +90,8 @@ pub(crate) struct Filter {
     deny: Vec<PathBuf>,
 
     /// Defines the column name of an allow-list or a deny-list. By
-    /// default, the column `ppn` is used or, if this is not
-    /// available, the column `idn` is used.
-    #[arg(long, value_name = "COLUMN")]
+    /// default, the column `ppn` is used.
+    #[arg(long, value_name = "COLUMN", default_value = "ppn")]
     filter_set_column: Option<String>,
 
     /// Defines an optional path to the comparison values of the
@@ -119,7 +117,7 @@ pub(crate) struct Filter {
     /// Connects the where clause with additional expressions using the
     /// logical NOT-operator (negation)
     ///
-    /// This option can't be combined with `--and` or `--or`.
+    /// This option can't be combined with `--or`.
     #[arg(long, conflicts_with = "or")]
     not: Vec<String>,
 

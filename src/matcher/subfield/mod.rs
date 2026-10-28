@@ -814,7 +814,7 @@ impl Display for InMatcher {
 /// A matcher that checks the number of occurrences of a subfield.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CardinalityMatcher {
-    pub(crate) code: SubfieldCode,
+    pub(crate) codes: SmallVec<[SubfieldCode; 4]>,
     pub(crate) op: RelationalOp,
     pub(crate) value: usize,
     pub(crate) raw_data: String,
@@ -883,7 +883,7 @@ impl CardinalityMatcher {
     ) -> bool {
         let count = subfields
             .into_iter()
-            .filter(|&s| self.code == *s.code())
+            .filter(|s| self.codes.contains(s.code()))
             .count();
 
         match self.op {

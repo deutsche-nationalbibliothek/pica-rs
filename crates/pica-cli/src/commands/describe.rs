@@ -1,11 +1,11 @@
 use std::ffi::OsString;
 use std::fs::File;
+use std::io::{Write, stdout};
 use std::process::ExitCode;
 
 use clap::Parser;
 use hashbrown::HashMap;
 use pica_record::prelude::*;
-use polars::prelude::*;
 
 use crate::prelude::*;
 
@@ -124,69 +124,43 @@ impl Describe {
         let tags =
             fields.keys().map(ToString::to_string).collect::<Vec<_>>();
 
-        let mut columns = vec![];
-        columns.push(Column::new("field".into(), tags.clone()));
+        let inner: Box<dyn Write> = match self.output {
+            None => Box::new(stdout().lock()),
+            Some(ref path) => Box::new(File::create(path)?),
+        };
 
-        for code in codes.iter() {
-            let mut values = vec![];
-
-            for tag in tags.iter() {
-                let counts = fields.get(tag).unwrap();
-                let count = counts.get(*code).unwrap_or(&0);
-                values.push(*count as u64);
+        let delimiter = match self.output {
+            Some(ref path)
+                if path.to_string_lossy().ends_with(".tsv") =>
+            {
+                b'\t'
             }
+            _ => b',',
+        };
 
-            columns.push(Column::new(code.to_string().into(), values));
+        let mut wtr = csv::WriterBuilder::new()
+            .delimiter(delimiter)
+            .from_writer(inner);
+
+        wtr.write_field("field")?;
+        for code in codes.iter() {
+            wtr.write_field(format!("{code}"))?;
         }
 
-        let mut df = DataFrame::new(columns)?
-            .lazy()
-            .sort(["field"], SortMultipleOptions::default())
-            .collect()?;
+        wtr.write_record(None::<&[u8]>)?;
 
-        match self.output {
-            None => {
-                let _tmp_env = (
-                    tmp_env::set_var(
-                        "POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION",
-                        "1",
-                    ),
-                    tmp_env::set_var(
-                        "POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES",
-                        "1",
-                    ),
-                    tmp_env::set_var(
-                        "POLARS_FMT_TABLE_CELL_NUMERIC_ALIGNMENT",
-                        "1",
-                    ),
-                    tmp_env::set_var("POLARS_FMT_MAX_COLS", "20"),
-                    tmp_env::set_var("POLARS_FMT_MAX_ROWS", "50"),
-                );
+        for tag in tags.iter() {
+            let mut values = vec![];
 
-                println!("{df}");
+            values.push(tag.to_string());
+
+            for code in codes.iter() {
+                let counts = fields.get(tag).unwrap();
+                let count = counts.get(*code).unwrap_or(&0);
+                values.push(count.to_string());
             }
-            Some(path)
-                if path.to_string_lossy().ends_with(".tsv")
-                    || self.tsv =>
-            {
-                let mut writer = CsvWriter::new(File::create(path)?)
-                    .with_separator(b'\t');
-                writer.finish(&mut df)?;
-            }
-            Some(path)
-                if path.to_string_lossy().ends_with(".csv")
-                    || self.csv =>
-            {
-                let mut writer = CsvWriter::new(File::create(path)?);
-                writer.finish(&mut df)?;
-            }
-            Some(path) => {
-                let mut writer = IpcWriter::new(File::create(path)?)
-                    .with_compression(Some(IpcCompression::ZSTD(
-                        Default::default(),
-                    )));
-                writer.finish(&mut df)?;
-            }
+
+            wtr.write_record(values)?;
         }
 
         progress.finish();

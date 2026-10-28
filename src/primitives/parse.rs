@@ -42,7 +42,7 @@ pub(crate) fn parse_tag_ref<'a>(
     i: &mut &'a [u8],
 ) -> ModalResult<TagRef<'a>> {
     (
-        one_of([b'0', b'1', b'2']),
+        one_of(*b"012"),
         one_of(|c: u8| c.is_ascii_digit()),
         one_of(|c: u8| c.is_ascii_digit()),
         one_of(|c: u8| c.is_ascii_uppercase() || c == b'@'),

@@ -78,7 +78,7 @@ impl Split {
                     .join(template.replace("{}", &chunks.to_string())),
             )?;
 
-        for filename in self.filenames {
+        'outer: for filename in self.filenames {
             let mut reader =
                 ReaderBuilder::new().from_path(filename)?;
 
@@ -121,6 +121,11 @@ impl Split {
 
                         writer.write_byte_record(record)?;
                         count += 1;
+                        if self.filter_opts.limit > 0
+                            && count >= self.filter_opts.limit
+                        {
+                            break 'outer;
+                        }
                     }
                 }
             }
