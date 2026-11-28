@@ -65,6 +65,7 @@ impl Rule {
             Checks::Duplicates(ref c) => c.check(record),
             Checks::Filter(ref c) => c.check(record),
             Checks::Isni(ref c) => c.check(record),
+            Checks::Issn(ref c) => c.check(record),
             Checks::Iso639(ref c) => c.check(record),
             Checks::Jel(ref c) => c.check(record),
             Checks::Link(ref mut c) => c.check(record),

@@ -4,6 +4,7 @@ mod duplicates;
 mod filter;
 mod isni;
 mod iso639;
+mod issn;
 mod jelc;
 mod link;
 mod unicode;
@@ -22,6 +23,7 @@ pub(crate) enum Checks {
     Duplicates(Box<duplicates::Duplicates>),
     Filter(Box<filter::Filter>),
     Isni(Box<isni::Isni>),
+    Issn(Box<issn::Issn>),
     #[serde(rename = "iso639-2b")]
     Iso639(Box<iso639::Iso639>),
     #[serde(rename = "jelc")]

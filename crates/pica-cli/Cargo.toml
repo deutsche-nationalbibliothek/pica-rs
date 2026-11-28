@@ -24,6 +24,7 @@ directories = { version = "6.0.0" }
 flate2 = { version = "1.1.10" }
 hashbrown = { version = "0.17.1", features = ["serde"] }
 indicatif = { version = "0.18.6", features = ["improved_unicode"] }
+issn = { version = "0.1.0" }
 jiff = { version = "1.0.1" }
 pica-record = { path = "../../", features = ["serde"] }
 quick-xml = { version = "0.42.0" }

@@ -284,6 +284,32 @@ Vergleichen von Werten ignoriert.
 : Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
 Zeichenketten mittels des `=*`-Operators.
 
+### ISSN
+
+Mithilfe des `issn`-Checks können formal ungültige ISSN gefunden werden.
+
+Die folgende Regel findet ungültige ISSN-Einträge im Feld `005I`, Unterfeld `$0`:
+
+```{.toml}
+[rule.INVALID-ISSN]
+check = 'issn'
+path = '005I.0'
+```
+
+#### Optionen
+
+`case-ignore = true | false`
+: Ist die Option gesetzt, wird die Groß- und Kleinschreibung beim
+Vergleichen von Werten ignoriert.
+
+`strsim-threshold = <value>`
+: Festlegen des Schwellenwerts beim Ähnlichkeitsvergleich von
+Zeichenketten mittels des `=*`-Operators.
+
+`prefix = '<prefix>'`
+: Es werden nur Werte überprüft, die mit dem Präfix `<prefix>` beginnen.
+Wird kein Präfix angegeben, werden alle Werte des `path`-Ausdrucks
+überprüft.
 
 ### Link
 
